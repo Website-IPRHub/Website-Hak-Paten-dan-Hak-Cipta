@@ -1,0 +1,80 @@
+.container{
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 0 0px;
+  box-sizing: border-box;
+}
+
+.topbar{
+  background: #3D59AB;
+  color: #fff;
+  font-size: 12px;
+}
+.topbar-inner{
+  display: flex;
+  justify-content: flex-start;
+  gap: 14px;
+  align-items: center;
+  height: 36px;
+}
+.topbar-inner span{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.navbar{
+  background: #001349;
+}
+.navbar-inner{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 72px;
+  justify-content: flex-start;
+}
+
+.brand-logo{
+  height: 38px;
+  width: auto;
+  border-radius: 80px;
+  background: #fff;
+  padding: 4px 8px;
+}
+
+.nav-right{
+  margin-left: auto;          
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-menu{
+  display: flex;              
+  align-items: center;
+  gap: 12px;
+}
+
+
+.nav-link{
+  color: #E0E2E9;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 6px 4px;
+}
+
+
+.nav-button{
+  color: #9E9E9F;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
