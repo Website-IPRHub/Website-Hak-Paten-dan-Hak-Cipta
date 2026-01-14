@@ -14,7 +14,7 @@
     <div class="navbar-inner container">
 
       <a href="/" class="brand">
-        <img src="{{ asset('images/Logo.png') }}" class="brand-logo" alt="Logo">
+        <img src="{{ asset('images/Logo Dirinovki 2026.jpg') }}" class="brand-logo" alt="Logo">
       </a>
 
       <div class="nav-right">
