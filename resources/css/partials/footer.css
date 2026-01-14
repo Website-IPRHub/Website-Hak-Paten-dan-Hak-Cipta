@@ -1,0 +1,51 @@
+.site-footer{
+  background: #001349;
+  padding: 20px 0;
+}
+
+.footer-inner{
+  display: flex;
+  align-items: flex-start;   
+  justify-content: center;
+  gap: 30px;                 
+}
+
+
+.footer-logo{
+  width: 195px;
+  height: 200px;
+  object-fit: contain;   
+  display: block;
+  margin-right: 30px;
+}
+
+.footer-layanan h1{
+    color:#2EA3F2;
+    font-size: 14px;
+}
+
+.footer-kontak h2{
+    color:#2EA3F2;
+    font-size: 14px;
+}
+
+.footer-lokasi h3{
+    color:#2EA3F2;
+    font-size: 14px;
+}
+
+.footer-layanan, .footer-kontak,.footer-lokasi{
+    color: white;
+    max-width: 260px;  
+    font-size: 16px;
+}
+
+.footer-bottom .container{
+    color:#777777;
+    margin-top: 20px;
+    padding-left: 125px;
+}
+
+p {
+    line-height: 1.9;
+}

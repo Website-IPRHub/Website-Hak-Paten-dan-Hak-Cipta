@@ -1,0 +1,106 @@
+.section-inner{
+  max-width: none;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.content-box{
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.hero-buttons-start{
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+  flex-wrap: nowrap !important;   
+}
+
+.button-unduh, .button-upload{
+  background-color: #03061F;
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.hero-buttons > a,
+.hero-buttons > form{
+  flex: 0 0 auto !important;       
+  width: auto !important;      
+  margin: 0 !important;
+}
+
+.hero-buttons > a{
+  display: inline-flex !important;
+  white-space: nowrap !important;
+  
+}
+
+.button-upload form{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#fileName{
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.draft-paten h2{
+  font-family: 'inter', sans-serif;
+  font-weight: 650;
+  color: #000;
+  font-size: 20px;
+  margin: 0;  
+  margin-left: 25px;    
+  margin-top: 30px;       
+}
+
+.button-unduh, .button-upload{
+  margin-top: 30px;
+  font-family: 'inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 150px;
+  margin-top: 40px;
+  margin-left: 25px;
+}
+
+.button-unduh:hover, .button-upload:hover{
+  background: #344c7b;
+}
+
+.btn-selanjutnya{
+  background: #344c7b;     
+  color: white;
+  padding: 12px 22px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+  box-shadow: 0 8px 20px rgba(28,94,189,0.25);
+}
+
+.btn-selanjutnya:hover{
+  background: #637caf;       
+  transform: translateY(-2px);
+}
+
+.btn-selanjutnya:active{
+  transform: translateY(0);
+}
+
+.btn-selanjutnya.is-disabled{
+  opacity: 0.5;
+  pointer-events: none;  
+  cursor: not-allowed;
+}

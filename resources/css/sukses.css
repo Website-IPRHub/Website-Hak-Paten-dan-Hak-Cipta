@@ -1,0 +1,26 @@
+.success-box{
+  text-align: center;
+  padding: 30px 22px;
+}
+
+.success-title{
+  margin: 0 0 10px;
+  font-family: 'inter', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #111827;
+}
+
+.success-desc{
+  margin: 0 0 18px;
+  font-family: 'inter', sans-serif;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.success-flash{
+  margin: 0 0 18px;
+  font-family: 'inter', sans-serif;
+  color: #344c7b;
+  font-weight: 600;
+}

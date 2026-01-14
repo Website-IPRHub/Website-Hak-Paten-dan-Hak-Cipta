@@ -1,0 +1,50 @@
+<header>
+
+  <div class="topbar">
+    <div class="topbar-inner container">
+      <span><i class="bi bi-telephone-fill"></i> +62 811-3848-555</span>
+      <a class="topbar-link" href="mailto:dirinovki2026@gmail.com">
+        <i class="bi bi-envelope-fill"></i> dirinovki2026@gmail.com
+        </a>
+
+    </div>
+  </div>
+
+  <div class="navbar">
+    <div class="navbar-inner container">
+
+      <a href="/" class="brand">
+        <img src="{{ asset('images/Logo.png') }}" class="brand-logo" alt="Logo">
+      </a>
+
+      <div class="nav-right">
+        <nav class="nav-menu">
+            <a href="https://dirinovki.undip.ac.id/" class="nav-link">Beranda</a>
+
+            <a href="https://dirinovki.undip.ac.id/" class="nav-link">
+                Profil <i class="bi bi-chevron-down"></i>
+
+            </a>
+
+            <a href="https://dirinovki.undip.ac.id/" class="nav-link">
+                Data Kekayaan Intelektual <i class="bi bi-chevron-down"></i>
+            </a>
+
+            <a href="https://dirinovki.undip.ac.id/" class="nav-link">
+                Panduan KI <i class="bi bi-chevron-down"></i>
+            </a>
+
+            <a href="https://dirinovki.undip.ac.id/" class="nav-link">
+                Inovasi dan Hilirisasi Industri <i class="bi bi-chevron-down"></i>
+            </a>
+            </nav>
+
+        <a href="#" class="nav-button">
+            Pendaftaran Kekayaan Intelektual (Paten / Hak Cipta)
+        </a>
+    </div>
+
+    </div>
+  </div>
+
+</header>

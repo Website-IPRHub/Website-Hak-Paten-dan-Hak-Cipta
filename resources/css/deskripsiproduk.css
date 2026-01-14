@@ -1,0 +1,70 @@
+.deskripsi-singkat h2{
+  font-family: 'inter', sans-serif;
+  font-weight: 650;
+  color: #000;
+  font-size: 20px;
+  margin: 0;  
+  margin-left: 25px;    
+  margin-top: 30px;   
+}
+
+.deskripsi-singkat p{
+  font-family: 'inter', sans-serif;
+  font-weight: 400;
+  color: #8e8c8c;
+  font-size: 16px;
+  margin: 0;  
+  margin-left: 25px;    
+  margin-top: 5px;   
+}
+
+.input-deskripsi{
+  width: calc(100% - 25px) !important;
+  margin-left: 25px !important;
+  max-width: none !important;
+  margin-top: 30px;
+  margin-bottom: 100px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+  font-size: 14px;
+  font-family: 'inter', sans-serif;
+  font-weight: 400;
+  outline: none;
+}
+
+
+.input-deskripsi:focus{
+    border-color: #1C5EBD;
+    box-shadow: 0 0 0 3px rgba(28,94,189,0.2);
+}
+
+.btn-center{
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-selanjutnya-submit{
+  background: #344c7b;
+  color: white;
+  padding: 12px 22px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+  box-shadow: 0 8px 20px rgba(28,94,189,0.25);
+  border: 0;
+  cursor: pointer;
+}
+
+.btn-selanjutnya-submit:hover{
+  background: #637caf;       
+  transform: translateY(-2px);
+}
