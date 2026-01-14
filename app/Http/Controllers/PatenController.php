@@ -9,63 +9,97 @@ use Illuminate\Validation\Rule;
 
 class PatenController extends Controller
 {
-
+    // WEB FLOW (redirect)
     public function start(Request $request)
     {
-        // 1) Ambil data dari daftar ENUM kolom fakultas
-        $column = DB::selectOne("SHOW COLUMNS FROM paten WHERE Field = 'fakultas'");
-        $enumValues = [];
+        $enumFakultas   = $this->getEnumValues('paten', 'fakultas');
+        $enumSumberDana = $this->getEnumValues('paten', 'sumber_dana');
 
-        if ($column && isset($column->Type)) {
-            if (preg_match("/^enum\((.*)\)$/", $column->Type, $matches)) {
-                $enumValues = str_getcsv($matches[1], ',', "'"); 
-            }
-        }
-
-        $column2 = DB::selectOne("SHOW COLUMNS FROM paten WHERE Field = 'sumber_dana'");
-        $enumValues2 = [];
-
-        if ($column2 && isset($column2->Type)) {
-            if (preg_match("/^enum\((.*)\)$/", $column2->Type, $matches)) {
-                $enumValues2 = str_getcsv($matches[1], ',', "'"); 
-            }
-        }
-
-        // 2) Validasi Rule::in($enumValues)
         $data = $request->validate([
             'jenis_paten'       => 'required|in:Paten,Paten Sederhana',
             'judul_paten'       => 'required|string|max:255',
             'nama_pencipta'     => 'required|string|max:255',
             'nip_nim'           => 'required|string|max:255',
             'no_hp'             => 'required|string|max:255',
-            'fakultas'          => ['required', Rule::in($enumValues)],
+            'fakultas'          => ['required', Rule::in($enumFakultas)],
             'email'             => 'required|email|max:255',
             'prototipe'         => 'required|in:Sudah,Belum',
             'nilai_perolehan'   => 'required|string|max:255',
-            'sumber_dana'       => ['required', Rule::in($enumValues2)],
+            'sumber_dana'       => ['required', Rule::in($enumSumberDana)],
             'skema_penelitian'  => 'required|string|max:255',
         ]);
 
-        $data['no_pendaftaran'] = $this->generateNoPendaftaran();
+        $data['no_pendaftaran'] = $this->generateNoPendaftaran(); // pilih salah satu format
         $data['status'] = $data['status'] ?? 'draft';
-        $data['draft_paten'] = $data['draft_paten'] ?? ''; 
-        $data['form_permohonan'] = $data['form_permohonan'] ?? '';
-        $data['surat_kepemilikan'] = $data['surat_kepemilikan'] ?? '';
-        $data['surat_pengalihan'] = $data['surat_pengalihan'] ?? '';
-        $data['scan_ktp'] = $data['scan_ktp'] ?? '';
-        $data['tanda_terima'] = $data['tanda_terima'] ?? '';
-        $data['gambar_prototipe'] = $data['gambar_prototipe'] ?? '';
-        $data['deskripsi_singkat_prototipe'] = $data['deskripsi_singkat_prototipe'] ?? '';
+
+        // default dokumen kalau belum ada
+        foreach ([
+            'draft_paten', 'form_permohonan', 'surat_kepemilikan', 'surat_pengalihan',
+            'scan_ktp', 'tanda_terima', 'gambar_prototipe', 'deskripsi_singkat_prototipe'
+        ] as $field) {
+            $data[$field] = $data[$field] ?? '';
+        }
 
         $paten = Paten::create($data);
-
         session(['paten_id' => $paten->id]);
 
         return redirect()->route('draftpaten');
     }
 
+    // API FLOW (JSON)
+    public function store(Request $request)
+    {
+        $request->validate([
+            'jenis_paten'     => 'required|in:Paten,Paten Sederhana',
+            'judul_paten'     => 'required|string',
+            'nama_pencipta'   => 'required|string',
+            'nip_nim'         => 'required|string',
+            'fakultas'        => 'required|string',
+            'no_hp'           => 'required|string',
+            'email'           => 'required|email',
+            'prototipe'       => 'required|in:Sudah,Belum',
+            'nilai_perolehan' => 'required|string',
+            'sumber_dana'     => 'required|string',
+        ]);
+
+        $noPendaftaran = $this->generateNoPendaftaran();
+
+        $paten = new Paten();
+        $paten->no_pendaftaran = $noPendaftaran;
+
+        $paten->jenis_paten = $request->jenis_paten;
+        $paten->judul_paten = $request->judul_paten;
+        $paten->nama_pencipta = $request->nama_pencipta;
+        $paten->nip_nim = $request->nip_nim;
+        $paten->fakultas = $request->fakultas;
+        $paten->no_hp = $request->no_hp;
+        $paten->email = $request->email;
+        $paten->prototipe = $request->prototipe;
+        $paten->nilai_perolehan = $request->nilai_perolehan;
+        $paten->sumber_dana = $request->sumber_dana;
+        $paten->skema_penelitian = $request->skema_penelitian;
+
+        // dokumen path (kalau memang dikirim)
+        $paten->draft_paten = $request->draft_paten;
+        $paten->form_permohonan = $request->form_permohonan;
+        $paten->surat_kepemilikan = $request->surat_kepemilikan;
+        $paten->surat_pengalihan = $request->surat_pengalihan;
+        $paten->scan_ktp = $request->scan_ktp;
+        $paten->tanda_terima = $request->tanda_terima;
+
+        $paten->save();
+
+        return response()->json([
+            'message' => 'Pengajuan paten berhasil',
+            'no_pendaftaran' => $noPendaftaran
+        ]);
+    }
+
     private function generateNoPendaftaran(): string
     {
+        // PILIH 1 FORMAT AJA BIAR KONSISTEN
+
+        // Format versi MAIN: PAT-YYYYMMDD-0001 (urut per hari)
         $prefix = 'PAT-' . now()->format('Ymd') . '-';
 
         $last = DB::table('paten')
@@ -73,12 +107,23 @@ class PatenController extends Controller
             ->orderByDesc('no_pendaftaran')
             ->value('no_pendaftaran');
 
-        $nextNumber = 1;
+        $next = 1;
         if ($last) {
-            $lastNumber = (int) substr($last, -4);
-            $nextNumber = $lastNumber + 1;
+            $next = ((int) substr($last, -4)) + 1;
         }
 
-        return $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function getEnumValues(string $table, string $field): array
+    {
+        $column = DB::selectOne("SHOW COLUMNS FROM {$table} WHERE Field = '{$field}'");
+        if (!$column || !isset($column->Type)) return [];
+
+        if (preg_match("/^enum\((.*)\)$/", $column->Type, $matches)) {
+            return str_getcsv($matches[1], ',', "'");
+        }
+
+        return [];
     }
 }
