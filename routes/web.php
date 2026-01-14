@@ -25,9 +25,9 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 
 Route::post('/hak-cipta/store', [HakCiptaController::class, 'store']);
 Route::post('/paten/store', [PatenController::class, 'store']);
-use Illuminate\Support\Facades\File;
 
-use App\Http\Controllers\PatenController;
+
+use Illuminate\Support\Facades\File;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\HakPatenSubmitController;
 

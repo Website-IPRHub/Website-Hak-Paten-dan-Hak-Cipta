@@ -28,7 +28,6 @@ class Paten extends Model
         'scan_ktp',
         'tanda_terima',
         'gambar_prototipe',
-        'deskripsi_singkat_prototipe',
-        'status',
+        'deskripsi_singkat_prototipe'
     ];
 }

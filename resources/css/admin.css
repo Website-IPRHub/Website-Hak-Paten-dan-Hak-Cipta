@@ -14,6 +14,13 @@ body{
 .muted{ color: rgba(0,0,0,0.45); }
 
 /* =========================
+   CONTENT FONT (SANS-SERIF)
+========================= */
+.dash-content,
+.dash-content * {
+  font-family: 'inter', sans-serif;
+}
+/* =========================
    HEADER
 ========================= */
 .admin-header{
@@ -502,7 +509,7 @@ body{
   /* beda jelas dari isi tabel */
   background: #cbd9ef;                 /* lebih kontras dari td */
   color:#0b2c5f;
-  font-weight: 900;
+  font-weight: 800;
 
   border-bottom: 1px solid rgba(4, 34, 79, 0.14);
   border-right: 1px solid rgba(11,44,95,0.10);
@@ -511,6 +518,7 @@ body{
   position: sticky;
   top: 0;
   z-index: 5;
+  letter-spacing: 0.3px;
 }
 
 
@@ -736,17 +744,18 @@ body{
 }
 
 .title-main{
-  font-weight: 800;
-  font-size: 15px;
+  font-weight: 700;
+  font-size: 15.5px;
   color:#0b2c5f;
-  line-height:1.3;
+  line-height:1.4;
 }
 
 /* fakultas */
 .meta-fakultas{
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   color: rgba(11,44,95,0.75);
+  margin-top: 2px;
 }
 
 /* kumpulan email */
@@ -765,8 +774,8 @@ body{
 
   background: rgba(11,44,95,0.08);
   color:#0b2c5f;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
 
   padding: 4px 10px;
   border-radius: 999px;
