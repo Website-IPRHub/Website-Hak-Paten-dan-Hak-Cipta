@@ -52,6 +52,7 @@
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  font-family: 'inter', sans-serif;
 }
 
 .step.active a{

@@ -97,10 +97,9 @@ class PatenController extends Controller
 
     private function generateNoPendaftaran(): string
     {
-        // PILIH 1 FORMAT AJA BIAR KONSISTEN
 
-        // Format versi MAIN: PAT-YYYYMMDD-0001 (urut per hari)
-        $prefix = 'PAT-' . now()->format('Ymd') . '-';
+        $year   = now()->format('Y');
+        $prefix = 'P00' . $year;
 
         $last = DB::table('paten')
             ->where('no_pendaftaran', 'like', $prefix . '%')
@@ -109,10 +108,10 @@ class PatenController extends Controller
 
         $next = 1;
         if ($last) {
-            $next = ((int) substr($last, -4)) + 1;
+            $next = ((int) substr($last, -5)) + 1;
         }
 
-        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $next, 5, '0', STR_PAD_LEFT);
     }
 
     private function getEnumValues(string $table, string $field): array
