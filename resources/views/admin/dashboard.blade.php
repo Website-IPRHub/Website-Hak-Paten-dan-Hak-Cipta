@@ -32,26 +32,8 @@
 </section>
 
 @php
-    // ✅ biar gak error undefined $tab
+    // biar gak error undefined $tab
     $tab = $tab ?? 'stats';
-
-    // ====== DATA DUMMY (statistik jangan diubah) ======
-    $totalAll   = 128;
-    $totalPaten = 52;
-    $totalCipta = 76;
-
-    $patenJenis = [
-        'Paten' => 35,
-        'Paten Sederhana' => 17,
-    ];
-
-    $ciptaJenis = [
-        'Buku' => 22,
-        'Modul' => 18,
-        'Program Komputer' => 14,
-        'Karya Rekaman Video' => 9,
-        'Lainnya' => 13,
-    ];
 @endphp
 
 <div class="dash-layout">
@@ -133,9 +115,8 @@
             </section>
         @endif
 
-
         {{-- ================= TAB: DATA HAK CIPTA ================= --}}
-        @if($tab === 'cipta')
+                @if($tab === 'cipta')
                 <div class="page-head">
                     <h2 class="page-title">Data Hak Cipta</h2>
 
@@ -150,165 +131,175 @@
 
                 <div class="table-card table-scroll">
                     <table class="data-table table-wide" id="ciptaTable">
-
                     <thead>
                         <tr>
-                            <th rowspan="2" style="width:70px;">No</th>
-                            <th rowspan="2" style="min-width:220px;">No Pendaftaran</th>
-                            <th rowspan="2" style="min-width:220px;">Judul Cipta</th>
-                            <th rowspan="2" style="width:140px;">Jenis</th>
-                            <th rowspan="2" style="width:140px;">Status</th>
+                        <th rowspan="2" style="width:70px;">No</th>
+                        <th rowspan="2" style="min-width:220px;">No Pendaftaran</th>
+                        <th rowspan="2" style="min-width:250px;">Judul Cipta</th>
+                        <th rowspan="2" style="width:160px;">Jenis</th>
+                        <th rowspan="2" style="width:140px;">Status</th>
 
-                            {{-- MERGE DOKUMEN --}}
-                            <th colspan="6" class="th-doc-merge">DOKUMEN</th>
+                        {{-- MERGE DOKUMEN --}}
+                        <th colspan="5" class="th-doc-merge">DOKUMEN</th>
 
-                            <th rowspan="2" style="min-width:220px;">Hasil Ciptaan</th>
-                            <th rowspan="2" style="min-width:220px;">Link Ciptaan untuk Hak Cipta jenis Karya Rekaman Video</th>
+                        <th rowspan="2" style="min-width:220px;">Hasil Ciptaan</th>
+                        <th rowspan="2" style="min-width:260px;">Link Ciptaan (Rekaman Video)</th>
                         </tr>
 
                         <tr>
-                            <th style="min-width:180px;">Surat Permohonan</th>
-                            <th style="min-width:180px;">Surat Pernyataan</th>
-                            <th style="min-width:190px;">Surat Pengalihan</th>
-                            <th style="min-width:180px;">Tanda Terima</th>
-                            <th style="min-width:160px;">Scan KTP</th>
+                        <th style="min-width:180px;">Surat Permohonan</th>
+                        <th style="min-width:180px;">Surat Pernyataan</th>
+                        <th style="min-width:190px;">Surat Pengalihan</th>
+                        <th style="min-width:160px;">Scan KTP</th>
+                        <th style="min-width:180px;">Tanda Terima</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse($dataPaten as $i => $row)
-                            @php
-                                $ciptaKey = strtolower(implode(' ', array_filter([
-                                $row->no_pendaftaran ?? '',
-                                $row->judul_cipta ?? '',
-                                $row->jenis_cipta ?? '',
-                                $row->status ?? '',
-                                $row->fakultas ?? '',
-                                $row->email ?? '',
+                        @forelse($dataCipta as $i => $row)
+                        @php
+                            // key buat fitur search JS (biar bisa cari judul/no/status/dll)
+                            $ciptaKey = strtolower(implode(' ', array_filter([
+                            $row->no_pendaftaran ?? '',
+                            $row->judul_cipta ?? '',
+                            $row->jenis_cipta ?? '',
+                            $row->status ?? '',
+                            $row->fakultas ?? '',
+                            $row->email ?? '',
 
-                                basename($row->surat_permohonan ?? ''),
-                                basename($row->surat_pernyataan ?? ''),
-                                basename($row->surat_pengalihan ?? ''),
-                                basename($row->tanda_terima ?? ''),
-                                basename($row->scan_ktp ?? ''),
-                                basename($row->hasil_ciptaan ?? ''),
-                                $row->link_ciptaan ?? '',
-                                ])));
-                            @endphp
+                            basename($row->surat_permohonan ?? ''),
+                            basename($row->surat_pernyataan ?? ''),
+                            basename($row->surat_pengalihan ?? ''),
+                            basename($row->scan_ktp ?? ''),
+                            basename($row->tanda_terima ?? ''),
+                            basename($row->hasil_ciptaan ?? ''),
+                            $row->link_ciptaan ?? '',
+                            ])));
+                        @endphp
 
-                            <tr data-key="{{ $ciptaKey }}">
-                                <td>{{ $i+1 }}</td>
-                                <td>{{ $row->no_pendaftaran ?? '-' }}</td>
-                                <td>
-                                    <div class="cell-title">{{ $row->judul_cipta }}</div>
-                                    <div class="cell-sub muted">
-                                        {{ $row->fakultas }} • {{ $row->email }}
-                                    </div>
-                                </td>
+                        <tr data-key="{{ $ciptaKey }}">
+                            <td>{{ $i+1 }}</td>
 
-                                <td>{{ $row->jenis_cipta }}</td>
+                            {{-- NO PENDAFTARAN --}}
+                            <td>{{ $row->no_pendaftaran ?? '-' }}</td>
 
-                                <td>
-                                    <span class="status-pill s-{{ $row->status }}">{{ $row->status }}</span>
-                                </td>
+                            {{-- JUDUL + META (SAMAIN STYLE KAYAK PATEN) --}}
+                            <td>
+                            <div class="title-wrap">
+                                <div class="title-main">{{ $row->judul_cipta ?? '-' }}</div>
 
-                                {{-- PERMOHONAN --}}
-                                <td>
-                                    @if($row->surat_permohonan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->draft_paten) }}" target="_blank">
-                                            {{ basename($row->surat_permohonan) }}
+                                <div class="title-meta">
+                                <div class="meta-fakultas">{{ $row->fakultas ?? '-' }}</div>
+
+                                <div class="meta-emails">
+                                    @foreach(preg_split('/[\s,]+/', $row->email ?? '') as $mail)
+                                    @if($mail)
+                                        <a href="mailto:{{ $mail }}" class="email-chip">
+                                        {{ $mail }}
                                         </a>
-                                    @else
-                                        <span class="muted">-</span>
                                     @endif
-                                </td>
+                                    @endforeach
+                                </div>
+                                </div>
+                            </div>
+                            </td>
 
-                                {{-- PERNYATAAN --}}
-                                <td>
-                                    @if($row->surat_pernyataan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->form_permohonan) }}" target="_blank">
-                                            {{ basename($row->surat_pernyataan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                            {{-- JENIS --}}
+                            <td>{{ $row->jenis_cipta ?? '-' }}</td>
 
-                                {{-- PENGALIHAN --}}
-                                <td>
-                                    @if($row->surat_pengalihan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->surat_kepemilikan) }}" target="_blank">
-                                            {{ basename($row->surat_pengalihan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                            {{-- STATUS --}}
+                            <td>
+                            <span class="status-pill s-{{ $row->status }}">
+                                {{ $row->status ?? '-' }}
+                            </span>
+                            </td>
 
-                                {{-- PENGALIHAN (lagi) --}}
-                                <td>
-                                    @if($row->surat_pengalihan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->surat_pengalihan) }}" target="_blank">
-                                            {{ basename($row->surat_pengalihan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                            {{-- Surat Permohonan --}}
+                            <td>
+                            @if($row->surat_permohonan)
+                                <a class="doc-link" href="{{ asset('storage/'.$row->surat_permohonan) }}" target="_blank">
+                                {{ basename($row->surat_permohonan) }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
 
-                                {{-- TANDA TERIMA --}}
-                                <td>
-                                    @if($row->tanda_terima)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->scan_ktp) }}" target="_blank">
-                                            {{ basename($row->tanda_terima) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                            {{-- Surat Pernyataan --}}
+                            <td>
+                            @if($row->surat_pernyataan)
+                                <a class="doc-link" href="{{ asset('storage/'.$row->surat_pernyataan) }}" target="_blank">
+                                {{ basename($row->surat_pernyataan) }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
 
-                                {{-- SCAN KTP --}}
-                                <td>
-                                    @if($row->scan_ktp)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                            {{ basename($row->scan_ktp) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                            {{-- Surat Pengalihan --}}
+                            <td>
+                            @if($row->surat_pengalihan)
+                                <a class="doc-link" href="{{ asset('storage/'.$row->surat_pengalihan) }}" target="_blank">
+                                {{ basename($row->surat_pengalihan) }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
 
-                                {{-- HASIL CIPTAAN --}}
-                                <td>
-                                    @if($row->hasil_ciptaan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                            {{ basename($row->hasil_ciptaan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                            {{-- Scan KTP --}}
+                            <td>
+                            @if($row->scan_ktp)
+                                <a class="doc-link" href="{{ asset('storage/'.$row->scan_ktp) }}" target="_blank">
+                                {{ basename($row->scan_ktp) }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
 
-                                {{-- Link Ciptaan --}}
-                                <td>
-                                    @if($row->link_ciptaan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                            {{ basename($row->link_ciptaan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
-                            </tr>
+                            {{-- Tanda Terima --}}
+                            <td>
+                            @if($row->tanda_terima)
+                                <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
+                                {{ basename($row->tanda_terima) }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
+
+                            {{-- Hasil Ciptaan --}}
+                            <td>
+                            @if($row->hasil_ciptaan)
+                                <a class="doc-link" href="{{ asset('storage/'.$row->hasil_ciptaan) }}" target="_blank">
+                                {{ basename($row->hasil_ciptaan) }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
+
+                            {{-- Link Ciptaan (jangan pakai storage karena ini URL) --}}
+                            <td>
+                            @if($row->link_ciptaan)
+                                <a class="doc-link" href="{{ $row->link_ciptaan }}" target="_blank" rel="noopener">
+                                {{ $row->link_ciptaan }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                            </td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="11" class="center muted">Belum ada data cipta</td>
-                            </tr>
+                        <tr>
+                            <td colspan="12" class="center muted">Belum ada data cipta</td>
+                        </tr>
                         @endforelse
                     </tbody>
-                </table>
-            </div>
-        @endif
+                    </table>
+                </div>
+                @endif
 
        {{-- ================= TAB: DATA PATEN ================= --}}
                 @if($tab === 'paten')
@@ -473,6 +464,26 @@
                             @else
                                 <span class="muted">-</span>
                             @endif
+                        </td>
+
+                        {{-- GAMBAR PROTOTIPE --}}
+                        <td>
+                        @if($row->gambar_prototipe)
+                            <a class="doc-link" href="{{ asset('storage/'.$row->gambar_prototipe) }}" target="_blank">
+                            {{ basename($row->gambar_prototipe) }}
+                            </a>
+                        @else
+                            <span class="muted">-</span>
+                        @endif
+                        </td>
+                        
+                        {{-- DESKRIPSI SINGKAT PROTOTIPE/PRODUK --}}
+                        <td>
+                        @if(!empty($row->deskripsi_singkat_prototipe))
+                            {{ $row->deskripsi_singkat_prototipe }}
+                        @else
+                            <span class="muted">-</span>
+                        @endif
                         </td>
                     </tr>
                     @empty

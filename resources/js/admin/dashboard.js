@@ -47,25 +47,36 @@ function setupChartsIfAny() {
 
   const payload = JSON.parse(chartDataEl.textContent || '{}');
 
+  const commonOptions = {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          precision: 0,
+          callback: (value) => Math.round(value),
+        }
+      }
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  };
+
   new Chart(canvasPaten, {
     type: 'bar',
     data: {
       labels: payload.patenLabels || [],
       datasets: [{
         data: payload.patenData || [],
-        backgroundColor: '#52a0d8ff',   // warna isi batang
-        borderColor: '#0b2c5f',       // warna garis (opsional)
-        borderWidth: 0,              // ketebalan garis (opsional)
+        backgroundColor: '#52a0d8ff',
+        borderColor: '#0b2c5f',
+        borderWidth: 0,
         borderRadius: 10,
         borderSkipped: false
       }],
     },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } },
-      responsive: true,
-      maintainAspectRatio: false,
-    },
+    options: commonOptions,
   });
 
   new Chart(canvasCipta, {
@@ -81,12 +92,7 @@ function setupChartsIfAny() {
         borderSkipped: false
       }],
     },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } },
-      responsive: true,
-      maintainAspectRatio: false,
-    },
+    options: commonOptions,
   });
 }
 

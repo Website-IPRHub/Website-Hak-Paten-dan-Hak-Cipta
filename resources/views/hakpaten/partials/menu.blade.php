@@ -25,7 +25,7 @@
   <div class="section-inner">
     <ul class="menu-steps">
       <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
-        <a href="{{ route('hakpaten') }}">Data Diri</a>
+        <a href="{{ route('hakpaten') }}">Data Pemohon</a>
       </li>
 
       <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
