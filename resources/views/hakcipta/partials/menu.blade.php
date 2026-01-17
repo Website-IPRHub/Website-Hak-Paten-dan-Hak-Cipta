@@ -5,19 +5,30 @@
 
 <section class="section-full section-judul">
   <div class="section-inner judul-inner">
-    <h1 class="judul-title">
-      <i class="bi bi-file-earmark-text-fill"></i> Sistem Pendaftaran Hak Cipta
-    </h1>
 
-    <div class="profile-badge">
-      <span>Kelengkapan Profile: {{ $percent }}%</span>
-      <i class="bi bi-info-circle-fill"></i>
+    <div class="judul-left">
+      <h1 class="judul-title">
+        <i class="bi bi-file-earmark-text-fill"></i> Sistem Pendaftaran Hak Cipta
+      </h1>
+      <p class="judul-desc">
+        Sistem menerapkan alur sekuensial, di mana setiap tahapan wajib diselesaikan secara berurutan<br>
+        dan tidak tersedia fitur kembali ke tahapan sebelumnya.
+      </p>
     </div>
-    <div class="profile-progress" aria-label="Progress kelengkapan profile">
-      <div class="profile-progress__bar" style="--w: {{$percent}}%;"></div>
+
+    <div class="judul-right">
+      <div class="profile-badge">
+        <span>Kelengkapan Profile: {{ $percent }}%</span>
+        <i class="bi bi-info-circle-fill"></i>
+      </div>
+
+      <div class="profile-progress" aria-label="Progress kelengkapan profile">
+        <div class="profile-progress__bar" style="--w: {{$percent}}%;"></div>
+      </div>
     </div>
   </div>
 </section>
+
 
 <section class="section-full section-steps">
   <div class="section-inner">

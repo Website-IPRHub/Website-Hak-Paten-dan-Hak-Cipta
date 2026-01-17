@@ -24,7 +24,7 @@
                     <form id="draftForm" action="{{ route('tandaterima.uploadFormSuratTandaTerimaBerkas') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <input id="draftFile" type="file" name="file" hidden>
+                        <input id="draftFile" type="file" name="file" required hidden>
                         <button id="uploadButton" for="draftFile">Upload</button>
                         <span id="fileName">Belum Pilih File</span>
                     </form>
