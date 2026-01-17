@@ -13,6 +13,10 @@
 @import "./deskripsiproduk.css";
 @import "./sukses.css";
 @import "./hakcipta.css";
+@import "./permohonanpendaftaran.css";
+@import "./suratpernyataan.css";
+@import "./hasilciptaan.css";
+@import "./linkciptaan.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

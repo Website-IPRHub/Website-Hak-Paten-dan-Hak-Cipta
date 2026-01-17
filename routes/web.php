@@ -3,8 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\FileUploadCiptaController;
 use App\Http\Controllers\HakCiptaController;
 use App\Http\Controllers\PatenController;
+use Illuminate\Support\Facades\File;
+use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\HakPatenSubmitController;
+use App\Http\Controllers\HakCiptaSubmitController;
+use App\Http\Controllers\HakHakCiptaSubmitController;
 
 Route::get('/admin/login', [AuthController::class, 'showLoginForm'])
     ->name('admin.login.form');
@@ -26,14 +32,10 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 Route::post('/hak-cipta/store', [HakCiptaController::class, 'store']);
 Route::post('/paten/store', [PatenController::class, 'store']);
 
-use Illuminate\Support\Facades\File;
-use App\Http\Controllers\FileUploadController;
-use App\Http\Controllers\HakPatenSubmitController;
-
 Route::get('/', fn () => view('welcome'))->name('welcome');
 Route::get('/header', fn () => view('test-header'))->name('test-header');
 
-// LANDING
+// LANDING PAGE
 Route::get('/hak-paten', fn () => view('hakpaten.hakpaten'))->name('hakpaten');
 Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
 
@@ -59,7 +61,7 @@ Route::middleware('paten.seq')->group(function () {
 Route::post('/hak-paten/upload-draft', [FileUploadController::class, 'draft'])->name('draftpaten.upload');
 Route::post('/hak-paten/upload-form', [FileUploadController::class, 'form'])->name('formulirpermohonan.upload');
 Route::post('/hak-paten/upload-surat-invensi', [FileUploadController::class, 'suratInvensi'])->name('kepemilikaninvensi.upload');
-Route::post('/hak-paten/upload-surat-pengalihan-hak', [FileUploadController::class, 'suratPengalihan'])->name('pengalihanhak.upload');
+Route::post('/hak-paten/upload-surat-pengalihan-hak', [FileUploadController::class, 'pengalihanhak'])->name('pengalihanhak.upload');
 Route::post('/hak-paten/upload-scanktp', [FileUploadController::class, 'scanKtp'])->name('scanktp.uploadScanKTP');
 Route::post('/hak-paten/upload-surat-terima-berkas', [FileUploadController::class, 'tandaTerima'])->name('tandaterima.uploadFormSuratTandaTerimaBerkas');
 Route::post('/hak-paten/upload-prototipe', [FileUploadController::class, 'gambarPrototipe'])->name('uploadgambarprototipe.uploadPrototipe');
@@ -97,3 +99,93 @@ Route::get('/hak-paten/download-template-surat-terima-berkas', function () {
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
     return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
 })->name('download.template.Surat Tanda Terima Berkas');
+
+
+
+// ===== HAK CIPTA =====
+
+// Step 1 (form data pemohon -> create row + set session cipta_id)
+Route::post('/hak-cipta/start', [HakCiptaController::class, 'start'])
+    ->name('hakcipta.start');
+
+// Landing page step 1 (GET)
+Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))
+    ->name('hakcipta');
+
+// Step pages (GET) - anti skip
+Route::middleware('cipta.seq')->group(function () {
+    Route::get('/hak-cipta/permohonan-pendaftaran', function () {
+        return view('hakcipta.permohonanpendaftaran');
+    })->name('hakcipta.permohonanpendaftaran');
+
+    Route::get('/hak-cipta/suratpernyataan', fn () => view('hakcipta.suratpernyataan'))
+        ->name('hakcipta.suratpernyataan');
+
+    Route::get('/hak-cipta/pengalihanhak', fn () => view('hakcipta.pengalihanhak'))
+        ->name('hakcipta.pengalihanhak');
+
+    Route::get('/hak-cipta/tandaterima', fn () => view('hakcipta.tandaterima'))
+        ->name('hakcipta.tandaterima');
+
+    Route::get('/hak-cipta/scanktp', fn () => view('hakcipta.scanktp'))
+        ->name('hakcipta.scanktp');
+
+    Route::get('/hak-cipta/hasilciptaan', fn () => view('hakcipta.hasilciptaan'))
+        ->name('hakcipta.hasilciptaan');
+
+    Route::get('/hak-cipta/linkciptaan', fn () => view('hakcipta.linkciptaan'))
+        ->name('hakcipta.linkciptaan');
+});
+
+// Upload per step (POST)
+Route::post('/hak-cipta/upload-permohonan', [FileUploadCiptaController::class, 'suratPermohonan'])
+    ->name('hakcipta.permohonanpendaftaran.upload');
+
+Route::post('/hak-cipta/upload-pernyataan', [FileUploadCiptaController::class, 'suratPernyataan'])
+    ->name('hakcipta.suratpernyataan.upload');
+
+Route::post('/hak-cipta/upload-pengalihan', [FileUploadCiptaController::class, 'suratPengalihan'])
+    ->name('hakcipta.pengalihanhak.upload');
+
+Route::post('/hak-cipta/upload-scanktp', [FileUploadCiptaController::class, 'scanKtp'])
+    ->name('hakcipta.scanktp.uploadScanKTP');
+
+Route::post('/hak-cipta/upload-tandaterima', [FileUploadCiptaController::class, 'tandaTerima'])
+    ->name('hakcipta.tandaterima.upload');
+
+Route::post('/hak-cipta/upload-hasilciptaan', [FileUploadCiptaController::class, 'hasilCiptaan'])
+    ->name('hakcipta.hasilciptaan.uploadScanKTP');
+
+Route::post('/hak-cipta/simpan-link', [FileUploadCiptaController::class, 'linkCiptaan'])
+    ->name('hakcipta.linkciptaan.store');
+
+// ===== DOWNLOAD TEMPLATE HAK CIPTA =====
+Route::get('/hak-cipta/download-template-permohonan', function () {
+    $path = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.doc');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Permohonan Pendaftaran Ciptaan 2021.doc');
+})->name('hakcipta.download.template.permohonan');
+
+Route::get('/hak-cipta/download-template-pernyataan', function () {
+    $path = public_path('templates/Surat Pernyataan Hak Cipta 2021.docx');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Surat Pernyataan Hak Cipta 2021.docx');
+})->name('hakcipta.download.template.pernyataan');
+
+Route::get('/hak-cipta/download-template-pengalihan', function () {
+    $path = public_path('templates/Surat Pengalihan Hak Cipta 2025.docx');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Surat Pengalihan Hak Cipta 2025.docx');
+})->name('hakcipta.download.template.pengalihan');
+
+Route::get('/hak-cipta/download-template-tandaterima', function () {
+    $path = public_path('templates/TANDA_TERIMA_BERKAS_HAKI.pdf');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
+})->name('hakcipta.download.template.tandaterima');
+
+
+// SUBMIT FINAL (POST)
+Route::post('/hak-cipta/submit', [HakCiptaSubmitController::class, 'submit'])->name('hakcipta.submit');
+ // Submit
+    Route::get('/hak-cipta/sukses', fn () => view('hakcipta.sukses'))->name('hakcipta.sukses');

@@ -11,7 +11,7 @@
     <h1 class="page-title">Data Pemohon *</h1>
     <div class="section-inner">
 
-        <form action="{{ route('paten.start') }}" method="POST">
+        <form action="{{ route('hakcipta.start') }}" method="POST">
         @csrf
 
         <div class="form-2col">
@@ -116,7 +116,7 @@
                 <option value="Fakultas Perikanan dan Ilmu Kelautan" {{ old('fakultas') == 'fpik' ? 'selected' : '' }}>Fakultas Perikanan dan Ilmu Kelautan</option>
                 <option value="Fakultas Peternakan dan Pertanian" {{ old('fakultas') == 'fpp' ? 'selected' : '' }}>Fakultas Peternakan dan Pertanian</option>
                 <option value="Fakultas Psikologi" {{ old('fakultas') == 'fpsi' ? 'selected' : '' }}>Fakultas Psikologi</option>
-                <option value="Fakultas Hukum" {{ old('fakultas') == 'fh' ? 'selected' : '' }}>Fakultas Hukum</option>
+                <option value="Fakultas Hukum" {{ old('fakultas') == 'fh' ? '_selected' : '' }}>Fakultas Hukum</option>
                 <option value="Fakultas Ilmu Sosial dan Ilmu Politik" {{ old('fakultas') == 'fisip' ? 'selected' : '' }}>Fakultas Ilmu Sosial dan Ilmu Politik</option>
                 <option value="Fakultas Ilmu Budaya" {{ old('fakultas') == 'fib' ? 'selected' : '' }}>Fakultas Ilmu Budaya</option>
                 <option value="Fakultas Ekonomi dan Bisnis" {{ old('fakultas') == 'feb' ? 'selected' : '' }}>Fakultas Ekonomi dan Bisnis</option>
@@ -130,11 +130,20 @@
 
             <div class="field">
                 <label class="label">Email Seluruh Pencipta <span class="req">*</span></label>
-                <p>Jika Pencipta lebih dari 1 (satu) dipisahkan dengan titik koma (;), urutkan sesuai dengan urutan Pencipta.<br>Contoh: amin@gmail.com; budiirawan@gmail.com; dst</p>
-                <input type="email" class="input" name="email" placeholder="Email" value="{{ old('email') }}" required>
-                @error('email')
-                <small style="color:red">{{ $message }}</small>
-                @enderror
+                <p>Jika lebih dari 1, pisahkan dengan titik koma (;). Contoh: amin@gmail.com; budi@gmail.com</p>
+
+                        <input
+                            type="text"
+                            class="input"
+                            name="email"
+                            placeholder="Email (pisahkan dengan ;)"
+                            value="{{ old('email') }}"
+                            required
+                        >
+
+                        @error('email')
+                            <small style="color:red">{{ $message }}</small>
+                        @enderror
             </div>
 
             <div class="field">
@@ -181,10 +190,7 @@
         </div>
 
         <div class="next">
-            {{-- button submit: bakal nembak controller start() dan set session paten_id --}}
-            <button type="submit" class="btn-selanjutnya">
-            Selanjutnya
-            </button>
+            <button type="submit" class="btn-selanjutnya">Selanjutnya</button>
         </div>
         </form>
     </div>

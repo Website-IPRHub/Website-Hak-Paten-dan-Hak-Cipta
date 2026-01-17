@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Paten;
+use App\Models\HakCipta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -111,7 +112,7 @@ class FileUploadController extends Controller
         return redirect()->route('pengalihanhak')->with('success', 'Surat kepemilikan tersimpan');
     }
 
-    public function suratPengalihan(Request $request)
+    public function pengalihanhak(Request $request)
     {
         $patenId = $this->patenIdOrAbort();
 
@@ -132,6 +133,7 @@ class FileUploadController extends Controller
         Paten::where('id', $patenId)->update([
             'surat_pengalihan' => $path,
         ]);
+        
 
         return redirect()->route('scanktp')->with('success', 'Surat pengalihan tersimpan');
     }

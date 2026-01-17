@@ -22,7 +22,22 @@ class PatenController extends Controller
             'nip_nim'           => 'required|string|max:255',
             'no_hp'             => 'required|string|max:255',
             'fakultas'          => ['required', Rule::in($enumFakultas)],
-            'email'             => 'required|email|max:255',
+            'email' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $emails = array_values(array_filter(array_map('trim', explode(';', $value))));
+
+                    if (count($emails) === 0) {
+                        return $fail('Email wajib diisi.');
+                    }
+
+                    foreach ($emails as $email) {
+                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            return $fail("Format email tidak valid: $email");
+                        }
+                    }
+                }
+            ],
             'prototipe'         => 'required|in:Sudah,Belum',
             'nilai_perolehan'   => 'required|string|max:255',
             'sumber_dana'       => ['required', Rule::in($enumSumberDana)],
@@ -56,7 +71,22 @@ class PatenController extends Controller
             'nip_nim'         => 'required|string',
             'fakultas'        => 'required|string',
             'no_hp'           => 'required|string',
-            'email'           => 'required|email',
+            'email' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $emails = array_values(array_filter(array_map('trim', explode(';', $value))));
+
+                    if (count($emails) === 0) {
+                        return $fail('Email wajib diisi.');
+                    }
+
+                    foreach ($emails as $email) {
+                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            return $fail("Format email tidak valid: $email");
+                        }
+                    }
+                }
+            ],
             'prototipe'       => 'required|in:Sudah,Belum',
             'nilai_perolehan' => 'required|string',
             'sumber_dana'     => 'required|string',

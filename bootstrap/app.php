@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // alias middleware route
         $middleware->alias([
             'paten.seq' => \App\Http\Middleware\EnsurePatenSequence::class,
+            'cipta.seq' => \App\Http\Middleware\EnsureCiptaSequence::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
