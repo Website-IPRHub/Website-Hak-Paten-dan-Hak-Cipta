@@ -1,0 +1,123 @@
+.tracking-box h2{
+  font-family: 'inter', sans-serif;
+  font-weight: 650;
+  color: #000;
+  font-size: 20px;
+  margin: 0;  
+  margin-left: 25px;    
+  margin-top: 30px;    
+}
+
+.tracking-form{
+  margin: 12px 0;
+  margin-left: 25px;    
+  margin-top: 30px;    
+
+}
+
+.tracking-btn{
+  margin-top: 10px;
+  margin-left: 10px;
+  
+}
+
+.timeline{
+  position: relative;
+  margin-top: 18px;
+  padding-left: 50px; 
+}
+
+.timeline-line{
+  position: absolute;
+  left: 25px;  
+  top: 6px;
+  bottom: 6px;
+  width: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+
+.timeline-item{
+  display: flex;
+  align-items: flex-start; 
+  gap: 18px;
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.timeline-dot{
+  position: relative;    
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 6px solid transparent;
+  background: #fff;
+  box-sizing: border-box;
+
+  margin-top: 23px;        
+}
+
+
+.timeline-dot.done{
+  border-color: #2563eb; 
+}
+.timeline-dot.doing{
+  border-color: #f59e0b; 
+}
+.timeline-dot.todo{
+  border-color: #ef4444; 
+}
+
+.timeline-card{
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.timeline-title{
+  font-weight: 600;
+  letter-spacing: .3px;
+  font-size: 20px;
+  margin-bottom: 4px;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.timeline-time{
+  font-size: 14px;
+  font-weight: 600;
+  color: #8e8c8c;
+  margin-bottom: 10px;
+}
+
+.legend{
+  margin-top: 18px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: 90px;
+}
+
+.legend span{
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 600;
+  color: #111827;
+}
+
+.legend .lg{
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 5px solid transparent;
+  display: inline-block;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.legend .done{ border-color:#2563eb; }
+.legend .doing{ border-color:#f59e0b; }
+.legend .todo{ border-color:#ef4444; }
