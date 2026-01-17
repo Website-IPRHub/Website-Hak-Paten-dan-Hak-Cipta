@@ -10,12 +10,19 @@
       <h1>Selamat Datang</h1>
       <h2>di Pendaftaran Kekayaan Intelektual (Paten / Cipta)</h2>
     </div>
+
   </div>
   <div class="panduan-hki">
     <h2>
       <a href="https://drive.google.com/file/d/1eLTA7Uw_9ykRL43qV6G7wLcHZA2nlVdK/view" target="_blank">Panduan Kekayaan Intelektual
       </a>
     </h2>
+  </div>
+  <div class="hero-search">
+    <form action="{{ route('tracking') }}" method="GET" class="search-form">
+      <input type="text" name="q" class="search-input" placeholder="Masukkan No Pendaftaran (contoh: EC00XXXXXXXXX)" value="{{ request('q') }}" required>
+      <button type="submit" class="search-btn">Cek Status</button>
+    </form>
   </div>
   <div class="hero-daftar">
     <h3>Daftarkan Karya Anda, Wujudkan Kontribusi Nyata</h3>

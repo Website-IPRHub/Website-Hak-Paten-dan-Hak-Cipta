@@ -11,19 +11,20 @@ class HakCiptaSubmitController extends Controller
     {
         $request->validate([
             'cipta_id' => 'required|integer|exists:hak_cipta,id',
-            'link'     => 'required|string|max:255', // atau 'url' kalau harus URL beneran
+            'link'     => 'nullable|url',
         ]);
 
-        $ciptaId = $request->cipta_id; // jangan pakai session
+        $cipta = HakCipta::findOrFail($request->cipta_id);
 
-        HakCipta::where('id', $ciptaId)->update([
-            'link_ciptaan' => $request->link, // pastikan kolom ini ada
+        $cipta->update([
+            'link_ciptaan' => $request->filled('link') ? $request->link : null,
             'status'       => 'terkirim',
         ]);
 
-        // optional: kalau masih mau bersihin session
         session()->forget('cipta_id');
 
-        return redirect()->route('hakcipta.sukses'); // pastikan route ini ada
+        return redirect()
+            ->route('hakcipta.sukses')
+            ->with('no_pendaftaran', $cipta->no_pendaftaran);
     }
 }

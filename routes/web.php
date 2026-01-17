@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\HakPatenSubmitController;
 use App\Http\Controllers\HakCiptaSubmitController;
-use App\Http\Controllers\HakHakCiptaSubmitController;
+use App\Http\Controllers\TrackingController;
+
 
 Route::get('/admin/login', [AuthController::class, 'showLoginForm'])
     ->name('admin.login.form');
@@ -189,3 +190,6 @@ Route::get('/hak-cipta/download-template-tandaterima', function () {
 Route::post('/hak-cipta/submit', [HakCiptaSubmitController::class, 'submit'])->name('hakcipta.submit');
  // Submit
     Route::get('/hak-cipta/sukses', fn () => view('hakcipta.sukses'))->name('hakcipta.sukses');
+
+//SEARCH
+Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking');
