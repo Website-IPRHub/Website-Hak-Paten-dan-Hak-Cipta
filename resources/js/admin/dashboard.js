@@ -1,5 +1,7 @@
 // resources/js/admin/dashboard.js
-import Chart from 'chart.js/auto';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
 
 document.addEventListener('DOMContentLoaded', () => {
   setupAllCustomDropdowns();     // buat dropdown status per-row (yang data-dd)

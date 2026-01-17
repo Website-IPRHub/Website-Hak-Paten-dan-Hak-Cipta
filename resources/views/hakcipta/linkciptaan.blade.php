@@ -1,19 +1,18 @@
 @extends('layouts.app')
 
-@section('title','Hak Paten')
+@section('title','Hak Cipta')
 
 @section('content')
 
-@php $activeStep = 9; @endphp
-@include('hakpaten.partials.menu')
+@php $activeStep = 8; @endphp
+@include('hakcipta.partials.menu')
 
 <section class="section-full section-content">
   <div class="section-inner">
     <div class="content-box">
 
-      <div class="deskripsi-singkat">
-        <h2>Deskripsi singkat prototipe/produk (Jika Ada)</h2>
-        <p>*Deskripsi tentang keunggulan produk untuk kebutuhan pemasaran</p>
+      <div class="link-ciptaan">
+        <h2>Link Ciptaan</h2>
       </div>
 
       @if ($errors->any())
@@ -27,15 +26,16 @@
       @endif
 
 
-      <form action="{{ route('hakpaten.submit') }}" method="POST">
+      <form action="{{ route('hakcipta.submit') }}" method="POST">
         @csrf
-        <input type="hidden" name="paten_id" value="{{ session('paten_id') }}">
+        <input type="hidden" name="cipta_id" value="{{ session('cipta_id') }}">
+        <input type="url" name="link" class="input input-link" placeholder="Masukkan link ciptaan" required>
 
-        <textarea name="deskripsi" class="input-deskripsi input-deskripsi" placeholder="Masukkan deskripsi paten"></textarea>
         <div class="btn-center">
           <button type="submit" class="btn-selanjutnya-submit">Submit</button>
         </div>
       </form>
+
     </div>
   </div>
 </section>

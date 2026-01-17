@@ -12,12 +12,22 @@
 
 
 .footer-logo{
-  width: 195px;
+  width: 240px;
   height: 200px;
   object-fit: contain;   
   display: block;
   margin-right: 30px;
+  flex-shrink: 0;  
+  max-width: none;
 }
+
+.site-footer .footer-inner .brand .footer-logo{
+  width: 195px !important;
+  height: 200px !important;
+  flex-shrink: 0 !important;
+  max-width: none !important;
+}
+
 
 .footer-layanan h1{
     color:#2EA3F2;

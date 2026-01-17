@@ -355,7 +355,7 @@
                     @php
                     $patenKey = strtolower(implode(' ', array_filter([
                         $row->no_pendaftaran ?? '',
-                        $row->judul ?? '',
+                        $row->judul_paten ?? '',
                         $row->jenis_paten ?? '',
                         $row->status ?? '',
                         $row->fakultas ?? '',
@@ -379,7 +379,9 @@
                         {{-- JUDUL + META --}}
                         <td>
                             <div class="title-wrap">
-                                <div class="title-main">{{ $row->judul }}</div>
+                                <div 
+                                class="title-main">{{ $row->judul_paten ?? '-' }}
+                                </div>
 
                                 <div class="title-meta">
                                     <div class="meta-fakultas">{{ $row->fakultas }}</div>
