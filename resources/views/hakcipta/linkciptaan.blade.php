@@ -29,7 +29,7 @@
       <form action="{{ route('hakcipta.submit') }}" method="POST">
         @csrf
         <input type="hidden" name="cipta_id" value="{{ session('cipta_id') }}">
-        <input type="url" name="link" class="input input-link" placeholder="Masukkan link ciptaan" required>
+        <input type="url" name="link" class="input input-link" placeholder="Masukkan link ciptaan">
 
         <div class="btn-center">
           <button type="submit" class="btn-selanjutnya-submit">Submit</button>

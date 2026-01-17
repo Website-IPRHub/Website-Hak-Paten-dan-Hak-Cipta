@@ -8,7 +8,11 @@
     <div class="content-box success-box">
       <h2 class="success-title">Submit Berhasil</h2>
 
-      <p class="success-desc">Data pendaftaran paten sudah terkirim.</p>
+      <div class="success-desc">
+        <p>Data pendaftaran paten sudah terkirim.</p>
+        <p>No Pendaftaran anda:</p>
+        <h3>{{ session('no_pendaftaran') }}</h3>
+      </div>
 
       @if(session('success'))
         <p class="success-flash">{{ session('success') }}</p>

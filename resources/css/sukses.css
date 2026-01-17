@@ -11,11 +11,18 @@
   color: #111827;
 }
 
-.success-desc{
+.success-desc p{
   margin: 0 0 18px;
   font-family: 'inter', sans-serif;
   color: #6b7280;
-  font-size: 14px;
+  font-size: 20px;
+}
+
+.success-desc h3{
+  margin: 0 0 18px;
+  font-family: 'inter', sans-serif;
+  color: #6b7280;
+  font-size: 20px;
 }
 
 .success-flash{
@@ -24,3 +31,5 @@
   color: #344c7b;
   font-weight: 600;
 }
+
+
