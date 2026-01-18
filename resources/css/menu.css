@@ -15,7 +15,16 @@
 .judul-inner{
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.judul-left{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 0; 
 }
 
 .judul-title{
@@ -23,6 +32,26 @@
   font-size: 20px;
   font-weight: 600;
   color: #1C5EBD;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.judul-desc{
+  margin: 0;             
+  font-size: 17px;
+  font-weight: 500;
+  color: #000;
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.5;
+}
+
+.judul-right{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 280px; 
 }
 
 .profile-badge{
@@ -30,29 +59,45 @@
   padding: 8px 14px;
   border-radius: 999px;
   display: inline-flex;
-  align-items: flex-end;
-  margin-left: auto;
   align-items: center;
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
+  font-family: 'inter', sans-serif;
   color: #1E1E1E;
+  margin-left: 0;
 }
 
 .profile-progress{
-  margin-top:10px;
-  height:10px;
-  background:#e5e7eb;
-  border-radius:999px;
-  overflow:hidden;
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0;
 }
 
 .profile-progress__bar{
-  height:100%;
-  background:#22c55e;
+  height: 100%;
+  background: #22c55e;
   width: var(--w, 0%);
   transition: width .25s ease;
 }
+
+@media (max-width: 768px){
+  .judul-inner{
+    flex-direction: column;
+  }
+  .judul-right{
+    align-items: flex-start;
+    min-width: 0;
+    width: 100%;
+  }
+  .profile-progress{
+    width: 100%;
+  }
+}
+
 
 .section-steps{
   background: #F0F6FD;

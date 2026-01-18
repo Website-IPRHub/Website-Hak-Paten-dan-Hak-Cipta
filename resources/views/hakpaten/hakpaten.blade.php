@@ -93,13 +93,23 @@
           </div>
 
           <div class="field">
-            <label class="label">Email Seluruh Pencipta <span class="req">*</span></label>
-            <p>Jika lebih dari 1, pisahkan dengan titik koma (;). Contoh: amin@gmail.com; budi@gmail.com</p>
-            <input type="email" class="input" name="email" placeholder="Email" value="{{ old('email') }}" required>
-            @error('email')
-              <small style="color:red">{{ $message }}</small>
-            @enderror
-          </div>
+  <label class="label">Email Seluruh Pencipta <span class="req">*</span></label>
+  <p>Jika lebih dari 1, pisahkan dengan titik koma (;). Contoh: amin@gmail.com; budi@gmail.com</p>
+
+          <input
+            type="text"
+            class="input"
+            name="email"
+            placeholder="Email (pisahkan dengan ;)"
+            value="{{ old('email') }}"
+            required
+          >
+
+          @error('email')
+            <small style="color:red">{{ $message }}</small>
+          @enderror
+        </div>
+
 
           <div class="field">
             <label class="label">Prototipe <span class="req">*</span></label>

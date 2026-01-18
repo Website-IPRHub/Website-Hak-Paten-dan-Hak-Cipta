@@ -487,46 +487,67 @@
                                         <span class="badge badge-{{ $statusDoc }}">{{ strtoupper($statusDoc) }}</span>
                                     </div>
 
-                                    <div class="verif-mini-actions">
-                                        {{-- OK --}}
-                                        <form method="POST" action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'paten','id'=>$row->id]) }}">
-                                            @csrf
-                                            <input type="hidden" name="doc_key" value="{{ $k }}">
-                                            <input type="hidden" name="action" value="ok">
-                                            <button class="btn-mini" type="submit">OK</button>
-                                        </form>
+                 <div class="verif-mini-actions">
+                    {{-- OK --}}
+                    <form method="POST" action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'paten','id'=>$row->id]) }}">
+                        @csrf
+                        <input type="hidden" name="doc_key" value="{{ $k }}">
+                        <input type="hidden" name="action" value="ok">
+                        <button class="btn-mini" type="submit">OK</button>
+                    </form>
 
-                                        {{-- REVISI --}}
-                                        <details>
-                                            <summary class="btn-mini">Revisi</summary>
+                    {{-- REVISI --}}
+                    <details>
+                        <summary class="btn-mini">Revisi</summary>
 
-                                            <div style="padding-top:8px;">
-                                                <form method="POST" enctype="multipart/form-data"
-                                                    action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'paten','id'=>$row->id]) }}">
-                                                    @csrf
-                                                    <input type="hidden" name="doc_key" value="{{ $k }}">
-                                                    <input type="hidden" name="action" value="revisi">
+                        <div style="padding-top:8px;">
+                            <form method="POST" enctype="multipart/form-data"
+                                action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'paten','id'=>$row->id]) }}">
+                                @csrf
+                                <input type="hidden" name="doc_key" value="{{ $k }}">
+                                <input type="hidden" name="action" value="revisi">
 
-                                                    <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)">{{ optional($doc)->note }}</textarea>
+                                <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)">{{ optional($doc)->note }}</textarea>
 
-                                                    <div style="margin-top:6px;">
-                                                        <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
-                                                        <input type="file" name="admin_attachment">
-                                                    </div>
+                                <div style="margin-top:6px;">
+                                    <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
+                                    <input type="file" name="admin_attachment">
+                                </div>
 
-                                                    <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
-                                                </form>
+                                <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
+                            </form>
 
-                                                @if(!empty(optional($doc)->admin_attachment_path))
-                                                    <div style="margin-top:6px; font-size:12px;">
-                                                        Lampiran admin:
-                                                        <a href="{{ asset('storage/'.optional($doc)->admin_attachment_path) }}" target="_blank">
-                                                            {{ basename(optional($doc)->admin_attachment_path) }}
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </details>
+                            @if(!empty(optional($doc)->admin_attachment_path))
+                                <div style="margin-top:6px; font-size:12px;">
+                                    Lampiran admin:
+                                    <a href="{{ asset('storage/'.optional($doc)->admin_attachment_path) }}" target="_blank">
+                                        {{ basename(optional($doc)->admin_attachment_path) }}
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </details>
+                </div>
+
+
+                        {{-- JUDUL + META --}}
+                        <td>
+                            <div class="title-wrap">
+                                <div 
+                                class="title-main">{{ $row->judul_paten ?? '-' }}
+                                </div>
+
+                                <div class="title-meta">
+                                    <div class="meta-fakultas">{{ $row->fakultas }}</div>
+
+                                    <div class="meta-emails">
+                                        @foreach(preg_split('/[\s,]+/', $row->email) as $mail)
+                                            @if($mail)
+                                                <a href="mailto:{{ $mail }}" class="email-chip">
+                                                    {{ $mail }}
+                                                </a>
+                                            @endif
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>

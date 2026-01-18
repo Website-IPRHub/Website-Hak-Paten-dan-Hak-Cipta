@@ -10,8 +10,8 @@ class HakCipta extends Model
 
     protected $fillable = [
         'no_pendaftaran',
-        'jenis_cipta','
-        judul_cipta',
+        'jenis_cipta',
+        'judul_cipta',
         'nama_pencipta',
         'nip_nim',
         'fakultas',
@@ -26,6 +26,7 @@ class HakCipta extends Model
         'tanda_terima',
         'scan_ktp',
         'hasil_ciptaan',
-        'link_ciptaan'
+        'link_ciptaan',
+        'status', // aman kalau kolom ini ada
     ];
 }

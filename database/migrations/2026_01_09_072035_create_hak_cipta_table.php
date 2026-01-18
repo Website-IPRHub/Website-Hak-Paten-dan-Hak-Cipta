@@ -26,13 +26,13 @@ return new class extends Migration
                 'Fakultas Kesehatan Masyarakat',
                 'Fakultas Kedokteran',
                 'Fakultas Perikanan dan Ilmu Kelautan',
-                'Fakultas Pertanian dan Peternakan',
-                'Fakultas Ekonomika dan Bisnis',
+                'Fakultas Peternakan dan Pertanian',
+                'Fakultas Ekonomi dan Bisnis',
                 'Fakultas Hukum',
                 'Fakultas Ilmu Sosial dan Ilmu Politik',
                 'Fakultas Ilmu Budaya',
                 'Fakultas Psikologi',
-                'Pasca Sarjana'
+                'Sekolah Pasca Sarjana'
             ]);
             $table->string('no_hp');
             $table->string('email');

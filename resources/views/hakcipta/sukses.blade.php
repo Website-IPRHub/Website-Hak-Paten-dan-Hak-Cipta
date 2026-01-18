@@ -9,7 +9,7 @@
       <h2 class="success-title">Submit Berhasil</h2>
 
       <div class="success-desc">
-        <p>Data pendaftaran paten sudah terkirim.</p>
+        <p>Data pendaftaran cipta sudah terkirim.</p>
         <p>No Pendaftaran anda:</p>
         <h3>{{ session('no_pendaftaran') }}</h3>
       </div>
@@ -18,7 +18,7 @@
         <p class="success-flash">{{ session('success') }}</p>
       @endif
 
-      <a href="{{ url('/header') }}" class="btn-selanjutnya">Kembali ke Landing Page</a>
+      <br><a href="{{ url('/header') }}" class="btn-selanjutnya">Kembali ke Landing Page</a>
     </div>
   </div>
 </section>

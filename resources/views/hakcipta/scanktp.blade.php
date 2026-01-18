@@ -1,24 +1,22 @@
 @extends('layouts.app')
 
-@section('title','Hak Paten')
+@section('title','Hak Cipta')
 
 @section('content')
 
-@php $activeStep = 2; @endphp
-@include('hakpaten.partials.menu')
+@php $activeStep = 6; @endphp
+@include('hakcipta.partials.menu')
 
 <section class="section-full section-content">
     <div class="section-inner">
         <div class="content-box">
-            <div class="draft-paten">
-            <h2>Draft Paten *</h2>
+            <div class="scan-ktp">
+            <h2>Scan KTP *</h2>
+            <p>Seluruh Scan KTP Pencipta dijadikan 1 (Satu) file PDF</p>
             </div>
             <div class="hero-buttons-start">
-                <div class="button-unduh">
-                    <a href="{{ route('download.template.draftpaten')}}" class="btn-template-draft-paten">Unduh Template Draft Paten</a>
-                </div>
                 <div class="button-upload">
-                    <form id="draftForm" action="{{ route('draftpaten.upload') }}" method="POST" enctype="multipart/form-data">
+                    <form id="draftForm" action="{{ route('hakcipta.scanktp.uploadScanKTP') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <input id="draftFile" type="file" name="file" required hidden>
@@ -29,7 +27,7 @@
             </div>
         </div>
         <div class="next">
-            <a id="nextLink" href="{{ route('formulirpermohonan') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
+            <a id="nextLink" href="{{ route('hakcipta.hasilciptaan') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
         </div>
     </div>
 </section>

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Paten;
+use App\Models\HakCipta;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class FileUploadController extends Controller
 {
@@ -14,70 +16,124 @@ class FileUploadController extends Controller
         return (int) $id;
     }
 
-    private function storeFile(Request $request, string $fieldName, string $folder, array $rules)
+    private function storeFile(Request $request, string $fieldName, string $folder, array $rules): ?string
     {
-        $request->validate([
-            $fieldName => $rules,
-        ]);
+        $request->validate([$fieldName => $rules]);
 
         $file = $request->file($fieldName);
+        if (!$file) return null;
 
-        if (!$file) {
-            return null;
-        }
+        $patenId = $this->patenIdOrAbort();
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+        $originalName = $file->getClientOriginalName();
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
 
-        return $file->store($folder, 'public');
+        return $file->storeAs($folder, $finalName, 'public');
     }
-
 
     public function draft(Request $request)
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/draft', [
-            'required', 'file', 'mimes:pdf,doc,docx', 'max:10240'
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
         ]);
 
-        Paten::where('id', $patenId)->update(['draft_paten' => $path]);
+        $file = $request->file('file');
+
+        $originalName = $file->getClientOriginalName();
+
+        // optional: biar aman dari nama sama (ga ketimpa)
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+
+        // PATH akan menyimpan nama ini
+        $path = $file->storeAs('paten/draft', $finalName, 'public');
+
+        Paten::where('id', $patenId)->update([
+            'draft_paten' => $path, // PATH
+        ]);
 
         return redirect()->route('formulirpermohonan')->with('success', 'Draft paten tersimpan');
     }
+
 
     public function form(Request $request)
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/form', [
-            'required', 'file', 'mimes:pdf,doc,docx', 'max:10240'
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
         ]);
 
-        Paten::where('id', $patenId)->update(['form_permohonan' => $path]);
+        $file = $request->file('file');
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+        $originalName = $file->getClientOriginalName();
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+
+        $path = $file->storeAs('paten/form', $finalName, 'public');
+
+        Paten::where('id', $patenId)->update([
+            'form_permohonan' => $path,
+        ]);
 
         return redirect()->route('kepemilikaninvensi')->with('success', 'Form permohonan tersimpan');
     }
+
 
     public function suratInvensi(Request $request)
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/surat-kepemilikan', [
-            'required', 'file', 'mimes:pdf,doc,docx', 'max:10240'
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
         ]);
 
-        Paten::where('id', $patenId)->update(['surat_kepemilikan' => $path]);
+        $file = $request->file('file');
+
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+        $originalName = $file->getClientOriginalName();
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+
+        $path = $file->storeAs('paten/surat-kepemilikan', $finalName, 'public');
+
+        Paten::where('id', $patenId)->update([
+            'surat_kepemilikan' => $path,
+        ]);
 
         return redirect()->route('pengalihanhak')->with('success', 'Surat kepemilikan tersimpan');
     }
 
-    public function suratPengalihan(Request $request)
+    public function pengalihanhak(Request $request)
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/surat-pengalihan', [
-            'required', 'file', 'mimes:pdf,doc,docx', 'max:10240'
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
         ]);
 
-        Paten::where('id', $patenId)->update(['surat_pengalihan' => $path]);
+        $file = $request->file('file');
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+
+        $originalName = $file->getClientOriginalName();
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+
+        $path = $file->storeAs('paten/surat-pengalihan', $finalName, 'public');
+
+        Paten::where('id', $patenId)->update([
+            'surat_pengalihan' => $path,
+        ]);
+        
 
         return redirect()->route('scanktp')->with('success', 'Surat pengalihan tersimpan');
     }
@@ -86,11 +142,23 @@ class FileUploadController extends Controller
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/scan-ktp', [
-            'required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
-        Paten::where('id', $patenId)->update(['scan_ktp' => $path]);
+        $file = $request->file('file');
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+
+        $originalName = $file->getClientOriginalName();
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+
+        $path = $file->storeAs('paten/scan-ktp', $finalName, 'public');
+
+        Paten::where('id', $patenId)->update([
+            'scan_ktp' => $path,
+        ]);
 
         return redirect()->route('tandaterima')->with('success', 'Scan KTP tersimpan');
     }
@@ -99,11 +167,24 @@ class FileUploadController extends Controller
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/tanda-terima', [
-            'required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
-        Paten::where('id', $patenId)->update(['tanda_terima' => $path]);
+        $file = $request->file('file');
+
+        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+
+        $originalName = $file->getClientOriginalName();
+        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        $ext  = $file->getClientOriginalExtension();
+        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+
+        $path = $file->storeAs('paten/tanda-terima', $finalName, 'public');
+
+        Paten::where('id', $patenId)->update([
+            'tanda_terima' => $path,
+        ]);
 
         return redirect()->route('uploadgambarprototipe')->with('success', 'Tanda terima tersimpan');
     }
@@ -112,15 +193,26 @@ class FileUploadController extends Controller
     {
         $patenId = $this->patenIdOrAbort();
 
-        $path = $this->storeFile($request, 'file', 'paten/gambar-prototipe', [
-            'nullable', 'image', 'max:5120'
+        $request->validate([
+            'file' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:10240'],
         ]);
 
-        if ($path !== null) {
-            Paten::where('id', $patenId)->update(['gambar_prototipe' => $path]);
+        if (!$request->hasFile('file')) {
+            return redirect()->route('deskripsiproduk')
+                ->with('success', 'Lewati upload prototipe');
         }
 
+    
+        $path = $this->storeFile($request, 'file', 'paten/gambar-prototipe', [
+            'required', 'image', 'mimes:jpg,jpeg,png', 'max:10240'
+        ]);
+
+        Paten::where('id', $patenId)->update([
+            'gambar_prototipe' => $path,
+        ]);
+
         return redirect()->route('deskripsiproduk')
-            ->with('success', $path ? 'Gambar prototipe tersimpan' : 'Lewati upload prototipe');
+            ->with('success', 'Gambar prototipe tersimpan');
     }
+
 }

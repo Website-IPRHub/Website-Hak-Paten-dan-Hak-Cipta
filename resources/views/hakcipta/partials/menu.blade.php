@@ -1,15 +1,14 @@
 @php
-  $totalSteps = 9;
+  $totalSteps = 8; // kamu punya 8 step di menu (1-8)
   $percent = (int) round(($activeStep / $totalSteps) * 100);
 @endphp
-
 
 <section class="section-full section-judul">
   <div class="section-inner judul-inner">
 
     <div class="judul-left">
       <h1 class="judul-title">
-        <i class="bi bi-file-earmark-text-fill"></i> Sistem Pendaftaran Paten
+        <i class="bi bi-file-earmark-text-fill"></i> Sistem Pendaftaran Hak Cipta
       </h1>
       <p class="judul-desc">
         Sistem menerapkan alur sekuensial, di mana setiap tahapan wajib diselesaikan secara berurutan<br>
@@ -27,7 +26,6 @@
         <div class="profile-progress__bar" style="--w: {{$percent}}%;"></div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -40,35 +38,35 @@
       </li>
 
       <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
-        <a href="{{ route('draftpaten') }}">Draft Paten</a>
+        <a href="{{ route('hakcipta.permohonanpendaftaran') }}">
+          Surat Permohonan Pendaftaran Ciptaan
+        </a>
       </li>
 
       <li class="step {{ $activeStep == 3 ? 'active' : 'disabled' }}">
-        <a href="{{ route('formulirpermohonan') }}">Formulir Permohonan</a>
+        <a href="{{ route('hakcipta.suratpernyataan') }}">Surat Pernyataan</a>
       </li>
 
       <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
-        <a href="{{ route('kepemilikaninvensi') }}">Kepemilikan Invensi</a>
+        <a href="{{ route('hakcipta.pengalihanhak') }}">Surat Pengalihan Hak Cipta</a>
       </li>
 
       <li class="step {{ $activeStep == 5 ? 'active' : 'disabled' }}">
-        <a href="{{ route('pengalihanhak') }}">Pengalihan Hak</a>
+        <a href="{{ route('hakcipta.tandaterima') }}">Surat Tanda Terima Berkas</a>
       </li>
 
       <li class="step {{ $activeStep == 6 ? 'active' : 'disabled' }}">
-        <a href="{{ route('scanktp') }}">Scan KTP</a>
+        <a href="{{ route('hakcipta.scanktp') }}">Scan KTP</a>
       </li>
 
       <li class="step {{ $activeStep == 7 ? 'active' : 'disabled' }}">
-        <a href="{{ route('tandaterima') }}">Tanda Terima</a>
+        <a href="{{ route('hakcipta.hasilciptaan') }}">Hasil Ciptaan</a>
       </li>
 
       <li class="step {{ $activeStep == 8 ? 'active' : 'disabled' }}">
-        <a href="#">Upload Gambar Prototipe (Jika Ada)</a>
-      </li>
-
-      <li class="step {{ $activeStep == 9 ? 'active' : 'disabled' }}">
-        <a href="#">Deskripsi singkat prototipe/produk (Jika Ada)</a>
+        <a href="{{ route('hakcipta.linkciptaan') }}">
+          Link Ciptaan untuk Hak Cipta jenis Karya Rekaman Video
+        </a>
       </li>
     </ul>
   </div>

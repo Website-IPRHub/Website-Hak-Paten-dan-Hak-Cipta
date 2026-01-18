@@ -1,25 +1,25 @@
 @extends('layouts.app')
 
-@section('title','Hak Paten')
+@section('title','Hak Cipta')
 
 @section('content')
 
-@php $activeStep = 4; @endphp
-@include('hakpaten.partials.menu')
+@php $activeStep = 4 @endphp
+@include('hakcipta.partials.menu')
 
 <section class="section-full section-content">
     <div class="section-inner">
         <div class="content-box">
-            <div class="kepemilikan-invensi">
-                <h2>Surat Pernyataan Kepemilikan Invensi *</h2>
+            <div class="pengalihan-hak">
+                <h2>Surat Pengalihan Hak Cipta*</h2>
                 <p>File dalam bentuk Word, Tanpa Tandatangan</p>
             </div>
             <div class="hero-buttons-start">
                 <div class="button-unduh">
-                    <a href="{{ route('download.template.Surat Pernyataan Kepemilikan Invensi oleh Inventor')}}" class="btn-template-surat-pernyataan-kepemilikan-invensi">Unduh Surat Pernyataan Kepemilikan Invensi</a>
+                    <a href="{{ route('hakcipta.download.template.pengalihan') }}" class="btn-download">Download Template Surat Pengalihan</a>
                 </div>
                 <div class="button-upload">
-                    <form id="draftForm" action="{{ route('kepemilikaninvensi.upload') }}" method="POST" enctype="multipart/form-data">
+                    <form id="draftForm" action="{{ route('hakcipta.pengalihanhak.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <input id="draftFile" type="file" name="file" required hidden>
@@ -30,7 +30,7 @@
             </div>
         </div>
         <div class="next">
-            <a id="nextLink" href="{{ route('pengalihanhak') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
+            <a id="nextLink" href="{{ route('hakcipta.tandaterima') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
         </div>
     </div>
 </section>
