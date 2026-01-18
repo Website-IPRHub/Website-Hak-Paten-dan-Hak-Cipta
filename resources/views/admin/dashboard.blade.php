@@ -6,23 +6,40 @@
     <title>Dashboard Admin</title>
 
     {{-- CSS + JS lewat Vite --}}
-    @vite(['resources/css/admin.css', 'resources/js/app.js'])
+    @vite(['resources/css/admin.css', 'resources/js/app.js', 'resources/js/admin/dashboard.js'])
 </head>
 <body>
-
-<header class="admin-header">
+    <header class="admin-header">
     <div class="brand">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo">
+        <img src="{{ asset('images/LogoDirinovki2026.png') }}" alt="Logo">
     </div>
 
     <div class="header-actions">
-        <a href="#" class="user-icon">
-            <img src="{{ asset('images/user.png') }}" alt="User">
-        </a>
 
-        <button type="button" class="logout-btn" id="openLogoutModal" aria-label="Logout">
-            <img src="{{ asset('images/logout.png') }}" alt="Logout">
-        </button>
+        <div class="user-dd" id="userDD">
+            <button type="button" class="user-icon" id="userBtn" aria-haspopup="true" aria-expanded="false">
+                <img src="{{ asset('images/user.png') }}" alt="User">
+            </button>
+
+            <div class="user-menu" id="userMenu" hidden>
+                <div class="user-menu-head">
+                <div class="user-menu-name">{{ $name }}</div>
+                <div class="user-menu-sub">Admin</div>
+            </div>
+
+            <div class="user-menu-actions">
+                <button type="button" class="user-menu-item" id="openChangePass">
+                    Ubah Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <button type="button" class="logout-btn" id="openLogoutModal" aria-label="Logout">
+        <img src="{{ asset('images/logout.png') }}" alt="Logout">
+    </button>
+
     </div>
 </header>
 
@@ -32,25 +49,26 @@
 </section>
 
 @php
-    // ✅ biar gak error undefined $tab
     $tab = $tab ?? 'stats';
 
-    // ====== DATA DUMMY (statistik jangan diubah) ======
-    $totalAll   = 128;
-    $totalPaten = 52;
-    $totalCipta = 76;
+    // LABEL untuk verifikasi dokumen (dipakai PATEN & CIPTA)
+    $docLabels = [
+        // PATEN
+        'draft_paten' => 'Draft Paten',
+        'form_permohonan' => 'Form Permohonan',
+        'surat_kepemilikan' => 'Surat Kepemilikan',
+        'surat_pengalihan' => 'Surat Pengalihan',
+        'scan_ktp' => 'Scan KTP',
+        'tanda_terima' => 'Tanda Terima',
+        'gambar_prototipe' => 'Gambar Prototipe',
 
-    $patenJenis = [
-        'Paten' => 35,
-        'Paten Sederhana' => 17,
-    ];
-
-    $ciptaJenis = [
-        'Buku' => 22,
-        'Modul' => 18,
-        'Program Komputer' => 14,
-        'Karya Rekaman Video' => 9,
-        'Lainnya' => 13,
+        // CIPTA
+        'surat_permohonan' => 'Surat Permohonan',
+        'surat_pernyataan' => 'Surat Pernyataan',
+        'surat_pengalihan' => 'Surat Pengalihan',
+        'tanda_terima' => 'Tanda Terima',
+        'scan_ktp' => 'Scan KTP',
+        'hasil_ciptaan' => 'Hasil Ciptaan',
     ];
 @endphp
 
@@ -133,226 +151,257 @@
             </section>
         @endif
 
-
         {{-- ================= TAB: DATA HAK CIPTA ================= --}}
         @if($tab === 'cipta')
-                <div class="page-head">
-                    <h2 class="page-title">Data Hak Cipta</h2>
+            <div class="page-head">
+                <h2 class="page-title">Data Hak Cipta</h2>
 
-                    <div class="page-actions">
+                <div class="page-actions">
                     <input id="searchCipta" class="search-input" type="text" placeholder="Cari..." />
-                    </div>
                 </div>
+            </div>
 
-                @if(session('success'))
-                    <div class="alert-success">{{ session('success') }}</div>
-                @endif
+            @if(session('success'))
+                <div class="alert-success">{{ session('success') }}</div>
+            @endif
 
-                <div class="table-card table-scroll">
-                    <table class="data-table table-wide" id="ciptaTable">
+            <div class="table-card table-scroll">
+                <table class="data-table table-wide" id="ciptaTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width:70px;">No</th>
+                        <th rowspan="2" style="min-width:220px;">No Pendaftaran</th>
+                        <th rowspan="2" style="min-width:220px;">Judul Cipta</th>
+                        <th rowspan="2" style="width:140px;">Jenis</th>
+                        <th rowspan="2" style="width:140px;">Status</th>
 
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="width:70px;">No</th>
-                            <th rowspan="2" style="min-width:220px;">No Pendaftaran</th>
-                            <th rowspan="2" style="min-width:220px;">Judul Cipta</th>
-                            <th rowspan="2" style="width:140px;">Jenis</th>
-                            <th rowspan="2" style="width:140px;">Status</th>
+                        <th colspan="5" class="th-doc-merge">DOKUMEN</th>
 
-                            {{-- MERGE DOKUMEN --}}
-                            <th colspan="6" class="th-doc-merge">DOKUMEN</th>
+                        <th rowspan="2" style="min-width:220px;">Hasil Ciptaan</th>
+                        <th rowspan="2" style="min-width:260px;">Link Ciptaan (khusus Rekaman Video)</th>
+                        <th rowspan="2" style="width:90px;">Aksi</th>
+                    </tr>
 
-                            <th rowspan="2" style="min-width:220px;">Hasil Ciptaan</th>
-                            <th rowspan="2" style="min-width:220px;">Link Ciptaan untuk Hak Cipta jenis Karya Rekaman Video</th>
-                        </tr>
+                    <tr>
+                        <th style="min-width:180px;">Surat Permohonan</th>
+                        <th style="min-width:180px;">Surat Pernyataan</th>
+                        <th style="min-width:190px;">Surat Pengalihan</th>
+                        <th style="min-width:180px;">Tanda Terima</th>
+                        <th style="min-width:160px;">Scan KTP</th>
+                    </tr>
+                </thead>
 
-                        <tr>
-                            <th style="min-width:180px;">Surat Permohonan</th>
-                            <th style="min-width:180px;">Surat Pernyataan</th>
-                            <th style="min-width:190px;">Surat Pengalihan</th>
-                            <th style="min-width:180px;">Tanda Terima</th>
-                            <th style="min-width:160px;">Scan KTP</th>
-                        </tr>
-                    </thead>
+                <tbody>
+                    @forelse($dataCipta as $i => $row)
+                    @php
+                        $ciptaKey = strtolower(implode(' ', array_filter([
+                            $row->no_pendaftaran ?? '',
+                            $row->judul_cipta ?? '',
+                            $row->jenis_cipta ?? '',
+                            $row->status ?? '',
+                            $row->fakultas ?? '',
+                            $row->email ?? '',
+                            basename($row->surat_permohonan ?? ''),
+                            basename($row->surat_pernyataan ?? ''),
+                            basename($row->surat_pengalihan ?? ''),
+                            basename($row->tanda_terima ?? ''),
+                            basename($row->scan_ktp ?? ''),
+                            basename($row->hasil_ciptaan ?? ''),
+                            $row->link_ciptaan ?? '',
+                        ])));
+                    @endphp
 
-                    <tbody>
-                        @forelse($dataPaten as $i => $row)
+                    <tr data-key="{{ $ciptaKey }}">
+                        <td>{{ $i+1 }}</td>
+                        <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+
+                        <td>
+                            <div class="cell-title">{{ $row->judul_cipta ?? '-' }}</div>
+                            <div class="cell-sub muted">
+                                {{ $row->fakultas ?? '-' }} • {{ $row->email ?? '-' }}
+                            </div>
+
+                            {{-- tombol kirim revisi kalau ada minimal 1 dokumen revisi --}}
                             @php
-                                $ciptaKey = strtolower(implode(' ', array_filter([
-                                $row->no_pendaftaran ?? '',
-                                $row->judul_cipta ?? '',
-                                $row->jenis_cipta ?? '',
-                                $row->status ?? '',
-                                $row->fakultas ?? '',
-                                $row->email ?? '',
-
-                                basename($row->surat_permohonan ?? ''),
-                                basename($row->surat_pernyataan ?? ''),
-                                basename($row->surat_pengalihan ?? ''),
-                                basename($row->tanda_terima ?? ''),
-                                basename($row->scan_ktp ?? ''),
-                                basename($row->hasil_ciptaan ?? ''),
-                                $row->link_ciptaan ?? '',
-                                ])));
+                                $hasDocRevisi = collect($row->docs ?? [])->contains(fn($d) => ($d->status ?? '') === 'revisi');
                             @endphp
+                            @if($hasDocRevisi)
+                                <form method="POST" action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'cipta','id'=>$row->id]) }}" style="margin-top:8px;">
+                                    @csrf
+                                    <button type="submit" class="btn-mini">Kirim Permintaan Revisi</button>
+                                </form>
+                            @endif
+                        </td>
 
-                            <tr data-key="{{ $ciptaKey }}">
-                                <td>{{ $i+1 }}</td>
-                                <td>{{ $row->no_pendaftaran ?? '-' }}</td>
-                                <td>
-                                    <div class="cell-title">{{ $row->judul_cipta }}</div>
-                                    <div class="cell-sub muted">
-                                        {{ $row->fakultas }} • {{ $row->email }}
+                        <td>{{ $row->jenis_cipta ?? '-' }}</td>
+
+                        <td>
+                            <span class="status-pill s-{{ $row->status }}">{{ $row->status }}</span>
+                        </td>
+
+                        {{-- helper kecil buat render cell dokumen + verifikasi --}}
+                        @php
+                            $renderDocCell = function($k) use ($row, $docLabels) {
+                                $filePath = $row->$k ?? null;
+                                $doc = $row->docs[$k] ?? null;
+                                $statusDoc = optional($doc)->status ?? 'pending';
+                        @endphp
+                                <div>
+                                    @if($filePath)
+                                        <a class="doc-link" href="{{ asset('storage/'.$filePath) }}" target="_blank">
+                                            {{ basename($filePath) }}
+                                        </a>
+                                    @else
+                                        <span class="muted">-</span>
+                                    @endif
+
+                                    <div class="verif-mini">
+                                        <div class="verif-mini-head">
+                                            <span class="badge badge-{{ $statusDoc }}">{{ strtoupper($statusDoc) }}</span>
+                                        </div>
+
+                                        <div class="verif-mini-actions">
+                                            {{-- OK --}}
+                                            <form method="POST" action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'cipta','id'=>$row->id]) }}">
+                                                @csrf
+                                                <input type="hidden" name="doc_key" value="{{ $k }}">
+                                                <input type="hidden" name="action" value="ok">
+                                                <button class="btn-mini" type="submit">OK</button>
+                                            </form>
+
+                                            {{-- REVISI --}}
+                                            <details>
+                                                <summary class="btn-mini">Revisi</summary>
+
+                                                <div style="padding-top:8px;">
+                                                    <form method="POST" enctype="multipart/form-data"
+                                                        action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'cipta','id'=>$row->id]) }}">
+                                                        @csrf
+                                                        <input type="hidden" name="doc_key" value="{{ $k }}">
+                                                        <input type="hidden" name="action" value="revisi">
+
+                                                        <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)">{{ optional($doc)->note }}</textarea>
+
+                                                        <div style="margin-top:6px;">
+                                                            <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
+                                                            <input type="file" name="admin_attachment">
+                                                        </div>
+
+                                                        <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
+                                                    </form>
+
+                                                    @if(!empty(optional($doc)->admin_attachment_path))
+                                                        <div style="margin-top:6px; font-size:12px;">
+                                                            Lampiran admin:
+                                                            <a href="{{ asset('storage/'.optional($doc)->admin_attachment_path) }}" target="_blank">
+                                                                {{ basename(optional($doc)->admin_attachment_path) }}
+                                                            </a>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </details>
+                                        </div>
                                     </div>
-                                </td>
+                                </div>
+                        @php
+                            };
+                        @endphp
 
-                                <td>{{ $row->jenis_cipta }}</td>
+                        {{-- Surat Permohonan --}}
+                        <td>@php $renderDocCell('surat_permohonan'); @endphp</td>
 
-                                <td>
-                                    <span class="status-pill s-{{ $row->status }}">{{ $row->status }}</span>
-                                </td>
+                        {{-- Surat Pernyataan --}}
+                        <td>@php $renderDocCell('surat_pernyataan'); @endphp</td>
 
-                                {{-- PERMOHONAN --}}
-                                <td>
-                                    @if($row->surat_permohonan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->draft_paten) }}" target="_blank">
-                                            {{ basename($row->surat_permohonan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                        {{-- Surat Pengalihan --}}
+                        <td>@php $renderDocCell('surat_pengalihan'); @endphp</td>
 
-                                {{-- PERNYATAAN --}}
-                                <td>
-                                    @if($row->surat_pernyataan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->form_permohonan) }}" target="_blank">
-                                            {{ basename($row->surat_pernyataan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                        {{-- Tanda Terima --}}
+                        <td>@php $renderDocCell('tanda_terima'); @endphp</td>
 
-                                {{-- PENGALIHAN --}}
-                                <td>
-                                    @if($row->surat_pengalihan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->surat_kepemilikan) }}" target="_blank">
-                                            {{ basename($row->surat_pengalihan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                        {{-- Scan KTP --}}
+                        <td>@php $renderDocCell('scan_ktp'); @endphp</td>
 
-                                {{-- PENGALIHAN (lagi) --}}
-                                <td>
-                                    @if($row->surat_pengalihan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->surat_pengalihan) }}" target="_blank">
-                                            {{ basename($row->surat_pengalihan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                        {{-- Hasil Ciptaan --}}
+                        <td>@php $renderDocCell('hasil_ciptaan'); @endphp</td>
 
-                                {{-- TANDA TERIMA --}}
-                                <td>
-                                    @if($row->tanda_terima)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->scan_ktp) }}" target="_blank">
-                                            {{ basename($row->tanda_terima) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
+                        {{-- Link Ciptaan --}}
+                        <td>
+                            @if($row->link_ciptaan)
+                                <a class="doc-link" href="{{ $row->link_ciptaan }}" target="_blank">
+                                    {{ $row->link_ciptaan }}
+                                </a>
+                            @else
+                                <span class="muted">-</span>
+                            @endif
+                        </td>
 
-                                {{-- SCAN KTP --}}
-                                <td>
-                                    @if($row->scan_ktp)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                            {{ basename($row->scan_ktp) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
-
-                                {{-- HASIL CIPTAAN --}}
-                                <td>
-                                    @if($row->hasil_ciptaan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                            {{ basename($row->hasil_ciptaan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
-
-                                {{-- Link Ciptaan --}}
-                                <td>
-                                    @if($row->link_ciptaan)
-                                        <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                            {{ basename($row->link_ciptaan) }}
-                                        </a>
-                                    @else
-                                        <span class="muted">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="11" class="center muted">Belum ada data cipta</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                        {{-- HAPUS --}}
+                        <td class="cell-actions">
+                            <button type="button"
+                                    class="btn-delete"
+                                    data-delete-action="{{ route('admin.cipta.destroy', $row->id) }}"
+                                    data-delete-type="cipta">
+                                <img src="{{ asset('images/delete.png') }}" alt="Hapus" class="ic-delete">
+                            </button>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="12" class="center muted">Belum ada data cipta</td>
+                    </tr>
+                    @endforelse
+                </tbody>
                 </table>
             </div>
         @endif
 
-       {{-- ================= TAB: DATA PATEN ================= --}}
-                @if($tab === 'paten')
-                <div class="page-head">
-                    <h2 class="page-title">Data Paten</h2>
 
-                    <div class="page-actions">
-                    <input id="searchPaten" class="search-input" type="text" placeholder="Cari..." />
-                    </div>
-                </div>
+        {{-- ================= TAB: DATA PATEN ================= --}}
+        @if($tab === 'paten')
+        <div class="page-head">
+            <h2 class="page-title">Data Paten</h2>
 
-                @if(session('success'))
-                    <div class="alert-success">{{ session('success') }}</div>
-                @endif
+            <div class="page-actions">
+                <input id="searchPaten" class="search-input" type="text" placeholder="Cari..." />
+            </div>
+        </div>
 
-                <div class="table-card table-scroll">
-                    <table class="data-table table-wide" id="patenTable">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="width:70px;">No</th>
-                            <th rowspan="2" style="min-width:120px;">No Pendaftaran</th>
-                            <th rowspan="2" style="min-width:250px;">Judul Paten</th>
-                            <th rowspan="2" style="width:140px;">Jenis</th>
-                            <th rowspan="2" style="width:140px;">Status</th>
+        @if(session('success'))
+            <div class="alert-success">{{ session('success') }}</div>
+        @endif
 
-                            {{-- MERGE DOKUMEN --}}
-                            <th colspan="6" class="th-doc-merge">DOKUMEN</th>
+        <div class="table-card table-scroll">
+            <table class="data-table table-wide" id="patenTable">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:70px;">No</th>
+                    <th rowspan="2" style="min-width:120px;">No Pendaftaran</th>
+                    <th rowspan="2" style="min-width:250px;">Judul Paten</th>
+                    <th rowspan="2" style="width:140px;">Jenis</th>
+                    <th rowspan="2" style="width:140px;">Status</th>
 
-                            <th rowspan="2" style="min-width:220px;">Gambar Prototipe</th>
-                            <th rowspan="2" style="min-width:220px;">Deskripsi singkat prototipe/produk</th>
-                        </tr>
+                    {{-- MERGE DOKUMEN --}}
+                    <th colspan="6" class="th-doc-merge">DOKUMEN</th>
 
-                        <tr>
-                            <th style="min-width:180px;">Draft Paten</th>
-                            <th style="min-width:180px;">Form Permohonan</th>
-                            <th style="min-width:190px;">Surat Kepemilikan</th>
-                            <th style="min-width:180px;">Surat Pengalihan</th>
-                            <th style="min-width:160px;">Scan KTP</th>
-                            <th style="min-width:180px;">Tanda Terima</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @forelse($dataPaten as $i => $row)
-                    @php
+                    <th rowspan="2" style="min-width:220px;">Gambar Prototipe</th>
+                    <th rowspan="2" style="min-width:220px;">Deskripsi singkat prototipe/produk</th>
+                    <th rowspan="2" style="width:90px;">Aksi</th>
+                </tr>
+
+                <tr>
+                    <th style="min-width:180px;">Draft Paten</th>
+                    <th style="min-width:180px;">Form Permohonan</th>
+                    <th style="min-width:190px;">Surat Kepemilikan</th>
+                    <th style="min-width:180px;">Surat Pengalihan</th>
+                    <th style="min-width:160px;">Scan KTP</th>
+                    <th style="min-width:180px;">Tanda Terima</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse($dataPaten as $i => $row)
+                @php
                     $patenKey = strtolower(implode(' ', array_filter([
                         $row->no_pendaftaran ?? '',
                         $row->judul_paten ?? '',
@@ -360,7 +409,6 @@
                         $row->status ?? '',
                         $row->fakultas ?? '',
                         $row->email ?? '',
-
                         basename($row->draft_paten ?? ''),
                         basename($row->form_permohonan ?? ''),
                         basename($row->surat_kepemilikan ?? ''),
@@ -368,13 +416,119 @@
                         basename($row->scan_ktp ?? ''),
                         basename($row->tanda_terima ?? ''),
                     ])));
+                @endphp
+
+                <tr data-key="{{ $patenKey }}">
+                    <td>{{ $i+1 }}</td>
+
+                    {{-- NO PENDAFTARAN --}}
+                    <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+
+                    {{-- JUDUL + META --}}
+                    <td>
+                        <div class="title-wrap">
+                            <div class="title-main">{{ $row->judul_paten ?? '-' }}</div>
+
+                            <div class="title-meta">
+                                <div class="meta-fakultas">{{ $row->fakultas }}</div>
+
+                                <div class="meta-emails">
+                                    @foreach(preg_split('/[\s,]+/', $row->email) as $mail)
+                                        @if($mail)
+                                            <a href="mailto:{{ $mail }}" class="email-chip">
+                                                {{ $mail }}
+                                            </a>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- tombol kirim revisi kalau ada minimal 1 dokumen revisi --}}
+                        @php
+                            $hasDocRevisi = collect($row->docs ?? [])->contains(fn($d) => ($d->status ?? '') === 'revisi');
+                        @endphp
+                        @if($hasDocRevisi)
+                            <form method="POST" action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'paten','id'=>$row->id]) }}" style="margin-top:8px;">
+                                @csrf
+                                <button type="submit" class="btn-mini">Kirim Permintaan Revisi</button>
+                            </form>
+                        @endif
+                    </td>
+
+                    {{-- JENIS --}}
+                    <td>{{ $row->jenis_paten }}</td>
+
+                    {{-- STATUS --}}
+                    <td>
+                        <span class="status-pill s-{{ $row->status }}">
+                            {{ $row->status }}
+                        </span>
+                    </td>
+
+                    {{-- helper render dokumen + verifikasi --}}
+                    @php
+                        $renderDocCell = function($k) use ($row) {
+                            $filePath = $row->$k ?? null;
+                            $doc = $row->docs[$k] ?? null;
+                            $statusDoc = optional($doc)->status ?? 'pending';
                     @endphp
+                            <div>
+                                @if($filePath)
+                                    <a class="doc-link" href="{{ asset('storage/'.$filePath) }}" target="_blank">
+                                        {{ basename($filePath) }}
+                                    </a>
+                                @else
+                                    <span class="muted">-</span>
+                                @endif
 
-                    <tr data-key="{{ $patenKey }}">
-                        <td>{{ $i+1 }}</td>
+                                <div class="verif-mini">
+                                    <div class="verif-mini-head">
+                                        <span class="badge badge-{{ $statusDoc }}">{{ strtoupper($statusDoc) }}</span>
+                                    </div>
 
-                        {{-- NO PENDAFTARAN --}}
-                        <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+                 <div class="verif-mini-actions">
+                    {{-- OK --}}
+                    <form method="POST" action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'paten','id'=>$row->id]) }}">
+                        @csrf
+                        <input type="hidden" name="doc_key" value="{{ $k }}">
+                        <input type="hidden" name="action" value="ok">
+                        <button class="btn-mini" type="submit">OK</button>
+                    </form>
+
+                    {{-- REVISI --}}
+                    <details>
+                        <summary class="btn-mini">Revisi</summary>
+
+                        <div style="padding-top:8px;">
+                            <form method="POST" enctype="multipart/form-data"
+                                action="{{ route('admin.verifikasi_dokumen.set', ['type'=>'paten','id'=>$row->id]) }}">
+                                @csrf
+                                <input type="hidden" name="doc_key" value="{{ $k }}">
+                                <input type="hidden" name="action" value="revisi">
+
+                                <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)">{{ optional($doc)->note }}</textarea>
+
+                                <div style="margin-top:6px;">
+                                    <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
+                                    <input type="file" name="admin_attachment">
+                                </div>
+
+                                <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
+                            </form>
+
+                            @if(!empty(optional($doc)->admin_attachment_path))
+                                <div style="margin-top:6px; font-size:12px;">
+                                    Lampiran admin:
+                                    <a href="{{ asset('storage/'.optional($doc)->admin_attachment_path) }}" target="_blank">
+                                        {{ basename(optional($doc)->admin_attachment_path) }}
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </details>
+                </div>
+
 
                         {{-- JUDUL + META --}}
                         <td>
@@ -397,97 +551,64 @@
                                     </div>
                                 </div>
                             </div>
-                        </td>
+                    @php
+                        };
+                    @endphp
 
-                        {{-- JENIS --}}
-                        <td>{{ $row->jenis_paten }}</td>
+                    {{-- DRAFT --}}
+                    <td>@php $renderDocCell('draft_paten'); @endphp</td>
 
-                        {{-- STATUS --}}
-                        <td>
-                            <span class="status-pill s-{{ $row->status }}">
-                                {{ $row->status }}
-                            </span>
-                        </td>
+                    {{-- PERMOHONAN --}}
+                    <td>@php $renderDocCell('form_permohonan'); @endphp</td>
 
-                        {{-- DRAFT --}}
-                        <td>
-                            @if($row->draft_paten)
-                                <a class="doc-link" href="{{ asset('storage/'.$row->draft_paten) }}" target="_blank">
-                                    {{ basename($row->draft_paten) }}
-                                </a>
-                            @else
-                                <span class="muted">-</span>
-                            @endif
-                        </td>
+                    {{-- KEPEMILIKAN --}}
+                    <td>@php $renderDocCell('surat_kepemilikan'); @endphp</td>
 
-                        {{-- PERMOHONAN --}}
-                        <td>
-                            @if($row->form_permohonan)
-                                <a class="doc-link" href="{{ asset('storage/'.$row->form_permohonan) }}" target="_blank">
-                                    {{ basename($row->form_permohonan) }}
-                                </a>
-                            @else
-                                <span class="muted">-</span>
-                            @endif
-                        </td>
+                    {{-- PENGALIHAN --}}
+                    <td>@php $renderDocCell('surat_pengalihan'); @endphp</td>
 
-                        {{-- KEPEMILIKAN --}}
-                        <td>
-                            @if($row->surat_kepemilikan)
-                                <a class="doc-link" href="{{ asset('storage/'.$row->surat_kepemilikan) }}" target="_blank">
-                                    {{ basename($row->surat_kepemilikan) }}
-                                </a>
-                            @else
-                                <span class="muted">-</span>
-                            @endif
-                        </td>
+                    {{-- SCAN KTP --}}
+                    <td>@php $renderDocCell('scan_ktp'); @endphp</td>
 
-                        {{-- PENGALIHAN --}}
-                        <td>
-                            @if($row->surat_pengalihan)
-                                <a class="doc-link" href="{{ asset('storage/'.$row->surat_pengalihan) }}" target="_blank">
-                                    {{ basename($row->surat_pengalihan) }}
-                                </a>
-                            @else
-                                <span class="muted">-</span>
-                            @endif
-                        </td>
+                    {{-- TANDA TERIMA --}}
+                    <td>@php $renderDocCell('tanda_terima'); @endphp</td>
 
-                        {{-- SCAN KTP --}}
-                        <td>
-                            @if($row->scan_ktp)
-                                <a class="doc-link" href="{{ asset('storage/'.$row->scan_ktp) }}" target="_blank">
-                                    {{ basename($row->scan_ktp) }}
-                                </a>
-                            @else
-                                <span class="muted">-</span>
-                            @endif
-                        </td>
+                    {{-- GAMBAR PROTOTIPE --}}
+                    <td>@php $renderDocCell('gambar_prototipe'); @endphp</td>
 
-                        {{-- TANDA TERIMA --}}
-                        <td>
-                            @if($row->tanda_terima)
-                                <a class="doc-link" href="{{ asset('storage/'.$row->tanda_terima) }}" target="_blank">
-                                    {{ basename($row->tanda_terima) }}
-                                </a>
-                            @else
-                                <span class="muted">-</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="11" class="center muted">Belum ada data paten</td>
-                    </tr>
-                    @endforelse
-                    </tbody>
+                    {{-- DESKRIPSI SINGKAT PROTOTIPE/PRODUK --}}
+                    <td>
+                        @if(!empty($row->deskripsi_singkat_prototipe))
+                            {{ $row->deskripsi_singkat_prototipe }}
+                        @else
+                            <span class="muted">-</span>
+                        @endif
+                    </td>
 
-                </table>
-            </div>
+                    {{-- HAPUS --}}
+                    <td class="cell-actions">
+                        <button type="button"
+                                class="btn-delete"
+                                data-delete-action="{{ route('admin.paten.destroy', $row->id) }}"
+                                data-delete-type="paten"
+                                title="Hapus">
+                            <img src="{{ asset('images/delete.png') }}" alt="Hapus" class="ic-delete">
+                        </button>
+                    </td>
+                </tr>
+
+                @empty
+                <tr>
+                    <td colspan="14" class="center muted">Belum ada data paten</td>
+                </tr>
+                @endforelse
+            </tbody>
+            </table>
+        </div>
         @endif
 
 
-        {{-- ================= TAB: STATUS VERIFIKASI ================= --}}
+        {{-- ================= TAB: STATUS VERIFIKASI (BERSIH, TANPA DOKUMEN) ================= --}}
         @if($tab === 'status')
             <div class="page-head">
                 <h2 class="page-title">Status Verifikasi</h2>
@@ -505,12 +626,11 @@
                             <button type="button" class="dd-item" data-value="cipta">Hak Cipta</button>
                         </div>
 
-                        {{-- ini yang dipakai filter JS --}}
                         <input type="hidden" id="filterType" value="all" data-dd-input>
                     </div>
 
                     <input id="searchStatus" class="search-input" type="text"
-                        placeholder="Cari no pendaftaran / status" />
+                           placeholder="Cari no pendaftaran / status" />
                 </div>
             </div>
 
@@ -518,35 +638,35 @@
                 <div class="alert-success">{{ session('success') }}</div>
             @endif
 
-
             <div class="table-card">
                 <table class="data-table" id="statusTable">
                     <thead>
                         <tr>
                             <th style="width:90px;">ID</th>
-                            <th style="width:125px;">Jenis</th>
+                            <th style="width:125px;">Kategori</th>
+                            <th style="width:150px;">Jenis</th>
                             <th style="min-width:215px;">No Pendaftaran</th>
                             <th style="min-width:215px;">Judul</th>
-                            <th style="width:220px;">Update Status</th>
+                            <th style="width:280px;">Update Status</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse($dataStatus as $row)
+                        @forelse($dataStatus as $i => $row)
                             <tr
                                 data-type="{{ strtolower($row->type) }}"
-                                data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.$row->status) }}"
+                                data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.($row->status ?? '').' '.($row->jenis ?? '')) }}"
                             >
-                                <td class="center">{{ $row->id }}</td>
+                                <td class="center">{{ $i + 1 }}</td>
                                 <td>{{ strtoupper($row->type) }}</td>
+                                <td>{{ $row->jenis ?? '-' }}</td>
                                 <td>{{ $row->no_pendaftaran ?? '-' }}</td>
                                 <td>{{ $row->judul ?? '-' }}</td>
 
                                 <td>
+                                    {{-- FORM UPDATE STATUS --}}
                                     <form class="inline-form" method="POST"
-                                        action="{{ $row->type === 'paten'
-                                            ? route('admin.paten.updateStatus', $row->id)
-                                            : route('admin.cipta.updateStatus', $row->id) }}">
+                                        action="{{ route('admin.status.update', ['type' => $row->type, 'id' => $row->id]) }}">
                                         @csrf
                                         @method('PUT')
 
@@ -558,25 +678,102 @@
 
                                             <div class="dd-menu" data-dd-menu hidden>
                                                 @foreach(['terkirim','proses','revisi','diterima','ditolak'] as $st)
-                                                <button type="button"
-                                                        class="dd-item {{ $row->status===$st ? 'active' : '' }}"
-                                                        data-value="{{ $st }}">
-                                                    {{ $st }}
-                                                </button>
+                                                    <button type="button"
+                                                            class="dd-item {{ $row->status===$st ? 'active' : '' }}"
+                                                            data-value="{{ $st }}">
+                                                        {{ $st }}
+                                                    </button>
                                                 @endforeach
                                             </div>
 
-                                            {{-- ini yang beneran dikirim ke controller --}}
                                             <input type="hidden" name="status" value="{{ $row->status }}" data-dd-input>
                                         </div>
 
                                         <button class="btn-mini btn-save" type="submit">Simpan</button>
                                     </form>
+
+                                    {{-- ✅ TAMPILKAN RINGKASAN DOKUMEN REVISI (kalau status = revisi) --}}
+                                    @if(($row->status ?? '') === 'revisi')
+                                    @php
+                                        $revisiDocs = collect($row->docs ?? [])->filter(fn($d) => (($d->status ?? '') === 'revisi'));
+                                    @endphp
+
+                                    <div style="margin-top:10px;">
+                                        @if($revisiDocs->count() > 0)
+                                        <div style="font-size:12px; margin-bottom:6px;">
+                                            <b>Dokumen perlu revisi ({{ $revisiDocs->count() }})</b>
+                                        </div>
+
+                                        <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+                                            @foreach($revisiDocs as $k => $d)
+                                            <div style="padding:8px; border:1px solid #e6e6e6; border-radius:10px;">
+                                                <div><b>{{ $docLabels[$k] ?? $k }}</b></div>
+                                                @if(!empty($d->note))
+                                                <div class="muted" style="margin-top:4px;">Catatan: {{ $d->note }}</div>
+                                                @endif
+
+                                                @if(!empty($d->admin_attachment_path))
+                                                <div style="margin-top:4px;">
+                                                    Lampiran admin:
+                                                    <a href="{{ asset('storage/'.$d->admin_attachment_path) }}" target="_blank">
+                                                    {{ basename($d->admin_attachment_path) }}
+                                                    </a>
+                                                </div>
+                                                @endif
+                                            </div>
+                                            @endforeach
+                                        </div>
+
+                                        <div class="muted" style="font-size:12px; margin-top:6px;">
+                                            *Email revisi akan terkirim saat klik <b>Simpan</b>.
+                                        </div>
+                                        @else
+                                        <span class="badge badge-warn" style="margin-top:6px; display:inline-block;">
+                                            Status revisi dipilih, tapi belum ada dokumen yang ditandai revisi.
+                                        </span>
+                                        @endif
+                                    </div>
+                                    @endif
+
+                                    {{-- UPLOAD SERTIFIKAT (kalau status = diterima) --}}
+                                    @if(($row->status ?? '') === 'diterima')
+                                        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                            @if(!empty($row->sertifikat_path))
+                                                <span class="badge badge-success">Sertifikat: OK</span>
+                                            @else
+                                                <span class="badge badge-warn">Upload sertifikat DJKI</span>
+                                            @endif
+
+                                            @if(!empty($row->emailed_at))
+                                                <span class="badge badge-muted">Email terkirim</span>
+                                            @else
+                                                <span class="badge badge-muted">Email belum terkirim</span>
+                                            @endif
+                                        </div>
+
+                                        <form method="POST"
+                                            action="{{ route('admin.status.uploadSertifikat', ['type' => $row->type, 'id' => $row->id]) }}"
+                                            enctype="multipart/form-data"
+                                            style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                            @csrf
+                                            <input type="file" name="sertifikat" accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <button type="submit" class="btn-mini">Upload Sertifikat</button>
+                                        </form>
+
+                                        @if(!empty($row->sertifikat_path))
+                                            <form method="POST"
+                                                action="{{ route('admin.status.resendEmail', ['type' => $row->type, 'id' => $row->id]) }}"
+                                                style="margin-top:6px;">
+                                                @csrf
+                                                <button type="submit" class="btn-mini">Kirim Ulang Email</button>
+                                            </form>
+                                        @endif
+                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="center muted">Belum ada data status verifikasi</td>
+                                <td colspan="6" class="center muted">Belum ada data status verifikasi</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -603,6 +800,60 @@
             </form>
         </div>
     </div>
+</div>
+
+{{-- ✅ MODAL UBAH PASSWORD --}}
+<div class="modal-backdrop" id="passBackdrop" hidden></div>
+
+<div class="modal" id="passModal" hidden role="dialog" aria-modal="true" aria-labelledby="passTitle">
+  <div class="modal-card">
+    <h3 id="passTitle" class="modal-title">Ubah Password</h3>
+
+    <form method="POST" action="{{ route('admin.password.update') }}">
+      @csrf
+
+      <label style="display:block; font-size:12px; margin-top:10px;">Password Lama</label>
+      <input class="input" type="password" name="old_password" required>
+
+      <label style="display:block; font-size:12px; margin-top:10px;">Password Baru</label>
+      <input class="input" type="password" name="new_password" minlength="6" required>
+
+      <label style="display:block; font-size:12px; margin-top:10px;">Konfirmasi Password Baru</label>
+      <input class="input" type="password" name="new_password_confirmation" minlength="6" required>
+
+      <div class="modal-actions" style="margin-top:14px;">
+        <button type="button" class="btn-ghost" id="cancelPass">Batal</button>
+        <button type="submit" class="btn-danger">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{-- MODAL KONFIRMASI HAPUS (PAKAI UNTUK PATEN & CIPTA) --}}
+<div class="modal-backdrop" id="deleteBackdrop" hidden></div>
+
+<div class="modal" id="deleteModal" hidden>
+  <div class="modal-card modal-lg">
+    <div class="modal-icon">!</div>
+
+    <h3 class="modal-title" id="deleteTitle">Konfirmasi Hapus</h3>
+
+    <p class="modal-text" id="deleteText">
+      Apakah yakin ingin menghapus data ini?
+      <br>
+      <span class="modal-warning">Tindakan ini bersifat permanen dan tidak dapat dibatalkan.</span>
+    </p>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="cancelDelete">Batal</button>
+
+      <form method="POST" id="deleteForm">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn-danger">Hapus</button>
+      </form>
+    </div>
+  </div>
 </div>
 
 {{-- ✅ Data chart dipindah ke JSON (JS yang render) --}}

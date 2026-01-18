@@ -127,6 +127,8 @@ class PatenController extends Controller
 
     private function generateNoPendaftaran(): string
     {
+        // Format: P00 + TAHUN(4) + 5 digit urut per tahun
+        // Contoh: P00202600001
 
         $year   = now()->format('Y');
         $prefix = 'P00' . $year;

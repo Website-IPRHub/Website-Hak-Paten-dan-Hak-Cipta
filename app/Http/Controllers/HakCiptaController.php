@@ -9,7 +9,6 @@ use Illuminate\Validation\Rule;
 
 class HakCiptaController extends Controller
 {
-
     public function start(Request $request)
     {
         $enumFakultas   = $this->getEnumValues('hakcipta', 'fakultas');
@@ -86,35 +85,26 @@ class HakCiptaController extends Controller
         return redirect()->route('hakcipta.permohonanpendaftaran');
     }
 
-
     // API FLOW (JSON)
     public function store(Request $request)
     {
-        $enumFakultas   = $this->getEnumValues('hakcipta', 'fakultas');
-        $enumSumberDana = $this->getEnumValues('hakcipta', 'sumber_dana');
+        // VALIDASI DASAR
+        $request->validate([
+            'jenis_cipta'      => 'required|in:Buku,Modul,Program Komputer,Karya Rekaman Video,Lainnya',
+            'judul_cipta'      => 'required|string',
+            'nama_pencipta'    => 'required|string',
+            'nip_nim'          => 'required|string',
+            'fakultas'         => 'required|string',
+            'no_hp'            => 'required|string',
 
-        $data = $request->validate([
-            'jenis_hak_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
-            'jenis_hak_cipta_lainnya' => 'nullable|string|max:255',
-
-            'judul_hak_cipta' => 'required|string|max:255',
-            'nama_pencipta' => 'required|string|max:255',
-            'nip_nim' => 'required|string|max:255',
-            'no_hp' => 'required|string|max:255',
-
-            'fakultas' => empty($enumFakultas)
-                ? 'required|string|max:255'
-                : ['required', Rule::in($enumFakultas)],
-
+            // ✅ support multi email pakai ;
             'email' => [
                 'required',
                 function ($attribute, $value, $fail) {
-                    $emails = array_values(array_filter(array_map('trim', explode(';', $value))));
-
+                    $emails = array_values(array_filter(array_map('trim', explode(';', (string)$value))));
                     if (count($emails) === 0) {
                         return $fail('Email wajib diisi.');
                     }
-
                     foreach ($emails as $email) {
                         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                             return $fail("Format email tidak valid: $email");
@@ -123,54 +113,53 @@ class HakCiptaController extends Controller
                 }
             ],
 
-            'nilai_perolehan_hak_cipta' => 'required|string|max:255',
-
-            'sumber_dana' => empty($enumSumberDana)
-                ? 'required|string|max:255'
-                : ['required', Rule::in($enumSumberDana)],
-
-            'skema_penelitian' => 'required|string|max:255',
+            'nilai_perolehan'  => 'required|string',
+            'sumber_dana'      => 'required|string',
+            'skema_penelitian' => 'nullable|string',
 
             // dokumen (kalau API kamu kirim path/filename)
-            'surat_permohonan' => 'nullable|string|max:255',
-            'surat_pernyataan' => 'nullable|string|max:255',
-            'surat_pengalihan' => 'nullable|string|max:255',
-            'tanda_terima' => 'nullable|string|max:255',
-            'scan_ktp' => 'nullable|string|max:255',
-            'hasil_ciptaan' => 'nullable|string|max:255',
+            'surat_permohonan' => 'nullable|string',
+            'surat_pernyataan' => 'nullable|string',
+            'surat_pengalihan' => 'nullable|string',
+            'tanda_terima'     => 'nullable|string',
+            'scan_ktp'         => 'nullable|string',
+            'hasil_ciptaan'    => 'nullable|string',
+            'link_ciptaan'     => 'nullable|string',
         ]);
 
-        // kalau pilih "Lainnya", wajib isi
-        if ($data['jenis_hak_cipta'] === 'Lainnya' && empty($data['jenis_hak_cipta_lainnya'])) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => [
-                    'jenis_hak_cipta_lainnya' => ['Wajib diisi jika memilih "Lainnya".']
-                ]
-            ], 422);
+        // AUTO GENERATE NO PENDAFTARAN
+        $noPendaftaran = $this->generateNoPendaftaran();
+
+        // SIMPAN DATA
+        $cipta = new HakCipta();
+        $cipta->no_pendaftaran = $noPendaftaran;
+
+        $cipta->jenis_cipta = $request->jenis_cipta;
+        $cipta->judul_cipta = $request->judul_cipta;
+        $cipta->nama_pencipta = $request->nama_pencipta;
+        $cipta->nip_nim = $request->nip_nim;
+        $cipta->fakultas = $request->fakultas;
+        $cipta->no_hp = $request->no_hp;
+        $cipta->email = $request->email;
+        $cipta->nilai_perolehan = $request->nilai_perolehan;
+        $cipta->sumber_dana = $request->sumber_dana;
+        $cipta->skema_penelitian = $request->skema_penelitian;
+
+        // DOKUMEN
+        $cipta->surat_permohonan = $request->surat_permohonan;
+        $cipta->surat_pernyataan = $request->surat_pernyataan;
+        $cipta->surat_pengalihan = $request->surat_pengalihan;
+        $cipta->tanda_terima = $request->tanda_terima;
+        $cipta->scan_ktp = $request->scan_ktp;
+        $cipta->hasil_ciptaan = $request->hasil_ciptaan;
+        $cipta->link_ciptaan = $request->link_ciptaan;
+
+        // default status kalau kolom status ada
+        if (empty($cipta->status)) {
+            $cipta->status = 'draft';
         }
 
-        // optional: simpan jenis final (kalau kamu punya kolomnya)
-        $data['jenis_hak_cipta_final'] = $data['jenis_hak_cipta'] === 'Lainnya'
-            ? $data['jenis_hak_cipta_lainnya']
-            : $data['jenis_hak_cipta'];
-
-        $data['no_pendaftaran'] = $this->generateNoPendaftaran();
-        $data['status'] = $data['status'] ?? 'draft';
-
-        // default dokumen kalau belum ada
-        foreach ([
-            'surat_permohonan',
-            'surat_pernyataan',
-            'surat_pengalihan',
-            'tanda_terima',
-            'scan_ktp',
-            'hasil_ciptaan'
-        ] as $field) {
-            $data[$field] = $data[$field] ?? '';
-        }
-
-        $cipta = HakCipta::create($data);
+        $cipta->save();
 
         return response()->json([
             'message' => 'Pengajuan hak cipta berhasil',
@@ -179,7 +168,6 @@ class HakCiptaController extends Controller
             'status' => $cipta->status,
         ], 201);
     }
-
 
     private function generateNoPendaftaran(): string
     {
