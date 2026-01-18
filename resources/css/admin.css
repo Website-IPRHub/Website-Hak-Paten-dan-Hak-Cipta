@@ -253,7 +253,7 @@ body{
 .modal-card{
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.686);
+  background: rgba(255, 255, 255, 0.833);
   border-radius: 18px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.25);
   padding: 22px 22px;
@@ -501,7 +501,7 @@ body{
   font-size: 14px;
 }
 
-/* ===== HEADER TABEL (SEMUA MENU) ===== */
+/* ===== HEADER TABEL (SEMUA MENU) ==== */
 .data-table thead th{
   text-align:left;
   padding: 14px 14px;
@@ -807,4 +807,206 @@ body{
   width: 360px;
   max-width: 45vw;
 }
+
+/* logo hapus */
+/* kolom aksi jangan melebar */
+.cell-actions {
+  width: 50px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* tombol icon */
+.btn-delete {
+  background: transparent;
+  border: 0;
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ukuran ikon */
+.ic-delete {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ALERT */
+/* ===== MODAL DELETE BESAR ===== */
+
+.modal-lg {
+  width: 520px;
+  padding: 32px 36px;
+  text-align: center;
+}
+
+/* ikon warning */
+.modal-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 3px solid #f5c26b;
+  color: #f5c26b;
+  font-size: 34px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* title */
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* isi text */
+.modal-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 28px;
+}
+
+/* teks warning */
+.modal-warning {
+  display: inline-block;
+  margin-top: 6px;
+  color: #888;
+  font-size: 13px;
+}
+
+/* tombol */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.btn-ghost {
+  min-width: 110px;
+}
+
+.btn-danger {
+  min-width: 110px;
+}
+
+.input{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid #e6ebf5;
+  border-radius:10px;
+}
+
+.badge{
+  display:inline-block;
+  font-size:11px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#1f2a44;
+}
+
+
+.verif-mini{
+  margin-top:8px;
+  padding:8px;
+  border:1px solid #e6ebf5;
+  border-radius:12px;
+  background:#fff;
+}
+
+.verif-mini-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  margin-top:8px;
+}
+
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid #e6ebf5;
+  background:#f6f8fc;
+}
+
+.badge-pending{ background:#f6f8fc; }
+.badge-ok{ background:#e9f8ef; border-color:#c9f1d8; }
+.badge-revisi{ background:#fff3e8; border-color:#ffd9b8; }
+
+/* USER DROPDOWN */
+.user-dd {
+  position: relative;
+  display: inline-block;
+}
+
+.user-menu {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 240px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  border: 1px solid rgba(0,0,0,.06);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.user-menu-head{
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.user-menu-name{
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.user-menu-sub{
+  font-size: 12px;
+  opacity: .7;
+  margin-top: 2px;
+}
+
+.user-menu-actions{
+  padding: 8px;
+}
+
+.user-menu-item{
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.user-menu-item:hover{
+  background: rgba(0,0,0,.05);
+}
+
+.alert-error {
+  background: #ffe5e5;
+  color: #b00020;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+
+
+
+
 

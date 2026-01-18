@@ -11,34 +11,22 @@ class HakCiptaController extends Controller
     {
         // VALIDASI DASAR
         $request->validate([
-            'jenis_cipta' => 'required|in:Buku,Modul,Program Komputer,Karya Rekaman Video,Lainnya',
-            'judul_cipta' => 'required|string',
-            'nama_pencipta' => 'required|string',
-            'nip_nim' => 'required|string',
-            'fakultas' => 'required|string',
-            'no_hp' => 'required|string',
-            'email' => 'required|email',
-            'nilai_perolehan' => 'required|string',
-            'sumber_dana' => 'required|string',
+            'jenis_cipta'      => 'required|in:Buku,Modul,Program Komputer,Karya Rekaman Video,Lainnya',
+            'judul_cipta'      => 'required|string',
+            'nama_pencipta'    => 'required|string',
+            'nip_nim'          => 'required|string',
+            'fakultas'         => 'required|string',
+            'no_hp'            => 'required|string',
+            'email'            => 'required|email',
+            'nilai_perolehan'  => 'required|string',
+            'sumber_dana'      => 'required|string',
+            'skema_penelitian' => 'nullable|string',
         ]);
 
         // ===============================
         // AUTO GENERATE NO PENDAFTARAN
-        // FORMAT: EC00202400001
         // ===============================
-        $year = now()->format('Y');
-
-        $last = HakCipta::whereYear('created_at', $year)
-            ->whereNotNull('no_pendaftaran')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $next = 1;
-        if ($last) {
-            $next = (int) substr($last->no_pendaftaran, -5) + 1;
-        }
-
-        $noPendaftaran = 'EC00' . $year . str_pad($next, 5, '0', STR_PAD_LEFT);
+        $noPendaftaran = $this->generateNoPendaftaran();
 
         // ===============================
         // SIMPAN DATA
@@ -72,5 +60,26 @@ class HakCiptaController extends Controller
             'message' => 'Pengajuan hak cipta berhasil',
             'no_pendaftaran' => $noPendaftaran
         ]);
+    }
+
+    /**
+     * Generate No Pendaftaran Hak Cipta
+     * Format: EC00YYYY00001
+     */
+    private function generateNoPendaftaran(): string
+    {
+        $year   = now()->format('Y');
+        $prefix = 'EC00' . $year;
+
+        $last = HakCipta::where('no_pendaftaran', 'like', $prefix . '%')
+            ->orderByDesc('no_pendaftaran')
+            ->value('no_pendaftaran');
+
+        $next = 1;
+        if ($last) {
+            $next = ((int) substr($last, -5)) + 1;
+        }
+
+        return $prefix . str_pad((string) $next, 5, '0', STR_PAD_LEFT);
     }
 }

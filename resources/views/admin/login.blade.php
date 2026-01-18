@@ -24,20 +24,21 @@
             <h1 class="login-title">Selamat Datang</h1>
 
             <div class="login-card">
-
-                <form method="POST" action="{{ route('admin.login') }}">
+                    <form method="POST" action="{{ route('admin.login') }}">
                     @csrf
 
-                    <label>Username</label>
-                    <input type="text" name="username" placeholder="Username" required>
+                    {{-- ❗ ERROR LOGIN DI SINI --}}
+                    @if($errors->has('login'))
+                        <div class="alert-error">
+                        {{ $errors->first('login') }}
+                        </div>
+                    @endif
 
-                    <label>Password</label>
-                    <div class="password-wrap">
-                        <input id="password" type="password" name="password" placeholder="Password" required>
-                    </div>
+                    <input type="text" name="username" placeholder="Username" value="{{ old('username') }}">
+                    <input type="password" name="password" placeholder="Password">
 
-                    <button type="submit">Log in</button>
-                </form>
+                    <button type="submit">Login</button>
+                    </form>
             </div>
         </div>
     </main>

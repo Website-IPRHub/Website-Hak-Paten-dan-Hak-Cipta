@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\HakCiptaController;
 use App\Http\Controllers\PatenController;
+use Illuminate\Support\Facades\Config;
 
 Route::get('/admin/login', [AuthController::class, 'showLoginForm'])
     ->name('admin.login.form');
@@ -14,6 +15,9 @@ Route::post('/admin/login', [AuthController::class, 'login'])
 
 Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
     ->name('admin.dashboard');
+
+Route::post('/admin/password', [AuthController::class, 'updatePassword'])
+    ->name('admin.password.update');
 
 Route::put('/admin/paten/{id}/status', [AdminDashboardController::class, 'updateStatusPaten'])
     ->name('admin.paten.updateStatus');
@@ -26,6 +30,36 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 Route::post('/hak-cipta/store', [HakCiptaController::class, 'store']);
 Route::post('/paten/store', [PatenController::class, 'store']);
 
+Route::delete('/admin/paten/{id}', [AdminDashboardController::class, 'destroyPaten'])
+  ->name('admin.paten.destroy');
+
+Route::delete('/admin/cipta/{id}', [AdminDashboardController::class, 'destroyCipta'])
+  ->name('admin.cipta.destroy');
+
+Route::put('/admin/status/{type}/{id}', [AdminDashboardController::class, 'updateStatusVerifikasi'])
+    ->name('admin.status.update');
+
+Route::post('/admin/status/{type}/{id}/upload-sertifikat', [AdminDashboardController::class, 'uploadSertifikatVerifikasi'])
+    ->name('admin.status.uploadSertifikat');
+
+Route::post('/admin/status/{type}/{id}/resend-email', [AdminDashboardController::class, 'resendEmail'])
+    ->name('admin.status.resendEmail');
+
+Route::post('/admin/verifikasi-dokumen/{type}/{id}/set', [AdminDashboardController::class, 'setVerifikasiDokumen'])
+    ->name('admin.verifikasi_dokumen.set');
+
+Route::post('/admin/verifikasi-dokumen/{type}/{id}/send-revisi', [AdminDashboardController::class, 'sendRevisiEmail'])
+    ->name('admin.verifikasi_dokumen.sendRevisi');
+    
+Route::get('/debug-mail', function () {
+    return [
+        'mailer' => config('mail.default'),
+        'host' => config('mail.mailers.smtp.host'),
+        'port' => config('mail.mailers.smtp.port'),
+        'username' => config('mail.mailers.smtp.username'),
+        'from' => config('mail.from.address'),
+    ];
+});
 
 use Illuminate\Support\Facades\File;
 use App\Http\Controllers\FileUploadController;
