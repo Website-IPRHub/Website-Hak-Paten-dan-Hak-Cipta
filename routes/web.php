@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\HakCiptaController;
 use App\Http\Controllers\PatenController;
 
+use Illuminate\Support\Facades\Config;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\FileUploadCiptaController;
 

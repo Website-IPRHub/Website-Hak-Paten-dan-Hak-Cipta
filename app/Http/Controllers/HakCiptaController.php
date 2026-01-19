@@ -97,7 +97,6 @@ class HakCiptaController extends Controller
             'fakultas'         => 'required|string',
             'no_hp'            => 'required|string',
 
-            // ✅ support multi email pakai ;
             'email' => [
                 'required',
                 function ($attribute, $value, $fail) {
