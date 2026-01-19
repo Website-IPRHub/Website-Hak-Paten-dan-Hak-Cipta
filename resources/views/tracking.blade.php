@@ -56,6 +56,8 @@
 
         // kalau final diterima, step diterima jadi done
         if ($isFinalAccepted && $s['key'] === 'diterima') $state = 'done';
+        if ($isFinalAccepted && $s['key'] === 'ditolak') $state = 'todo';
+
       }
     @endphp
 
