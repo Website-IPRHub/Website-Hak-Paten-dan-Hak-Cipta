@@ -7,10 +7,6 @@ use App\Http\Controllers\FileUploadCiptaController;
 use App\Http\Controllers\HakCiptaController;
 use App\Http\Controllers\PatenController;
 use Illuminate\Support\Facades\Config;
-=======
-use Illuminate\Support\Facades\File;
-use App\Http\Controllers\FileUploadController;
-use App\Http\Controllers\HakPatenSubmitController;
 use App\Http\Controllers\HakCiptaSubmitController;
 use App\Http\Controllers\TrackingController;
 
