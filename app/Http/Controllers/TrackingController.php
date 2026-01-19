@@ -5,53 +5,53 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\HakCipta;
 use App\Models\Paten;
+use Illuminate\Support\Facades\DB;
 
 class TrackingController extends Controller
 {
     public function index(Request $request)
     {
-        $q = trim((string) $request->query('q', ''));
-
-        // kalau halaman baru dibuka, tampilkan view kosong
-        if ($q === '') {
-            return view('tracking'); // atau kirim found => null
+        // kalau halaman dibuka tanpa q, tampilkan form saja (biar gak error validate)
+        if (!$request->filled('q')) {
+            return view('tracking');
         }
 
-        // validasi hanya kalau ada q
         $request->validate([
-            'q' => ['string', 'max:50'],
+            'q' => ['required', 'string', 'max:50'],
         ]);
 
-        // cari di Hak Cipta dulu
+        $q = trim($request->q);
+
+        // cari di dua tabel
         $hakCipta = HakCipta::where('no_pendaftaran', $q)->first();
-        if ($hakCipta) {
+        $paten    = Paten::where('no_pendaftaran', $q)->first();
+
+        if (!$hakCipta && !$paten) {
             return view('tracking', [
                 'q' => $q,
-                'found' => true,
-                'jenis' => 'Hak Cipta',
-                'status' => $hakCipta->status,
-                'updatedAt' => optional($hakCipta->updated_at)->format('d M Y H:i'),
-                'nama' => $hakCipta->nama_pencipta,
+                'found' => false,
             ]);
         }
 
-        // kalau ga ketemu, cari di Paten
-        $paten = Paten::where('no_pendaftaran', $q)->first();
-        if ($paten) {
-            return view('tracking', [
-                'q' => $q,
-                'found' => true,
-                'jenis' => 'Hak Paten',
-                'status' => $paten->status,
-                'updatedAt' => optional($paten->updated_at)->format('d M Y H:i'),
-                'nama' => $paten->nama_inventor ?? null,
-            ]);
-        }
+        // tentukan type + data
+        $type = $hakCipta ? 'cipta' : 'paten';
+        $data = $hakCipta ?? $paten;
 
-        // kalau ga ketemu dua-duanya
+        // ambil status dari status_verifikasi (sumber utama dari admin)
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', $type)
+            ->where('ref_id', $data->id)
+            ->first();
+
+        $status    = $sv->status ?? 'terkirim';
+        $updatedAt = $sv->updated_at ?? $data->updated_at;
+
         return view('tracking', [
             'q' => $q,
-            'found' => false,
+            'found' => true,
+            'jenis' => $type === 'cipta' ? 'Hak Cipta' : 'Hak Paten',
+            'status' => $status,
+            'updatedAt' => $updatedAt,
         ]);
     }
 }
