@@ -11,8 +11,8 @@ class HakCiptaController extends Controller
 {
     public function start(Request $request)
     {
-        $enumFakultas   = $this->getEnumValues('hakcipta', 'fakultas');
-        $enumSumberDana = $this->getEnumValues('hakcipta', 'sumber_dana');
+        $enumFakultas   = $this->getEnumValues('hak_cipta', 'fakultas');
+        $enumSumberDana = $this->getEnumValues('hak_cipta', 'sumber_dana');
 
         $data = $request->validate([
             'jenis_hak_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
@@ -55,7 +55,7 @@ class HakCiptaController extends Controller
 
         // bikin nomor
         $data['no_pendaftaran'] = $this->generateNoPendaftaran();
-        $data['status'] = 'draft';
+        $data['status'] = 'terkirim';
 
         // default dokumen (sesuaikan kolom yang beneran ada di tabel hak_cipta kamu)
         foreach ([

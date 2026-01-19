@@ -1,16 +1,28 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\FileUploadCiptaController;
+
 use App\Http\Controllers\HakCiptaController;
 use App\Http\Controllers\PatenController;
+
 use Illuminate\Support\Facades\Config;
+use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\FileUploadCiptaController;
+
+use App\Http\Controllers\HakPatenSubmitController;
 use App\Http\Controllers\HakCiptaSubmitController;
+
 use App\Http\Controllers\TrackingController;
 
-
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::get('/admin/login', [AuthController::class, 'showLoginForm'])
     ->name('admin.login.form');
 
@@ -23,22 +35,20 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
 Route::post('/admin/password', [AuthController::class, 'updatePassword'])
     ->name('admin.password.update');
 
+Route::post('/admin/logout', [AuthController::class, 'logout'])
+    ->name('admin.logout');
+
 Route::put('/admin/paten/{id}/status', [AdminDashboardController::class, 'updateStatusPaten'])
     ->name('admin.paten.updateStatus');
 
 Route::put('/admin/cipta/{id}/status', [AdminDashboardController::class, 'updateStatusCipta'])
     ->name('admin.cipta.updateStatus');
 
-Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
-
-Route::post('/hak-cipta/store', [HakCiptaController::class, 'store']);
-Route::post('/paten/store', [PatenController::class, 'store']);
-
 Route::delete('/admin/paten/{id}', [AdminDashboardController::class, 'destroyPaten'])
-  ->name('admin.paten.destroy');
+    ->name('admin.paten.destroy');
 
 Route::delete('/admin/cipta/{id}', [AdminDashboardController::class, 'destroyCipta'])
-  ->name('admin.cipta.destroy');
+    ->name('admin.cipta.destroy');
 
 Route::put('/admin/status/{type}/{id}', [AdminDashboardController::class, 'updateStatusVerifikasi'])
     ->name('admin.status.update');
@@ -54,7 +64,7 @@ Route::post('/admin/verifikasi-dokumen/{type}/{id}/set', [AdminDashboardControll
 
 Route::post('/admin/verifikasi-dokumen/{type}/{id}/send-revisi', [AdminDashboardController::class, 'sendRevisiEmail'])
     ->name('admin.verifikasi_dokumen.sendRevisi');
-    
+
 Route::get('/debug-mail', function () {
     return [
         'mailer' => config('mail.default'),
@@ -65,21 +75,31 @@ Route::get('/debug-mail', function () {
     ];
 });
 
-use Illuminate\Support\Facades\File;
-use App\Http\Controllers\FileUploadController;
-use App\Http\Controllers\HakPatenSubmitController;
-
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::get('/', fn () => view('welcome'))->name('welcome');
 Route::get('/header', fn () => view('test-header'))->name('test-header');
 
-// LANDING PAGE
+// LANDING
 Route::get('/hak-paten', fn () => view('hakpaten.hakpaten'))->name('hakpaten');
 Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
 
+// API (JSON) - kalau kamu memang butuh endpoint ini
+Route::post('/hak-cipta/store', [HakCiptaController::class, 'store']);
+Route::post('/paten/store', [PatenController::class, 'store']);
+
+/*
+|--------------------------------------------------------------------------
+| HAK PATEN FLOW
+|--------------------------------------------------------------------------
+*/
 // START: bikin row paten + set session paten_id
 Route::post('/hak-paten/start', [PatenController::class, 'start'])->name('paten.start');
 
-// STEP PAGES (GET) - WAJIB MASUK GROUP INI (ANTI SKIP)
+// STEP PAGES (GET) - ANTI SKIP
 Route::middleware('paten.seq')->group(function () {
     Route::get('/hak-paten/draftpaten', fn () => view('hakpaten.draftpaten'))->name('draftpaten');
     Route::get('/hak-paten/formulirpermohonan', fn () => view('hakpaten.formulirpermohonan'))->name('formulirpermohonan');
@@ -91,8 +111,8 @@ Route::middleware('paten.seq')->group(function () {
     Route::get('/hak-paten/deskripsiproduk', fn () => view('hakpaten.deskripsiproduk'))->name('deskripsiproduk');
 });
 
- // Submit
-    Route::get('/hak-paten/sukses', fn () => view('hakpaten.sukses'))->name('hakpaten.sukses');
+// sukses
+Route::get('/hak-paten/sukses', fn () => view('hakpaten.sukses'))->name('hakpaten.sukses');
 
 // UPLOAD PER STEP (POST)
 Route::post('/hak-paten/upload-draft', [FileUploadController::class, 'draft'])->name('draftpaten.upload');
@@ -106,7 +126,7 @@ Route::post('/hak-paten/upload-prototipe', [FileUploadController::class, 'gambar
 // SUBMIT FINAL (POST)
 Route::post('/hak-paten/submit', [HakPatenSubmitController::class, 'submit'])->name('hakpaten.submit');
 
-// DOWNLOAD TEMPLATE ROUTES (GET)
+// DOWNLOAD TEMPLATE (GET)
 Route::get('/hak-paten/download-template-draft', function () {
     $path = public_path('templates/Template Deskripsi Paten.docx');
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
@@ -117,43 +137,39 @@ Route::get('/hak-paten/download-template-form', function () {
     $path = public_path('templates/Form Daftar Paten (2025).docx');
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
     return response()->download($path, 'Form Daftar Paten (2025).docx');
-})->name('download.template.Form Daftar Paten (2025)');
+})->name('download.template.formpaten');
 
 Route::get('/hak-paten/download-template-surat-invensi', function () {
     $path = public_path('templates/Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx');
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
     return response()->download($path, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx');
-})->name('download.template.Surat Pernyataan Kepemilikan Invensi oleh Inventor');
+})->name('download.template.surat_invensi');
 
 Route::get('/hak-paten/download-template-surat-pengalihan-hak', function () {
     $path = public_path('templates/Surat Pernyataan Pengalihan Hak.docx');
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
     return response()->download($path, 'Surat Pernyataan Pengalihan Hak.docx');
-})->name('download.template.Surat Pernyataan Pengalihan Hak');
+})->name('download.template.pengalihan_hak');
 
 Route::get('/hak-paten/download-template-surat-terima-berkas', function () {
     $path = public_path('templates/TANDA_TERIMA_BERKAS_HAKI.pdf');
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
     return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
-})->name('download.template.Surat Tanda Terima Berkas');
+})->name('download.template.tanda_terima_paten');
 
-
-
-// ===== HAK CIPTA =====
-
-// Step 1 (form data pemohon -> create row + set session cipta_id)
+/*
+|--------------------------------------------------------------------------
+| HAK CIPTA FLOW
+|--------------------------------------------------------------------------
+*/
+// Step 1 (create row + set session cipta_id)
 Route::post('/hak-cipta/start', [HakCiptaController::class, 'start'])
     ->name('hakcipta.start');
 
-// Landing page step 1 (GET)
-Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))
-    ->name('hakcipta');
-
 // Step pages (GET) - anti skip
 Route::middleware('cipta.seq')->group(function () {
-    Route::get('/hak-cipta/permohonan-pendaftaran', function () {
-        return view('hakcipta.permohonanpendaftaran');
-    })->name('hakcipta.permohonanpendaftaran');
+    Route::get('/hak-cipta/permohonan-pendaftaran', fn () => view('hakcipta.permohonanpendaftaran'))
+        ->name('hakcipta.permohonanpendaftaran');
 
     Route::get('/hak-cipta/suratpernyataan', fn () => view('hakcipta.suratpernyataan'))
         ->name('hakcipta.suratpernyataan');
@@ -196,7 +212,7 @@ Route::post('/hak-cipta/upload-hasilciptaan', [FileUploadCiptaController::class,
 Route::post('/hak-cipta/simpan-link', [FileUploadCiptaController::class, 'linkCiptaan'])
     ->name('hakcipta.linkciptaan.store');
 
-// ===== DOWNLOAD TEMPLATE HAK CIPTA =====
+// Download template hak cipta
 Route::get('/hak-cipta/download-template-permohonan', function () {
     $path = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.doc');
     if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
@@ -221,11 +237,13 @@ Route::get('/hak-cipta/download-template-tandaterima', function () {
     return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
 })->name('hakcipta.download.template.tandaterima');
 
-
-// SUBMIT FINAL (POST)
+// SUBMIT FINAL (POST) + sukses
 Route::post('/hak-cipta/submit', [HakCiptaSubmitController::class, 'submit'])->name('hakcipta.submit');
- // Submit
-    Route::get('/hak-cipta/sukses', fn () => view('hakcipta.sukses'))->name('hakcipta.sukses');
+Route::get('/hak-cipta/sukses', fn () => view('hakcipta.sukses'))->name('hakcipta.sukses');
 
-//SEARCH
+/*
+|--------------------------------------------------------------------------
+| TRACKING
+|--------------------------------------------------------------------------
+*/
 Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking');
