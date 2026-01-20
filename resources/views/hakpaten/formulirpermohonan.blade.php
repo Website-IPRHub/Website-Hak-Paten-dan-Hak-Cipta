@@ -22,9 +22,13 @@
                     <form id="draftForm" action="{{ route('formulirpermohonan.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <input id="draftFile" type="file" name="file" required hidden>
-                        <button id="uploadButton" for="draftFile">Upload</button>
+                        <input id="draftFile" type="file" name="file" required hidden data-allowed="doc,docx" data-max-mb="10">
+                        <button id="uploadButton" type="button">Upload</button>
                         <span id="fileName">Belum Pilih File</span>
+                        
+                        <div id="fileError" style="display:none; margin-top:8px; color:#dc2626; font-weight:600;">
+                            Tipe file tidak sesuai.
+                        </div>
                     </form>
                 </div>
             </div>

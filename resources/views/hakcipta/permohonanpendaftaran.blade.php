@@ -22,7 +22,7 @@
                     <form id="draftForm" action="{{ route('hakcipta.permohonanpendaftaran.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <input id="draftFile" type="file" name="file" required hidden>
+                        <input id="draftFile" type="file" name="file" required hidden data-allowed="doc,docx" data-max-mb="10">
                         <button id="uploadButton" type="button">Upload</button>
                         <span id="fileName">Belum Pilih File</span>
                     </form>

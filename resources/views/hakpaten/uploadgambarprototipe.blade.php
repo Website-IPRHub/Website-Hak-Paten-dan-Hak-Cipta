@@ -18,8 +18,8 @@
                     <form id="draftForm" action="{{ route('uploadgambarprototipe.uploadPrototipe') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <input id="draftFile" type="file" name="file" hidden>
-                        <button id="uploadButton" for="draftFile">Upload</button>
+                        <input id="draftFile" type="file" name="file" hidden data-allowed="jpg, png, jpeg" data-max-mb="10">
+                        <button id="uploadButton" type="button">Upload</button>
                         <span id="fileName">Belum Pilih File</span>
                     </form>
                 </div>

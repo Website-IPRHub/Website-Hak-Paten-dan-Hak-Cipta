@@ -5,3 +5,4 @@ import './draftpaten/upload';
 import './nextbutton';
 import './hakcipta/lainnya';
 import './menu';
+import './alert';
