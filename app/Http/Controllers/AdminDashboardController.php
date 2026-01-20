@@ -250,9 +250,16 @@ class AdminDashboardController extends Controller
         $oldStatus = $old->status ?? null;
 
         DB::table('status_verifikasi')->updateOrInsert(
-            ['ref_type' => $type, 'ref_id' => $id],
-            ['status' => $newStatus, 'updated_at' => now(), 'created_at' => now()]
+        ['ref_type' => $type, 'ref_id' => $id],
+        ['status' => $newStatus, 'updated_at' => now(), 'created_at' => now()]
         );
+
+        // ✅ ini WAJIB biar tab paten/cipta ikut berubah
+        if ($type === 'paten') {
+            Paten::where('id', $id)->update(['status' => $newStatus]);
+        } else {
+            HakCipta::where('id', $id)->update(['status' => $newStatus]);
+        }
 
         // kalau diterima tapi belum ada sertifikat
         if ($newStatus === 'diterima') {

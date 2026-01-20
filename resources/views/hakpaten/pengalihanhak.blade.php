@@ -16,7 +16,7 @@
             </div>
             <div class="hero-buttons-start">
                 <div class="button-unduh">
-                    <a href="{{ route('download.template.Surat Pernyataan Pengalihan Hak')}}" class="btn-template-surat-pernyataan-pengalihan-hak">Unduh Surat Pernyataan Pengalihan Hak</a>
+                    <a href="{{ route('download.template.pengalihan_hak')}}" class="btn-template-surat-pernyataan-pengalihan-hak">Unduh Surat Pernyataan Pengalihan Hak</a>
                 </div>
                 <div class="button-upload">
                     <form id="draftForm" action="{{ route('pengalihanhak.upload') }}" method="POST" enctype="multipart/form-data">
