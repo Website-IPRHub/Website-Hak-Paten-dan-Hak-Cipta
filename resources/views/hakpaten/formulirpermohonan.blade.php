@@ -16,7 +16,7 @@
             </div>
             <div class="hero-buttons-start">
                 <div class="button-unduh">
-                    <a href="{{ route('download.template.Form Daftar Paten (2025)')}}" class="btn-template-formulir-permohonan">Unduh Form Daftar Paten</a>
+                    <a href="{{ route('download.template.formpaten')}}" class="btn-template-formulir-permohonan">Unduh Form Daftar Paten</a>
                 </div>
                 <div class="button-upload">
                     <form id="draftForm" action="{{ route('formulirpermohonan.upload') }}" method="POST" enctype="multipart/form-data">

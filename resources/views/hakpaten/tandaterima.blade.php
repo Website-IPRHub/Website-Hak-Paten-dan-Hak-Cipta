@@ -18,7 +18,7 @@
             </div>
             <div class="hero-buttons-start">
                 <div class="button-unduh">
-                    <a href="{{ route('download.template.Surat Tanda Terima Berkas')}}" class="btn-template-surat-tanda-terima-berkas-hki">Unduh Surat Tanda Terima Berkas</a>
+                    <a href="{{ route('download.template.tanda_terima_paten')}}" class="btn-template-surat-tanda-terima-berkas-hki">Unduh Surat Tanda Terima Berkas</a>
                 </div>
                 <div class="button-upload">
                     <form id="draftForm" action="{{ route('tandaterima.uploadFormSuratTandaTerimaBerkas') }}" method="POST" enctype="multipart/form-data">
