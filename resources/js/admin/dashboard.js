@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupTableSearch('searchPaten', 'patenTable');
   setupTableSearch('searchCipta', 'ciptaTable');
+
+  setupDetailDrawer();
 });
 
 /* =========================
@@ -332,3 +334,91 @@ function setupChangePasswordModal() {
     if (e.key === 'Escape') close();
   });
 }
+
+function setupDetailDrawer() {
+  const drawer = document.getElementById('detailDrawer');
+  const backdrop = document.getElementById('detailBackdrop');
+  const closeBtn = document.getElementById('closeDetail');
+  const titleEl = document.getElementById('detailTitle');
+  const subEl = document.getElementById('detailSub');
+  const bodyEl = document.getElementById('detailBody');
+
+  console.log('drawer elements:', { drawer, backdrop, closeBtn, titleEl, subEl, bodyEl });
+
+  if (!drawer || !backdrop || !closeBtn || !bodyEl) return;
+
+  function openDrawer(payload, type) {
+    if (titleEl) titleEl.textContent = type === 'paten' ? 'Detail Paten' : 'Detail Hak Cipta';
+    if (subEl) subEl.textContent = `${payload.no_pendaftaran || '-'} • ${payload.judul || '-'}`;
+
+    const fields = [
+      ['No Pendaftaran', payload.no_pendaftaran],
+      ['Judul', payload.judul],
+      ['Jenis', payload.jenis],
+      ...(type === 'cipta' ? [['Jenis Lainnya', payload.jenis_lainnya]] : []),
+      ['Nama Pencipta', payload.nama_pencipta],
+      ['NIP/NIM', payload.nip_nim],
+      ['No HP', payload.no_hp],
+      ['Fakultas', payload.fakultas],
+      ['Email', payload.email],
+      ...(type === 'paten' ? [['Prototipe', payload.prototipe]] : []),
+      ['Nilai Perolehan', payload.nilai_perolehan],
+      ['Sumber Dana', payload.sumber_dana],
+      ['Skema Penelitian', payload.skema_penelitian],
+    ];
+
+    bodyEl.innerHTML = fields.map(([k, v]) => `
+      <div class="detail-row">
+        <div class="detail-k">${k}</div>
+        <div class="detail-v">${(v ?? '-')}</div>
+      </div>
+    `).join('');
+
+    backdrop.hidden = false;
+    drawer.hidden = false;
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    backdrop.hidden = true;
+    drawer.hidden = true;
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-detail');
+  if (!btn) return;
+
+  const type = btn.dataset.detailType;
+
+  const payload = {
+    no_pendaftaran: btn.dataset.no,
+    judul: btn.dataset.judul,
+    jenis: btn.dataset.jenis,
+    jenis_lainnya: btn.dataset.jenisLainnya,
+    nama_pencipta: btn.dataset.nama,
+    nip_nim: btn.dataset.nip,
+    no_hp: btn.dataset.hp,
+    email: btn.dataset.email,
+    fakultas: btn.dataset.fakultas,
+    prototipe: btn.dataset.prototipe,
+    nilai_perolehan: btn.dataset.nilai,
+    sumber_dana: btn.dataset.sumber,
+    skema_penelitian: btn.dataset.skema,
+  };
+
+  openDrawer(payload, type);
+  });
+
+  closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
+  });
+}
+
+
+

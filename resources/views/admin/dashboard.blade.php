@@ -213,13 +213,46 @@
 
                     <tr data-key="{{ $ciptaKey }}">
                         <td>{{ $i+1 }}</td>
+
+                        {{-- NO PENDAFTARAN --}}
                         <td>{{ $row->no_pendaftaran ?? '-' }}</td>
 
+                        {{-- JUDUL + META --}}
                         <td>
-                            <div class="cell-title">{{ $row->judul_cipta ?? '-' }}</div>
-                            <div class="cell-sub muted">
-                                {{ $row->fakultas ?? '-' }} • {{ $row->email ?? '-' }}
+                            <div class="title-wrap">
+                                <div class="title-main">{{ $row->judul_cipta ?? '-' }}</div>
+
+                                <div class="title-meta">
+                                    <div class="meta-fakultas">{{ $row->fakultas ?? '-' }}</div>
+
+                                    <div class="meta-emails">
+                                        @foreach(preg_split('/[\s,;]+/', $row->email ?? '') as $mail)
+                                            @php $mail = trim($mail); @endphp
+                                            @if($mail)
+                                                <a href="mailto:{{ $mail }}" class="email-chip">{{ $mail }}</a>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
+                            {{-- tombol detail (drawer) --}}
+                             <button type="button"
+                                class="btn-mini btn-detail"
+                                data-detail-type="cipta"
+                                data-no="{{ $row->no_pendaftaran }}"
+                                data-judul="{{ $row->judul_cipta }}"
+                                data-jenis="{{ $row->jenis_cipta }}"
+                                data-jenis-lainnya="{{ $row->jenis_lainnya }}"
+                                data-nama="{{ $row->nama_pencipta }}"
+                                data-nip="{{ $row->nip_nim }}"
+                                data-hp="{{ $row->nomor_hp ?? $row->no_hp }}"
+                                data-email="{{ $row->email }}"
+                                data-fakultas="{{ $row->fakultas }}"
+                                data-nilai="{{ $row->nilai_perolehan }}"
+                                data-sumber="{{ $row->sumber_dana }}"
+                            >
+                                Detail
+                            </button>
 
                             {{-- tombol kirim revisi kalau ada minimal 1 dokumen revisi --}}
                             @php
@@ -442,6 +475,25 @@
                                 </div>
                             </div>
                         </div>
+                        {{-- tombol detail (drawer) --}}
+                        <button type="button"
+                            class="btn-mini btn-detail"
+                            data-detail-type="paten"
+                            data-no="{{ $row->no_pendaftaran }}"
+                            data-judul="{{ $row->judul_paten }}"
+                            data-jenis="{{ $row->jenis_paten }}"
+                            data-nama="{{ $row->nama_pencipta }}"
+                            data-nip="{{ $row->nip_nim }}"
+                            data-hp="{{ $row->nomor_hp ?? $row->no_hp }}"
+                            data-email="{{ $row->email }}"
+                            data-fakultas="{{ $row->fakultas }}"
+                            data-prototipe="{{ $row->prototipe }}"
+                            data-nilai="{{ $row->nilai_perolehan }}"
+                            data-sumber="{{ $row->sumber_dana }}"
+                            data-skema="{{ $row->skema_penelitian }}"
+                        >
+                            Detail
+                        </button>
 
                         {{-- tombol kirim revisi kalau ada minimal 1 dokumen revisi --}}
                         @php
@@ -846,6 +898,24 @@
     ]) !!}
   </script>
 @endif
+
+{{-- DRAWER DETAIL PEMOHON --}}
+<div class="modal-backdrop" id="detailBackdrop" hidden></div>
+
+<aside class="detail-drawer" id="detailDrawer" hidden aria-hidden="true">
+  <div class="detail-drawer-head">
+    <div>
+      <div class="detail-title" id="detailTitle">Detail</div>
+      <div class="detail-sub" id="detailSub">-</div>
+    </div>
+
+    <button type="button" class="btn-ghost" id="closeDetail">Tutup</button>
+  </div>
+
+  <div class="detail-drawer-body" id="detailBody">
+    {{-- diisi via JS --}}
+  </div>
+</aside>
 
 </body>
 </html>
