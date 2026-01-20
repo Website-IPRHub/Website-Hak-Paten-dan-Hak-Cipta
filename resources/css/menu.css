@@ -113,7 +113,11 @@
   align-items: center;
   overflow-x: auto;
   flex-wrap: nowrap;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
+.menu-steps .step{ flex: 0 0 auto; }
+
 
 .step a{
   text-decoration: none;

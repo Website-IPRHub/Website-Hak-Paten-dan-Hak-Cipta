@@ -3,4 +3,5 @@ import '../css/admin.css';
 import './admin/dashboard';
 import './draftpaten/upload';
 import './nextbutton';
-import './hakcipta/lainnya'
+import './hakcipta/lainnya';
+import './menu';
