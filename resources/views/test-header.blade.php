@@ -3,6 +3,8 @@
 @section('title','Test Header')
 
 @section('content')
+
+
   <div class="hero">
     <img src="{{ asset('images/Gedung-WP.jpg') }}" class="hero-img" alt="gedung">
 

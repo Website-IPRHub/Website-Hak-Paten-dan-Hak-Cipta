@@ -13,9 +13,12 @@
   <div class="navbar">
     <div class="navbar-inner container">
 
-      <a href="/" class="brand">
-        <img src="{{ asset('images/Logo Dirinovki 2026.jpg') }}" class="brand-logo" alt="Logo">
+      <a href="https://dirinovki.undip.ac.id" class="brand">
+        <span class="brand-logo-wrap">
+          <img src="{{ asset('images/Logo Dirinovki 2026.jpg') }}" class="brand-logo" alt="Logo">
+        </span>
       </a>
+
 
       <div class="nav-right">
         <nav class="nav-menu">
