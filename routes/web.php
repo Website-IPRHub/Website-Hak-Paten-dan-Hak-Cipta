@@ -83,8 +83,18 @@ Route::get('/debug-mail', function () {
 Route::get('/', fn () => view('welcome'))->name('welcome');
 Route::get('/header', fn () => view('test-header'))->name('test-header');
 
-// LANDING
-Route::get('/hak-paten', fn () => view('hakpaten.hakpaten'))->name('hakpaten');
+// LANDING BARU BGT
+
+// Hak Paten: MENU dulu
+Route::get('/hak-paten', fn () => view('hakpaten.menuhakpaten'))
+    ->name('menuhakpaten');
+
+// Hak Paten: halaman utama / form
+Route::get('/hak-paten/form', fn () => view('hakpaten.hakpaten'))
+    ->name('hakpaten');
+
+Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
+
 Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
 
 // API (JSON) - kalau kamu memang butuh endpoint ini

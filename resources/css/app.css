@@ -18,6 +18,7 @@
 @import "./hasilciptaan.css";
 @import "./linkciptaan.css";
 @import "./tracking.css";
+@import "./menuhakpaten.css";
 
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
