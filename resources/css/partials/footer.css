@@ -1,61 +1,123 @@
+/* ===== Footer Base ===== */
 .site-footer{
-  background: #001349;
-  padding: 20px 0;
+  margin-top: 80px;
+  font-family: Inter, sans-serif;
+}
+
+/* ===== Top ===== */
+.footer-top{
+  background: #03061F;
 }
 
 .footer-inner{
-  display: flex;
-  align-items: flex-start;   
-  justify-content: center;
-  gap: 30px;                 
+  max-width: 1512px;
+  margin: 0 auto;
+  padding: 56px 24px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  box-sizing: border-box;
 }
 
+@media (min-width: 768px){
+  .footer-inner{
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ===== Brand ===== */
+.footer-brand{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 
 .footer-logo{
-  width: 240px;
-  height: 200px;
-  object-fit: contain;   
+  height: 180px;      /* atur sesuai kebutuhan */
+  width: auto;        /* BIAR NGIKUT RASIO, gak jadi kotak */
+  max-width: none;    /* jangan dibatesin jadi “box” */
   display: block;
-  margin-right: 30px;
-  flex-shrink: 0;  
-  max-width: none;
-}
-
-.site-footer .footer-inner .brand .footer-logo{
-  width: 195px !important;
-  height: 200px !important;
-  flex-shrink: 0 !important;
-  max-width: none !important;
 }
 
 
-.footer-layanan h1{
-    color:#2EA3F2;
-    font-size: 14px;
+.footer-brand-name{
+  margin-top: 16px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 16px;
 }
 
-.footer-kontak h2{
-    color:#2EA3F2;
-    font-size: 14px;
+/* ===== Columns ===== */
+.footer-col{
+  min-width: 0;
 }
 
-.footer-lokasi h3{
-    color:#2EA3F2;
-    font-size: 14px;
+.footer-heading{
+  margin: 0;
+  color: #1A6ECE;
+  font-weight: 500;
+  font-size: 24px;
 }
 
-.footer-layanan, .footer-kontak,.footer-lokasi{
-    color: white;
-    max-width: 260px;  
-    font-size: 16px;
+.footer-list{
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0 0;
+  color: #fff;
+  font-weight: 500;
 }
 
-.footer-bottom .container{
-    color:#777777;
-    margin-top: 20px;
-    padding-left: 125px;
+.footer-list li{
+  margin: 0;
 }
 
-p {
-    line-height: 1.9;
+.footer-text{
+  margin-top: 24px;
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+/* ===== Map ===== */
+.footer-map{
+  margin-top: 20px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.footer-iframe{
+  width: 100%;
+  height: 180px;
+  border: 0;
+  display: block;
+}
+
+@media (min-width: 768px){
+  .footer-iframe{
+    height: 200px;
+  }
+}
+
+/* ===== Bottom ===== */
+.footer-bottom{
+  background: #020415;
+}
+
+.footer-bottom-inner{
+  max-width: 1512px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  color: rgba(255,255,255,0.60);
+  font-size: 15px;
+}
+
+.footer-bottom-strong{
+  font-weight: 500;
 }

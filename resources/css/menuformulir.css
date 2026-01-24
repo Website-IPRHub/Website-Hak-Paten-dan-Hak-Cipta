@@ -1,0 +1,90 @@
+.section-steps{
+  background: #F0F6FD;
+  padding: 12px 0;
+}
+
+.menu-steps{
+  list-style: none;
+  display: flex;
+  align-items: center;
+
+  /* ✅ pas buat 4 step */
+  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+
+  padding: 0;
+  margin: 0;
+
+  overflow: hidden; /* ✅ stop scroll (4 doang harusnya muat) */
+}
+
+/* ✅ semua item step sama lebar */
+.menu-steps .step{
+  flex: 1 1 0;
+  min-width: 0;
+  position: static; /* ✅ biar gak ikut posisi absolute dari CSS lain */
+}
+
+/* ✅ khusus stepper (biar gak nabrak .step yg lain) */
+.menu-steps .step a{
+  width: 100%;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E1E1E;
+
+  padding: 10px 14px;
+  border-radius: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  white-space: nowrap;
+}
+
+/* active */
+.menu-steps .step.active a{
+  background: #fff;
+}
+
+/* disabled */
+.menu-steps .step.disabled a{
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ✅ HAPUS GARIS yang kebawa dari rule lain (misal .step::after) */
+.menu-steps .step::before,
+.menu-steps .step::after,
+.menu-steps .step:not(:last-child)::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* ✅ responsive: kalau layar kecil, jadi 2 baris */
+@media (max-width: 900px){
+  .menu-steps{
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .menu-steps .step{
+    flex: 1 1 calc(50% - 10px);
+  }
+
+  .menu-steps .step a{
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px){
+  .menu-steps .step{
+    flex: 1 1 100%;
+  }
+}

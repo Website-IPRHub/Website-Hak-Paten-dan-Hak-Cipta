@@ -33,7 +33,7 @@
 
     <div class="button-daftar-ptn">
       <h3>Siap Daftarkan Paten Anda?</h3>
-      <a href="#" class="btn-dftr">Daftar Paten</a>
+      <a href="{{ route('hakpaten.draftpatenisiformulir') }}" class="btn-dftr">Daftar Paten</a>
     </div>
   </div>
 </div>
