@@ -81,7 +81,7 @@
   padding: 12px 22px;
   border-radius: 14px;
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
@@ -103,4 +103,13 @@
   opacity: 0.5;
   pointer-events: none;  
   cursor: not-allowed;
+}
+
+/* Biar konten ga "di tengah layar" */
+.section-full.section-content{
+  min-height: auto !important;        /* jangan paksa setinggi viewport */
+  align-items: flex-start !important; /* mulai dari atas */
+  justify-content: center !important; /* tetap center horizontal */
+  padding-top: 50px !important;       /* jarak dari menu (atur sesuai mau) */
+  padding-bottom: 28px !important;
 }

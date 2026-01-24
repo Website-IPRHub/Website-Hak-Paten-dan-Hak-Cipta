@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="next">
-            <a id="nextLink" href="{{ route('hakpaten.isiformulir') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
+            <a id="nextLink" href="{{ route('hakpaten.isiformulir') }}" class="btn-selanjutnya is-disabled">Selanjutnya &raquo;</a>
         </div>
     </div>
 </section>

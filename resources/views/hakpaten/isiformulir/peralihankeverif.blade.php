@@ -16,7 +16,7 @@
             4. Surat Pengalihan<br>
         </p>
       </div>
-      <a href="#" class="btn-selanjutnya">Lanjut ke Proses Verifikasi Dokumen</a>
+      <a href="#" class="btn-verif">Lanjut ke Proses Verifikasi Dokumen</a>
     </div>
   </div>
 </section>
