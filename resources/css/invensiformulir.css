@@ -1,0 +1,81 @@
+.form{
+    margin-left: 90px;
+}
+/* wrapper biar full width */
+.inv-wrap{
+  width: 100%;
+  max-width: 100%;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* override form yg biasanya kecil/ketengah */
+.inv-form-full{
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  margin-left: 40px;
+}
+
+.inv-shift-40{ margin-left: 40px; }
+
+@media (max-width: 768px){
+  .inv-shift-40{ margin-left: 0; }
+}
+
+
+/* card inventor full lebar */
+.inv-form-full .inventor-card{
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.inv-form-full .inventor-head{
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+
+/* biar row-2 bener2 2 kolom dan melebar */
+.inv-form-full .row-2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.inventor-card{
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.inventor-head{
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+
+.inventor-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.inventor-col .field{ margin-bottom: 12px; }
+
+/* responsive */
+@media (max-width: 768px){
+  .inventor-grid{ grid-template-columns: 1fr; }
+}
+
+
+/* responsive */
+@media (max-width: 768px){
+  .inv-wrap{ padding: 0 16px; }
+  .inv-form-full .row-2{ grid-template-columns: 1fr; }
+}

@@ -19,7 +19,10 @@
 @import "./linkciptaan.css";
 @import "./tracking.css";
 @import "./menuhakpaten.css";
-
+@import "./isiformulir.css";
+@import "./menuformulir.css";
+@import "./invensiformulir.css";
+@import "./peralihankeverif.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

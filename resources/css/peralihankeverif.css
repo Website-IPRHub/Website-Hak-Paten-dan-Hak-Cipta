@@ -1,0 +1,180 @@
+/* ===== Success Page Layout ===== */
+.section-full.section-content{
+  width: 100%;
+  min-height: calc(100vh - 80px); /* kalau ada navbar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(52,76,123,0.10), rgba(52,76,123,0.02));
+}
+
+.section-inner{
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.content-box.peralihan-box{
+  background: #fff;
+  border-radius: 20px;
+  padding: 26px 26px;
+  box-shadow: 0 18px 50px rgba(3,6,31,0.10);
+  border: 1px solid rgba(3,6,31,0.06);
+  position: relative;
+  overflow: hidden;
+
+  /* FIX: biar align-self di button berfungsi */
+  display: flex;
+  flex-direction: column;
+}
+
+/* accent bubble */
+.content-box.peralihan-box::before{
+  content: "";
+  position: absolute;
+  right: -140px;
+  top: -140px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(52,76,123,0.35),
+    rgba(52,76,123,0.08) 70%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+/* check icon */
+.content-box.peralihan-box::after{
+  content: "✓";
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(52,76,123,0.12);
+  color: #344c7b;
+  font-weight: 800;
+  font-size: 22px;
+  pointer-events: none;
+}
+
+.peralihan-title{
+  margin: 0 0 12px 0;
+  padding-left: 58px; /* ruang buat icon ✓ */
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #03061F;
+  letter-spacing: 0.2px;
+
+  /* biar tetap rata kiri walau parent flex */
+  align-self: stretch;
+  text-align: left;
+}
+
+.peralihan-desc{
+  margin: 0 0 18px 0;
+  padding: 16px 16px 16px 58px;
+  background: rgba(52,76,123,0.04);
+  border: 1px dashed rgba(52,76,123,0.25);
+  border-radius: 16px;
+
+  /* tetap rata kiri */
+  align-self: stretch;
+  text-align: left;
+}
+
+.peralihan-desc p{
+  margin: 0 0 10px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: rgba(3,6,31,0.82);
+}
+
+.peralihan-desc p:last-child{
+  margin-bottom: 0;
+}
+
+/* ===== Button ===== */
+.btn-selanjutnya{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 12px 18px;
+  border-radius: 14px;
+  text-decoration: none;
+
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+
+  color: #fff;
+  background: #344c7b;
+  box-shadow: 0 12px 26px rgba(52,76,123,0.28);
+  transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
+
+  margin-top: 18px;
+
+  /* FIX: tombol center */
+  align-self: center;
+}
+
+.btn-selanjutnya::after{
+  content: "→";
+  font-weight: 900;
+  transform: translateY(-1px);
+}
+
+.btn-selanjutnya:hover{
+  background: #637caf;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(52,76,123,0.32);
+}
+
+.btn-selanjutnya:active{
+  transform: translateY(0);
+  box-shadow: 0 10px 22px rgba(52,76,123,0.24);
+}
+
+.btn-selanjutnya:focus-visible{
+  outline: 3px solid rgba(99,124,175,0.55);
+  outline-offset: 3px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px){
+  .content-box.peralihan-box{
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+
+  .content-box.peralihan-box::after{
+    left: 14px;
+    top: 14px;
+  }
+
+  .peralihan-title{
+    padding-left: 58px; /* icon tetap */
+    font-size: 20px;
+  }
+
+  .peralihan-desc{
+    padding: 14px 14px 14px 14px;
+  }
+
+  .btn-selanjutnya{
+    width: 100%;
+  }
+}

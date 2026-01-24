@@ -17,6 +17,9 @@ use App\Http\Controllers\HakPatenSubmitController;
 use App\Http\Controllers\HakCiptaSubmitController;
 
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\IsiformController;
+use App\Http\Controllers\InvensiController;
+use App\Http\Controllers\PengalihanHakController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,7 +88,6 @@ Route::get('/header', fn () => view('test-header'))->name('test-header');
 
 // LANDING BARU BGT
 
-// Hak Paten: MENU dulu
 Route::get('/hak-paten', fn () => view('hakpaten.menuhakpaten'))
     ->name('menuhakpaten');
 
@@ -100,6 +102,30 @@ Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
 // API (JSON) - kalau kamu memang butuh endpoint ini
 Route::post('/hak-cipta/store', [HakCiptaController::class, 'store']);
 Route::post('/paten/store', [PatenController::class, 'store']);
+
+
+// INI BUAT ISI FORMULIR Y
+
+Route::view(
+  '/hak-paten/draft-paten-isiformulir',
+  'hakpaten.isiformulir.draftpatenisiformulir'
+)->name('hakpaten.draftpatenisiformulir');
+
+Route::get('/hak-paten/isi-formulir', fn () => view('hakpaten.isiformulir.isiformulir'))
+    ->name('hakpaten.isiformulir');
+
+Route::get('/hak-paten/invensi', fn () => view('hakpaten.isiformulir.invensiformulir'))
+  ->name('hakpaten.invensiformulir');
+
+Route::get('/hak-paten/pengalihan', fn () => view('hakpaten.isiformulir.pengalihanhakformulir'))
+  ->name('hakpaten.pengalihanhakformulir');
+
+  Route::get('/hak-paten/peralihan', fn () => view('hakpaten.isiformulir.peralihankeverif'))
+  ->name('hakpaten.peralihankeverif');
+
+Route::post('/isiform', [IsiformController::class, 'store'])->name('isiform.store');
+Route::post('/invensi', [InvensiController::class, 'store'])->name('invensi.store');
+Route::post('/pengalihan', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
 
 /*
 |--------------------------------------------------------------------------
