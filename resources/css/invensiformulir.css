@@ -1,81 +1,123 @@
-.form{
-    margin-left: 90px;
-}
-/* wrapper biar full width */
+/* =========================
+   INVENTOR — rapi & konsisten (se-style draft paten)
+========================= */
+
+/* HAPUS aturan global ini kalau ada (bahaya nabrak halaman lain) */
+/* .form{ margin-left: 90px; } */
+
+/* Wrapper mengikuti layout draft paten */
 .inv-wrap{
   width: 100%;
-  max-width: 100%;
-  padding: 0 24px;
   box-sizing: border-box;
 }
 
-/* override form yg biasanya kecil/ketengah */
+/* Form full lebar, no shifting aneh */
 .inv-form-full{
   width: 100%;
-  max-width: 100%;
   margin: 0;
-  margin-left: 40px;
+  box-sizing: border-box;
 }
 
-.inv-shift-40{ margin-left: 40px; }
+.draft-paten h2{
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #0f172a;
+  margin: 0 0 18px 0;
+}
 
+/* Kalau kamu memang perlu geser sedikit (opsional) */
+.inv-shift-40{ margin-left: 40px; }
 @media (max-width: 768px){
   .inv-shift-40{ margin-left: 0; }
 }
 
-
-/* card inventor full lebar */
-.inv-form-full .inventor-card{
-  width: 100%;
-  border: 1px solid #e5e7eb;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-}
-
-.inv-form-full .inventor-head{
-  margin: 0 0 10px;
-  font-weight: 700;
-}
-
-/* biar row-2 bener2 2 kolom dan melebar */
-.inv-form-full .row-2{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
+/* Card inventor: sama vibe content-isi */
 .inventor-card{
   width: 100%;
+  background: #fff;
   border: 1px solid #e5e7eb;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 12px;
+  border-radius: 18px;
+  padding: 28px 32px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
   box-sizing: border-box;
+  margin-bottom: 14px;
 }
 
+/* Title dalam card */
 .inventor-head{
-  margin: 0 0 12px;
+  margin: 0 0 14px;
+  font-family: 'Inter', sans-serif;
   font-weight: 700;
+  font-size: 18px;
+  color: #0f172a;
 }
 
+/* Grid 2 kolom (seperti row-2 draft paten) */
 .inventor-grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
 
-.inventor-col .field{ margin-bottom: 12px; }
-
-/* responsive */
-@media (max-width: 768px){
-  .inventor-grid{ grid-template-columns: 1fr; }
+/* spacing field */
+.inventor-col .field{
+  margin-bottom: 12px;
 }
 
-
-/* responsive */
-@media (max-width: 768px){
-  .inv-wrap{ padding: 0 16px; }
-  .inv-form-full .row-2{ grid-template-columns: 1fr; }
+/* Kalau kamu masih pakai .row-2 di dalam inventor, samakan juga */
+.inv-form-full .row-2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
+
+/* Responsive */
+@media (max-width: 768px){
+  .inventor-card{
+    padding: 20px;
+    border-radius: 16px;
+  }
+  .inventor-grid{
+    grid-template-columns: 1fr;
+  }
+  .inv-form-full .row-2{
+    grid-template-columns: 1fr;
+  }
+}
+
+.req{ color:#E11D48 !important; }
+
+/* KECILIN + TIPISIN judul (khusus blok invensi ini) */
+.kepemilikan-invensi h2{
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #0f172a;
+  margin: 0 0 18px 0;
+}
+
+/* opsional: kalau masih berat, turunin lagi */
+.kepemilikan-invensi h2 strong{ font-weight: 600 !important; }
+
+/* teks kecil bawah judul */
+.kepemilikan-invensi p{
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(15,23,42,.65);
+  margin: 0 0 12px;
+}
+
+/* Kalau tombol Upload juga kerasa terlalu bold */
+#uploadButton{
+  font-weight: 700 !important; /* coba 600 kalau masih tebel */
+  font-size: 15px !important;
+}
+
+/* Kalau "Belum pilih file" terlalu bold */
+#fileName{
+  font-weight: 600 !important; /* coba 500 */
+  font-size: 13px !important;
+  opacity: .9;
+}
+

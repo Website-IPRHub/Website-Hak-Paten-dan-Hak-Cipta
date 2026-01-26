@@ -23,6 +23,10 @@
 @import "./menuformulir.css";
 @import "./invensiformulir.css";
 @import "./peralihankeverif.css";
+@import "./datadiri.css";
+@import "./skemapengembangan.css";
+@import "./menuverif.css";
+@import "./hasilsubmit.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

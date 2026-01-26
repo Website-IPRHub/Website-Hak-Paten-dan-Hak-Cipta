@@ -119,7 +119,7 @@
 
 
       <div class="actions-right">
-        <button type="submit" name="action" value="download">Unduh</button>
+        <button class="unduh" type="submit" name="action" value="download">Unduh</button>
       </div>
     </div>
 

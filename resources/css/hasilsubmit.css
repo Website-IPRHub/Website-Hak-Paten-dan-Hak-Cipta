@@ -1,0 +1,165 @@
+/* =========================
+   SUCCESS PAGE — Scoped (No Bentrok)
+   ========================= */
+.success-page{
+  --navy:#0B1220;
+  --ink:#0B1220;
+  --muted: rgba(11,18,32,.70);
+
+  --bg:#F7F9FF;
+  --card: rgba(255,255,255,.90);
+  --stroke: rgba(15,29,58,.14);
+  --shadow: 0 14px 34px rgba(7,11,26,.10);
+
+  --r-xl: 18px;
+  --r-lg: 14px;
+}
+
+/* Background (hanya halaman ini) */
+.success-page.section-content{
+  min-height: calc(100vh - 80px);
+  display:grid;
+  place-items:center;
+  padding: 28px 16px;
+  background: var(--bg);
+  margin-top: 40px; /* kalau perlu */
+}
+
+/* Container */
+.success-page .section-inner{
+  width: 100%;
+  max-width: 560px;
+}
+
+/* Card */
+.success-page .submit-result{
+  border-radius: var(--r-xl);
+  padding: 28px 26px;
+
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+
+  text-align: center;
+}
+
+/* Title */
+.success-page .submit-result h2{
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #344c7b;
+  line-height: 1.25;
+}
+
+/* Desc */
+.success-page .submit-result .desc{
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: var(--r-lg);
+  background: #fff;
+  border: 1px solid rgba(15,29,58,.12);
+
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* Kode box */
+.success-page .kode-box{
+  padding: 16px 18px;
+  border-radius: var(--r-lg);
+  background: #fff;
+  border: 1px solid rgba(15,29,58,.12);
+}
+
+.success-page .kode-box span{
+  display:block;
+  margin-bottom: 6px;
+
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #344c7b;
+}
+
+.success-page .kode-box strong{
+  display:block;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: #344c7b;
+  word-break: break-word;
+}
+
+/* Actions */
+.success-page .submit-actions{
+  margin-top: 6px;
+  display:flex;
+  gap: 12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+/* Buttons (khusus success page) */
+.success-page .btn-primary,
+.success-page .btn-secondary{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  text-decoration:none;
+
+  font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.success-page .btn-primary{
+  color:#fff;
+  background: #344c7b;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 12px 26px rgba(7,11,26,.16);
+}
+.success-page .btn-primary:hover{
+  background: #0A152F;
+  transform: translateY(-1px);
+}
+
+.success-page .btn-secondary{
+  color: #344c7b;
+  background: #fff;
+  border: 1px solid rgba(15,29,58,.14);
+  box-shadow: 0 10px 18px rgba(7,11,26,.08);
+}
+.success-page .btn-secondary:hover{
+  background: rgba(247,249,255,.9);
+  transform: translateY(-1px);
+}
+
+.success-page .btn-primary:focus-visible,
+.success-page .btn-secondary:focus-visible{
+  outline: 3px solid rgba(23,58,138,.22);
+  outline-offset: 3px;
+}
+
+/* Responsive */
+@media (max-width: 640px){
+  .success-page .submit-result{ padding: 18px 16px; }
+  .success-page .btn-primary,
+  .success-page .btn-secondary{ width: 100%; }
+}

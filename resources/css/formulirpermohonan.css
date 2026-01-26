@@ -1,19 +1,201 @@
-.formulir-permohonan h2{
-  font-family: 'inter', sans-serif;
-  font-weight: 650;
-  color: #000;
-  font-size: 20px;
-  margin: 0;  
-  margin-left: 25px;    
-  margin-top: 30px;       
+/* =========================
+   FORM PERMOHONAN (SAMA KAYAK DRAFT PATEN)
+========================= */
+
+/* Section spacing */
+.section-full.section-content{
+  min-height: auto !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding-top: 28px !important;
+  padding-bottom: 28px !important;
 }
 
-.formulir-permohonan p{
-  font-family: 'inter', sans-serif;
-  font-weight: 400;
-  color: #8e8c8c;
+.section-content .section-inner{
+  max-width: 1000px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+}
+
+/* Card */
+.content-isi{
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 36px 40px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+/* Title + desc */ 
+.formulir-permohonan h2{
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.formulir-permohonan p{ 
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
-  margin: 0;  
-  margin-left: 25px;    
-  margin-top: 5px;   
+  color: #475569;
+  margin: 0 0 18px 0;
+}
+
+/* Upload area */
+.hero-buttons-start{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.button-upload{
+  background: #344c7b;
+  color: #fff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 10px 22px rgba(52,76,123,0.20);
+  transition: 0.2s ease;
+}
+
+.button-upload:hover{
+  background: #637caf;
+  transform: translateY(-1px);
+}
+
+.button-upload form{
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+/* Upload button */
+#uploadButton{
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+#uploadButton:hover{
+  background: rgba(255,255,255,0.22);
+}
+
+#uploadButton:active{
+  transform: translateY(1px);
+}
+
+/* Filename */
+#fileName{
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  opacity: 0.9;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Error text inside form */
+#fileError{
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  margin-left: 6px;
+}
+
+/* Actions bar */
+.actions-bar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+/* Prev button */
+.btn-prev{
+  background: #03061F;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  box-shadow: 0 10px 22px rgba(3,6,31,0.15);
+}
+
+.btn-prev:hover{
+  background: #344c7b;
+  transform: translateY(-2px);
+}
+
+.btn-prev:active{
+  transform: translateY(0);
+}
+
+/* Next link */
+a#nextLink.btn-selanjutnya{
+  background: #344c7b;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s ease;
+  box-shadow: 0 10px 24px rgba(52,76,123,0.22);
+}
+
+a#nextLink.btn-selanjutnya:hover{
+  background: #637caf;
+  transform: translateY(-2px);
+}
+
+a#nextLink.btn-selanjutnya:active{
+  transform: translateY(0);
+}
+
+/* Disabled (kalau masih dipakai) */
+a#nextLink.btn-selanjutnya.is-disabled{
+  opacity: 0.6;
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 640px){
+  .content-isi{
+    padding: 24px;
+  }
+  #fileName{
+    max-width: 140px;
+  }
+  .actions-bar{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-prev,
+  a#nextLink.btn-selanjutnya{
+    width: 100%;
+    justify-content: center;
+  }
 }

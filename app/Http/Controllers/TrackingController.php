@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\HakCipta;
 use App\Models\Paten;
+use App\Models\PatenVerif;
 use Illuminate\Support\Facades\DB;
 
 class TrackingController extends Controller
@@ -22,20 +23,43 @@ class TrackingController extends Controller
 
         $q = trim($request->q);
 
-        // cari di dua tabel
-        $hakCipta = HakCipta::where('no_pendaftaran', $q)->first();
-        $paten    = Paten::where('no_pendaftaran', $q)->first();
+        $hakCipta = null;
+        $paten = null;
+        $patenVerif = null;
 
-        if (!$hakCipta && !$paten) {
+        // routing by prefix (biar gak query tabel yang gak ada)
+        if (str_starts_with($q, 'HC')) {
+            $hakCipta = HakCipta::where('no_pendaftaran', $q)->first();
+        } elseif (str_starts_with($q, 'VP')) {
+            $patenVerif = PatenVerif::where('no_pendaftaran', $q)->first();
+        } else {
+            // fallback kalau format lain: coba semuanya (kalau tabel ada)
+            $hakCipta = HakCipta::where('no_pendaftaran', $q)->first();
+            // $paten = Paten::where('no_pendaftaran', $q)->first(); // jangan dulu kalau tabel belum ada
+            $patenVerif = PatenVerif::where('no_pendaftaran', $q)->first();
+        }
+
+        if (!$hakCipta && !$paten && !$patenVerif) {
             return view('tracking', [
                 'q' => $q,
                 'found' => false,
             ]);
         }
 
-        // tentukan type + data
-        $type = $hakCipta ? 'cipta' : 'paten';
-        $data = $hakCipta ?? $paten;
+        // tentukan type + data (prioritas: HakCipta > Paten > PatenVerif)
+        if ($hakCipta) {
+            $type  = 'cipta';
+            $data  = $hakCipta;
+            $jenis = 'Hak Cipta';
+        } elseif ($paten) {
+            $type  = 'paten';
+            $data  = $paten;
+            $jenis = 'Hak Paten';
+        } else {
+            $type  = 'paten_verif';     // pastikan ini MATCH dengan ref_type di tabel status_verifikasi
+            $data  = $patenVerif;
+            $jenis = 'Verifikasi Paten';
+        }
 
         // ambil status dari status_verifikasi (sumber utama dari admin)
         $sv = DB::table('status_verifikasi')
@@ -49,7 +73,7 @@ class TrackingController extends Controller
         return view('tracking', [
             'q' => $q,
             'found' => true,
-            'jenis' => $type === 'cipta' ? 'Hak Cipta' : 'Hak Paten',
+            'jenis' => $jenis,
             'status' => $status,
             'updatedAt' => $updatedAt,
         ]);

@@ -13,7 +13,8 @@
   <script src="{{ asset('js/nextbutton.js') }}?v={{ time() }}" defer></script>
 </head>
 
-<body>
+<body class="@yield('body-class')">
+
 
   @include('partials.header')
 

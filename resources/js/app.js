@@ -6,4 +6,5 @@ import './nextbutton';
 import './hakcipta/lainnya';
 import './menu';
 import './alert';
-import './hakpaten/isiform'
+import './hakpaten/isiform';
+import './hakpaten/datadiri'

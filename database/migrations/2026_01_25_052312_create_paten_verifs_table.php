@@ -10,33 +10,33 @@ return new class extends Migration {
         Schema::create('paten_verifs', function (Blueprint $table) {
             $table->id();
 
-            // Nomor pendaftaran verif (biar unik)
+            // Nomor pendaftaran verif
             $table->string('no_pendaftaran', 20)->unique();
 
-            // Data utama dari step Data Diri
+            // Step Data Diri
             $table->enum('jenis_paten', ['Paten', 'Paten Sederhana']);
             $table->string('judul_paten', 255);
 
-            // Semua inventor disimpan JSON
+            // Semua inventor (JSON)
             $table->json('inventors')->nullable();
 
-            // Ringkasan inventor pertama (optional, tapi enak buat list)
+            // Ringkasan inventor pertama (biar gampang list / legacy)
             $table->string('nama_pencipta', 255)->nullable();
             $table->string('nip_nim', 255)->nullable();
             $table->string('fakultas', 255)->nullable();
             $table->string('no_hp', 255)->nullable();
             $table->string('email', 255)->nullable();
 
-            // Data tambahan
+            // Info tambahan
             $table->enum('prototipe', ['Sudah', 'Belum']);
             $table->string('nilai_perolehan', 255);
             $table->string('sumber_dana', 255);
             $table->string('skema_penelitian', 255);
 
-            // Draft paten (isi teks)
+            // Draft paten (teks)
             $table->longText('draft_paten')->nullable();
 
-            // Dokumen / surat (path file)
+            // Dokumen (path file)
             $table->string('form_permohonan')->nullable();
             $table->string('surat_kepemilikan')->nullable();
             $table->string('surat_pengalihan')->nullable();
@@ -47,7 +47,7 @@ return new class extends Migration {
             $table->string('gambar_prototipe')->nullable();
             $table->text('deskripsi_singkat_prototipe')->nullable();
 
-            // Verifikasi admin
+            // Verifikasi
             $table->enum('status_verif', ['Menunggu', 'Revisi', 'Ditolak', 'Disetujui'])->default('Menunggu');
             $table->text('catatan_verif')->nullable();
 

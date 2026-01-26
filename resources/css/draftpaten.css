@@ -1,115 +1,276 @@
-.section-inner{
-  max-width: none;
+/* =========================
+   LAYOUT UTAMA (Full width, rapi)
+========================= */
+.section-full.section-content{
   width: 100%;
+  min-height: auto !important;
+
+  /* biar ga tergantung layout lain */
+  display: block !important;
+
+  padding: 30px 0 !important;     /* full lebar, padding atas/bawah aja */
+  margin: 0 !important;           /* jangan ada offset aneh */
+  box-sizing: border-box;
+  background: #fcfdff !important;
+
+}
+
+/* Container tengah (max 1000px) */
+.section-content .section-inner{
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
   padding: 0 24px;
+  box-sizing: border-box;
 }
 
-.content-box{
+
+/* =========================
+   CARD / BOX
+========================= */
+.content-isi{
   background: #fff;
-  padding: 24px;
-  border-radius: 16px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border-radius: 18px;
+  padding: 40px 46px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
+.draft-paten h2{
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #0f172a;
+  margin: 0 0 18px 0;
+}
+
+/* =========================
+   UPLOAD PILL
+========================= */
 .hero-buttons-start{
-  display: flex !important;
-  justify-content: flex-start !important;
-  align-items: flex-start !important;
-  gap: 24px !important;
-  flex-wrap: nowrap !important;   
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.button-unduh, .button-upload{
-  background-color: #03061F;
+.button-upload, .button-unduh{
+  background: #344c7b;     /* samain sama tombol next */
   color: #fff;
+  border-radius: 16px;
   padding: 12px 14px;
-  border-radius: 15px;
-  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 10px 22px rgba(52,76,123,0.20);
+  transition: 0.2s ease;
 }
 
-.hero-buttons > a,
-.hero-buttons > form{
-  flex: 0 0 auto !important;       
-  width: auto !important;      
-  margin: 0 !important;
-}
-
-.hero-buttons > a{
-  display: inline-flex !important;
-  white-space: nowrap !important;
-  
+.button-upload:hover, .button-unduh:hover{
+  background: #637caf;
+  transform: translateY(-1px);
 }
 
 .button-upload form{
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 12px;
+  margin: 0;
+}
+
+.button-upload{
+  background-color: #344c7b ;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 15px;
+}
+
+.button-upload:hover{
+  background: #344c7b;
+}
+
+.button-upload form{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0;
+}
+
+#uploadButton{
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-family: 'inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.button-unduh{
+  color: #fff;
+  font-family: 'inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
 }
 #fileName{
   font-size: 12px;
   opacity: 0.8;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.draft-paten h2{
-  font-family: 'inter', sans-serif;
-  font-weight: 650;
-  color: #000;
-  font-size: 20px;
-  margin: 0;  
-  margin-left: 25px;    
-  margin-top: 30px;       
+/* =========================
+   ACTIONS (PREV / NEXT)
+========================= */
+.actions-bar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
 }
 
-.button-unduh, .button-upload{
-  margin-top: 30px;
-  font-family: 'inter', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 150px;
-  margin-top: 40px;
-  margin-left: 25px;
+/* prev */
+.btn-prev{
+  background: #03061F;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  box-shadow: 0 10px 22px rgba(3,6,31,0.15);
 }
 
-.button-unduh:hover, .button-upload:hover{
+.btn-prev:hover{
   background: #344c7b;
+  transform: translateY(-2px);
 }
 
-.btn-selanjutnya{
-  background: #344c7b;     
-  color: white;
+.btn-prev:active{
+  transform: translateY(0);
+}
+
+/* next */
+a#nextLink.btn-selanjutnya{
+  background: #344c7b;
+  color: #fff;
   padding: 12px 22px;
   border-radius: 14px;
   text-decoration: none;
-  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  transition: 0.2s;
-  box-shadow: 0 8px 20px rgba(28,94,189,0.25);
+  transition: 0.2s ease;
+  box-shadow: 0 10px 24px rgba(52,76,123,0.22);
 }
 
-.btn-selanjutnya:hover{
-  background: #637caf;       
+a#nextLink.btn-selanjutnya:hover{
+  background: #637caf;
   transform: translateY(-2px);
 }
 
-.btn-selanjutnya:active{
+a#nextLink.btn-selanjutnya:active{
   transform: translateY(0);
 }
 
-.btn-selanjutnya.is-disabled{
-  opacity: 0.5;
-  pointer-events: none;  
-  cursor: not-allowed;
+/* kalau kamu masih pakai disabled, biar tetap cakep */
+a#nextLink.btn-selanjutnya.is-disabled{
+  opacity: 0.6;
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
 }
 
-/* Biar konten ga "di tengah layar" */
-.section-full.section-content{
-  min-height: auto !important;        /* jangan paksa setinggi viewport */
-  align-items: flex-start !important; /* mulai dari atas */
-  justify-content: center !important; /* tetap center horizontal */
-  padding-top: 50px !important;       /* jarak dari menu (atur sesuai mau) */
-  padding-bottom: 28px !important;
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 640px){
+  .content-isi{
+    padding: 24px;
+  }
+
+  #fileName{
+    max-width: 140px;
+  }
+
+  .actions-bar{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-prev,
+  a#nextLink.btn-selanjutnya{
+    width: 100%;
+    justify-content: center;
+  }
 }
+
+/* =========================
+   UPLOAD PILL — 1 kotak aja (span tetap ada)
+========================= */
+
+.hero-buttons-start{
+  gap: 12px;
+}
+
+/* pill utama: ukuran normal, 1 kotak */
+.button-upload{
+  padding: 15px 17px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 22px rgba(52,76,123,0.20) !important;
+}
+
+/* form di dalam pill: jangan bikin "kotak" lagi */
+.button-upload form{
+  display:flex !important;
+  align-items:center !important;
+  gap: 12px !important;
+  margin: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* tombol upload: flat (tanpa kotak), tetap enak dibaca */
+#uploadButton{
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+}
+
+/* span nama file: tetap ada, tapi bukan kotak */
+#fileName{
+  display:inline-block !important;
+  font-size: 12px !important;
+  opacity: .85 !important;
+  max-width: 200px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* kalau input file default masih keliatan kotak, sembunyiin */
+.button-upload input[type="file"]{
+  display:none !important;
+}
+
