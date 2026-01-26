@@ -14,9 +14,6 @@
             <h2>Draft Paten *</h2>
             </div>
             <div class="hero-buttons-start">
-                <div class="button-unduh">
-                    <a href="{{ route('download.template.draftpaten')}}" class="btn-template-draft-paten">Unduh Template Draft Paten</a>
-                </div>
                 <div class="button-upload">
                     <form id="draftForm" action="{{ route('draftpaten.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf

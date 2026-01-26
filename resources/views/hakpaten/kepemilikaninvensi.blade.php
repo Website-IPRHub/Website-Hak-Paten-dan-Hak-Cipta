@@ -15,9 +15,6 @@
                 <p>File dalam bentuk Word, Tanpa Tandatangan</p>
             </div>
             <div class="hero-buttons-start">
-                <div class="button-unduh">
-                    <a href="{{ route('download.template.surat_invensi')}}" class="btn-template-surat-pernyataan-kepemilikan-invensi">Unduh Surat Pernyataan Kepemilikan Invensi</a>
-                </div>
                 <div class="button-upload">
                     <form id="draftForm" action="{{ route('kepemilikaninvensi.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf

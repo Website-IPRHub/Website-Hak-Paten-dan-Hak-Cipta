@@ -82,15 +82,16 @@
       <div class="field">
         <label class="label">Jumlah inventor <span class="req">*</span></label>
         <input
-          type="number"
-          class="input"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
           id="jumlah_inventor"
           name="jumlah_inventor"
-          min="1"
-          max="20"
+          class="input"
           value="{{ old('jumlah_inventor', 1) }}"
           required
         >
+
         @error('jumlah_inventor') <small style="color:red">{{ $message }}</small> @enderror
       </div>
     </div>

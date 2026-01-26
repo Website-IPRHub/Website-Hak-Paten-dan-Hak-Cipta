@@ -9,57 +9,69 @@ use Illuminate\Validation\Rule;
 
 class PatenController extends Controller
 {
-    // WEB FLOW (redirect)
-    public function start(Request $request)
-    {
-        $enumFakultas   = $this->getEnumValues('paten', 'fakultas');
-        $enumSumberDana = $this->getEnumValues('paten', 'sumber_dana');
 
-        $data = $request->validate([
-            'jenis_paten'       => 'required|in:Paten,Paten Sederhana',
-            'judul_paten'       => 'required|string|max:255',
-            'nama_pencipta'     => 'required|string|max:255',
-            'nip_nim'           => 'required|string|max:255',
-            'no_hp'             => 'required|string|max:255',
-            'fakultas'          => ['required', Rule::in($enumFakultas)],
-            'email' => [
-                'required',
-                function ($attribute, $value, $fail) {
-                    $emails = array_values(array_filter(array_map('trim', explode(';', $value))));
+public function start(Request $request)
+{
+    $data = $request->validate([
+        'jenis_paten'       => 'required|in:Paten,Paten Sederhana',
+        'judul_paten'       => 'required|string|max:255',
+        'prototipe'         => 'required|in:Sudah,Belum',
+        'nilai_perolehan'   => 'required|string|max:255',
+        'sumber_dana'       => 'required|string|max:255',
+        'skema_penelitian'  => 'required|string|max:255',
 
-                    if (count($emails) === 0) {
-                        return $fail('Email wajib diisi.');
-                    }
+        'inventor.nama'     => 'required|array|min:1',
+        'inventor.nip_nim'  => 'required|array|min:1',
+        'inventor.fakultas' => 'required|array|min:1',
+        'inventor.no_hp'    => 'required|array|min:1',
+        'inventor.email'    => 'required|array|min:1',
+        'inventor.status'   => 'required|array|min:1',
+    ]);
 
-                    foreach ($emails as $email) {
-                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                            return $fail("Format email tidak valid: $email");
-                        }
-                    }
-                }
-            ],
-            'prototipe'         => 'required|in:Sudah,Belum',
-            'nilai_perolehan'   => 'required|string|max:255',
-            'sumber_dana'       => ['required', Rule::in($enumSumberDana)],
-            'skema_penelitian'  => 'required|string|max:255',
-        ]);
+    // rapihin inventors jadi array of objects
+    $count = count($data['inventor']['nama']);
+    $inventors = [];
+    for ($i=0; $i<$count; $i++) {
+        $inventors[] = [
+            'nama'     => $data['inventor']['nama'][$i] ?? null,
+            'nip_nim'  => $data['inventor']['nip_nim'][$i] ?? null,
+            'fakultas' => $data['inventor']['fakultas'][$i] ?? null,
+            'no_hp'    => $data['inventor']['no_hp'][$i] ?? null,
+            'email'    => $data['inventor']['email'][$i] ?? null,
+            'status'   => $data['inventor']['status'][$i] ?? null,
+        ];
+    }
 
-        $data['no_pendaftaran'] = $this->generateNoPendaftaran(); // pilih salah satu format
-        $data['status'] = $data['status'] ?? 'draft';
+    // inventor pertama buat ringkasan
+    $first = $inventors[0] ?? [];
 
-        // default dokumen kalau belum ada
-        foreach ([
-            'draft_paten', 'form_permohonan', 'surat_kepemilikan', 'surat_pengalihan',
-            'scan_ktp', 'tanda_terima', 'gambar_prototipe', 'deskripsi_singkat_prototipe'
-        ] as $field) {
-            $data[$field] = $data[$field] ?? '';
+    $paten = Paten::create([
+        'no_pendaftaran'   => $this->generateNoPendaftaran(), // kalau kamu punya fungsi ini
+        'jenis_paten'      => $data['jenis_paten'],
+        'judul_paten'      => $data['judul_paten'],
+        'inventors'        => json_encode($inventors), // atau kalau kolom json + casts, bisa langsung array
+        'nama_pencipta'    => $first['nama'] ?? null,
+        'nip_nim'          => $first['nip_nim'] ?? null,
+        'fakultas'         => $first['fakultas'] ?? null,
+        'no_hp'            => $first['no_hp'] ?? null,
+        'email'            => $first['email'] ?? null,
+        'prototipe'        => $data['prototipe'],
+        'nilai_perolehan'  => $data['nilai_perolehan'],
+        'sumber_dana'      => $data['sumber_dana'],
+        'skema_penelitian' => $data['skema_penelitian'],
+    ]);
+
+    session(['paten_id' => $paten->id]);
+
+    $nextRoute = 'paten.draftpaten';
+        if ($paten->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
+            $nextRoute ='hakpaten.skema.form';
         }
 
-        $paten = Paten::create($data);
-        session(['paten_id' => $paten->id]);
+    // ini wajib ke flow hak-paten
+    return redirect()->route($nextRoute, $paten->id);
+}
 
-        return redirect()->route('draftpaten');
-    }
 
     // API FLOW (JSON)
     public function store(Request $request)
@@ -157,4 +169,6 @@ class PatenController extends Controller
 
         return [];
     }
+
+    
 }

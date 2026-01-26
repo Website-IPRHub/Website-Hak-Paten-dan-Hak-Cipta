@@ -15,9 +15,6 @@
                 <p>File dalam bentuk Word, Tanpa Tandatangan</p>
             </div>
             <div class="hero-buttons-start">
-                <div class="button-unduh">
-                    <a href="{{ route('download.template.pengalihan_hak')}}" class="btn-template-surat-pernyataan-pengalihan-hak">Unduh Surat Pernyataan Pengalihan Hak</a>
-                </div>
                 <div class="button-upload">
                     <form id="draftForm" action="{{ route('pengalihanhak.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf

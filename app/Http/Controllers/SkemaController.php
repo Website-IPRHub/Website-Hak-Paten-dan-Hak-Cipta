@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Paten;
 use App\Models\PatenVerif;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -9,16 +10,66 @@ use Carbon\Carbon;
 
 class SkemaController extends Controller
 {
-    // GET /paten-verif/{verif}/skema
-    public function show(PatenVerif $verif)
+    // ===== PATEN VERIF =====
+    public function showVerif(PatenVerif $verif)
+    {
+        $draft = session("patenverif.{$verif->id}.skema", []);
+        return view('hakpaten.verifikasidokumen.skema.skemapengembangan', compact('verif','draft'));
+    }
+
+    public function downloadVerif(Request $request, PatenVerif $verif)
+    {
+        return $this->downloadDocx($request);
+    }
+
+    public function uploadVerif(Request $request, PatenVerif $verif)
+    {
+        return $this->handleUpload(
+            request: $request,
+            noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
+            storeDir: 'paten-verif/skema',
+            updateModel: fn(string $path) => $verif->update(['skema_tkt_template_path' => $path]),
+            fallbackRedirect: route('patenverif.skema.form', ['verif' => $verif->id]),
+        );
+    }
+
+    // ===== PATEN =====
+    public function showPaten(Paten $paten)
+    {
+        $draft = session("paten.{$paten->id}.skema", []);
+        return view('hakpaten.skemapengembanganpaten', compact('paten','draft'));
+    }
+
+    public function downloadPaten(Request $request, Paten $paten)
+    {
+        return $this->downloadDocx($request);
+    }
+
+    public function uploadPaten(Request $request, Paten $paten)
 {
-    $draft = session("patenverif.{$verif->id}.skema", []);
-    return view('hakpaten.verifikasidokumen.skema.skemapengembangan', compact('verif','draft'));
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+    ]);
+
+    $file = $request->file('file');
+    $no  = $paten->no_pendaftaran ?? ('P_'.$paten->id);
+    $ext = $file->getClientOriginalExtension();
+
+    $filename = $no.'_skema_tkt_'.now()->format('Ymd_His').'.'.$ext;
+    $path = $file->storeAs('hak-paten/skema', $filename, 'public');
+
+    $paten->update([
+        'skema_tkt_template_path' => $path,
+    ]);
+
+    return redirect()
+        ->route('draftpaten', ['paten' => $paten->id])
+        ->with('success', 'File skema berhasil diupload');
 }
 
 
-    // POST /paten-verif/{verif}/skema/download
-    public function pengembanganDownload(Request $request, PatenVerif $verif)
+    // ===== Shared helpers =====
+    private function downloadDocx(Request $request)
     {
         $data = $request->validate([
             'nama_lengkap'      => ['required', 'string', 'max:255'],
@@ -36,11 +87,9 @@ class SkemaController extends Controller
 
         $tp = new TemplateProcessor($templatePath);
 
-        $tp->setValue('nama_lengkap', $data['nama_lengkap']);
-        $tp->setValue('program_studi', $data['program_studi']);
-        $tp->setValue('judul_paten', $data['judul_paten']);
-        $tp->setValue('nidn_nip', $data['nidn_nip']);
-        $tp->setValue('fakultas', $data['fakultas']);
+        foreach (['nama_lengkap','program_studi','judul_paten','nidn_nip','fakultas'] as $k) {
+            $tp->setValue($k, $data[$k]);
+        }
 
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id')->translatedFormat('d F Y');
         $tp->setValue('tanggal_pengisian', $tgl);
@@ -53,40 +102,30 @@ class SkemaController extends Controller
             ->deleteFileAfterSend(true);
     }
 
-    public function pengembanganUpload(Request $request, PatenVerif $verif)
-{
-    $request->validate([
-        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'], // 10MB
-    ]);
+    private function handleUpload(
+        Request $request,
+        string $noPendaftaran,
+        string $storeDir,
+        callable $updateModel,
+        string $fallbackRedirect,
+    ) {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        ]);
 
-    $file = $request->file('file');
+        $file = $request->file('file');
+        $ext  = $file->getClientOriginalExtension();
+        $filename = $noPendaftaran.'_skema_tkt_'.now()->format('Ymd_His').'.'.$ext;
 
-    $no  = $verif->no_pendaftaran ?? ('VP_'.$verif->id);
-    $ext = $file->getClientOriginalExtension();
+        $path = $file->storeAs($storeDir, $filename, 'public');
 
-    // nama rapi
-    $filename = $no.'_skema_tkt_'.now()->format('Ymd_His').'.'.$ext;
+        $updateModel($path);
 
-    // simpan ke storage/public/paten-verif/skema/...
-    $path = $file->storeAs('paten-verif/skema', $filename, 'public');
+        $to = $request->input('redirect');
+        $redirectTo = $to ?: $fallbackRedirect;
 
-    // simpan path ke DB (field kamu sudah ada)
-    $verif->update([
-        'skema_tkt_template_path' => $path,
-    ]);
-
-    $to = $request->input('redirect');
-
-    if ($to) {
-        return redirect($to)
+        return redirect($redirectTo)
             ->with('success', 'File skema berhasil diupload')
-            ->withInput(); // ✅ penting
+            ->withInput();
     }
-
-    return redirect()
-        ->route('patenverif.skema.form', ['verif' => $verif->id])
-        ->with('success', 'File skema berhasil diupload')
-        ->withInput(); // ✅ penting
-
-}
 }

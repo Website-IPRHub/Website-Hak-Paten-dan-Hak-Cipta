@@ -1,24 +1,33 @@
 @extends('layouts.app')
 
-@section('title','Sukses')
+@section('title','Pengajuan Berhasil')
 
 @section('content')
-<section class="section-full section-content">
+<section class="section-full section-content success-page">
   <div class="section-inner">
-    <div class="content-box success-box">
-      <h2 class="success-title">Submit Berhasil</h2>
+    <div class="submit-result">
 
-      <div class="success-desc">
-        <p>Data pendaftaran paten sudah terkirim.</p>
-        <p>No Pendaftaran anda:</p>
-        <h3>{{ session('no_pendaftaran') }}</h3>
-      </div>
+      <h2>Pengajuan Paten Berhasil</h2>
 
       @if(session('success'))
         <p class="success-flash">{{ session('success') }}</p>
+      @else
+        <p class="desc">
+          Terima kasih. Data pendaftaran paten Anda telah berhasil dikirim.
+          Silakan simpan kode pengajuan berikut untuk keperluan tracking.
+        </p>
       @endif
 
-      <a href="{{ url('/header') }}" class="btn-selanjutnya">Kembali ke Landing Page</a>
+      <div class="kode-box">
+        <span>Kode Pengajuan</span>
+        <strong>{{ session('no_pendaftaran') ?? '-' }}</strong>
+      </div>
+
+      <div class="submit-actions">
+        <a href="{{ url('/header') }}" class="btn-primary">Kembali ke Beranda</a>
+        <a href="#" class="btn-secondary">Login</a>
+      </div>
+
     </div>
   </div>
 </section>

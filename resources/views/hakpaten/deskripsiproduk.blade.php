@@ -27,16 +27,15 @@
       @endif
 
 
-      <form action="{{ route('patenverif.submit', $verif->id) }}" method="POST">
+      <form action="{{ route('hakpaten.submit') }}" method="POST">
         @csrf
+        <input type="hidden" name="paten_id" value="{{ session('paten_id') }}">
 
-        <textarea name="deskripsi" class="input-deskripsi">{{ old('deskripsi', $verif->deskripsi_singkat_prototipe) }}</textarea>
-
+        <textarea name="deskripsi" class="input-deskripsi input-deskripsi" placeholder="Masukkan deskripsi paten"></textarea>
         <div class="btn-center">
           <button type="submit" class="btn-selanjutnya-submit">Submit</button>
         </div>
       </form>
-
     </div>
   </div>
 </section>
