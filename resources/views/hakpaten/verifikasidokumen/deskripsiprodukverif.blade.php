@@ -4,8 +4,8 @@
 
 @section('content')
 
-@php $activeStep = 9; @endphp
-@include('hakpaten.partials.menu')
+@php $activeStep = 8; @endphp
+@include('hakpaten.verifikasidokumen.menuverif')
 
 <section class="section-full section-content">
   <div class="section-inner">
@@ -27,15 +27,15 @@
       @endif
 
 
-      <form action="{{ route('patenverif.submit', $verif->id) }}" method="POST">
+    <form action="{{ route('patenverif.submit.final', $verif->id) }}" method="POST">
         @csrf
-
         <textarea name="deskripsi" class="input-deskripsi">{{ old('deskripsi', $verif->deskripsi_singkat_prototipe) }}</textarea>
-
         <div class="btn-center">
-          <button type="submit" class="btn-selanjutnya-submit">Submit</button>
+            <button type="submit" class="btn-selanjutnya-submit">Submit</button>
         </div>
-      </form>
+    </form>
+
+
 
     </div>
   </div>

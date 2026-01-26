@@ -117,75 +117,135 @@ select.input{
   display: block;
 }
 
-/* ====== Actions (tombol) ====== */
+/* ====== Actions Bar Layout ====== */
 .actions-bar{
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   margin-top: 15px;
   margin-bottom: 15px;
+  box-sizing: border-box;
 }
 
 /* kiri & kanan */
-.actions-left{
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
+.actions-left,
 .actions-right{
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-  margin-right: 0 !important;           /* FIX: jangan ada margin kanan */
 }
 
-/* FIX tambahan: biar container gak pernah overflow karena padding/margin */
-.actions-bar{
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  flex-wrap: wrap;             /* kalau sempit, turun baris */
-  justify-content: space-between;
+/* pastiin kanan bener2 nempel kanan */
+.actions-right{
+  margin-left: auto;
 }
 
-/* ====== Tombol ====== */
-.actions-bar button{
-  max-width: 100%;
+.actions-bar .btn-selanjutnya{ width: auto; }
+
+
+/* ====== Style tombol (SAMA SEMUA) ====== */
+.actions-bar .btn-prev,
+.actions-bar .btn-selanjutnya,
+.actions-bar .unduh{
+  background: #344c7b;
+  color: #fff;
+  border: 0;
+  box-shadow: 0 8px 20px rgba(28,94,189,0.25);
+
   padding: 12px 22px;
+  border-radius: 14px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
-  background: #344c7b;
-  border: 0;
-  border-radius: 14px;
-  cursor: pointer;
+
   display: inline-flex;
   align-items: center;
-  gap: 15px;
-  text-decoration: none;
+  gap: 10px;
+
+  text-decoration: none;     /* penting utk <a> */
+  cursor: pointer;
   transition: 0.2s;
-  box-shadow: 0 8px 20px rgba(28,94,189,0.25);
+
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-.actions-bar button:hover{
+/* hover sama */
+.actions-bar .btn-prev:hover,
+.actions-bar .btn-selanjutnya:hover,
+.actions-bar .unduh:hover{
   background: #637caf;
   transform: translateY(-2px);
 }
 
-.actions-bar button:active{
+.actions-bar .btn-prev:active,
+.actions-bar .btn-selanjutnya:active,
+.actions-bar .unduh:active{
   transform: translateY(0);
 }
 
-.actions-bar button:focus-visible{
-  outline: 2px solid #637caf;
-  outline-offset: 2px;
+/* disabled next */
+.actions-bar .btn-selanjutnya.is-disabled{
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
 }
+
+/* ====== Mobile ====== */
+@media (max-width: 768px){
+  .actions-bar{
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .actions-left,
+  .actions-right{
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* tombol kecil konsisten untuk semua (bukan cuma button) */
+  .actions-bar .btn-prev,
+  .actions-bar .btn-selanjutnya,
+  .actions-bar .unduh{
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Kalau ada CSS reset yang bikin button jadi teks, ini balikin tampilannya */
+.actions-bar .actions-right .unduh{
+  all: unset;                /* reset semua style aneh */
+  box-sizing: border-box;
+
+  background: #344c7b;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  box-shadow: 0 8px 20px rgba(28,94,189,0.25);
+  transition: 0.2s;
+}
+
+.actions-bar .actions-right .unduh:hover{
+  background: #637caf;
+  transform: translateY(-2px);
+}
+.actions-bar .actions-right .unduh:active{
+  transform: translateY(0);
+}
+
 
 /* ====== Checkbox label ====== */
 .field label{
@@ -246,4 +306,39 @@ select.input{
     font-size: 13px;
     gap: 10px;
   }
+}
+
+/* FIX FINAL: paksa tombol unduh jadi tombol biru */
+.actions-bar .actions-right > button.unduh{
+  background: #344c7b !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  padding: 12px 22px !important;
+
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  cursor: pointer !important;
+  box-shadow: 0 8px 20px rgba(28,94,189,0.25) !important;
+  text-decoration: none !important;
+  line-height: 1 !important;
+
+  /* ini penting kalau ada reset aneh */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+.actions-bar .actions-right > button.unduh:hover{
+  background: #637caf !important;
+  transform: translateY(-2px);
+}
+
+.actions-bar .actions-right > button.unduh:active{
+  transform: translateY(0);
 }

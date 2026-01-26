@@ -4,23 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Paten extends Model
+class PatenVerif extends Model
 {
-    protected $table = 'paten';
+    protected $table = 'paten_verifs';
 
     protected $fillable = [
+        // utama
         'no_pendaftaran',
         'jenis_paten',
         'judul_paten',
+
+        // inventors json
+        'inventors',
+
+        // ringkasan inventor pertama (opsional)
         'nama_pencipta',
         'nip_nim',
-        'no_hp',
         'fakultas',
+        'no_hp',
         'email',
+
+        // data tambahan
         'prototipe',
         'nilai_perolehan',
         'sumber_dana',
         'skema_penelitian',
+
+        // draft & dokumen (path file)
         'draft_paten',
         'form_permohonan',
         'surat_kepemilikan',
@@ -28,6 +38,14 @@ class Paten extends Model
         'scan_ktp',
         'tanda_terima',
         'gambar_prototipe',
-        'deskripsi_singkat_prototipe'
+        'deskripsi_singkat_prototipe',
+
+        // verifikasi
+        'status_verif',
+        'catatan_verif',
+    ];
+
+    protected $casts = [
+        'inventors' => 'array',
     ];
 }
