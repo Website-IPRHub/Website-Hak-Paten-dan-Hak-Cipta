@@ -264,27 +264,41 @@ class PatenVerifController extends Controller
     }
 
     // views
-    public function draft(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.draftpatenverif', compact('verif'));
-    }
-    public function formpermohonan(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.formpermohonanverif', compact('verif'));
-    }
-    public function invensi(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.invensiverif', compact('verif'));
-    }
-    public function pengalihanhak(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.pengalihanhakverif', compact('verif'));
-    }
-    public function scanktp(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.scanktpverif', compact('verif'));
-    }
-    public function uploadgambar(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.uploadgambarverif', compact('verif'));
-    }
-    public function deskripsiprodukverif(PatenVerif $verif){
-        return view('hakpaten.verifikasidokumen.deskripsiprodukverif', compact('verif'));
-    }
+    // views
+public function draft(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'draft');
+    return view('hakpaten.verifikasidokumen.draftpatenverif', compact('verif','draft'));
+}
+
+public function formpermohonan(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'formpermohonan');
+    return view('hakpaten.verifikasidokumen.formpermohonanverif', compact('verif','draft'));
+}
+
+public function invensi(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'invensi');
+    return view('hakpaten.verifikasidokumen.invensiverif', compact('verif','draft'));
+}
+
+public function pengalihanhak(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'pengalihanhak');
+    return view('hakpaten.verifikasidokumen.pengalihanhakverif', compact('verif','draft'));
+}
+
+public function scanktp(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'scanktp');
+    return view('hakpaten.verifikasidokumen.scanktpverif', compact('verif','draft'));
+}
+
+public function uploadgambar(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'uploadgambar');
+    return view('hakpaten.verifikasidokumen.uploadgambarverif', compact('verif','draft'));
+}
+
+public function deskripsiprodukverif(PatenVerif $verif){
+    $draft = $this->getDraft($verif, 'deskripsi');
+    return view('hakpaten.verifikasidokumen.deskripsiprodukverif', compact('verif','draft'));
+}
 
     public function uploadForm(Request $request, PatenVerif $verif)
     {
@@ -392,6 +406,26 @@ class PatenVerifController extends Controller
     {
         return view('hakpaten.verifikasidokumen.hasilsubmit', compact('verif'));
     }
+
+    private function saveDraft(Request $request, PatenVerif $verif, string $step, array $onlyKeys)
+{
+    $data = $request->only($onlyKeys);
+
+    // bersihin spasi biar rapi (opsional)
+    foreach ($data as $k => $v) {
+        if (is_string($v)) $data[$k] = trim($v);
+    }
+
+    session()->put("draft.{$verif->id}.{$step}", array_merge(
+        session("draft.{$verif->id}.{$step}", []),
+        $data
+    ));
+}
+
+private function getDraft(PatenVerif $verif, string $step): array
+{
+    return session("draft.{$verif->id}.{$step}", []);
+}
 
 
 

@@ -11,9 +11,11 @@ class SkemaController extends Controller
 {
     // GET /paten-verif/{verif}/skema
     public function show(PatenVerif $verif)
-    {
-        return view('hakpaten.verifikasidokumen.skema.skemapengembangan', compact('verif'));
-    }
+{
+    $draft = session("patenverif.{$verif->id}.skema", []);
+    return view('hakpaten.verifikasidokumen.skema.skemapengembangan', compact('verif','draft'));
+}
+
 
     // POST /paten-verif/{verif}/skema/download
     public function pengembanganDownload(Request $request, PatenVerif $verif)
