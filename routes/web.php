@@ -62,6 +62,25 @@ Route::get('/debug-mail', function () {
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES (Landing)
+| PEMOHON GENERATE AKUN
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\PemohonAuthController;
+
+Route::get('/login', [PemohonAuthController::class, 'showLogin'])->name('pemohon.login.form');
+Route::post('/login', [PemohonAuthController::class, 'login'])->name('pemohon.login');
+Route::post('/logout', [PemohonAuthController::class, 'logout'])->name('pemohon.logout');
+
+Route::post('/pemohon/change-password', [PemohonAuthController::class, 'changePassword'])
+  ->name('pemohon.change_password');
+
+/*use App\Http\Controllers\PemohonDashboardController;*/
+
+Route::get('/pemohon/dashboard', [PemohonAuthController::class, 'dashboard'])->name('pemohon.dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 Route::get('/', fn () => view('welcome'))->name('welcome');

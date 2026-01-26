@@ -78,7 +78,7 @@ body{
    LOGIN
 ========================= */
 .login-body{
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh);
   background: url("/images/background.jpeg") no-repeat center center/cover;
   position: relative;
   display:flex;
@@ -176,15 +176,15 @@ body{
 .dash-hero-title{
   position: relative;
   margin: 0;
-  padding: 50px 28px;
+  padding: 24px 28px;
   color:#fff;
-  font-size: 52px;
+  font-size: 36px;
   font-weight: 500;
 }
 
 .dash-layout{
   display:flex;
-  min-height: calc(100vh - 72px - 170px);
+  min-height: calc(100vh - 72px - 90px);
   width: 100%;
   max-width: 100%;
 }
@@ -225,9 +225,10 @@ body{
 .dash-content{
   flex: 1;
   background:#fff;
-  padding: 22px;
+  padding: 12px;
   min-width: 0;
 }
+
 
 /* =========================
    MODAL LOGOUT
@@ -494,60 +495,84 @@ body{
 .dd-status .dd-btn{ min-width: 150px; }
 
 
+/* =========================
+   TABLE FINAL (collapse + warna tetap)
+   taruh PALING BAWAH
+========================= */
+
 .data-table{
-  width:100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  width: 100%;
+  border-collapse: collapse;
   font-size: 14px;
+  border: 2px solid rgba(11,44,95,0.18);
 }
 
-/* ===== HEADER TABEL (SEMUA MENU) ==== */
-.data-table thead th{
-  text-align:left;
-  padding: 14px 14px;
-
-  /* beda jelas dari isi tabel */
-  background: #cbd9ef;                 /* lebih kontras dari td */
-  color:#0b2c5f;
-  font-weight: 800;
-
-  border-bottom: 1px solid rgba(4, 34, 79, 0.14);
-  border-right: 1px solid rgba(11,44,95,0.10);
-
-  /* opsional: biar header tetap keliatan pas scroll */
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  letter-spacing: 0.3px;
-}
-
-
-.data-table td{
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(11,44,95,0.08);
-  border-right: 1px solid rgba(11,44,95,0.08);
+/* grid line */
+.data-table thead th,
+.data-table tbody td{
+  border: 2px solid rgba(11,44,95,0.10);
+  padding: 12px 8px !important; /* ⬅️ KUNCI UTAMA */
   vertical-align: top;
 }
-.data-table tbody td{
-  background: #ffffff;
+
+/* HEADER: balikin warna + proporsi */
+.data-table thead th{
+  background: #cbd9ef;           /* warna header */
+  color: #0b2c5f;
+  font-weight: 800;
+  padding: 14px 14px;            /* proporsi header */
+  text-align: left;
+  letter-spacing: .3px;
 }
 
+/* subheader row (opsional biar sedikit beda tone) */
+.data-table thead tr:nth-child(2) th{
+  background: #d7e4f6;
+}
 
-.data-table th:last-child,
-.data-table td:last-child{ border-right: none; }
+/* BODY: padding & hover */
+.data-table tbody td{
+  background: #fff;
+  padding: 12px 14px;
+  vertical-align: top;
+}
 
 .data-table tr:hover td{
   background: rgba(11,44,95,0.03);
 }
 
-/* header merge dokumen */
+/* merge header DOKUMEN */
 .th-doc-merge{
-  background: rgba(11,44,95,0.04); /* SAMA DENGAN HEADER LAIN */
-  color:#0b2c5f;
+  background: #cbd9ef !important;
   text-align: center !important;
   font-weight: 900;
-  letter-spacing: .5px;
 }
+
+/* sticky header (kalau kamu masih mau sticky) */
+.data-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+/* FORCE warna garis tabel (paling bawah) */
+.data-table{
+  border-color: #b0b8c2 !important;              /* coba merah dulu buat ngetes */
+}
+
+.data-table th,
+.data-table td{
+  border-color: #b0b8c2 !important;              /* coba merah dulu buat ngetes */
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Header tabel: center semua */
+.data-table thead th{
+  text-align: center !important;
+  vertical-align: middle;
+}
+
 
 /* =========================
    UI SMALL
@@ -569,10 +594,10 @@ body{
 .btn-mini{
   border: 1px solid rgba(11,44,95,0.18);
   background: #fff;
-  padding: 7px 10px;
+  padding: 4px 9px;
   border-radius: 10px;
   cursor:pointer;
-  font-weight: 800;
+  font-weight: 650;
   color:#0b2c5f;
 }
 .btn-mini:hover{ background: rgba(11,44,95,0.06); }
@@ -634,7 +659,7 @@ body{
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  font-weight:800;
+  font-weight:590;
   color:#0b2c5f;
   text-decoration: underline;
 }
@@ -739,20 +764,20 @@ body{
 .title-wrap{
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:4px;
   max-width: 420px;
 }
 
 .title-main{
-  font-weight: 700;
-  font-size: 15.5px;
+  font-weight: 600;
+  font-size: 15px;
   color:#0b2c5f;
-  line-height:1.4;
+  line-height:1.2;
 }
 
 /* fakultas */
 .meta-fakultas{
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(11,44,95,0.75);
   margin-top: 2px;
@@ -762,7 +787,7 @@ body{
 .meta-emails{
   display:flex;
   flex-wrap: wrap;
-  gap:6px;
+  gap:4px;
   margin-top: 2px;
 }
 
@@ -934,7 +959,7 @@ body{
   padding:4px 10px;
   border-radius:999px;
   font-size:11px;
-  font-weight:700;
+  font-weight:650;
   border:1px solid #e6ebf5;
   background:#f6f8fc;
 }
@@ -1086,4 +1111,244 @@ body{
 
 .dash-hero-overlay{
   pointer-events: none;
+}
+
+.is-loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.inline-msg { line-height: 1.3; }
+
+/* ===== FIX: Scroll hanya di area putih ===== */
+html, body{
+  height: auto;
+  overflow-y: auto;
+}
+
+
+/* header tetap di atas */
+.admin-header{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+}
+
+/* hero tetap di bawah header (kalau kamu mau hero juga tidak ikut scroll) */
+.dash-hero{
+  position: fixed;
+  top: 72px; left: 0; right: 0;
+  height: 110px;
+  z-index: 10;
+}
+
+/* layout (sidebar + content) tetap, mulai setelah header+hero */
+.dash-layout{
+  position: fixed;
+  top: calc(72px + 110px);  /* header + hero */
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  overflow: hidden;         /* biar yang scroll cuma content */
+}
+
+/* sidebar tetap */
+.dash-sidebar{
+  height: 100%;
+  overflow: hidden;         /* sidebar jangan scroll */
+}
+
+/* yang boleh scroll cuma bagian putih */
+.dash-content{
+  height: 100%;
+  overflow-y: auto;         /* ✅ scroll atas-bawah di sini */
+  overflow-x: hidden;       /* horizontal tetap via .table-scroll */
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding: 12px 8px;
+  border-top: 1px solid rgba(11,44,95,0.12);
+  background:#fff;
+}
+
+.table-info{
+  font-size: 13px;
+  color: rgba(0,0,0,0.65);
+}
+
+.table-controls{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.entries-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size: 13px;
+  color: rgba(0,0,0,0.7);
+}
+
+.entries-select{
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(11,44,95,0.18);
+  background:#fff;
+}
+
+.pagination{
+  display:flex;
+  gap:6px;
+  flex-wrap: wrap;
+}
+
+.page-btn{
+  border: 1px solid rgba(11,44,95,0.18);
+  background:#fff;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor:pointer;
+  font-weight: 600;
+  color:#0b2c5f;
+}
+
+.page-btn.active{
+  background: rgba(11,44,95,0.10);
+}
+.page-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+/* Kolom aksi */
+.cell-actions{
+  vertical-align: top;
+}
+
+.action-box{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center; /* biar tengah */
+}
+
+.action-row{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* tombol delete biar ukurannya sama & center */
+.btn-delete{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 34px;
+  border: 1px solid #f2bcbc;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-delete .ic-delete{
+  width: 18px;
+  height: 18px;
+}
+
+/* tombol kirim revisi di bawah */
+.action-revisi{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-revisi .btn-revisi{
+  width: 100%;
+  max-width: 190px;
+}
+
+/* inline msg rapih */
+.action-revisi .inline-msg{
+  font-size: 12px;
+  margin-top: 0;
+}
+
+.rev-dd{
+  position: relative;
+  display: inline-block;
+}
+
+.rev-pop{
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  width: 260px;              /* bisa kamu kecilin/besarin */
+  background: #fff;
+  border: 1px solid rgba(11,44,95,0.18);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+/**************************************************************/
+
+body.admin-page{
+  height: 100vh;
+  overflow: hidden;
+}
+
+body.admin-page .admin-header{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+}
+
+body.admin-page .dash-hero{
+  position: fixed;
+  top: 72px; left: 0; right: 0;
+  height: 110px;
+  z-index: 10;
+}
+
+body.admin-page .dash-layout{
+  position: fixed;
+  top: calc(72px + 110px);
+  left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+body.admin-page .dash-sidebar{
+  height: 100%;
+  overflow: hidden;
+}
+
+body.admin-page .dash-content{
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/************* ADMIN SCOPE GUARD (PALING BAWAH) *************/
+/* Semua global reset admin cuma berlaku kalau body admin-page */
+body.admin-page,
+body.admin-page *{
+  box-sizing: border-box;
+}
+
+/* Optional: kalau kamu pernah set html,body di admin.css, pastikan hanya admin yang ke-lock */
+body.admin-page{
+  height: 100vh;
+  overflow: hidden;
 }

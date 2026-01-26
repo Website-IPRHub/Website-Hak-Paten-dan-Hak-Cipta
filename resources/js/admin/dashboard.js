@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTableSearch('searchPaten', 'patenTable');
   setupTableSearch('searchCipta', 'ciptaTable');
 
+  setupPager('patenTable', 'searchPaten', 'paten');
+  setupPager('ciptaTable', 'searchCipta', 'cipta');
+  setupPager('statusTable', 'searchStatus', 'status'); // status pakai filter + search
+
+  setupRevisiPopup();
+  
   setupDetailDrawer();
 });
 
@@ -419,6 +425,386 @@ function setupDetailDrawer() {
     if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
   });
 }
+
+// resources/js/admin/dashboard.js
+
+function csrfToken() {
+  const el = document.querySelector('meta[name="csrf-token"]');
+  return el ? el.getAttribute('content') : '';
+}
+
+function toast(msg, type = 'success') {
+  // simpel: pakai alert dulu biar cepat jalan
+  // kalau kamu punya toast UI sendiri, ganti fungsi ini
+  console.log(`[${type}]`, msg);
+}
+
+async function postFormJson(actionUrl, formData) {
+  const res = await fetch(actionUrl, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': csrfToken(),
+      'Accept': 'application/json',
+    },
+    body: formData
+  });
+
+  let json = null;
+  try { json = await res.json(); } catch (e) {}
+
+  if (!res.ok) {
+    const msg = (json && json.message) ? json.message : `Request gagal (${res.status})`;
+    throw new Error(msg);
+  }
+  return json;
+}
+
+function setBadge(badgeEl, status) {
+  if (!badgeEl) return;
+  // hapus class badge-xxx lama
+  badgeEl.className = badgeEl.className
+    .split(' ')
+    .filter(c => !c.startsWith('badge-'))
+    .join(' ')
+    .trim();
+
+  badgeEl.classList.add(`badge-${status}`);
+  badgeEl.textContent = String(status).toUpperCase();
+}
+
+function toggleSendRevisiForm(rowEl, hasRevisi) {
+  if (!rowEl) return;
+  const f = rowEl.querySelector('[data-send-revisi]');
+  if (!f) return;
+  f.hidden = !hasRevisi;
+}
+
+
+// ============================
+// 1) AJAX untuk verifikasi dokumen (OK / REVISI) - paten & cipta
+// ============================
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (form.classList.contains('js-doc-form')) {
+    e.preventDefault();
+
+    const td = form.closest('td');
+    const tr = form.closest('tr');
+    const actionUrl = form.getAttribute('action');
+    const fd = new FormData(form);
+
+    // 🔥 loading state
+    setFormLoading(form, true, 'Menyimpan...');
+
+    try {
+      const json = await postFormJson(actionUrl, fd);
+
+      if (!json || !json.ok) throw new Error(json?.message || 'Gagal simpan');
+
+      const docKey = json.doc?.doc_key;
+      const status = json.doc?.status || 'pending';
+
+      if (td && docKey) {
+        const badge = td.querySelector(`[data-doc-badge][data-doc-key="${docKey}"]`);
+        setBadge(badge, status);
+      }
+
+      if (tr) toggleSendRevisiForm(tr, !!json.has_revisi);
+
+      toast(json.message || 'Tersimpan');
+
+    } catch (err) {
+      toast(err.message || 'Error', 'error');
+      alert(err.message || 'Terjadi error');
+    } finally {
+      // ✅ balikin tombol normal walau error
+      setFormLoading(form, false);
+    }
+  }
+});
+
+function setFormLoading(form, loading, labelWhenLoading = 'Menyimpan...') {
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const ddBtn = form.querySelector('[data-dd-btn]'); // tombol dropdown status
+
+  if (submitBtn && !submitBtn.dataset.originalText) {
+    submitBtn.dataset.originalText = submitBtn.textContent.trim();
+  }
+
+  if (loading) {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = labelWhenLoading;
+    }
+    if (ddBtn) ddBtn.disabled = true; // dropdown dimatiin sementara
+    form.classList.add('is-loading');  // opsional styling
+  } else {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset.originalText || 'Simpan';
+    }
+    if (ddBtn) ddBtn.disabled = false; // dropdown balik normal
+    form.classList.remove('is-loading');
+  }
+}
+
+// ============================
+// 2) AJAX untuk "Kirim Permintaan Revisi" (paten & cipta)
+// ============================
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (form.classList.contains('js-send-revisi-form')) {
+    e.preventDefault();
+
+    const actionUrl = form.getAttribute('action');
+    const fd = new FormData(form);
+    const msgEl = form.querySelector('[data-inline-msg]');
+
+    setFormLoading(form, true, 'Mengirim...');
+
+    try {
+      const json = await postFormJson(actionUrl, fd);
+      if (!json || !json.ok) throw new Error(json?.message || 'Gagal kirim revisi');
+
+      if (msgEl) {
+        msgEl.textContent = json.message || 'Terkirim ✅';
+        msgEl.style.color = 'green';
+        setTimeout(() => { msgEl.textContent = ''; }, 2500);
+      }
+
+      if (json.wa_link) window.open(json.wa_link, '_blank');
+
+    } catch (err) {
+      if (msgEl) {
+        msgEl.textContent = err.message || 'Terjadi error';
+        msgEl.style.color = 'red';
+      }
+    } finally {
+      setFormLoading(form, false);
+    }
+  }
+});
+
+
+// ============================
+// 3) AJAX untuk update status (TAB STATUS)
+// ============================
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (form.classList.contains('js-status-form')) {
+    e.preventDefault();
+
+    const actionUrl = form.getAttribute('action');
+    const tr = form.closest('tr');
+    const fd = new FormData(form);
+
+    // Laravel spoof PUT
+    if (!fd.get('_method')) fd.append('_method', 'PUT');
+
+    // ✅ loading state
+    setFormLoading(form, true, 'Menyimpan...');
+
+    const msgEl = form.querySelector('[data-inline-msg]');
+    if (msgEl) {
+      msgEl.textContent = 'Menyimpan perubahan...';
+      msgEl.style.color = '#444';
+    }
+
+    try {
+      const json = await postFormJson(actionUrl, fd);
+      if (!json || !json.ok) throw new Error(json?.message || 'Gagal update status');
+
+      // update label dropdown
+      const hiddenInput = form.querySelector('input[name="status"]');
+      const ddLabel = form.querySelector('[data-dd-label]');
+      const newStatus = json.data?.status || hiddenInput?.value;
+      if (ddLabel && newStatus) ddLabel.textContent = newStatus;
+
+      // inject tombol WA kalau ada
+      if (tr) {
+        const slot = tr.querySelector('[data-wa-slot]');
+        if (slot) {
+          slot.innerHTML = '';
+          if (json.wa_link) {
+            const a = document.createElement('a');
+            a.href = json.wa_link;
+            a.target = '_blank';
+            a.className = 'btn-mini';
+            a.textContent = 'Kirim WA';
+            slot.appendChild(a);
+          }
+        }
+      }
+
+      // ✅ sukses message
+      if (msgEl) {
+        msgEl.textContent = json.message || 'Tersimpan ✅';
+        msgEl.style.color = 'green';
+
+        // auto hilang 2 detik
+        setTimeout(() => { msgEl.textContent = ''; }, 2000);
+      }
+
+    } catch (err) {
+      if (msgEl) {
+        msgEl.textContent = err.message || 'Terjadi error';
+        msgEl.style.color = 'red';
+      }
+    } finally {
+      setFormLoading(form, false);
+    }
+  }
+});
+
+function setupPager(tableId, searchInputId, pagerKey) {
+  const table = document.getElementById(tableId);
+  const footer = document.querySelector(`.table-footer[data-pager="${pagerKey}"]`);
+  if (!table || !footer) return;
+
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+
+  const infoEl = footer.querySelector('[data-info]');
+  const entriesEl = footer.querySelector('[data-entries]');
+  const paginationEl = footer.querySelector('[data-pagination]');
+
+  const allRows = Array.from(tbody.querySelectorAll('tr'));
+
+  // simpan pilihan entries per tab
+  const lsKey = `entriesPerPage:${pagerKey}`;
+  let perPage = parseInt(localStorage.getItem(lsKey) || (entriesEl?.value || '20'), 10);
+  if (entriesEl) entriesEl.value = String(perPage);
+
+  let currentPage = 1;
+
+  const getVisibleRows = () => {
+    // ambil row yang sedang tampil (tidak display:none)
+    return allRows.filter(tr => tr.style.display !== 'none');
+  };
+
+  const render = () => {
+    const visible = getVisibleRows();
+    const total = visible.length;
+
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    // hide semua dulu
+    allRows.forEach(r => (r.hidden = true));
+
+    const start = (currentPage - 1) * perPage;
+    const end = Math.min(start + perPage, total);
+
+    for (let i = start; i < end; i++) {
+      visible[i].hidden = false;
+    }
+
+    // info text
+    const showingFrom = total === 0 ? 0 : start + 1;
+    const showingTo = end;
+    if (infoEl) infoEl.textContent = `Showing ${showingFrom} to ${showingTo} of ${total} entries`;
+
+    // pagination buttons
+    if (!paginationEl) return;
+    paginationEl.innerHTML = '';
+
+    const mkBtn = (label, onClick, opts = {}) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'page-btn' + (opts.active ? ' active' : '');
+      b.textContent = label;
+      if (opts.disabled) b.disabled = true;
+      b.addEventListener('click', onClick);
+      return b;
+    };
+
+    paginationEl.appendChild(
+      mkBtn('Prev', () => { currentPage--; render(); }, { disabled: currentPage === 1 })
+    );
+
+    for (let p = 1; p <= totalPages; p++) {
+      paginationEl.appendChild(
+        mkBtn(String(p), () => { currentPage = p; render(); }, { active: p === currentPage })
+      );
+    }
+
+    paginationEl.appendChild(
+      mkBtn('Next', () => { currentPage++; render(); }, { disabled: currentPage === totalPages })
+    );
+  };
+
+  // entries change
+  if (entriesEl) {
+    entriesEl.addEventListener('change', () => {
+      perPage = parseInt(entriesEl.value, 10);
+      localStorage.setItem(lsKey, String(perPage));
+      currentPage = 1;
+      render();
+    });
+  }
+
+  // hook ke search input: tiap search berubah -> reset page dan render ulang
+  const searchInput = document.getElementById(searchInputId);
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      currentPage = 1;
+      // tunggu filter/search kamu jalan dulu
+      requestAnimationFrame(render);
+    });
+  }
+
+  // hook tambahan untuk status filter dropdown (karena status pakai filterType)
+  if (pagerKey === 'status') {
+    const filterType = document.getElementById('filterType');
+    if (filterType) {
+      filterType.addEventListener('change', () => {
+        currentPage = 1;
+        requestAnimationFrame(render);
+      });
+    }
+  }
+
+  render();
+}
+
+function setupRevisiPopup() {
+  document.addEventListener('click', (e) => {
+    // toggle open
+    const btn = e.target.closest('[data-rev-btn]');
+    if (btn) {
+      e.preventDefault();
+      const wrap = btn.closest('[data-rev]');
+      const pop = wrap?.querySelector('[data-rev-pop]');
+      if (!pop) return;
+
+      // tutup yang lain dulu
+      document.querySelectorAll('[data-rev-pop]').forEach(p => {
+        if (p !== pop) p.hidden = true;
+      });
+
+      pop.hidden = !pop.hidden;
+      return;
+    }
+
+    // klik di luar -> tutup
+    if (!e.target.closest('[data-rev]')) {
+      document.querySelectorAll('[data-rev-pop]').forEach(p => p.hidden = true);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('[data-rev-pop]').forEach(p => p.hidden = true);
+    }
+  });
+}
+
 
 
 

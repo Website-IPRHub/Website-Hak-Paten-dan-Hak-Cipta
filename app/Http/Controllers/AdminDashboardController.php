@@ -231,11 +231,56 @@ class AdminDashboardController extends Controller
         return array_values(array_unique($emails));
     }
 
+    // ========= helper WA =========
+    private function normalizeWaNumber(?string $raw): ?string
+    {
+        if (!$raw) return null;
+
+        // buang spasi, tanda +, strip, dll → jadi hanya angka
+        $num = preg_replace('/\D+/', '', $raw);
+
+        if (!$num) return null;
+
+        // kalau mulai 0 → ganti jadi 62
+        if (str_starts_with($num, '0')) {
+            $num = '62' . substr($num, 1);
+        }
+
+        // kalau mulai 8 (user ngetik 812...) → tambahin 62
+        if (str_starts_with($num, '8')) {
+            $num = '62' . $num;
+        }
+
+        // basic validation panjang
+        if (strlen($num) < 10 || strlen($num) > 16) return null;
+
+        return $num;
+    }
+
+    private function makeWaLink(?string $phone, string $message): ?string
+    {
+        $phone = $this->normalizeWaNumber($phone);
+        if (!$phone) return null;
+
+        // wa.me butuh URL encoded message
+        $text = rawurlencode($message);
+
+        return "https://wa.me/{$phone}?text={$text}";
+    }
+
+    private function getPemohonPhone($row): ?string
+    {
+        // dukung dua kemungkinan kolom
+        return $row->nomor_hp ?? $row->no_hp ?? null;
+    }
+
 // ========= STATUS VERIFIKASI (tabel status_verifikasi) =========
     public function updateStatusVerifikasi(Request $request, string $type, int $id)
     {
         if (!$request->session()->get('admin_logged_in')) {
-            return redirect()->route('admin.login.form');
+            return $request->expectsJson()
+                ? response()->json(['ok'=>false,'message'=>'Unauthorized'], 401)
+                : redirect()->route('admin.login.form');
         }
         if (!in_array($type, ['paten', 'cipta'])) abort(404);
 
@@ -245,85 +290,126 @@ class AdminDashboardController extends Controller
 
         $newStatus = $request->input('status');
 
-        // ambil status lama (biar gak spam kirim email kalau status sama)
+        // ambil status lama
         $old = DB::table('status_verifikasi')->where(['ref_type' => $type, 'ref_id' => $id])->first();
         $oldStatus = $old->status ?? null;
 
+        // upsert status_verifikasi (JANGAN reset created_at kalau sudah ada)
         DB::table('status_verifikasi')->updateOrInsert(
-        ['ref_type' => $type, 'ref_id' => $id],
-        ['status' => $newStatus, 'updated_at' => now(), 'created_at' => now()]
+            ['ref_type' => $type, 'ref_id' => $id],
+            [
+                'status' => $newStatus,
+                'updated_at' => now(),
+                'created_at' => $old ? $old->created_at : now(),
+            ]
         );
 
-        // ✅ ini WAJIB biar tab paten/cipta ikut berubah
+        // sync ke tabel paten/hak_cipta + ambil row
         if ($type === 'paten') {
             Paten::where('id', $id)->update(['status' => $newStatus]);
+            $row = Paten::findOrFail($id);
+            $kategori = 'PATEN';
+            $judul = $row->judul_paten ?? '-';
         } else {
             HakCipta::where('id', $id)->update(['status' => $newStatus]);
+            $row = HakCipta::findOrFail($id);
+            $kategori = 'HAK CIPTA';
+            $judul = $row->judul_cipta ?? '-';
         }
+
+        $no = $row->no_pendaftaran ?? '-';
 
         // kalau diterima tapi belum ada sertifikat
         if ($newStatus === 'diterima') {
             $sv = DB::table('status_verifikasi')->where(['ref_type' => $type, 'ref_id' => $id])->first();
             if ($sv && empty($sv->sertifikat_path)) {
-                return redirect()->route('admin.dashboard', ['tab' => 'status'])
-                    ->with('success', 'Status diterima. Silakan upload sertifikat DJKI untuk mengirim email otomatis.');
+                $msg = 'Status diterima. Silakan upload sertifikat DJKI untuk mengirim email otomatis.';
+                return $request->expectsJson()
+                    ? response()->json(['ok'=>true,'message'=>$msg,'need_sertifikat'=>true,'status'=>$newStatus])
+                    : redirect()->route('admin.dashboard', ['tab' => 'status'])->with('success', $msg);
             }
         }
 
-        // ✅ kirim email untuk status: terkirim, proses, ditolak
-        // (hanya kalau status berubah)
-        $autoMailStatuses = ['terkirim', 'proses', 'ditolak'];
+        // kalau status sama, jangan spam notif
+        if ($newStatus === $oldStatus) {
+            $msg = 'Status tidak berubah (tidak ada notifikasi dikirim).';
+            return $request->expectsJson()
+                ? response()->json(['ok'=>true,'message'=>$msg,'status'=>$newStatus,'no_change'=>true])
+                : redirect()->route('admin.dashboard', ['tab' => 'status'])->with('success', $msg);
+        }
 
-        if (in_array($newStatus, $autoMailStatuses, true) && $newStatus !== $oldStatus) {
+        $autoStatuses = ['terkirim', 'proses', 'ditolak'];
+
+        $emails = $this->parseEmails($row->email);
+        $emailSent = false;
+
+        // EMAIL (hanya untuk status tertentu)
+        if (in_array($newStatus, $autoStatuses, true) && count($emails) > 0) {
             try {
-                if ($type === 'paten') {
-                    $row = Paten::findOrFail($id);
-                    $kategori = 'PATEN';
-                    $judul = $row->judul_paten ?? '-';
-                } else {
-                    $row = HakCipta::findOrFail($id);
-                    $kategori = 'HAK CIPTA';
-                    $judul = $row->judul_cipta ?? '-';
-                }
-
-                $no = $row->no_pendaftaran ?? '-';
-                $emails = $this->parseEmails($row->email);
-
-                if (count($emails) === 0) {
-                    return redirect()->route('admin.dashboard', ['tab' => 'status'])
-                        ->with('success', 'Status tersimpan, tapi email pemohon kosong/tidak valid.');
-                }
-
                 foreach ($emails as $to) {
                     Mail::to($to)->send(new StatusUpdateMail($kategori, $judul, $no, $newStatus));
                 }
-
-                return redirect()->route('admin.dashboard', ['tab' => 'status'])
-                    ->with('success', 'Status berhasil diupdate & email notifikasi terkirim ke: '.implode(', ', $emails));
-
+                $emailSent = true;
             } catch (\Throwable $e) {
                 Log::error('Gagal kirim email status update', [
                     'ref_type'=>$type,'ref_id'=>$id,'status'=>$newStatus,'err'=>$e->getMessage()
                 ]);
-
-                return redirect()->route('admin.dashboard', ['tab' => 'status'])
-                    ->with('success', 'Status berhasil diupdate, tapi email gagal dikirim. Cek storage/logs/laravel.log');
             }
         }
 
-        // NOTE: logic "revisi kirim email" yang kamu punya, biarkan tetap jalan (kalau kamu mau)
-        // Kalau kamu sudah taruh blok kirim RevisiMail di bawah ini, biarkan.
+        // WA LINK (buat semua autoStatuses juga)
+        $waLink = null;
+        if (in_array($newStatus, $autoStatuses, true)) {
+            $phone = $this->getPemohonPhone($row);
 
+            $waMsg =
+                "Halo,\n".
+                "Status pengajuan {$kategori} Anda telah diperbarui.\n".
+                "No Pendaftaran: {$no}\n".
+                "Judul: {$judul}\n".
+                "Status: ".strtoupper($newStatus)."\n\n".
+                "Terima kasih.";
+
+            $waLink = $this->makeWaLink($phone, $waMsg);
+        }
+
+        $msg = 'Status berhasil diupdate.'
+            . (count($emails) ? ($emailSent ? ' | Email terkirim.' : ' | Email gagal/skip.') : ' | Email kosong.')
+            . ($waLink ? ' | WA siap (klik).' : ' | WA tidak valid.');
+
+        // ✅ AJAX JSON response
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => $msg,
+                'data' => [
+                    'type' => $type,
+                    'id' => $id,
+                    'status' => $newStatus,
+                    'kategori' => $kategori,
+                    'judul' => $judul,
+                    'no' => $no,
+                ],
+                'wa_link' => $waLink,
+            ]);
+        }
+
+        // ✅ normal redirect
         return redirect()->route('admin.dashboard', ['tab' => 'status'])
-            ->with('success', 'Status berhasil diupdate.');
+            ->with('success', $msg)
+            ->with('wa_link', $waLink)
+            ->with('wa_label', 'Kirim WA (Status Update)');
     }
 
     // ========= upload sertifikat DJKI + kirim email diterima =========
     public function uploadSertifikatVerifikasi(Request $request, string $type, int $id)
     {
         if (!$request->session()->get('admin_logged_in')) {
-            return redirect()->route('admin.login.form');
+            return $request->expectsJson()
+                ? response()->json(['ok'=>false,'message'=>'Unauthorized'], 401)
+                : redirect()->route('admin.login.form');
         }
+
         if (!in_array($type, ['paten', 'cipta'])) abort(404);
 
         $request->validate([
@@ -332,9 +418,14 @@ class AdminDashboardController extends Controller
 
         $path = $request->file('sertifikat')->store('sertifikat_djki', 'public');
 
+        $old = DB::table('status_verifikasi')->where(['ref_type'=>$type,'ref_id'=>$id])->first();
         DB::table('status_verifikasi')->updateOrInsert(
             ['ref_type' => $type, 'ref_id' => $id],
-            ['sertifikat_path' => $path, 'updated_at' => now(), 'created_at' => now()]
+            [
+                'sertifikat_path' => $path,
+                'updated_at' => now(),
+                'created_at' => $old ? $old->created_at : now(),
+            ]
         );
 
         $sv = DB::table('status_verifikasi')->where(['ref_type' => $type, 'ref_id' => $id])->first();
@@ -434,7 +525,6 @@ class AdminDashboardController extends Controller
             return redirect()->route('admin.dashboard', ['tab'=>'status'])
                 ->with('success', 'Gagal kirim ulang email. Cek storage/logs/laravel.log');
         }
-        return $this->resendEmail($request, $type, $id);
     }
 
     // ========= verifikasi dokumen per-file (OK / REVISI) =========
@@ -488,13 +578,44 @@ class AdminDashboardController extends Controller
             ->where('status','revisi')->exists();
 
         if ($hasRevisi) {
+            $old = DB::table('status_verifikasi')->where(['ref_type'=>$type,'ref_id'=>$id])->first();
+
             DB::table('status_verifikasi')->updateOrInsert(
                 ['ref_type'=>$type,'ref_id'=>$id],
-                ['status'=>'revisi','updated_at'=>now(),'created_at'=>now()]
+                [
+                    'status' => 'revisi',
+                    'updated_at' => now(),
+                    'created_at' => $old ? $old->created_at : now(),
+                ]
             );
         }
 
-        // ✅ FIX: balik ke halaman asal (tab paten/cipta/status)
+        if ($request->expectsJson()) {
+            // ambil doc yang baru diupdate biar UI bisa update
+            $doc = VerifikasiDokumen::where([
+                'ref_type' => $type,
+                'ref_id' => $id,
+                'doc_key' => $docKey,
+            ])->first();
+
+            // cek apakah masih ada revisi di pengajuan ini (buat toggle tombol kirim revisi)
+            $hasRevisi = VerifikasiDokumen::where(['ref_type'=>$type,'ref_id'=>$id])
+                ->where('status','revisi')->exists();
+
+            return response()->json([
+                'ok' => true,
+                'message' => 'Verifikasi dokumen berhasil disimpan.',
+                'doc' => [
+                    'doc_key' => $docKey,
+                    'status' => $doc->status ?? 'pending',
+                    'note' => $doc->note,
+                    'admin_attachment_path' => $doc->admin_attachment_path,
+                    'admin_attachment_url' => $doc->admin_attachment_path ? asset('storage/'.$doc->admin_attachment_path) : null,
+                ],
+                'has_revisi' => $hasRevisi,
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Verifikasi dokumen berhasil disimpan.');
     }
 
@@ -520,6 +641,9 @@ class AdminDashboardController extends Controller
         $emails = $this->parseEmails($row->email);
 
         if (count($emails) === 0) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok'=>false,'message'=>'Gagal kirim revisi: email pemohon kosong/tidak valid.'], 422);
+            }
             return redirect()->back()->with('success', 'Gagal kirim revisi: email pemohon kosong/tidak valid.');
         }
 
@@ -529,6 +653,9 @@ class AdminDashboardController extends Controller
             ->get();
 
         if ($docs->count() === 0) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok'=>false,'message'=>'Tidak ada dokumen revisi untuk dikirim.'], 422);
+            }
             return redirect()->back()->with('success', 'Tidak ada dokumen revisi untuk dikirim.');
         }
 
@@ -571,12 +698,43 @@ class AdminDashboardController extends Controller
                 Mail::to($to)->send(new RevisiMail($kategori, $judul, $no, $items));
             }
 
-            // ✅ balik ke halaman asal
-            return redirect()->back()->with('success', 'Email revisi terkirim ke: '.implode(', ', $emails));
+            $phone = $this->getPemohonPhone($row);
+
+            $waMsg =
+                "Halo,\n".
+                "Pengajuan {$kategori} Anda membutuhkan REVISI.\n".
+                "No Pendaftaran: {$no}\n".
+                "Judul: {$judul}\n\n".
+                "Detail revisi & file (jika ada) sudah kami kirim melalui EMAIL.\n".
+                "Silakan cek email Anda dan unggah ulang dokumen sesuai catatan.\n\n".
+                "Terima kasih.";
+
+            $waLink = $this->makeWaLink($phone, $waMsg);
+
+            // ✅ kalau AJAX
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => true,
+                    'message' => 'Email revisi terkirim.',
+                    'emails' => $emails,
+                    'wa_link' => $waLink,
+                ]);
+            }
+
+            // ✅ normal
+            return redirect()->back()
+                ->with('success', 'Email revisi terkirim ke: '.implode(', ', $emails))
+                ->with('wa_link', $waLink)
+                ->with('wa_label', 'Kirim WA (Announce Revisi)');
+
         } catch (\Throwable $e) {
             Log::error('Gagal kirim email revisi', [
                 'ref_type'=>$type,'ref_id'=>$id,'emails'=>$emails,'err'=>$e->getMessage()
             ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['ok'=>false,'message'=>'Gagal kirim email revisi.'], 500);
+            }
 
             return redirect()->back()->with('success', 'Gagal kirim email revisi. Cek storage/logs/laravel.log');
         }
