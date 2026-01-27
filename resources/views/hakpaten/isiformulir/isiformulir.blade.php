@@ -65,182 +65,70 @@
   </div>
 
   {{-- 3) Konsultan + Jumlah inventor (SEIMBANG) --}}
-  <div class="row-2">
-    <div class="col">
-      <div class="field">
-        <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
-        <select class="input" id="konsultanpaten" name="konsultanpaten" required>
-          <option value="" disabled {{ old('konsultanpaten') ? '' : 'selected' }}>-- Pilih --</option>
-          <option value="Melalui" {{ old('konsultanpaten') == 'Melalui' ? 'selected' : '' }}>Melalui</option>
-          <option value="Tidak Melalui" {{ old('konsultanpaten') == 'Tidak Melalui' ? 'selected' : '' }}>Tidak Melalui</option>
-        </select>
-        @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
-      </div>
+<div class="row-2">
+  <div class="col">
+    <div class="field">
+      <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
+      <select class="input" id="konsultanpaten" name="konsultanpaten" required>
+        <option value="" disabled {{ old('konsultanpaten') ? '' : 'selected' }}>-- Pilih --</option>
+        <option value="Melalui" {{ old('konsultanpaten') == 'Melalui' ? 'selected' : '' }}>Melalui</option>
+        <option value="Tidak Melalui" {{ old('konsultanpaten') == 'Tidak Melalui' ? 'selected' : '' }}>Tidak Melalui</option>
+      </select>
+      @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
     </div>
+  </div>
 
-    <div class="col">
-      <div class="field">
-        <label class="label">Jumlah inventor <span class="req">*</span></label>
+  <div class="col">
+    <div class="field">
+      <label class="label">Jumlah inventor <span class="req">*</span></label>
+
+      <div class="jumlah-inventor-wrap" style="display:flex; gap:10px; align-items:center;">
+        <button type="button" id="invMinus" class="btn-minus" aria-label="Kurangi inventor">-</button>
+
         <input
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
           id="jumlah_inventor"
           name="jumlah_inventor"
           class="input"
           value="{{ old('jumlah_inventor', 1) }}"
-          required
+          readonly
+          style="text-align:center; width:90px;"
         >
 
-        @error('jumlah_inventor') <small style="color:red">{{ $message }}</small> @enderror
+        <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
       </div>
+
+      @error('jumlah_inventor') <small style="color:red">{{ $message }}</small> @enderror
+    </div>
+  </div>
+</div>
+
+{{-- 5) Inventor list --}}
+<div class="row-2">
+  <div class="col">
+    <div class="field">
+      <label class="label">Nama dan kewarganegaraan para inventor <span class="req">*</span></label>
+
+      <div id="inventor-container"></div>
+
+      @error('inventor') <small style="color:red">{{ $message }}</small> @enderror
+      @error('inventor.*') <small style="color:red">{{ $message }}</small> @enderror
     </div>
   </div>
 
-  {{-- 4) Follow-up Konsultan --}}
-  <div class="field" id="konsultan-followup" @if(old('konsultanpaten') !== 'Melalui') style="display:none;" @endif>
-    <div class="row-2">
-      <div class="col">
-        <div class="field">
-          <label class="label">Nama Badan Hukum <span class="req">*</span></label>
-          <input type="text" class="input" id="nama_badan_hukum" name="nama_badan_hukum"
-                value="{{ old('nama_badan_hukum') }}" placeholder="Masukkan nama badan hukum"
-                @if(old('konsultanpaten') === 'Melalui') required @endif>
-          @error('nama_badan_hukum') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
+  {{-- ... kol kanan lampiran tetap --}}
+</div>
 
-        <div class="field">
-          <label class="label">Nama Konsultan Paten <span class="req">*</span></label>
-          <input type="text" class="input" id="nama_konsultan_paten" name="nama_konsultan_paten"
-                value="{{ old('nama_konsultan_paten') }}" placeholder="Masukkan nama konsultan paten"
-                @if(old('konsultanpaten') === 'Melalui') required @endif>
-          @error('nama_konsultan_paten') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
-
-        <div class="field">
-          <label class="label">Nomor Konsultan Paten <span class="req">*</span></label>
-          <input type="text" class="input" id="nomor_konsultan_paten" name="nomor_konsultan_paten"
-                value="{{ old('nomor_konsultan_paten') }}" placeholder="Masukkan nomor konsultan paten"
-                @if(old('konsultanpaten') === 'Melalui') required @endif>
-          @error('nomor_konsultan_paten') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="field">
-          <label class="label">Alamat Badan Hukum <span class="req">*</span></label>
-          <input type="text" class="input" id="alamat_badan_hukum" name="alamat_badan_hukum"
-                value="{{ old('alamat_badan_hukum') }}" placeholder="Masukkan alamat badan hukum"
-                @if(old('konsultanpaten') === 'Melalui') required @endif>
-          @error('alamat_badan_hukum') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
-
-        <div class="field">
-          <label class="label">Alamat Konsultan Paten <span class="req">*</span></label>
-          <input type="text" class="input" id="alamat_konsultan_paten" name="alamat_konsultan_paten"
-                value="{{ old('alamat_konsultan_paten') }}" placeholder="Masukkan alamat konsultan paten"
-                @if(old('konsultanpaten') === 'Melalui') required @endif>
-          @error('alamat_konsultan_paten') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
-
-        <div class="field">
-          <label class="label">Telepon/Fax <span class="req">*</span></label>
-          <input type="text" class="input" id="telepon_fax" name="telepon_fax"
-                value="{{ old('telepon_fax') }}" placeholder="Masukkan telepon/fax"
-                @if(old('konsultanpaten') === 'Melalui') required @endif>
-          @error('telepon_fax') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
-      </div>
-    </div>
+<template id="inventor-template">
+  <div class="inventor-row">
+    <label class="label inventor-label">Inventor</label>
+    <input type="text" class="input inventor-input" name="inventor[]" placeholder="Nama Kewarganegaraan" required>
   </div>
+</template>
 
-  {{-- 5) Inventor list (FULL WIDTH) --}}
-  {{-- 5) Inventor + Lampiran (SEBELAHAN) --}}
-  <div class="row-2">
-    {{-- KIRI: Inventor --}}
-    <div class="col">
-      <div class="field">
-        <label class="label">Nama dan kewarganegaraan para inventor <span class="req">*</span></label>
+<script type="application/json" id="old-inventor-data">
+{!! json_encode(old('inventor', [])) !!}
+</script>
 
-        <div id="inventor-container"></div>
-
-        @error('inventor') <small style="color:red">{{ $message }}</small> @enderror
-        @error('inventor.*') <small style="color:red">{{ $message }}</small> @enderror
-      </div>
-    </div>
-
-    {{-- KANAN: Lampiran --}}
-    <div class="col">
-      <div class="field">
-        <label class="label">Lampiran 1 (satu) rangkap</label>
-
-        <label>
-          <input type="checkbox" name="lampiran[]" value="surat_kuasa"
-            {{ in_array('surat_kuasa', old('lampiran', [])) ? 'checked' : '' }}>
-          surat kuasa
-        </label>
-
-        <label>
-          <input type="checkbox" checked disabled>
-          surat pengalihan hak atas penemuan
-        </label>
-      <input type="hidden" name="lampiran[]" value="pengalihan">
-
-        <label>
-          <input type="checkbox" checked disabled>
-          bukti pemilikan hak atas penemuan
-        </label>
-        <input type="hidden" name="lampiran[]" value="bukti_pemilikan">
-
-
-        <label>
-          <input type="checkbox" name="lampiran[]" value="do_eo"
-            {{ in_array('do_eo', old('lampiran', [])) ? 'checked' : '' }}>
-          bukti penunjukan negara tujuan (DO/EO)
-        </label>
-
-        <label>
-          <input type="checkbox" name="lampiran[]" value="dok_prioritas"
-            {{ in_array('dok_prioritas', old('lampiran', [])) ? 'checked' : '' }}>
-          dokumen prioritas dan terjemahannya
-        </label>
-
-        <label>
-          <input type="checkbox" name="lampiran[]" value="dok_pct"
-            {{ in_array('dok_pct', old('lampiran', [])) ? 'checked' : '' }}>
-          dokumen permohonan paten internasional/PCT
-        </label>
-
-        <label>
-          <input type="checkbox" name="lampiran[]" value="jasad_renik"
-            {{ in_array('jasad_renik', old('lampiran', [])) ? 'checked' : '' }}>
-          sertifikat penyimpanan jasad renik dan terjemahannya
-        </label>
-
-        <label>
-          <input type="checkbox" checked disabled>
-          dokumen lain (sebutkan)
-        </label>
-        <input type="hidden" name="lampiran[]" value="dok_lain">
-
-        <textarea class="input" name="lampiran_lainnya"
-          placeholder="Jika pilih dokumen lain, tulis di sini...">{{ old('lampiran_lainnya') }}</textarea>
-
-        @error('lampiran') <small style="color:red">{{ $message }}</small> @enderror
-      </div>
-    </div>
-  </div>
-
-  <template id="inventor-template">
-    <div class="inventor-row">
-      <label class="label inventor-label">Inventor</label>
-      <input type="text" class="input inventor-input" name="inventor[]" placeholder="Nama Kewarganegaraan" required>
-    </div>
-  </template>
-
-  <script type="application/json" id="old-inventor-data">
-  {!! json_encode(old('inventor', [])) !!}
-  </script>
 
   {{-- 6) Hak prioritas + Gambar abstrak (kanan-kiri) --}}
   <div class="row-2">

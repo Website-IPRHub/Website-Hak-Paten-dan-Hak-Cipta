@@ -174,15 +174,6 @@
       {{-- ACTIONS --}}
       <div class="actions-bar">
         <div class="actions-left">
-          <button
-            type="button"
-            class="btn-prev"
-            data-fallback="#"
-            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
-          >
-            &laquo; Sebelumnya
-          </button>
-
           <a id="nextLink"
             href="javascript:void(0)"
             class="btn-selanjutnya is-disabled"
