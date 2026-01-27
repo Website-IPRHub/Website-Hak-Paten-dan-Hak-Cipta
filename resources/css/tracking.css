@@ -121,3 +121,17 @@
 .legend .done{ border-color:#2563eb; }
 .legend .doing{ border-color:#f59e0b; }
 .legend .todo{ border-color:#ef4444; }
+
+.tracking-form.horizontal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tracking-input {
+  flex: 1;
+}
+
+.tracking-btn {
+  white-space: nowrap;
+}
