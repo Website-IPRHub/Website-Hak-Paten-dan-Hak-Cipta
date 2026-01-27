@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
   const fileInput = document.getElementById("draftFile");
-  const fileName = document.getElementById("fileName");
+  const fileName  = document.getElementById("fileName");
+  const uploadBtn = document.getElementById("uploadButton");
+  const form = uploadBtn ? uploadBtn.closest("form") : null;
 
-  if (!fileInput || !fileName) return;
+  if (!fileInput || !fileName || !uploadBtn || !form) return;
 
-  fileInput.addEventListener("change", function () {
-    fileName.textContent = fileInput.files?.[0]?.name || "Belum Pilih File";
+  uploadBtn.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", () => {
+    fileName.textContent = fileInput.files?.[0]?.name || "Belum pilih file";
+    if (fileInput.files?.length) form.requestSubmit(); // upload ke server
   });
 });

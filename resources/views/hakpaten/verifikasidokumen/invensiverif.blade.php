@@ -39,7 +39,14 @@
 
             <button id="uploadButton" type="button" class="btn-upload">Upload</button>
 
-            <span id="fileName" class="file-name">Belum pilih file</span>
+            <span id="fileName" class="file-name">
+  @if($verif->surat_kepemilikan)
+    {{ basename($verif->surat_kepemilikan) }}
+  @else
+    Belum pilih file
+  @endif
+</span>
+
 
             {{-- kalau JS kamu butuh tombol submit tersembunyi --}}
             <button id="submitUpload" type="submit" hidden>Kirim</button>

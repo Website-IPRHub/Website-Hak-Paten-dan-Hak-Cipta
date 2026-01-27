@@ -7,4 +7,5 @@ import './hakcipta/lainnya';
 import './menu';
 import './alert';
 import './hakpaten/isiform';
-import './hakpaten/datadiri'
+import './hakpaten/datadiri';
+import './uploadpaten'

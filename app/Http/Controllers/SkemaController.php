@@ -62,9 +62,7 @@ class SkemaController extends Controller
         'skema_tkt_template_path' => $path,
     ]);
 
-    return redirect()
-        ->route('draftpaten', ['paten' => $paten->id])
-        ->with('success', 'File skema berhasil diupload');
+      return redirect()->route('draftpaten');
 }
 
 

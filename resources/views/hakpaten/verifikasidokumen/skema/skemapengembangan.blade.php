@@ -85,35 +85,44 @@
 </form>
 
 {{-- ACTIONS BAR --}}
-<div class="actions-bar">
-  <div class="actions-left">
-    <button type="button" class="btn-prev"
+<div class="skm-actions">
+  <div class="skm-actions__left">
+    <button type="button" class="skm-btn skm-btn--prev"
       data-fallback="{{ route('hakpaten.draftpatenisiformulir') }}"
       onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
       &laquo; Sebelumnya
     </button>
 
-    <a class="btn-next" href="{{ route('patenverif.draft', ['verif' => $verif->id]) }}>
+    <a class="btn-next"
+      href="{{ route('patenverif.draft', ['verif' => $verif->id]) }}">
       Selanjutnya &raquo;
     </a>
   </div>
 
   <div class="actions-right">
-    {{-- FORM UPLOAD (terpisah) --}}
-    <div class="button-upload">
-      <form id="skemaUploadForm"
-            action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
-            method="POST" enctype="multipart/form-data">
-        @csrf
-        <input id="draftFile" type="file" name="file" hidden required data-allowed="doc,docx" data-max-mb="10">
-        <button id="uploadButton" type="button">Upload</button>
-        <span id="fileName">Belum Pilih File</span>
-        <button id="submitUpload" type="submit" style="display:none;">Kirim</button>
-      </form>
-    </div>
+    {{-- FORM UPLOAD (verif) --}}
+<div class="button-upload">
+  <form id="draftForm"
+        action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
+        method="POST" enctype="multipart/form-data">
+    @csrf
+
+    <input id="draftFile"
+           type="file"
+           name="file"
+           required
+           hidden
+           accept=".doc,.docx">
+
+    <button id="uploadButton" type="button">Upload</button>
+    <span id="fileName">Belum Pilih File</span>
+  </form>
+</div>
+
 
     {{-- tombol unduh submit ke form download --}}
     <button class="unduh" type="submit" form="downloadForm">Unduh</button>
   </div>
 </div>
+
 @endsection

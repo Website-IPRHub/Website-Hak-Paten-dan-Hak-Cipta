@@ -29,7 +29,14 @@
                         Upload
                         </button>
 
-                        <span id="fileName" class="file-name">Belum pilih file</span>
+                        <span id="fileName" class="file-name">
+  @if($verif->gambar_prototipe)
+    {{ basename($verif->gambar_prototipe) }}
+  @else
+    Belum pilih file
+  @endif
+</span>
+
 
                         {{-- submit beneran (disembunyikan, dipencet via JS setelah pilih file) --}}
                         <button id="submitUpload" type="submit" style="display:none;">Kirim</button>

@@ -82,7 +82,7 @@ class PatenVerifController extends Controller
             'sumber_dana'      => $validated['sumber_dana'],
             'skema_penelitian' => $validated['skema_penelitian'],
 
-            'status_verif'     => 'Menunggu',
+            'status_verif'     => 'Terkirim',
         ];
 
         // default dokumen kalau belum ada (biar sama seperti controller sebelumnya)
@@ -179,7 +179,7 @@ class PatenVerifController extends Controller
             'nilai_perolehan'  => $validated['nilai_perolehan'],
             'sumber_dana'      => $validated['sumber_dana'],
             'skema_penelitian' => $validated['skema_penelitian'],
-            'status_verif'     => 'Menunggu',
+            'status_verif'     => 'Terkirim',
         ];
 
         foreach ([
@@ -204,20 +204,30 @@ class PatenVerifController extends Controller
         ]);
     }
 
-    public function uploadDraft(Request $request, PatenVerif $verif)
+    private function storeUploadedOriginalName(Request $request, string $dir): string
     {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:5120'],
-        ]);
+        $file = $request->file('file');
 
-        $path = $request->file('file')->store('verif/draft', 'public');
+        $original = $file->getClientOriginalName();
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
 
-        $verif->update([
-            'draft_paten' => $path,
-        ]);
-
-        return redirect()->route('patenverif.formpermohonan', $verif->id);
+        // simpan pakai nama asli (tanpa prefix)
+        return $file->storeAs($dir, $safeName, 'public');
     }
+
+    public function uploadDraft(Request $request, PatenVerif $verif)
+{
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx', 'max:5120'],
+    ]);
+
+    $path = $this->storeUploadedOriginalName($request, 'verif/draft');
+
+    $verif->update(['draft_paten' => $path]);
+
+    return redirect()->back()->with('success', 'Draft berhasil diupload');
+}
+
 
     public function submitDeskripsi(Request $request, PatenVerif $verif)
     {
@@ -301,103 +311,102 @@ public function deskripsiprodukverif(PatenVerif $verif){
 }
 
     public function uploadForm(Request $request, PatenVerif $verif)
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'], // 10MB
-        ]);
+{
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+    ]);
 
-        $path = $request->file('file')->store('verif/form_permohonan', 'public');
+    $path = $this->storeUploadedOriginalName($request, 'verif/form_permohonan');
 
-        $verif->update([
-            'form_permohonan' => $path,
-        ]);
+    $verif->update(['form_permohonan' => $path]);
 
-        return redirect()->route('patenverif.invensi', ['verif' => $verif->id])
-            ->with('success', 'Form Permohonan berhasil diupload');
-    }
+    return redirect()->back()->with('success', 'Form Permohonan berhasil diupload');
+}
+
 
     public function uploadInvensi(Request $request, PatenVerif $verif)
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'], // 10MB
-        ]);
+{
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+    ]);
 
-        $path = $request->file('file')->store('verif/surat_kepemilikan', 'public');
+    $path = $this->storeUploadedOriginalName($request, 'verif/surat_kepemilikan');
 
-        $verif->update([
-            'surat_kepemilikan' => $path,
-        ]);
+    $verif->update(['surat_kepemilikan' => $path]);
 
-        return redirect()->route('patenverif.pengalihanhak', ['verif' => $verif->id])
-            ->with('success', 'Surat Invensi berhasil diupload');
-    }
+    return redirect()->back()->with('success', 'Surat Invensi berhasil diupload');
+}
 
     public function uploadPengalihan(Request $request, PatenVerif $verif)
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'], // 10MB
-        ]);
+{
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+    ]);
 
-        $path = $request->file('file')->store('verif/surat_pengalihan', 'public');
+    $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
 
-        $verif->update([
-            'surat_pengalihan' => $path,
-        ]);
+    $verif->update(['surat_pengalihan' => $path]);
 
-        return redirect()->route('patenverif.scanktp', ['verif' => $verif->id])
-            ->with('success', 'Surat Pengalihan Hak berhasil diupload');
-    }
+    return redirect()->back()->with('success', 'Surat Pengalihan Hak berhasil diupload');
+}
+
 
     public function uploadKTP(Request $request, PatenVerif $verif)
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
-        ]);
+{
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+    ]);
 
-        $path = $request->file('file')->store('verif/scan_ktp', 'public');
+    $file = $request->file('file');
+    $original = $file->getClientOriginalName();
+    $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
 
-        $verif->update([
-            'scan_ktp' => $path,
-        ]);
+    $path = $file->storeAs('verif/scan_ktp', $safeName, 'public');
 
-        return redirect()->route('patenverif.uploadgambar', ['verif' => $verif->id])
-            ->with('success', 'Scan KTP berhasil diupload');
-    }
+    $verif->update(['scan_ktp' => $path]);
+
+    return redirect()->back()->with('success', 'Scan KTP berhasil diupload');
+}
 
 
     public function uploadGambarr(Request $request, PatenVerif $verif)
-    {
-        $request->validate([
-            'file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg', 'max:10240'],
-        ]);
+{
+    $request->validate([
+        'file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg', 'max:10240'],
+    ]);
 
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('verif/gambar_prototipe', 'public');
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        $original = $file->getClientOriginalName();
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
 
-            $verif->update([
-                'gambar_prototipe' => $path,
-            ]);
-        }
+        $path = $file->storeAs('verif/gambar_prototipe', $safeName, 'public');
 
-        return redirect()->route('patenverif.deskripsi', ['verif' => $verif->id])
-            ->with('success', 'Gambar berhasil diupload');
+        $verif->update(['gambar_prototipe' => $path]);
     }
+
+    return redirect()->back()->with('success', 'Gambar berhasil diupload');
+}
+
 
     // =========================
     // SUBMIT FINAL
     // =========================
-    public function submitFinal(PatenVerif $verif)
-    {
-        // update status + waktu submit
-        $verif->update([
-            'status_verif' => 'Diajukan',
-            'submitted_at' => now(), // kalau ada kolomnya
-        ]);
+    public function submitFinal(Request $request, PatenVerif $verif)
+{
+    $request->validate([
+        'deskripsi' => ['nullable', 'string', 'max:255'],
+    ]);
 
-        return redirect()->route('patenverif.hasil', [
-            'verif' => $verif->id
-        ]);
-    }
+    $verif->update([
+        'deskripsi_singkat_prototipe' => $request->filled('deskripsi') ? $request->deskripsi : null,
+        'status_verif' => 'Terkirim',
+        'submitted_at' => now(),
+    ]);
+
+    return redirect()->route('patenverif.hasil', ['verif' => $verif->id]);
+}
+
 
     // =========================
     // HALAMAN HASIL SUBMIT

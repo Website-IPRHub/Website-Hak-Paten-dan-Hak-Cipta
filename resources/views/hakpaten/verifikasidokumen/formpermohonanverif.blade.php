@@ -38,8 +38,13 @@
                         </button>
 
                         <span id="fileName" class="file-name">
-                            Belum pilih file
-                        </span>
+  @if($verif->form_permohonan)
+    {{ basename($verif->form_permohonan) }}
+  @else
+    Belum pilih file
+  @endif
+</span>
+
 
                         <button id="submitUpload" type="submit" hidden>Kirim</button>
                 </div>
