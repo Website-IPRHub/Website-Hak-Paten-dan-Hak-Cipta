@@ -26,7 +26,15 @@
                 </div>
             </div>
         </div>
-        <div class="next">
+        <div class="actions-bar">
+                    <button
+            type="button"
+            class="btn-prev"
+            data-fallback="{{ route('kepemilikaninvensi') }}"
+            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+          >
+            &laquo; Sebelumnya
+          </button>
             <a id="nextLink" href="{{ route('scanktp') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
         </div>
     </div>

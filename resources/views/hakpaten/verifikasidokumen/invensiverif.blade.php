@@ -60,9 +60,7 @@
         &laquo; Sebelumnya
       </button>
 
-      <a id="nextLink"
-        href="{{ route('patenverif.pengalihanhak', ['verif' => $verif->id]) }}"
-        class="btn-selanjutnya is-disabled">
+      <a class="btn-next" href="{{ route('patenverif.pengalihanhak', ['verif' => $verif->id]) }}">
         Selanjutnya &raquo;
       </a>
     </div>

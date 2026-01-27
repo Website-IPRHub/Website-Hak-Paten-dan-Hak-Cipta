@@ -23,7 +23,16 @@
                 </div>
             </div>
         </div>
-        <div class="next">
+
+        <div class="actions-bar">
+                    <button
+            type="button"
+            class="btn-prev"
+            data-fallback="{{ route('hakpaten') }}"
+            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+          >
+            &laquo; Sebelumnya
+        </button>
           <a id="nextLink"
             href="{{ route('draftpaten', ['paten' => $paten->id]) }}"
             class="btn-selanjutnya {{ $paten->skema_tkt_template_path ? '' : 'is-disabled' }}">

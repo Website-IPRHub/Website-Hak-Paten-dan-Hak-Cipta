@@ -54,10 +54,8 @@
       </button>
 
       <a
-        id="nextLink"
-        href="{{ route('patenverif.formpermohonan', ['verif' => $verif->id]) }}"
-        class="btn-selanjutnya is-disabled"
-      >
+        class="btn-next"
+        href="{{ route('patenverif.formpermohonan', ['verif' => $verif->id]) }}">
         Selanjutnya »
       </a>
     </div>

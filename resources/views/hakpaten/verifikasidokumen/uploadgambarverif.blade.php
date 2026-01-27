@@ -44,9 +44,7 @@
                 &laquo; Sebelumnya
             </button>
 
-            <a id="nextLink"
-                href="{{ route('patenverif.deskripsi',['verif' => $verif->id]) }}"
-                class="btn-selanjutnya {{ empty($verif->scan_ktp) ? 'is-disabled' : '' }}">
+            <a class="btn-next" href="{{ route('patenverif.deskripsi',['verif' => $verif->id]) }}">
                 Selanjutnya &raquo;
             </a>
 

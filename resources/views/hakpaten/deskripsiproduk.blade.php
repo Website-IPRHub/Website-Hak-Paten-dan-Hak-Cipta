@@ -26,16 +26,25 @@
         </div>
       @endif
 
-
       <form action="{{ route('hakpaten.submit') }}" method="POST">
         @csrf
         <input type="hidden" name="paten_id" value="{{ session('paten_id') }}">
 
         <textarea name="deskripsi" class="input-deskripsi input-deskripsi" placeholder="Masukkan deskripsi paten"></textarea>
         <div class="btn-center">
+                        <button
+            type="button"
+            class="btn-prev-desk"
+            data-fallback="{{ route('uploadgambarprototipe') }}"
+            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+          >
+            &laquo; Sebelumnya
+          </button>
           <button type="submit" class="btn-selanjutnya-submit">Submit</button>
         </div>
       </form>
+
+
     </div>
   </div>
 </section>

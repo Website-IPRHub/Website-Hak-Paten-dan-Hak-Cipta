@@ -47,6 +47,12 @@ class InvensiController extends Controller
             return back()->withErrors(['inventor' => 'Jumlah inventor tidak sesuai.'])->withInput();
         }
 
+        session(['hakpaten.invensi' => $data]);
+
+        if ($request->input('action') === 'next') {
+        return redirect()->route('hakpaten.pengalihanhakformulir')
+            ->with('success', 'Data invensi tersimpan.');
+
         $templatePath = $this->pickTemplate($jumlah);
         if (!file_exists($templatePath)) {
             abort(500, 'Template DOCX tidak ditemukan: ' . $templatePath);
@@ -95,4 +101,5 @@ class InvensiController extends Controller
 
         return response()->download($out, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx')->deleteFileAfterSend(true);
     }
+}
 }

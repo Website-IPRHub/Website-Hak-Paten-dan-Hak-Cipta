@@ -63,7 +63,7 @@ public function start(Request $request)
 
     session(['paten_id' => $paten->id]);
 
-    $nextRoute = 'paten.draftpaten';
+    $nextRoute = 'draftpaten';
         if ($paten->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
             $nextRoute ='hakpaten.skema.form';
         }

@@ -11,9 +11,9 @@ class PengalihanHakController extends Controller
     private function pickTemplate(int $jumlah): string
     {
         // Ganti nama file sesuai punyamu
-        if ($jumlah >= 1 && $jumlah <= 8)  return public_path('templates/pengalihan hak 1-4.docx');
+        if ($jumlah >= 1 && $jumlah <= 7)  return public_path('templates/pengalihan hak 1-4.docx');
         // if ($jumlah >= 5 && $jumlah <= 8)  return public_path('templates/pengalihan hak 5-8.docx');
-        if ($jumlah >= 9 && $jumlah <= 14) return public_path('templates/pengalihan hak 9-14.docx');
+        if ($jumlah >= 8 && $jumlah <= 14) return public_path('templates/pengalihan hak 9-14.docx');
 
         abort(422, 'Jumlah inventor tidak didukung template.');
     }
