@@ -13,3 +13,7 @@
   margin: 0 0 18px 0;
   line-height: 1.8;  
 }
+.input-full{
+  width: 100%;
+  display: block;
+}
