@@ -11,11 +11,7 @@ class Pemohon extends Authenticatable
     protected $fillable = [
         'kode_unik',
         'password',
-        'fakultas',
-        'kategori',
-        'jenis',
-        'judul',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password','remember_token'];
 }

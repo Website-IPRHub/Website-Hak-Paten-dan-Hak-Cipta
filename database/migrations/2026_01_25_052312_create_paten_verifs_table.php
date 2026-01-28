@@ -48,7 +48,7 @@ return new class extends Migration {
             $table->text('deskripsi_singkat_prototipe')->nullable();
 
             // Verifikasi
-            $table->enum('status_verif', ['Menunggu', 'Revisi', 'Ditolak', 'Disetujui'])->default('Menunggu');
+            $table->enum('status_verif', ['Terkirim', 'Proses', 'Revisi', 'Approve'])->default('Terkirim');
             $table->text('catatan_verif')->nullable();
 
             $table->timestamps();

@@ -47,6 +47,14 @@ return new class extends Migration {
             $table->string('gambar_prototipe')->nullable();
             $table->text('deskripsi_singkat_prototipe')->nullable();
 
+<<<<<<< Updated upstream:database/migrations/2026_01_26_133601_create_paten_table.php
+=======
+            // Verifikasi admin
+            $table->enum('status_verif', ['Terkirim', 'Proses', 'Revisi', 'Approve'])
+                ->default('Terkirim');
+            $table->text('catatan_verif')->nullable();
+
+>>>>>>> Stashed changes:database/migrations/2026_01_13_010931_create_paten_table.php
             $table->timestamps();
         });
     }

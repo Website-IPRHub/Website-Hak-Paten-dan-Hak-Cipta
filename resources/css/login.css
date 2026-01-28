@@ -441,3 +441,117 @@
   font-family: "Poppins", sans-serif !important;
 }
 
+/* wrapper harus ikut tinggi input */
+.pw-wrap{
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+/* kasih ruang kanan untuk eye DI DALAM input */
+.pw-wrap .login-input{
+  padding-right: 56px;
+}
+
+.pw-eye{
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9999;
+
+  width: 40px;
+  height: 40px;
+
+  display: grid;
+  place-items: center;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  cursor: pointer;
+
+  /* INI KUNCINYA: warna ikon */
+  color: #0b2b5a !important;
+}
+
+.pw-eye:hover{
+  background: rgba(11,43,90,0.08) !important;
+  border-radius: 10px;
+}
+.pw-eye{ top: calc(50% + 1px); }   /* coba +1px atau -1px */
+
+.pw-wrap .login-input{
+  padding-right: 52px;
+}
+
+/* default: show eye, hide eye-off */
+#pwToggle .icon-eyeoff{ display:none; }
+
+/* kalau mode "shown": kebalik */
+#pwToggle.is-shown .icon-eye{ display:none; }
+#pwToggle.is-shown .icon-eyeoff{ display:block; }
+
+/* === FORCE CLEAN EYE BUTTON (NO BACKGROUND, NO SHADOW) === */
+.pw-eye,
+#pwToggle{
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border: none !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 0 !important; /* ini yang bunuh kotak */
+}
+
+/* HAPUS efek hover/focus */
+.pw-eye:hover,
+.pw-eye:focus,
+.pw-eye:active,
+#pwToggle:hover,
+#pwToggle:focus,
+#pwToggle:active{
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* pastiin SVG-nya aja yang keliatan */
+.pw-eye svg{
+  display: block;
+  pointer-events: none;
+}
+
+/* HILANGIN tombol reveal bawaan browser (Edge/Chrome) */
+#pwInput::-ms-reveal,
+#pwInput::-ms-clear{
+  display: none;
+}
+
+#pwInput::-webkit-credentials-auto-fill-button{
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
+
+/* (opsional) kalau browser bikin decoration lain */
+#pwInput::-webkit-textfield-decoration-container{
+  display: block;
+}
+
+
+
+
+

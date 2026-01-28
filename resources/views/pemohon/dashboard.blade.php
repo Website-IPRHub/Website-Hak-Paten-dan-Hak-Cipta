@@ -37,15 +37,139 @@
         <div class="pd-note">Status pengajuan saat ini</div>
       </div>
 
-      {{-- ✅ PENCARIAN / CEK DIHAPUS --}}
-
       <div class="pd-tracker" data-active="{{ $activeStatus }}">
         @foreach($steps as $s)
           <div class="pd-step" data-step="{{ $s['key'] }}">
             <div class="pd-dot"></div>
+
             <div class="pd-step-body">
               <div class="pd-step-title">{{ $s['label'] }}</div>
               <div class="pd-step-sub">Terakhir diperbarui: {{ $s['updated_at'] }}</div>
+
+              {{-- =========================
+                   REVISI (TETAP - TIDAK DIUBAH)
+                   ========================= --}}
+              @if(($s['key'] === 'revisi') && (($status ?? '') === 'revisi'))
+                <button type="button" id="btnRevisi" class="pd-mini-btn" style="margin-top:10px;">
+                  Detail Revisi
+                </button>
+
+                <div id="boxRevisi" class="pd-revisi-box" style="display:none; margin-top:10px;">
+                  <div class="pd-revisi-title">Dokumen yang Perlu Direvisi</div>
+
+                  <table class="pd-revisi-table">
+                    <thead>
+                      <tr>
+                        <th>Dokumen</th>
+                        <th>Catatan</th>
+                        <th>File Resivi</th>
+                        <th>Status</th>
+                        <th>Upload Revisi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @forelse($revisiDocs ?? [] as $d)
+                        @php
+                          $labels = [
+                            'draft_paten'=>'Draft Paten',
+                            'form_permohonan'=>'Form Permohonan',
+                            'surat_kepemilikan'=>'Surat Kepemilikan',
+                            'surat_pengalihan'=>'Surat Pengalihan',
+                            'scan_ktp'=>'Scan KTP',
+                            'tanda_terima'=>'Tanda Terima',
+                            'gambar_prototipe'=>'Gambar Prototipe',
+                            'surat_permohonan'=>'Surat Permohonan',
+                            'surat_pernyataan'=>'Surat Pernyataan',
+                            'hasil_ciptaan'=>'Hasil Ciptaan',
+                          ];
+                          $docLabel = $labels[$d->doc_key] ?? $d->doc_key;
+
+                          // cek apakah admin sudah "request" di revisions utk doc ini
+                          $req = ($revRowsByDoc[$d->doc_key][0] ?? null);
+                          $pemohonUploaded = $req && !empty($req->pemohon_file_path);
+                        @endphp
+
+                        <tr>
+                          <td>{{ $docLabel }}</td>
+                          <td>{{ $d->note ?? '-' }}</td>
+
+                          <td>
+                            @if(!empty($d->admin_attachment_path))
+                              <a href="{{ asset('storage/'.$d->admin_attachment_path) }}" target="_blank">Download</a>
+                            @else
+                              -
+                            @endif
+                          </td>
+
+                          <td>
+                            @if($pemohonUploaded)
+                              <span class="pd-pill done">Sudah upload</span>
+                            @else
+                              <span class="pd-pill todo">Belum upload</span>
+                            @endif
+                          </td>
+
+                          <td>
+                            @if(!$req)
+                              <span class="pd-muted">Menunggu admin klik “Kirim Permintaan Revisi”.</span>
+                            @else
+                              <form method="POST"
+                                    action="{{ route('pemohon.uploadRevisi', ['id' => $req->id]) }}"
+                                    enctype="multipart/form-data"
+                                    style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                @csrf
+                                <input type="file" name="file" required style="max-width:200px;">
+                                <button type="submit" class="pd-mini-btn">Upload</button>
+                              </form>
+                            @endif
+                          </td>
+                        </tr>
+                      @empty
+                        <tr><td colspan="5">Belum ada dokumen revisi.</td></tr>
+                      @endforelse
+                    </tbody>
+                  </table>
+                </div>
+              @endif
+
+              {{-- =========================
+                   APPROVE (INI YANG KAMU MAU)
+                   - tampil SELALU di step APPROVE
+                   - disabled kalau belum approve
+                   ========================= --}}
+              @if($s['key'] === 'approve')
+                @php
+                  $isApprove = ($status === 'approve');
+                  $tt = $sv->tanda_terima_pdf ?? null;
+                @endphp
+
+                <div class="pd-approve-actions" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                  {{-- TANDA TERIMA --}}
+                  @if($isApprove && $tt)
+                    <a class="pd-mini-btn primary"
+                      target="_blank"
+                      href="{{ asset('storage/'.$tt) }}">
+                      Download Tanda Terima
+                    </a>
+                  @else
+                    <button class="pd-mini-btn" disabled>
+                      Download Tanda Terima
+                    </button>
+                  @endif
+
+                  {{-- PENDAFTARAN --}}
+                  @if($isApprove)
+                    <button class="pd-mini-btn outline"
+                            onclick="alert('Menu pendaftaran akan segera tersedia')">
+                      Pendaftaran
+                    </button>
+                  @else
+                    <button class="pd-mini-btn outline" disabled>
+                      Pendaftaran
+                    </button>
+                  @endif
+                </div>
+              @endif
             </div>
           </div>
         @endforeach

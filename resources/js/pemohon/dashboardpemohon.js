@@ -36,7 +36,7 @@ function initPemohonDashboard() {
   if (!tracker) return;
 
   const active = tracker.getAttribute('data-active');
-  const order = ['terkirim','diproses','revisi','diterima','ditolak'];
+  const order = ['terkirim','proses','revisi','approve'];
   const activeIndex = order.indexOf(active);
 
   document.querySelectorAll('.pd-step').forEach((el) => {
@@ -63,3 +63,13 @@ function initPemohonDashboard() {
 
 // penting: jalankan setelah DOM siap
 document.addEventListener('DOMContentLoaded', initPemohonDashboard);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnRevisi');
+  const box = document.getElementById('boxRevisi');
+  if (!btn || !box) return;
+
+  btn.addEventListener('click', () => {
+    box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+  });
+});

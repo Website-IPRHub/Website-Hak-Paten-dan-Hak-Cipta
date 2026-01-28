@@ -368,3 +368,116 @@
 @media (max-width: 720px){
   .pa-kv{ grid-template-columns: 1fr; }
 }
+
+#boxRevisi{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:12px;
+}
+
+.pd-mini-btn{
+  height: 36px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-weight: 900;
+  cursor: pointer;
+  background: rgba(11,44,95,.10);
+  color: rgba(11,44,95,.95);
+}
+.pd-mini-btn:hover{ background: rgba(11,44,95,.14); }
+
+.pd-revisi-box{
+  border: 1px solid rgba(11,44,95,.10);
+  background: rgba(255,255,255,.95);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.pd-revisi-title{
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.pd-revisi-table{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.pd-revisi-table th, .pd-revisi-table td{
+  border-top: 1px solid rgba(11,44,95,.08);
+  padding: 8px 6px;
+  vertical-align: top;
+}
+.pd-revisi-table th{
+  font-size: 12px;
+  text-align: left;
+  color: rgba(11,44,95,.75);
+}
+
+.pd-pill{
+  display:inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 11px;
+  border: 1px solid rgba(11,44,95,.12);
+}
+.pd-pill.done{ background: rgba(37,99,235,.10); }
+.pd-pill.todo{ background: rgba(239,68,68,.10); }
+
+.pd-muted{ color: rgba(11,44,95,.55); font-size: 12px; }
+
+/* APPROVE actions (lebih kecil & rapi) */
+.pd-approve-actions{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.pd-approve-btn{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e6ebf5;
+  background: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.2;
+  color: #0b2c5f;
+  cursor: pointer;
+  text-align: center;
+  transition: transform .05s ease, box-shadow .15s ease;
+}
+
+.pd-approve-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .08);
+}
+
+.pd-approve-btn:disabled{
+  cursor: not-allowed;
+  background: #f5f7fb;
+  color: #7a8aa6;
+  box-shadow: none;
+  transform: none;
+}
+
+.pd-approve-hint{
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  opacity: .8;
+}
+
+/* responsive: kalau layar kecil, jadi 1 kolom */
+@media (max-width: 560px){
+  .pd-approve-actions{
+    grid-template-columns: 1fr;
+  }
+}

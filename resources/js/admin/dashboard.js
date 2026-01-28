@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupTableSearch('searchPaten', 'patenTable');
   setupTableSearch('searchCipta', 'ciptaTable');
-
+  setupTableSearch('searchRevisi', 'revisiTable');
+  
+  setupPager('revisiTable', 'searchRevisi', 'revisi');
   setupPager('patenTable', 'searchPaten', 'paten');
   setupPager('ciptaTable', 'searchCipta', 'cipta');
   setupPager('statusTable', 'searchStatus', 'status'); // status pakai filter + search
@@ -804,6 +806,16 @@ function setupRevisiPopup() {
     }
   });
 }
+
+  function initNotifRevisiButton() {
+  const btn = document.getElementById('btnNotifRevisi');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    window.location.href = '/admin/dashboard?tab=status';
+  });
+}
+
 
 
 

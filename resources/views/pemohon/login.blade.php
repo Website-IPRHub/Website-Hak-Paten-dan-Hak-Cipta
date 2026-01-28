@@ -26,8 +26,10 @@
                 <div class="login-alert">{{ $errors->first() }}</div>
               @endif
 
-              @if (session('success'))
-                <div class="login-alert success">{{ session('success') }}</div>
+              @if (session('success') || session('prefill_password'))
+                <div class="login-alert success">
+                  {{ session('success') ?? 'Akun berhasil dibuat. Silakan klik Login atau ganti password terlebih dahulu.' }}
+                </div>
               @endif
 
               <form method="POST" action="{{ route('pemohon.login') }}" class="login-form">
@@ -35,16 +37,44 @@
 
                 <div class="field">
                   <label class="login-label">Username / Kode Unik</label>
-                  <input type="text" name="username" class="login-input" placeholder="Masukkan kode unik" autocomplete="username" required />
+                  <input type="text" name="username" class="cp-input"
+                    value="{{ old('username', session('prefill_kode')) }}"
+                    placeholder="Masukkan kode unik" required>
                 </div>
 
-                <div class="field">
+               <div class="field">
                   <label class="login-label">Password</label>
-                  <input type="password" name="password" class="login-input" placeholder="Masukkan password" autocomplete="current-password" required />
+
+                  <div class="pw-wrap">
+                    <input
+                      id="pwInput"
+                      type="password"
+                      name="password"
+                      class="login-input"
+                      value="{{ old('password', session('prefill_password')) }}"
+                      placeholder="Password"
+                    />
+
+                   <button type="button" class="pw-eye" id="pwToggle" aria-label="Lihat password">
+                      {{-- eye (default) --}}
+                      <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+
+                      {{-- eye-off (disembunyiin dulu) --}}
+                      <svg class="icon-eyeoff" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M3 3l18 18" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-4.4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M6.3 6.3C3.6 8.2 2 12 2 12s3.5 7 10 7c2.0 0 3.7-.5 5.2-1.3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M9.9 4.2C10.6 4.1 11.3 4 12 4c6.5 0 10 8 10 8s-1.1 2.6-3.4 4.7" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                    </button>
                 </div>
+              </div>
 
                 <div class="login-actions">
-                  <a href="#" class="login-link" id="openChangePw" onclick="return false;">Ganti Password</a>
+                  <a href="#" class="login-link" id="openChangePw">Ganti Password</a>
                 </div>
 
                 <div class="login-btn-row">
@@ -79,7 +109,7 @@
       </div>
 
       {{-- DUMMY dulu biar gak error route --}}
-      <form method="POST" action="#" class="cp-form" id="cpForm" onsubmit="return false;">
+      <form method="POST" action="{{ route('pemohon.prechange.store') }}" class="cp-form">
         @csrf
 
         <div class="cp-field">

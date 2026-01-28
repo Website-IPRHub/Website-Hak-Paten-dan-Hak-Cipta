@@ -18,12 +18,11 @@ return new class extends Migration
             $table->unsignedBigInteger('ref_id');
 
             $table->enum('status', [
-                'terkirim',
-                'proses',
-                'revisi',
-                'diterima',
-                'ditolak'
-            ])->default('terkirim');
+                'Terkirim',
+                'Proses',
+                'Revisi',
+                'Approve',
+            ])->default('Approve');
 
             $table->string('sertifikat_path')->nullable();
             $table->timestamp('emailed_at')->nullable();

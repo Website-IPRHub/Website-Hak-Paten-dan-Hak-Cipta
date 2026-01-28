@@ -1,3 +1,9 @@
+@php
+  $tab = request()->get('tab', 'stats');
+  $sub = request()->get('sub', 'all'); // all | revisi
+@endphp
+
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,7 +11,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard Admin</title>
-
 
     {{-- CSS + JS lewat Vite --}}
     @vite(['resources/css/admin.css', 'resources/js/app.js', 'resources/js/admin/dashboard.js'])
@@ -17,6 +22,13 @@
     </div>
 
     <div class="header-actions">
+
+        <a href="{{ route('admin.dashboard', ['tab'=>'status','sub'=>'revisi']) }}" class="notif-btn">
+            Notif Revisi
+            @if(($notifCount ?? 0) > 0)
+                <span class="notif-badge">{{ $notifCount }}</span>
+            @endif
+        </a>
 
         <div class="user-dd" id="userDD">
             <button type="button" class="user-icon" id="userBtn" aria-haspopup="true" aria-expanded="false">
@@ -95,12 +107,31 @@
             Data Paten
         </a>
 
+        @php
+            $tab = request('tab', 'stats');
+            $sub = request('sub', 'all'); // all | revisi
+        @endphp
+
         <a class="side-link {{ $tab==='status' ? 'active' : '' }}"
-           href="{{ route('admin.dashboard', ['tab'=>'status']) }}">
+            href="{{ route('admin.dashboard', ['tab'=>'status','sub'=>'all']) }}">
             <img class="side-ic-img" src="{{ asset('images/status.png') }}" alt="">
             Status Verifikasi
         </a>
 
+        @if($tab === 'status')
+        <a class="side-sublink {{ $sub==='revisi' ? 'active' : '' }}"
+            href="{{ route('admin.dashboard', ['tab'=>'status','sub'=>'revisi']) }}">
+            Revisi
+            @if(($notifCount ?? 0) > 0)
+            <span class="side-badge">{{ $notifCount }}</span>
+            @endif
+        </a>
+        @endif
+
+
+         <div class="side-group">
+
+      </div>
     </aside>
 
     <main class="dash-content">
@@ -253,7 +284,9 @@
                     <td>{{ $row->jenis_cipta ?? '-' }}</td>
 
                     <td>
-                    <span class="status-pill s-{{ $row->status }}">{{ $row->status }}</span>
+                    <span class="status-pill s-{{ strtolower($row->status) }}">
+                        {{ $row->status }}
+                    </span>
                     </td>
 
                     {{-- helper render cell dokumen + verifikasi --}}
@@ -703,206 +736,244 @@
             </div>
         </div>
         @endif
+{{-- ================= TAB: STATUS VERIFIKASI ================= --}}
+@if($tab === 'status' && $sub === 'all')
+  <div class="page-head">
+    <h2 class="page-title">Status Verifikasi</h2>
 
-        {{-- ================= TAB: STATUS VERIFIKASI ================= --}}
-        @if($tab === 'status')
-        <div class="page-head">
-            <h2 class="page-title">Status Verifikasi</h2>
+    <div class="page-actions">
+      <div class="dd" data-dd>
+        <button type="button" class="dd-btn" data-dd-btn>
+          <span data-dd-label id="filterTypeLabel">Semua</span>
+          <span class="dd-caret"></span>
+        </button>
 
-            <div class="page-actions">
-            <div class="dd" data-dd>
+        <div class="dd-menu" data-dd-menu hidden>
+          <button type="button" class="dd-item active" data-value="all">Semua</button>
+          <button type="button" class="dd-item" data-value="paten">Paten</button>
+          <button type="button" class="dd-item" data-value="cipta">Hak Cipta</button>
+        </div>
+
+        <input type="hidden" id="filterType" value="all" data-dd-input>
+      </div>
+
+      <input id="searchStatus" class="search-input" type="text"
+             placeholder="Cari no pendaftaran / status" />
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="data-table" id="statusTable">
+      <thead>
+      <tr>
+        <th style="width:70px;">No</th>
+        <th style="width:125px;">Kategori</th>
+        <th style="width:150px;">Jenis</th>
+        <th style="min-width:160px;">No Pendaftaran</th>
+        <th style="min-width:240px;">Judul</th>
+        <th style="width:280px;">Update Status</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      @forelse($dataStatus as $i => $row)
+        <tr
+          data-type="{{ strtolower($row->type) }}"
+          data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.($row->status ?? '').' '.($row->jenis ?? '').' '.($row->judul ?? '')) }}"
+        >
+          <td class="center">{{ $i + 1 }}</td>
+          <td>{{ strtoupper($row->type) }}</td>
+          <td>{{ $row->jenis ?? '-' }}</td>
+          <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+          <td>{{ $row->judul ?? '-' }}</td>
+
+          <td>
+            <form class="inline-form js-status-form" method="POST"
+              action="{{ route('admin.status.update', ['type' => $row->type, 'id' => $row->id]) }}">
+              @csrf
+              @method('PUT')
+
+              <div class="dd dd-status" data-dd>
                 <button type="button" class="dd-btn" data-dd-btn>
-                <span data-dd-label id="filterTypeLabel">Semua</span>
-                <span class="dd-caret"></span>
+                  <span data-dd-label>{{ $row->status }}</span>
+                  <span class="dd-caret"></span>
                 </button>
 
                 <div class="dd-menu" data-dd-menu hidden>
-                <button type="button" class="dd-item active" data-value="all">Semua</button>
-                <button type="button" class="dd-item" data-value="paten">Paten</button>
-                <button type="button" class="dd-item" data-value="cipta">Hak Cipta</button>
+                  @foreach(['terkirim','proses','revisi','approve'] as $st)
+                    <button type="button"
+                      class="dd-item {{ $row->status===$st ? 'active' : '' }}"
+                      data-value="{{ $st }}">{{ $st }}</button>
+                  @endforeach
                 </div>
 
-                <input type="hidden" id="filterType" value="all" data-dd-input>
-            </div>
+                <input type="hidden" name="status" value="{{ $row->status }}" data-dd-input>
+              </div>
 
-            <input id="searchStatus" class="search-input" type="text"
-                    placeholder="Cari no pendaftaran / status" />
-            </div>
-        </div>
+              <button class="btn-mini btn-save" type="submit">Simpan</button>
+              <div class="inline-msg" data-inline-msg style="margin-top:6px;font-size:12px;"></div>
+            </form>
 
-        @if(session('success'))
-            <div class="alert-success">{{ session('success') }}</div>
-        @endif
+            <div class="wa-slot" data-wa-slot style="margin-top:8px;"></div>
+          </td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="6" class="center muted">Belum ada data status verifikasi</td>
+        </tr>
+      @endforelse
+      </tbody>
+    </table>
+  </div>
 
-        <div class="table-card">
-            <table class="data-table" id="statusTable">
-            <thead>
-                <tr>
-                <th style="width:70px;">No</th>
-                <th style="width:125px;">Kategori</th>
-                <th style="width:150px;">Jenis</th>
-                <th style="min-width:120px;">No Pendaftaran</th>
-                <th style="min-width:230px;">Judul</th>
-                <th style="width:280px;">Update Status</th>
-                </tr>
-            </thead>
+  <div class="table-footer" data-pager="status">
+    <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
+    <div class="table-controls">
+      <label class="entries-wrap">
+        Show
+        <select class="entries-select" data-entries>
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+        entries
+      </label>
+      <div class="pagination" data-pagination></div>
+    </div>
+  </div>
+@endif
 
-            <tbody>
-                @forelse($dataStatus as $i => $row)
-                <tr
-                    data-type="{{ strtolower($row->type) }}"
-                    data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.($row->status ?? '').' '.($row->jenis ?? '')) }}"
-                >
-                    <td class="center">{{ $i + 1 }}</td>
-                    <td>{{ strtoupper($row->type) }}</td>
-                    <td>{{ $row->jenis ?? '-' }}</td>
-                    <td>{{ $row->no_pendaftaran ?? '-' }}</td>
-                    <td>{{ $row->judul ?? '-' }}</td>
+    {{-- ================= SUB: REVISI (UPLOAD PEMOHON) ================= --}}
+@if($tab === 'status' && $sub === 'revisi')
+  <div class="page-head" style="align-items:flex-start;">
+    <div>
+      <h2 class="page-title" style="margin-bottom:4px;">Revisi Masuk (Upload Pemohon)</h2>
+      <p class="muted" style="font-size:13px;margin:0;">
+        Daftar dokumen revisi yang sudah diupload pemohon (siap dicek admin).
+      </p>
+    </div>
 
-                    <td>
-                    {{-- ✅ FORM UPDATE STATUS (AJAX) --}}
-                    <form class="inline-form js-status-form" method="POST"
-                        action="{{ route('admin.status.update', ['type' => $row->type, 'id' => $row->id]) }}">
-                    @csrf
-                    @method('PUT')
+    <div class="page-actions">
+      <input id="searchRevisi" class="search-input" type="text"
+             placeholder="Cari no pendaftaran / judul" />
+    </div>
+  </div>
 
-                    <div class="dd dd-status" data-dd>
-                        <button type="button" class="dd-btn" data-dd-btn>
-                        <span data-dd-label>{{ $row->status }}</span>
-                        <span class="dd-caret"></span>
-                        </button>
+  <div class="table-card">
+    <table class="data-table" id="revisiTable">
+      <thead>
+        <tr>
+          <th style="width:70px;">No</th>
+          <th style="width:125px;">Kategori</th>
+          <th style="width:150px;">Jenis</th>
+          <th style="min-width:160px;">No Pendaftaran</th>
+          <th style="min-width:240px;">Judul</th>
+          <th style="min-width:360px;">Dokumen Revisi Masuk</th>
+        </tr>
+      </thead>
 
-                        <div class="dd-menu" data-dd-menu hidden>
-                        @foreach(['terkirim','proses','revisi','diterima','ditolak'] as $st)
-                            <button type="button"
-                                    class="dd-item {{ $row->status===$st ? 'active' : '' }}"
-                                    data-value="{{ $st }}">
-                            {{ $st }}
-                            </button>
-                        @endforeach
+      <tbody>
+        @php $n=1; @endphp
+
+        @forelse($revisiItems as $row)
+          @php
+            // ini dari controller: $row->revisi_masuk (rows dari table revisions)
+            $items = collect($row->revisi_masuk ?? []);
+          @endphp
+
+          <tr data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.($row->judul ?? '')) }}">
+            <td class="center">{{ $n++ }}</td>
+            <td>{{ strtoupper($row->type) }}</td>
+            <td>{{ $row->jenis ?? '-' }}</td>
+            <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+            <td>{{ $row->judul ?? '-' }}</td>
+
+            <td>
+              @if($items->count() === 0)
+                <span class="badge badge-warn">Belum ada upload revisi dari pemohon</span>
+              @else
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  @foreach($items as $rv)
+                    <div style="padding:10px;border:1px solid #e6ebf5;border-radius:12px;background:#fff;">
+                      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                        <div style="font-weight:800;color:#0b2c5f;">
+                          {{ $docLabels[$rv->doc_key] ?? ($rv->doc_key ?? 'Dokumen') }}
                         </div>
 
-                        <input type="hidden" name="status" value="{{ $row->status }}" data-dd-input>
+                        {{-- optional: tandai notif sudah dibaca --}}
+                        <form method="POST" action="{{ route('admin.revisi.read', $rv->id) }}">
+                          @csrf
+                          <button type="submit" class="btn-mini">Tandai dibaca</button>
+                        </form>
+                      </div>
+
+                      @if(!empty($rv->note))
+                        <div class="muted" style="margin-top:4px;font-size:12px;">
+                          Catatan admin: {{ $rv->note }}
+                        </div>
+                      @endif
+
+                      <div style="margin-top:8px;font-size:12px;">
+                        <b>File Pemohon:</b>
+                        @if(!empty($rv->pemohon_file_path))
+                          <a href="{{ asset('storage/'.$rv->pemohon_file_path) }}" target="_blank">
+                            {{ basename($rv->pemohon_file_path) }}
+                          </a>
+                        @else
+                          <span class="muted">-</span>
+                        @endif
+                      </div>
+
+                      <div style="margin-top:6px;font-size:12px;">
+                        <b>Lampiran Admin:</b>
+                        @if(!empty($rv->file_path))
+                          <a href="{{ asset('storage/'.$rv->file_path) }}" target="_blank">
+                            {{ basename($rv->file_path) }}
+                          </a>
+                        @else
+                          <span class="muted">-</span>
+                        @endif
+                      </div>
+
+                      @if(!empty($rv->updated_at))
+                        <div class="muted" style="margin-top:6px;font-size:12px;">
+                          Updated: {{ \Carbon\Carbon::parse($rv->updated_at)->format('d M Y H:i') }}
+                        </div>
+                      @endif
                     </div>
+                  @endforeach
+                </div>
+              @endif
+            </td>
+          </tr>
+        @empty
+          <tr>
+            <td colspan="6" class="center muted">Belum ada upload revisi dari pemohon</td>
+          </tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
 
-                    <button class="btn-mini btn-save" type="submit">Simpan</button>
+  <div class="table-footer" data-pager="revisi">
+    <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
+    <div class="table-controls">
+      <label class="entries-wrap">
+        Show
+        <select class="entries-select" data-entries>
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+        entries
+      </label>
+      <div class="pagination" data-pagination></div>
+    </div>
+  </div>
+@endif
 
-                    {{-- ✅ pesan kecil untuk status simpan --}}
-                    <div class="inline-msg" data-inline-msg style="margin-top:6px;font-size:12px;"></div>
-                    </form>
-
-                    {{-- ✅ slot WA kamu --}}
-                    <div class="wa-slot" data-wa-slot style="margin-top:8px;"></div>
-
-                    {{-- ringkasan dokumen revisi (kalau status revisi) --}}
-                    @if(($row->status ?? '') === 'revisi')
-                        @php
-                        $revisiDocs = collect($row->docs ?? [])->filter(fn($d) => (($d->status ?? '') === 'revisi'));
-                        @endphp
-
-                        <div style="margin-top:10px;">
-                        @if($revisiDocs->count() > 0)
-                            <div style="font-size:12px; margin-bottom:6px;">
-                            <b>Dokumen perlu revisi ({{ $revisiDocs->count() }})</b>
-                            </div>
-
-                            <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
-                            @foreach($revisiDocs as $k => $d)
-                                <div style="padding:8px; border:1px solid #e6e6e6; border-radius:10px;">
-                                <div><b>{{ $docLabels[$k] ?? $k }}</b></div>
-
-                                @if(!empty($d->note))
-                                    <div class="muted" style="margin-top:4px;">Catatan: {{ $d->note }}</div>
-                                @endif
-
-                                @if(!empty($d->admin_attachment_path))
-                                    <div style="margin-top:4px;">
-                                    Lampiran admin:
-                                    <a href="{{ asset('storage/'.$d->admin_attachment_path) }}" target="_blank">
-                                        {{ basename($d->admin_attachment_path) }}
-                                    </a>
-                                    </div>
-                                @endif
-                                </div>
-                            @endforeach
-                            </div>
-
-                            <div class="muted" style="font-size:12px; margin-top:6px;">
-                            *Permintaan revisi dikirim lewat tombol <b>Kirim Permintaan Revisi</b> (di tab Paten/Cipta).
-                            </div>
-                        @else
-                            <span class="badge badge-warn" style="margin-top:6px; display:inline-block;">
-                            Status revisi dipilih, tapi belum ada dokumen yang ditandai revisi.
-                            </span>
-                        @endif
-                        </div>
-                    @endif
-
-                    {{-- upload sertifikat (kalau diterima) --}}
-                    @if(($row->status ?? '') === 'diterima')
-                        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        @if(!empty($row->sertifikat_path))
-                            <span class="badge badge-success">Sertifikat: OK</span>
-                        @else
-                            <span class="badge badge-warn">Upload sertifikat DJKI</span>
-                        @endif
-
-                        @if(!empty($row->emailed_at))
-                            <span class="badge badge-muted">Email terkirim</span>
-                        @else
-                            <span class="badge badge-muted">Email belum terkirim</span>
-                        @endif
-                        </div>
-
-                        <form method="POST"
-                            action="{{ route('admin.status.uploadSertifikat', ['type' => $row->type, 'id' => $row->id]) }}"
-                            enctype="multipart/form-data"
-                            style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        @csrf
-                        <input type="file" name="sertifikat" accept=".pdf,.jpg,.jpeg,.png" required>
-                        <button type="submit" class="btn-mini">Upload Sertifikat</button>
-                        </form>
-
-                        @if(!empty($row->sertifikat_path))
-                        <form method="POST"
-                                action="{{ route('admin.status.resendEmail', ['type' => $row->type, 'id' => $row->id]) }}"
-                                style="margin-top:6px;">
-                            @csrf
-                            <button type="submit" class="btn-mini">Kirim Ulang Email</button>
-                        </form>
-                        @endif
-                    @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="center muted">Belum ada data status verifikasi</td>
-                </tr>
-                @endforelse
-            </tbody>
-            </table>
-        </div>
-        <div class="table-footer" data-pager="status">
-            <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
-
-            <div class="table-controls">
-                <label class="entries-wrap">
-                Show
-                <select class="entries-select" data-entries>
-                    <option value="10">10</option>
-                    <option value="20" selected>20</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                </select>
-                entries
-                </label>
-
-                <div class="pagination" data-pagination></div>
-            </div>
-        </div>
-        @endif
-    </main>
-</div>
 
 <!-- MODAL KONFIRMASI LOGOUT -->
 <div class="modal-backdrop" id="logoutBackdrop" hidden></div>
@@ -922,6 +993,8 @@
         </div>
     </div>
 </div>
+
+
 
 {{-- ✅ MODAL UBAH PASSWORD --}}
 <div class="modal-backdrop" id="passBackdrop" hidden></div>

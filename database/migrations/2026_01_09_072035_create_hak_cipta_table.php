@@ -55,8 +55,8 @@ return new class extends Migration
             $table->string('hasil_ciptaan');
             $table->string('link_ciptaan')->nullable();
 
-            $table->enum('status', ['terkirim','proses','revisi','diterima','ditolak'])
-                ->default('terkirim');
+            $table->enum('status', ['Terkirim','Proses','Revisi','Approve'])
+                ->default('Terkirim');
 
             $table->timestamps();
         });
