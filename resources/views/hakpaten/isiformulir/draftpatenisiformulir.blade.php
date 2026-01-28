@@ -20,7 +20,11 @@
             </div>
         </div>
         <div class="next">
-            <a id="nextLink" href="{{ route('hakpaten.isiformulir') }}" class="btn-selanjutnya is-disabled">Selanjutnya &raquo;</a>
+            <a class="btn-next" href="{{ route('hakpaten.isiformulir') }}" class="btn-selanjutnya">
+                Selanjutnya &raquo;
+            </a>
+        </div>
+
         </div>
     </div>
 </section>

@@ -1,90 +1,90 @@
+/* wrapper */
 .section-steps{
-  background: #F0F6FD;
-  padding: 12px 0;
+  background:#F0F6FD;
+  padding:12px 0;
 }
 
-.menu-steps{
-  list-style: none;
-  display: flex;
-  align-items: center;
+/* ul */
+.section-steps .section-inner > .menu-steps{
+  list-style:none;
+  padding:0;
+  margin:0;
 
-  /* ✅ pas buat 4 step */
-  gap: 12px;
-  justify-content: space-between;
-  flex-wrap: nowrap;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important; /* ✅ nyebar */
+  gap:12px;
 
-  padding: 0;
-  margin: 0;
-
-  overflow: hidden; /* ✅ stop scroll (4 doang harusnya muat) */
+  flex-wrap:nowrap;
+  overflow:hidden;
 }
 
-/* ✅ semua item step sama lebar */
-.menu-steps .step{
-  flex: 1 1 0;
-  min-width: 0;
-  position: static; /* ✅ biar gak ikut posisi absolute dari CSS lain */
+/* li direct child */
+.section-steps .section-inner > .menu-steps > li.step{
+  flex:1 1 0 !important; /* ✅ bagi rata 4 */
+  min-width:0;
+  position:static !important; /* biar gak ketarik absolute/relative aneh */
 }
 
-/* ✅ khusus stepper (biar gak nabrak .step yg lain) */
-.menu-steps .step a{
-  width: 100%;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1E1E1E;
+/* anchor */
+.section-steps .section-inner > .menu-steps > li.step > a{
+  width:100% !important;
+  display:flex !important;
+  align-items:center;
+  justify-content:center;        /* ✅ teks di tengah pill */
+  /* kalau mau teks kiri tapi tetap nyebar: ganti ke flex-start */
 
-  padding: 10px 14px;
-  border-radius: 18px;
+  padding:10px 14px;
+  border-radius:18px;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:600;
+  color:#1E1E1E;
 
-  white-space: nowrap;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 /* active */
-.menu-steps .step.active a{
-  background: #fff;
+.section-steps .section-inner > .menu-steps > li.step.active > a{
+  background:#fff;
 }
 
 /* disabled */
-.menu-steps .step.disabled a{
-  pointer-events: none;
-  cursor: not-allowed;
-  opacity: 0.55;
+.section-steps .section-inner > .menu-steps > li.step.disabled > a{
+  pointer-events:none;
+  cursor:not-allowed;
+  opacity:.55;
 }
 
-/* ✅ HAPUS GARIS yang kebawa dari rule lain (misal .step::after) */
-.menu-steps .step::before,
-.menu-steps .step::after,
-.menu-steps .step:not(:last-child)::after{
-  content: none !important;
-  display: none !important;
+/* buang garis/pseudo dari css lain */
+.section-steps .section-inner > .menu-steps > li.step::before,
+.section-steps .section-inner > .menu-steps > li.step::after,
+.section-steps .section-inner > .menu-steps > li.step:not(:last-child)::after{
+  content:none !important;
+  display:none !important;
 }
 
-/* ✅ responsive: kalau layar kecil, jadi 2 baris */
-@media (max-width: 900px){
-  .menu-steps{
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px;
-    overflow: visible;
+/* responsive */
+@media (max-width:900px){
+  .section-steps .section-inner > .menu-steps{
+    flex-wrap:wrap;
+    justify-content:flex-start !important;
+    overflow:visible;
+    gap:10px;
   }
-
-  .menu-steps .step{
-    flex: 1 1 calc(50% - 10px);
+  .section-steps .section-inner > .menu-steps > li.step{
+    flex:1 1 calc(50% - 10px) !important;
   }
-
-  .menu-steps .step a{
-    justify-content: flex-start;
+  .section-steps .section-inner > .menu-steps > li.step > a{
+    justify-content:flex-start; /* biar enak pas 2 kolom */
   }
 }
 
-@media (max-width: 520px){
-  .menu-steps .step{
-    flex: 1 1 100%;
+@media (max-width:520px){
+  .section-steps .section-inner > .menu-steps > li.step{
+    flex:1 1 100% !important;
   }
 }

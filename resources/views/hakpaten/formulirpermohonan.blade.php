@@ -8,35 +8,75 @@
 @include('hakpaten.partials.menu')
 
 <section class="section-full section-content">
-    <div class="section-inner">
-        <div class="content-box">
-            <div class="formulir-permohonan">
-                <h2>Formulir Permohonan *</h2>
-                <p>File dalam bentuk Word, Tanpa Tandatangan</p>
-            </div>
-            <div class="hero-buttons-start">
-                <div class="button-unduh">
-                    <a href="{{ route('download.template.formpaten')}}" class="btn-template-formulir-permohonan">Unduh Form Daftar Paten</a>
-                </div>
-                <div class="button-upload">
-                    <form id="draftForm" action="{{ route('formulirpermohonan.upload') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
+  <div class="section-inner">
 
-                        <input id="draftFile" type="file" name="file" required hidden data-allowed="doc,docx" data-max-mb="10">
-                        <button id="uploadButton" type="button">Upload</button>
-                        <span id="fileName">Belum Pilih File</span>
-                        
-                        <div id="fileError" style="display:none; margin-top:8px; color:#dc2626; font-weight:600;">
-                            Tipe file tidak sesuai.
-                        </div>
-                    </form>
-                </div>
-            </div>
+    {{-- CONTENT --}}
+    <div class="content-box">
+
+      <div class="formulir-permohonan">
+        <h2>Formulir Permohonan *</h2>
+        <p>File dalam bentuk Word, Tanpa Tandatangan</p>
+      </div>
+
+      <div class="hero-buttons-start">
+        <div class="button-upload">
+
+          <form
+            id="draftForm"
+            action="{{ route('formulirpermohonan.upload') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            data-upload-form
+          >
+            @csrf
+
+            <input
+              type="file"
+              name="file"
+              hidden
+              required
+              data-allowed="doc,docx"
+              data-max-mb="10"
+            >
+
+            <button type="button" class="btn-upload" data-btn-pick>
+              Pilih File
+            </button>
+
+            <span class="file-name" data-file-name>
+              Belum pilih file
+            </span>
+
+          </form>
+
         </div>
-        <div class="next">
-            <a id="nextLink" href="{{ route('kepemilikaninvensi') }}" class="btn-selanjutnya is-disabled">Selanjutnya</a>
-        </div>
+      </div>
+
     </div>
+    {{-- END CONTENT --}}
+
+    {{-- ACTION BAR (RAPI & SEJAJAR) --}}
+    <div class="actions-bar">
+      <button
+        type="button"
+        class="btn-prev"
+        onclick="history.back()"
+      >
+        &laquo; Sebelumnya
+      </button>
+
+      <button
+        type="submit"
+        class="btn-selanjutnya"
+        form="draftForm"
+        data-btn-submit
+        disabled
+      >
+        Selanjutnya &raquo;
+      </button>
+    </div>
+
+  </div>
 </section>
 
 @endsection

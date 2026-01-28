@@ -29,7 +29,14 @@
                         Upload
                         </button>
 
-                        <span id="fileName" class="file-name">Belum pilih file</span>
+                        <span id="fileName" class="file-name">
+  @if($verif->gambar_prototipe)
+    {{ basename($verif->gambar_prototipe) }}
+  @else
+    Belum pilih file
+  @endif
+</span>
+
 
                         {{-- submit beneran (disembunyikan, dipencet via JS setelah pilih file) --}}
                         <button id="submitUpload" type="submit" style="display:none;">Kirim</button>
@@ -44,9 +51,7 @@
                 &laquo; Sebelumnya
             </button>
 
-            <a id="nextLink"
-                href="{{ route('patenverif.deskripsi',['verif' => $verif->id]) }}"
-                class="btn-selanjutnya {{ empty($verif->scan_ktp) ? 'is-disabled' : '' }}">
+            <a class="btn-next" href="{{ route('patenverif.deskripsi',['verif' => $verif->id]) }}">
                 Selanjutnya &raquo;
             </a>
 

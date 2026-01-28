@@ -113,15 +113,23 @@
 
     <div class="actions-bar">
       <div class="actions-left">
-        <button type="button" class="btn-prev" data-fallback="{{ route('hakpaten.draftpatenisiformulir') }}" onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">&laquo; Sebelumnya</button>
-        <a id="nextLink" href="{{ route('hakpaten.pengalihanhakformulir') }}" class="btn-selanjutnya is-disabled">Selanjutnya &raquo;</a>
+        <button type="button" class="btn-prev"
+          data-fallback="{{ route('hakpaten.draftpatenisiformulir') }}"
+          onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
+          &laquo; Sebelumnya
+        </button>
+        <a class="btn-next" href="{{ route('hakpaten.pengalihanhakformulir') }}">
+          Selanjutnya &raquo;
+        </a>
       </div>
 
+  <div class="actions-right" style="display:flex; gap:10px;">
+    <button class="unduh" type="submit" name="action" value="download">
+      Unduh
+    </button>
 
-      <div class="actions-right">
-        <button class="unduh" type="submit" name="action" value="download">Unduh</button>
-      </div>
-    </div>
+  </div>
+</div>
 
   </form>
 </div>

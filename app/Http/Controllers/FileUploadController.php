@@ -34,32 +34,25 @@ class FileUploadController extends Controller
     }
 
     public function draft(Request $request)
-    {
-        $patenId = $this->patenIdOrAbort();
+{
+    
+    $request->validate([
+        'file' => 'required|mimes:doc,docx|max:10240',
+    ]);
 
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
-        ]);
+    $paten = Paten::findOrFail(session('paten_id'));
 
-        $file = $request->file('file');
+    $path = $request->file('file')->store('paten/draft', 'public');
 
-        $originalName = $file->getClientOriginalName();
+    // ⬇️ INI WAJIB
+    $paten->update([
+        'draft_paten' => $path,
+    ]);
 
-        // optional: biar aman dari nama sama (ga ketimpa)
-        $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
-        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+    return redirect()->route('draftpaten')
+        ->with('success', 'Draft paten berhasil diupload.');
+}
 
-        // PATH akan menyimpan nama ini
-        $path = $file->storeAs('paten/draft', $finalName, 'public');
-
-        Paten::where('id', $patenId)->update([
-            'draft_paten' => $path, // PATH
-        ]);
-
-        return redirect()->route('formulirpermohonan')->with('success', 'Draft paten tersimpan');
-    }
 
 
     public function form(Request $request)
@@ -72,10 +65,10 @@ class FileUploadController extends Controller
 
         $file = $request->file('file');
         $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+        
         $originalName = $file->getClientOriginalName();
-        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+        $finalName = $safeName;
 
         $path = $file->storeAs('paten/form', $finalName, 'public');
 
@@ -83,7 +76,9 @@ class FileUploadController extends Controller
             'form_permohonan' => $path,
         ]);
 
-        return redirect()->route('kepemilikaninvensi')->with('success', 'Form permohonan tersimpan');
+       return redirect()
+    ->route('kepemilikaninvensi')
+    ->with('success', 'Formulir Permohonan berhasil diupload');
     }
 
 
@@ -98,10 +93,10 @@ class FileUploadController extends Controller
         $file = $request->file('file');
 
         $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
+       
         $originalName = $file->getClientOriginalName();
-        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+        $finalName = $safeName;
 
         $path = $file->storeAs('paten/surat-kepemilikan', $finalName, 'public');
 
@@ -109,7 +104,9 @@ class FileUploadController extends Controller
             'surat_kepemilikan' => $path,
         ]);
 
-        return redirect()->route('pengalihanhak')->with('success', 'Surat kepemilikan tersimpan');
+        return redirect()
+    ->route('pengalihanhak')
+    ->with('success', 'Surat pengalihan hak berhasil diupload');
     }
 
     public function pengalihanhak(Request $request)
@@ -124,9 +121,9 @@ class FileUploadController extends Controller
         $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
 
         $originalName = $file->getClientOriginalName();
-        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+        $finalName = $safeName;
+
 
         $path = $file->storeAs('paten/surat-pengalihan', $finalName, 'public');
 
@@ -135,7 +132,9 @@ class FileUploadController extends Controller
         ]);
         
 
-        return redirect()->route('scanktp')->with('success', 'Surat pengalihan tersimpan');
+        return redirect()
+    ->route('scanktp')
+    ->with('success', 'KTP berhasil diupload');
     }
 
     public function scanKtp(Request $request)
@@ -150,9 +149,9 @@ class FileUploadController extends Controller
         $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
 
         $originalName = $file->getClientOriginalName();
-        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+        $finalName = $safeName;
+
 
         $path = $file->storeAs('paten/scan-ktp', $finalName, 'public');
 
@@ -160,7 +159,9 @@ class FileUploadController extends Controller
             'scan_ktp' => $path,
         ]);
 
-        return redirect()->route('tandaterima')->with('success', 'Scan KTP tersimpan');
+        return redirect()
+    ->route('tandaterima')
+    ->with('success', 'Surat tanda terima berhasil diupload');
     }
 
     public function tandaTerima(Request $request)
@@ -176,9 +177,9 @@ class FileUploadController extends Controller
         $noPendaftaran = Paten::where('id', $patenId)->value('no_pendaftaran');
 
         $originalName = $file->getClientOriginalName();
-        $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+        $finalName = $safeName;
+
 
         $path = $file->storeAs('paten/tanda-terima', $finalName, 'public');
 
@@ -186,7 +187,10 @@ class FileUploadController extends Controller
             'tanda_terima' => $path,
         ]);
 
-        return redirect()->route('uploadgambarprototipe')->with('success', 'Tanda terima tersimpan');
+        return redirect()
+    ->route('uploadgambarprototipe')
+    ->with('success', 'gambar prototipe berhasil diupload');
+
     }
 
     public function gambarPrototipe(Request $request)

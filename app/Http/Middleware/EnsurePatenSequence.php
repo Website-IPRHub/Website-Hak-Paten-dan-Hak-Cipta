@@ -5,25 +5,30 @@ namespace App\Http\Middleware;
 use App\Models\Paten;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 class EnsurePatenSequence
 {
     public function handle(Request $request, Closure $next)
     {
         $patenId = session('paten_id');
+
         if (!$patenId) {
             return redirect()->route('hakpaten')
                 ->with('error', 'Mulai dari step pertama dulu.');
         }
 
         $paten = Paten::find($patenId);
+
         if (!$paten) {
             session()->forget('paten_id');
             return redirect()->route('hakpaten')
                 ->with('error', 'Data paten tidak ditemukan. Mulai ulang.');
         }
 
-        // alur dokumen
+        // 🔥 SHARE KE SEMUA VIEW
+        View::share('paten', $paten);
+
         $steps = [
             'draftpaten'           => 'draft_paten',
             'formulirpermohonan'   => 'form_permohonan',
@@ -31,41 +36,27 @@ class EnsurePatenSequence
             'pengalihanhak'        => 'surat_pengalihan',
             'scanktp'              => 'scan_ktp',
             'tandaterima'          => 'tanda_terima',
-
-            'uploadgambarprototipe'=> null, 
+            'uploadgambarprototipe'=> null,
             'deskripsiproduk'      => null,
         ];
 
         $current = $request->route()?->getName();
-        if (!$current) return $next($request);
-
-        if (!array_key_exists($current, $steps)) {
+        if (!$current || !array_key_exists($current, $steps)) {
             return $next($request);
         }
 
-        $firstIncompleteRoute = null;
+        foreach ($steps as $routeName => $column) {
+            if ($column === null) continue;
 
-        foreach ($steps as $routeName => $requiredColumn) {
-            if ($requiredColumn === null) { // buat yang opsional
-                continue;
-            }
-
-            $val = (string) ($paten->{$requiredColumn} ?? '');
-            $val = trim($val);
-
-            // harus ada string path (minimal ada "/")
-            $done = $val !== '';
+            $done = trim((string)($paten->{$column} ?? '')) !== '';
 
             if (!$done) {
-                $firstIncompleteRoute = $routeName;
+                if ($current !== $routeName) {
+                    return redirect()->route($routeName)
+                        ->with('error', 'Selesaikan step sebelumnya dulu.');
+                }
                 break;
             }
-        }
-
-        // Kalau ada step yang belum selesai dan user buka step lain (yang bukan step itu), akan redirect
-        if ($firstIncompleteRoute && $current !== $firstIncompleteRoute) {
-            return redirect()->route($firstIncompleteRoute)
-                ->with('error', 'Selesaikan step sebelumnya dulu.');
         }
 
         return $next($request);

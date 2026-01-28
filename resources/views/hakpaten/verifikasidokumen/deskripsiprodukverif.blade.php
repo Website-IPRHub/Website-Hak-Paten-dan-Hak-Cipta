@@ -31,6 +31,14 @@
         @csrf
         <textarea name="deskripsi" class="input-deskripsi">{{ old('deskripsi', $verif->deskripsi_singkat_prototipe) }}</textarea>
         <div class="btn-center">
+          <button
+            type="button"
+            class="btn-prev-desk"
+            data-fallback="{{ route('uploadgambarprototipe') }}"
+            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+          >
+            &laquo; Sebelumnya
+          </button>
             <button type="submit" class="btn-selanjutnya-submit">Submit</button>
         </div>
     </form>

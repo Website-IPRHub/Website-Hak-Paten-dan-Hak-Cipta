@@ -16,6 +16,7 @@ class PatenVerif extends Model
 
         // inventors json
         'inventors',
+         'skema_tkt_template_path',
 
         // ringkasan inventor pertama (opsional)
         'nama_pencipta',
