@@ -8,4 +8,5 @@ import './menu';
 import './alert';
 import './hakpaten/isiform';
 import './hakpaten/datadiri';
-import './uploadpaten'
+import './uploadpaten';
+import './hakcipta/formpendaftaran'
