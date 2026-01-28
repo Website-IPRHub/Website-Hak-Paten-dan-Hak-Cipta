@@ -104,7 +104,7 @@
     <div class="actions-bar">
       <div class="actions-left">
         <button type="button" class="btn-prev" data-fallback="{{ route('hakpaten.invensiformulir') }}" onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">&laquo; Sebelumnya</button>
-        <a id="nextLink" href="{{ route('hakpaten.peralihankeverif') }}" class="btn-selanjutnya is-disabled">Selanjutnya &raquo;</a>
+        <a class="btn-next" href="{{ route('hakpaten.peralihankeverif') }}">Selanjutnya &raquo;</a>
       </div>
 
 

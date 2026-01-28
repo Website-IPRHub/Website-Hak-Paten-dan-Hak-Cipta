@@ -12,6 +12,11 @@ class Paten extends Model
         'no_pendaftaran',
         'jenis_paten',
         'judul_paten',
+
+        // kalau tabel kamu punya kolom JSON ini
+        'inventors',
+         'skema_tkt_template_path',
+
         'nama_pencipta',
         'nip_nim',
         'no_hp',
@@ -21,6 +26,8 @@ class Paten extends Model
         'nilai_perolehan',
         'sumber_dana',
         'skema_penelitian',
+        'status' => 'required|in:terkirim,proses,revisi,diterima,ditolak',
+
         'draft_paten',
         'form_permohonan',
         'surat_kepemilikan',
@@ -28,6 +35,10 @@ class Paten extends Model
         'scan_ktp',
         'tanda_terima',
         'gambar_prototipe',
-        'deskripsi_singkat_prototipe'
+        'deskripsi_singkat_prototipe',
+    ];
+
+    protected $casts = [
+        'inventors' => 'array',
     ];
 }

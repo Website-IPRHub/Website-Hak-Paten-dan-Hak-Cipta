@@ -115,3 +115,194 @@
   #uploadButton{ min-width: 80px; }
   #fileName{ max-width: 120px; }
 }
+
+.skema-pengembangan h2{
+  font-family: 'inter', sans-serif;
+  font-weight: 650;
+  color: #000;
+  font-size: 20px;
+  margin: 0;  
+  margin-left: auto;    
+  margin-top: 30px;   
+}
+
+.skema-pengembangan p{
+  font-family: 'inter', sans-serif;
+  font-weight: 400;
+  color: #8e8c8c;
+  font-size: 16px;
+  margin: 0;  
+  margin-left: auto;    
+  margin-top: 5px;  
+  margin-bottom: 30px; 
+}
+
+/* ===== Skema actions (ANTI OVERRIDE) ===== */
+.skm-actions{
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skm-actions__left,
+.skm-actions__right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skm-actions__right{
+  margin-left: auto;
+}
+
+/* upload inline (nggak jadi kotak gede) */
+.skm-upload{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* nama file */
+.skm-file{
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: .85;
+}
+
+/* tombol seragam */
+.skm-btn{
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 0;
+}
+
+/* disabled next */
+.skm-btn.is-disabled{
+  pointer-events: none;
+  opacity: .45;
+}
+
+/* =========================
+   BUTTON THEME (samain semua)
+========================= */
+:root{
+  --btn-bg: #344c7b;
+  --btn-bg-hover: #637caf;
+  --btn-text: #fff;
+  --btn-radius: 14px;
+  --btn-pad-y: 12px;
+  --btn-pad-x: 18px;
+  --btn-shadow: 0 10px 22px rgba(3,6,31,0.15);
+  --btn-shadow-2: 0 10px 24px rgba(52,76,123,0.22);
+}
+
+.skm-btn,
+.btn-prev{
+  margin-left: 40px;
+}
+/* Base button look */
+.skm-btn,
+.btn-prev,
+a#nextLink.btn-selanjutnya,
+.btn-next,
+#uploadButton,
+.unduh,
+#skmUploadBtn,
+#skemaDownloadBtn{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
+
+  padding: var(--btn-pad-y) var(--btn-pad-x) !important;
+  border-radius: var(--btn-radius) !important;
+
+  background: var(--btn-bg) !important;
+  color: var(--btn-text) !important;
+
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+
+  border: 0 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+
+  box-shadow: var(--btn-shadow) !important;
+  transition: 0.2s ease !important;
+}
+
+/* Hover/active */
+.skm-btn:hover,
+.btn-prev:hover,
+a#nextLink.btn-selanjutnya:hover,
+.btn-next:hover,
+#uploadButton:hover,
+.unduh:hover,
+#skmUploadBtn:hover,
+#skemaDownloadBtn:hover{
+  background: var(--btn-bg-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--btn-shadow-2) !important;
+}
+
+.skm-btn:active,
+.btn-prev:active,
+a#nextLink.btn-selanjutnya:active,
+.btn-next:active,
+#uploadButton:active,
+.unduh:active,
+#skmUploadBtn:active,
+#skemaDownloadBtn:active{
+  transform: translateY(0);
+}
+
+/* Disabled */
+.is-disabled,
+a#nextLink.btn-selanjutnya.is-disabled,
+.skm-btn.is-disabled{
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* paksa area upload bisa diklik */
+.button-upload,
+.button-upload *{
+  pointer-events: auto !important;
+}
+
+/* naikin layer tombol upload biar gak ketutup elemen lain */
+#uploadButton{
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* kalau wrapper punya posisi aneh, rapihin */
+.button-upload{
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+.skm-actions .actions-right { position: relative; z-index: 1; }
+.skm-actions .button-upload { position: relative; z-index: 9999; }
+#uploadButton { position: relative; z-index: 99999; pointer-events: auto; }

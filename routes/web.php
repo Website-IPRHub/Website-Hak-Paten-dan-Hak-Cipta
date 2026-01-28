@@ -14,7 +14,8 @@ use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\FileUploadCiptaController;
 
 use App\Http\Controllers\HakCiptaSubmitController;
-
+use App\Http\Controllers\HakPatenSubmitController;
+use App\Http\Controllers\HakPatenSubmit2Controller;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\IsiformController;
 use App\Http\Controllers\InvensiController;
@@ -150,19 +151,19 @@ Route::post('/paten-verif/{verif}/upload-gambar', [PatenVerifController::class, 
 
 
 // Skema pengembangan
-Route::get('/paten-verif/{verif}/skema', [SkemaController::class, 'show'])->name('patenverif.skema.form');
-Route::post('/paten-verif/{verif}/skema/download', [SkemaController::class, 'pengembanganDownload'])->name('patenverif.skema.download');
-Route::post('/paten-verif/{verif}/skema/upload', [SkemaController::class, 'pengembanganUpload'])->name('patenverif.skema.upload');
+Route::get('/paten-verif/{verif}/skema', [SkemaController::class, 'showVerif'])->name('patenverif.skema.form');
+Route::post('/paten-verif/{verif}/skema/download', [SkemaController::class, 'downloadVerif'])->name('patenverif.skema.download');
+Route::post('/paten-verif/{verif}/skema/upload', [SkemaController::class, 'uploadVerif'])->name('patenverif.skema.upload');
 
 /*
 |--------------------------------------------------------------------------
-| HAK PATEN FLOW (session + anti-skip)
+| HAK PATEN FLOW
 |--------------------------------------------------------------------------
 */
 // START: bikin row paten + set session paten_id
 Route::post('/hak-paten/start', [PatenController::class, 'start'])->name('paten.start');
 
-// Step pages (GET) - anti skip via middleware
+// STEP PAGES (GET) - ANTI SKIP
 Route::middleware('paten.seq')->group(function () {
     Route::get('/hak-paten/draftpaten', fn () => view('hakpaten.draftpaten'))->name('draftpaten');
     Route::get('/hak-paten/formulirpermohonan', fn () => view('hakpaten.formulirpermohonan'))->name('formulirpermohonan');
@@ -171,12 +172,19 @@ Route::middleware('paten.seq')->group(function () {
     Route::get('/hak-paten/scanktp', fn () => view('hakpaten.scanktp'))->name('scanktp');
     Route::get('/hak-paten/tandaterima', fn () => view('hakpaten.tandaterima'))->name('tandaterima');
     Route::get('/hak-paten/uploadgambarprototipe', fn () => view('hakpaten.uploadgambarprototipe'))->name('uploadgambarprototipe');
+    Route::get('/hak-paten/deskripsiproduk', fn () => view('hakpaten.deskripsiproduk'))->name('deskripsiproduk');
 });
 
 // sukses
 Route::get('/hak-paten/sukses', fn () => view('hakpaten.sukses'))->name('hakpaten.sukses');
 
-// Upload per step (POST)
+
+// PATEN (baru)
+Route::get('/hak-paten/{paten}/skema', [SkemaController::class, 'showPaten'])->name('hakpaten.skema.form');
+Route::post('/hak-paten/{paten}/skema/download', [SkemaController::class, 'downloadPaten'])->name('hakpaten.skema.download');
+Route::post('/hak-paten/{paten}/skema/upload', [SkemaController::class, 'uploadPaten'])->name('hakpaten.skema.upload');
+
+// UPLOAD PER STEP (POST)
 Route::post('/hak-paten/upload-draft', [FileUploadController::class, 'draft'])->name('draftpaten.upload');
 Route::post('/hak-paten/upload-form', [FileUploadController::class, 'form'])->name('formulirpermohonan.upload');
 Route::post('/hak-paten/upload-surat-invensi', [FileUploadController::class, 'suratInvensi'])->name('kepemilikaninvensi.upload');
@@ -185,42 +193,40 @@ Route::post('/hak-paten/upload-scanktp', [FileUploadController::class, 'scanKtp'
 Route::post('/hak-paten/upload-surat-terima-berkas', [FileUploadController::class, 'tandaTerima'])->name('tandaterima.uploadFormSuratTandaTerimaBerkas');
 Route::post('/hak-paten/upload-prototipe', [FileUploadController::class, 'gambarPrototipe'])->name('uploadgambarprototipe.uploadPrototipe');
 
-/*
-|--------------------------------------------------------------------------
-| DOWNLOAD TEMPLATE (Hak Paten)
-|--------------------------------------------------------------------------
-*/
-Route::prefix('hak-paten')->group(function () {
-    Route::get('/download-template-draft', function () {
-        $path = public_path('templates/Template Deskripsi Paten.docx');
-        if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
-        return response()->download($path, 'Template Deskripsi Paten.docx');
-    })->name('download.template.draftpaten');
+// SUBMIT FINAL (POST)
+Route::post('/hak-paten/submit', [HakPatenSubmit2Controller::class, 'submit'])->name('hakpaten.submit');
 
-    Route::get('/download-template-form', function () {
-        $path = public_path('templates/Form Daftar Paten (2025).docx');
-        if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
-        return response()->download($path, 'Form Daftar Paten (2025).docx');
-    })->name('download.template.formpaten');
+// DOWNLOAD TEMPLATE (GET)
+Route::get('/hak-paten/download-template-draft', function () {
+    $path = public_path('templates/Template Deskripsi Paten.docx');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Template Deskripsi Paten.docx');
+})->name('download.template.draftpaten');
 
-    Route::get('/download-template-surat-invensi', function () {
-        $path = public_path('templates/Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx');
-        if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
-        return response()->download($path, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx');
-    })->name('download.template.surat_invensi');
+Route::get('/hak-paten/download-template-form', function () {
+    $path = public_path('templates/Form Daftar Paten (2025).docx');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Form Daftar Paten (2025).docx');
+})->name('download.template.formpaten');
 
-    Route::get('/download-template-surat-pengalihan-hak', function () {
-        $path = public_path('templates/Surat Pernyataan Pengalihan Hak.docx');
-        if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
-        return response()->download($path, 'Surat Pernyataan Pengalihan Hak.docx');
-    })->name('download.template.pengalihan_hak');
+Route::get('/hak-paten/download-template-surat-invensi', function () {
+    $path = public_path('templates/Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx');
+})->name('download.template.surat_invensi');
 
-    Route::get('/download-template-surat-terima-berkas', function () {
-        $path = public_path('templates/TANDA_TERIMA_BERKAS_HAKI.pdf');
-        if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
-        return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
-    })->name('download.template.tanda_terima_paten');
-});
+Route::get('/hak-paten/download-template-surat-pengalihan-hak', function () {
+    $path = public_path('templates/Surat Pernyataan Pengalihan Hak.docx');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'Surat Pernyataan Pengalihan Hak.docx');
+})->name('download.template.pengalihan_hak');
+
+Route::get('/hak-paten/download-template-surat-terima-berkas', function () {
+    $path = public_path('templates/TANDA_TERIMA_BERKAS_HAKI.pdf');
+    if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
+    return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
+})->name('download.template.tanda_terima_paten');
+
 
 /*
 |--------------------------------------------------------------------------

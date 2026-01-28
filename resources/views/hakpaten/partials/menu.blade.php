@@ -1,20 +1,20 @@
 @php
-  $totalSteps = 8;
-  $activeStep = $activeStep ?? 1;
-
-  // $verif cuma ada di step 2-8
-  $verifId = $verif->id ?? null;
-
+  $totalSteps = 9;
   $percent = (int) round(($activeStep / $totalSteps) * 100);
 @endphp
 
+
 <section class="section-full section-judul">
   <div class="section-inner judul-inner">
+
     <div class="judul-left">
       <h1 class="judul-title">
-        <i class="bi bi-file-earmark-text-fill"></i> Sistem Verifikasi Paten
+        <i class="bi bi-file-earmark-text-fill"></i> Sistem Pendaftaran Paten
       </h1>
-      <p class="judul-desc">Verifikasi & lengkapi dokumen paten di sini.</p>
+      <p class="judul-desc">
+        Sistem menerapkan alur sekuensial, di mana setiap tahapan wajib diselesaikan secara berurutan<br>
+        dan tidak tersedia fitur kembali ke tahapan sebelumnya.
+      </p>
     </div>
 
     <div class="judul-right">
@@ -24,50 +24,52 @@
       </div>
 
       <div class="profile-progress" aria-label="Progress kelengkapan profile">
-        <div class="profile-progress__bar" style="--w: {{ $percent }}%;"></div>
+        <div class="profile-progress__bar" style="--w: {{$percent}}%;"></div>
       </div>
     </div>
+
   </div>
 </section>
+
 
 <section class="section-full section-steps">
   <div class="section-inner">
     <ul class="menu-steps">
-
-      {{-- 1: Data diri (ga butuh verifId) --}}
-      <li class="step-tab {{ $activeStep == 1 ? 'active' : 'disabled' }}">
-        <a href="{{ route('patenverif.datadiri') }}">Data Pemohon</a>
+      <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
+        <a href="{{ route('hakcipta') }}">Data Pemohon</a>
       </li>
 
-      {{-- 2-8: butuh verifId --}}
-      <li class="step-tab {{ $activeStep == 2 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.draft', $verifId) : 'javascript:void(0)' }}">Draft Paten</a>
+      <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
+        <a href="{{ route('draftpaten') }}">Draft Paten</a>
       </li>
 
-      <li class="step-tab {{ $activeStep == 3 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.formpermohonan', $verifId) : 'javascript:void(0)' }}">Form Permohonan</a>
+      <li class="step {{ $activeStep == 3 ? 'active' : 'disabled' }}">
+        <a href="{{ route('formulirpermohonan') }}">Formulir Permohonan</a>
       </li>
 
-      <li class="step-tab {{ $activeStep == 4 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.invensi', $verifId) : 'javascript:void(0)' }}">Invensi</a>
+      <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
+        <a href="{{ route('kepemilikaninvensi') }}">Kepemilikan Invensi</a>
       </li>
 
-      <li class="step-tab {{ $activeStep == 5 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.pengalihanhak', $verifId) : 'javascript:void(0)' }}">Pengalihan Hak</a>
+      <li class="step {{ $activeStep == 5 ? 'active' : 'disabled' }}">
+        <a href="{{ route('pengalihanhak') }}">Pengalihan Hak</a>
       </li>
 
-      <li class="step-tab {{ $activeStep == 6 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.scanktp', $verifId) : 'javascript:void(0)' }}">Scan KTP</a>
+      <li class="step {{ $activeStep == 6 ? 'active' : 'disabled' }}">
+        <a href="{{ route('scanktp') }}">Scan KTP</a>
       </li>
 
-      <li class="step-tab {{ $activeStep == 7 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.uploadgambar', $verifId) : 'javascript:void(0)' }}">Upload Gambar</a>
+      <li class="step {{ $activeStep == 7 ? 'active' : 'disabled' }}">
+        <a href="{{ route('tandaterima') }}">Tanda Terima</a>
       </li>
 
-      <li class="step-tab {{ $activeStep == 8 ? 'active' : ($verifId ? '' : 'disabled') }}">
-        <a href="{{ $verifId ? route('patenverif.deskripsi', $verifId) : 'javascript:void(0)' }}">Deskripsi Produk</a>
+      <li class="step {{ $activeStep == 8 ? 'active' : 'disabled' }}">
+        <a href="#">Upload Gambar Prototipe (Jika Ada)</a>
       </li>
 
+      <li class="step {{ $activeStep == 9 ? 'active' : 'disabled' }}">
+        <a href="#">Deskripsi singkat prototipe/produk (Jika Ada)</a>
+      </li>
     </ul>
   </div>
 </section>
