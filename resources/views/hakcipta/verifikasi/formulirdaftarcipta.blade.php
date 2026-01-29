@@ -1,17 +1,18 @@
 @extends('layouts.app')
 
-@section('title','Hak Paten')
+@section('title','Hak Cipta')
 
 @section('content')
 
 @php $activeStep = 2; @endphp
-@include('hakpaten.verifikasidokumen.menuverif')
+@include('hakcipta.verifikasi.menuciptaverif')
 
 <section class="section-full section-content">
   <div class="section-inner">
     <div class="content-isi">
-      <div class="draft-paten">
-        <h2>Draft Paten <span class="req">*</span></h2>
+      <div class="formulir-permohonan">
+        <h2>Formulir Permohonan *</h2>
+        <p>File dalam bentuk Word, Tanpa Tandatangan</p>
       </div>
 
       <div class="hero-buttons-start">
@@ -19,7 +20,7 @@
           <form
             id="draftForm"
             method="POST"
-            action="{{ route('patenverif.upload.draft', ['verif' => $verif->id]) }}"
+            action="{{ route('ciptaverif.upload.form', ['verif' => $verif->id]) }}"
             enctype="multipart/form-data"
           >
             @csrf
@@ -38,16 +39,14 @@
             </button>
 
             <span id="fileName" class="file-name">
-              @if($verif->draft_paten)
-                {{ basename($verif->draft_paten) }}
+              @if($verif->surat_permohonan)
+                {{ basename($verif->surat_permohonan) }}
               @else
                 Belum pilih file
               @endif
             </span>
 
-
-            {{-- submit beneran (disembunyikan, dipencet via JS setelah pilih file) --}}
-            <button id="submitUpload" type="submit" style="display:none;">Kirim</button>
+            <button id="submitUpload" type="submit" hidden>Kirim</button>
           </form>
         </div>
       </div>
@@ -55,17 +54,16 @@
 
     <div class="actions-bar">
       <button type="button" class="btn-prev"
-        data-fallback="{{ route('patenverif.datadiri',['verif' => $verif->id]) }}"
+        data-fallback="{{ route('datadiricipta', ['verif' => $verif->id]) }}"
         onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
         &laquo; Sebelumnya
       </button>
 
-      <a
-        class="btn-next"
-        href="{{ route('patenverif.formpermohonan', ['verif' => $verif->id]) }}">
-        Selanjutnya »
+      <a class="btn-next" href="{{ route('ciptaverif.suratpernyataan', ['verif' => $verif->id]) }}">
+        Selanjutnya &raquo;
       </a>
     </div>
   </div>
 </section>
+
 @endsection

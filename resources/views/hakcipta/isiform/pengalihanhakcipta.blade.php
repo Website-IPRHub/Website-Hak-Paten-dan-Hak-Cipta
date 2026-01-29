@@ -13,7 +13,7 @@
     <p>Isi formulir ini untuk mendapatkan dokumen surat pengalihan hak cipta</p>
   </div>
 
-    <form class="form" method="POST" action="{{ route('hakcipta.pengalihanhakcipta.store') }}">
+    <form class="form" method="POST" action="{{ route('pengalihanhak.store') }}">
     @csrf
 
     {{-- ATAS: 2 KOLOM (kiri jenis, kanan judul/tanggal/jumlah) --}}

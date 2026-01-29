@@ -15,7 +15,11 @@
             3. Surat Pengalihan Hak Cipta<br>
         </p>
       </div>
-      <a href="#" class="btn-verif">Lanjut ke Proses Verifikasi Dokumen</a>
+        <a href="{{ route('datadiricipta')}}" class="btn-verif">
+  Lanjut ke Proses Verifikasi Dokumen
+</a>
+
+
     </div>
   </div>
 </section>
