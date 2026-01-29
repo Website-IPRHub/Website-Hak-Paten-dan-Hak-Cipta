@@ -23,7 +23,7 @@
       </div>
     @endif
 
-    <form id="draftForm" action="{{ route('ciptaverif.start') }}" method="POST" novalidate>
+    <form id="draftForm" action="{{ route('hakcipta.start') }}" method="POST" novalidate>
       @csrf
 
       <div class="form-2col">
@@ -273,7 +273,7 @@
           <button
             type="button"
             class="btn-prev"
-            data-fallback="{{ route('peralihanverifcipta') }}"
+            data-fallback="#"
             onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
           >
             &laquo; Sebelumnya

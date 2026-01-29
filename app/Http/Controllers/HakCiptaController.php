@@ -19,11 +19,11 @@ class HakCiptaController extends Controller
         $jumlah = max(1, min(20, $jumlah));
 
         $validated = $request->validate([
-            'jenis_hak_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
-            'jenis_hak_cipta_lainnya' => 'nullable|string|max:255',
+            'jenis_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
+            'jenis_cipta_lainnya' => 'nullable|string|max:255',
 
             // FIX: ini harus sesuai form
-            'judul_hak_cipta' => 'required|string|max:255',
+            'judul_cipta' => 'required|string|max:255',
 
             'inventor'               => ['required', 'array'],
             'inventor.nama'          => ['required', 'array', "size:$jumlah"],
@@ -40,7 +40,7 @@ class HakCiptaController extends Controller
             'inventor.email.*'       => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
 
-            'nilai_perolehan_hak_cipta' => 'required|string|max:255',
+            'nilai_perolehan' => 'required|string|max:255',
             'sumber_dana' => empty($enumSumberDana) ? 'required|string|max:255' : ['required', Rule::in($enumSumberDana)],
             'skema_penelitian' => 'required|string|max:255',
         ]);

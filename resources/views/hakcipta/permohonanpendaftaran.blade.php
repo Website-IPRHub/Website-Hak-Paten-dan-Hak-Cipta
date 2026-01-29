@@ -17,14 +17,9 @@
 
       <div class="hero-buttons-start">
         <div class="button-unduh">
-          <a href="{{ route('hakcipta.download.template.permohonan') }}" class="btn-download">
-            Download Template Surat Permohonan
-          </a>
-        </div>
-
         <div class="button-upload">
           <form id="draftForm"
-                action="{{ route('ciptaverif.upload.form', ['verif' => $verif->id]) }}"
+                action="{{ route('hakcipta.permohonanpendaftaran.upload') }}"
                 method="POST"
                 enctype="multipart/form-data">
             @csrf
@@ -34,17 +29,24 @@
                    name="file"
                    required
                    hidden
-                   accept=".doc,.docx">
+                   accept=".doc,.docx"
+                   data-allowed="doc,docx">
 
-            <button id="uploadButton" type="button">Upload</button>
-
-            <span id="fileName">
-              @if(!empty($verif->surat_permohonan))
-                {{ basename($verif->surat_permohonan) }}
+            <button id="uploadButton" type="button" class="btn-upload">
+              Upload
+            </button>
+            
+            <span id="fileName" class="file-name">
+              @if($cipta->surat_permohonan)
+                {{ basename($cipta->surat_permohonan) }}
               @else
-                Belum Pilih File
+                Belum pilih file
               @endif
             </span>
+
+            <button id="submitUpload" type="submit" hidden>Kirim</button>
+
+            
 
             @error('file')
               <div class="text-danger" style="margin-top:8px;">{{ $message }}</div>
@@ -54,11 +56,15 @@
       </div>
     </div>
 
-    <div class="next">
-      <a id="nextLink"
-         href="{{ route('ciptaverif.start', ['verif' => $verif->id]) }}"
-         class="btn-selanjutnya">
-        Selanjutnya
+    <div class="actions-bar">
+      <button type="button" class="btn-prev"
+        data-fallback="{{ route('hakciptapendaftaran') }}"
+        onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
+        &laquo; Sebelumnya
+      </button>
+
+      <a class="btn-next" href="{{ route('hakcipta.suratpernyataan') }}">
+        Selanjutnya &raquo;
       </a>
     </div>
   </div>

@@ -331,6 +331,9 @@ Route::post('/cipta-verif/{verif}/upload-hasil-ciptaan', [HakCiptaVerifControlle
 Route::post('/cipta-verif/{verif}/upload-link-ciptaan', [HakCiptaVerifController::class, 'saveLinkCiptaan'])
   ->name('ciptaverif.upload.linkciptaan');
 
+  // INI PENDAFTARAN CIPTA
+Route::view('/hak-cipta/data-diri-pendaftaran', 'hakcipta.hakcipta')->name('hakciptapendaftaran');
+Route::post('/hak-cipta/start', [HakCiptaController::class, 'start'])->name('hakcipta.start');
 // Step pages (GET) - anti skip
 Route::middleware('cipta.seq')->group(function () {
     Route::get('/hak-cipta/permohonan-pendaftaran', fn () => view('hakcipta.permohonanpendaftaran'))->name('hakcipta.permohonanpendaftaran');

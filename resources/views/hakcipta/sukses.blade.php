@@ -3,23 +3,23 @@
 @section('title','Sukses')
 
 @section('content')
-<section class="section-full section-content">
+<section class="section-full section-content success-page">
   <div class="section-inner">
-    <div class="content-box success-box">
-      <h2 class="success-title">Submit Berhasil</h2>
+    <div class="submit-result">
 
-      <div class="success-desc">
-        <p>Data pendaftaran cipta sudah terkirim.</p>
-        <p>No Pendaftaran anda:</p>
-        <h3>{{ session('no_pendaftaran') }}</h3>
+      <h2>Pendaftaran Hak Cipta Berhasil</h2>
+
+      <p class="desc">
+        Terima kasih. Data dan dokumen Anda telah berhasil dikirim.
+      </p>
+
+      <div class="submit-actions">
+        <a href="{{ url('/header') }}" class="btn-primary">Kembali ke Beranda</a>
+        <a href="#" class="btn-secondary">Login</a>
       </div>
 
-      @if(session('success'))
-        <p class="success-flash">{{ session('success') }}</p>
-      @endif
-
-      <br><a href="{{ url('/header') }}" class="btn-selanjutnya">Kembali ke Landing Page</a>
     </div>
   </div>
 </section>
+
 @endsection

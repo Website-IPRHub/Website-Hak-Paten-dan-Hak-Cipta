@@ -82,12 +82,12 @@ class PatenController extends Controller
         return $file->storeAs($dir, $safeName, 'public');
     }
 
-public function draftPaten()
-{
-    $paten = Paten::findOrFail(session('paten_id'));
+    public function draftPaten()
+    {
+        $paten = Paten::findOrFail(session('paten_id'));
 
-    return view('hakpaten.draftpaten', compact('paten'));
-}
+        return view('hakpaten.draftpaten', compact('paten'));
+    }
 
 
     public function uploadDraft(Request $request)

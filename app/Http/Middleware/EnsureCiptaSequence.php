@@ -5,11 +5,14 @@ namespace App\Http\Middleware;
 use App\Models\HakCipta;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
+
 
 class EnsureCiptaSequence
 {
     public function handle(Request $request, Closure $next)
     {
+        
         $ciptaId = session('cipta_id');
         if (!$ciptaId) {
             return redirect()->route('hakcipta')
@@ -28,8 +31,8 @@ class EnsureCiptaSequence
             'hakcipta.permohonanpendaftaran' => 'surat_permohonan',
             'hakcipta.suratpernyataan'       => 'surat_pernyataan',
             'hakcipta.pengalihanhak'         => 'surat_pengalihan',
-            'hakcipta.tandaterima'           => 'tanda_terima',
             'hakcipta.scanktp'               => 'scan_ktp',
+            'hakcipta.tandaterima'           => 'tanda_terima',
             'hakcipta.hasilciptaan'          => 'hasil_ciptaan',
             'hakcipta.linkciptaan'           => null, // opsional / terakhir
         ];
@@ -62,6 +65,11 @@ class EnsureCiptaSequence
             return redirect()->route($firstIncompleteRoute)
                 ->with('error', 'Selesaikan step sebelumnya terlebih dahulu.');
         }
+
+        $cipta = HakCipta::find($ciptaId);
+
+        View::share('cipta', $cipta);
+
 
         return $next($request);
     }

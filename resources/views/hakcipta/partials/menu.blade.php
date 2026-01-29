@@ -48,11 +48,11 @@
       </li>
 
       <li class="step {{ $activeStep == 5 ? 'active' : 'disabled' }}">
-        <a href="{{ route('hakcipta.tandaterima') }}">Surat Tanda Terima Berkas</a>
+        <a href="{{ route('hakcipta.scanktp') }}">Scan KTP</a>
       </li>
 
       <li class="step {{ $activeStep == 6 ? 'active' : 'disabled' }}">
-        <a href="{{ route('hakcipta.scanktp') }}">Scan KTP</a>
+        <a href="{{ route('hakcipta.tandaterima') }}">Surat Tanda Terima Berkas</a>
       </li>
 
       <li class="step {{ $activeStep == 7 ? 'active' : 'disabled' }}">
