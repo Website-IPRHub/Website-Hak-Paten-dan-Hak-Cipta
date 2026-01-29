@@ -27,6 +27,11 @@ class HakCipta extends Model
         'scan_ktp',
         'hasil_ciptaan',
         'link_ciptaan',
-        'status', // aman kalau kolom ini ada
+        'status', 
+        'inventors',
+    ];
+
+    protected $casts = [
+        'inventors' => 'array',
     ];
 }

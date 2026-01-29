@@ -273,7 +273,7 @@
           <button
             type="button"
             class="btn-prev"
-            data-fallback="{{ route('peralihanverifcipta') }}"
+            data-fallback="{{ route('hakcipta.isiform.peralihanverifcipta') }}"
             onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
           >
             &laquo; Sebelumnya

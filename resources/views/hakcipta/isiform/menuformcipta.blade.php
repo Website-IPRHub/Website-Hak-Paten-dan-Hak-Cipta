@@ -32,15 +32,15 @@
   <div class="section-inner">
     <ul class="menu-steps">
       <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
-  <a href="{{ route('formpendaftarancipta') }}">Formulir Permohonan Pendaftaran Ciptaan</a>
+  <a href="{{ route('hakcipta.isiform.formpendaftaran') }}">Formulir Permohonan Pendaftaran Ciptaan</a>
 </li>
 
 <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
-  <a href="{{ route('suratpernyataan') }}">Surat Pernyataan</a>
+  <a href="{{ route('hakcipta.isiform.suratpernyataan') }}">Surat Pernyataan</a>
 </li>
 
 <li class="step {{ $activeStep == 3 ? 'active' : 'disabled' }}">
-  <a href="{{ route('pengalihanhak') }}">Pengalihan Hak</a>
+  <a href="{{ route('hakcipta.isiform.pengalihanhak') }}">Pengalihan Hak</a>
 </li>
 
     </ul>

@@ -137,13 +137,13 @@
         <button
             type="button"
             class="btn-prev"
-            data-fallback="{{ route('suratpernyataan') }}"
+            data-fallback="{{ route('hakcipta.isiform.suratpernyataan') }}"
             onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
         >
             &laquo; Sebelumnya
         </button>
 
-        <a class="btn-next" href="{{ route('peralihanverifcipta') }}">
+        <a class="btn-next" href="{{ route('hakcipta.isiform.peralihanverifcipta') }}">
             Selanjutnya &raquo;
         </a>
         </div>
