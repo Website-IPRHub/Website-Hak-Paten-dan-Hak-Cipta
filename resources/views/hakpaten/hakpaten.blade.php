@@ -104,12 +104,12 @@
                 <div class="inventor-grid">
                   <div class="inventor-col">
                     <div class="field">
-                      <label class="label">Nama Inventor</label>
+                      <label class="label">Nama Inventor <span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
                     </div>
 
                     <div class="field">
-                      <label class="label">NIP/NIM</label>
+                      <label class="label">NIP/NIM <span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[nip_nim][]" placeholder="Masukkan NIP/NIM Anda" required>
                     </div>
 
@@ -136,12 +136,12 @@
 
                   <div class="inventor-col">
                     <div class="field">
-                      <label class="label">No. HP</label>
+                      <label class="label">No. HP <span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required>
                     </div>
 
                     <div class="field">
-                      <label class="label">Email</label>
+                      <label class="label">Email <span class="req">*</span></label>
                       <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required>
                     </div>
 

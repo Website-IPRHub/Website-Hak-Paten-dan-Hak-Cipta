@@ -110,8 +110,8 @@
             </div>
 
             <div class="field">
-            <label class="label">NIK</label>
-            <input type="text" class="input" name="inventor[NIK][]" placeholder="Masukkan NIK Anda">
+            <label class="label">NIK <span class="req">*</span></label>
+            <input type="text" class="input" name="inventor[NIK][]" placeholder="Masukkan NIK Anda" required>
             </div>
 
             <div class="field">

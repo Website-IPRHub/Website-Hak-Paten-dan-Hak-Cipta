@@ -34,6 +34,7 @@
               type="file"
               name="file"
               hidden
+              accept=".jpg,.jpeg,.png"
               data-allowed="jpg,jpeg,png"
               data-max-mb="10"
             >

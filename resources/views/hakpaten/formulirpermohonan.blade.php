@@ -35,6 +35,7 @@
               name="file"
               hidden
               required
+              accept=".doc,.docx"
               data-allowed="doc,docx"
               data-max-mb="10"
             >

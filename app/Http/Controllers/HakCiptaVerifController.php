@@ -28,7 +28,6 @@ class HakCiptaVerifController extends Controller
             'judul_cipta'     => ['required', 'string', 'max:255'],
             'jenis_cipta_lainnya' => ['nullable', 'string', 'max:255', 'required_if:jenis_cipta,Lainnya'],
 
-
             'inventor'               => ['required', 'array'],
             'inventor.nama'          => ['required', 'array', "size:$jumlah"],
             'inventor.nip_nim'       => ['required', 'array', "size:$jumlah"],

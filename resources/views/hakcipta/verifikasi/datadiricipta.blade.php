@@ -85,14 +85,13 @@
             </label>
         </div>
 
+        
         <div id="jenis-lainnya-wrap" style="display:none;">
-        <input
-            type="text"
-            class="input"
-            name="jenis_cipta_lainnya"
-            placeholder="Tulis jenis hak cipta lainnya…"
-            value="{{ old('jenis_cipta_lainnya') }}"
-        >
+            <input
+                type="text"
+                name="jenis_cipta_lainnya"
+                value="{{ old('jenis_cipta_lainnya') }}"
+            >
         <small style="color:#6b7280;">Isi jika anda memilih “Lainnya”.</small>
         </div>
 

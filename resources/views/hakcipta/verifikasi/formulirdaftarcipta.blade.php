@@ -32,6 +32,7 @@
               hidden
               required
               accept=".doc,.docx"
+              data-allowed="doc,docx"
             >
 
             <button id="uploadButton" type="button" class="btn-upload">
