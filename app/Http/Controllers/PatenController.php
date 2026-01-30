@@ -202,7 +202,7 @@ class PatenController extends Controller
     $original = $file->getClientOriginalName();
     $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
 
-    $path = $file->storeAs('pat$paten/scan_ktp', $safeName, 'public');
+    $path = $file->storeAs('paten/scan_ktp', $safeName, 'public');
 
     $paten->update(['scan_ktp' => $path]);
 

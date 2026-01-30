@@ -109,9 +109,9 @@ Route::prefix('hak-paten')->group(function () {
         ->name('hakpaten.peralihankeverif');
 });
 
-Route::post('/isiform', [IsiformController::class, 'store'])->name('isiform.store');
-Route::post('/invensi', [InvensiController::class, 'store'])->name('invensi.store');
-Route::post('/pengalihan', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
+Route::post('/isiformpaten', [IsiformController::class, 'store'])->name('isiform.store');
+Route::post('/invensipaten', [InvensiController::class, 'store'])->name('invensi.store');
+Route::post('/pengalihanpaten', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
 
 /*
 |--------------------------------------------------------------------------

@@ -13,6 +13,8 @@
             1. Formulir Permohonan Pendaftaran Ciptaan<br>
             2. Surat Pernyataan Hak Cipta<br>
             3. Surat Pengalihan Hak Cipta<br>
+            4. Scan KTP<br>
+            5. Hasil Ciptaan<br>
         </p>
       </div>
         <a href="{{ route('datadiricipta')}}" class="btn-verif">

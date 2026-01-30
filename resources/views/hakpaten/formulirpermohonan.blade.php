@@ -26,6 +26,7 @@
             method="POST"
             action="{{ route('formulirpermohonan.upload') }}"
             enctype="multipart/form-data"
+            data-upload-form
           >
             @csrf
 
@@ -39,19 +40,15 @@
               data-max-mb="10"
             >
 
-            <button id="uploadButton" type="submit" class="btn-upload">
-              Upload
+            <button type="button" class="btn-upload" data-btn-pick>
+              Pilih File
             </button>
 
-            <span id="fileName" class="file-name">
-              @if($cipta->surat_permohonan)
-                {{ basename($cipta->surat_permohonan) }}
-              @else
-                Belum pilih file
-              @endif
+            <span class="file-name" data-file-name>
+              Belum pilih file
             </span>
 
-            <button id="submitUpload" type="submit" hidden>Kirim</button>
+      
           </form>
 
         </div>
@@ -65,6 +62,7 @@
       <button
         type="button"
         class="btn-prev"
+        data-fallback="{{ route('draftpaten') }}"
         onclick="history.back()"
       >
         &laquo; Sebelumnya

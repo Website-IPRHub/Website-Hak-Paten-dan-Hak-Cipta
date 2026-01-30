@@ -9,6 +9,16 @@ class IsiformController extends Controller
 {
     public function store(Request $request)
     {
+
+
+        $request->merge([
+            'inventor' => array_values(array_filter(
+                (array) $request->input('inventor', []),
+                fn ($v) => trim($v) !== ''
+            ))
+        ]);
+
+
         $action = $request->input('action', 'download');
 
         $data = $request->validate([
@@ -26,8 +36,9 @@ class IsiformController extends Controller
             'telepon_fax' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:50'],
 
             'jumlah_inventor' => ['required', 'integer', 'min:1', 'max:20'],
-            'inventor'        => ['required', 'array'],
-            'inventor.*'      => ['required', 'string', 'max:200'],
+            'inventor'   => ['required', 'array', 'min:1'],
+            'inventor.*' => ['required', 'string', 'max:200'],
+
 
             'hak_prioritas'   => ['required', 'in:Ya,Tidak'],
             'negara'          => ['required_if:hak_prioritas,Ya', 'nullable', 'string', 'max:120'],
@@ -48,10 +59,6 @@ class IsiformController extends Controller
             'lampiran_lainnya' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        // validasi jumlah inventor vs inventor[]
-        if (count($data['inventor'] ?? []) !== (int) $data['jumlah_inventor']) {
-            return back()->withErrors(['inventor' => 'Jumlah inventor tidak sesuai.'])->withInput();
-        }
 
         // kalau bukan download, balik
         if ($action !== 'download') {

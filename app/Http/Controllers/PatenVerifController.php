@@ -92,7 +92,6 @@ class PatenVerifController extends Controller
             'surat_kepemilikan',
             'surat_pengalihan',
             'scan_ktp',
-            'tanda_terima',
             'gambar_prototipe',
             'deskripsi_singkat_prototipe',
         ] as $field) {

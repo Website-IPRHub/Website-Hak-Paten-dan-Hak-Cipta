@@ -240,119 +240,6 @@
       </div>
     </template>
 
-    <script type="application/json" id="old-inventor-data">
-      {!! json_encode(old('inventor', [])) !!}
-    </script>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const jumlahInput = document.getElementById("jumlah_inventor");
-        const btnMinus = document.getElementById("invMinus");
-        const btnPlus  = document.getElementById("invPlus");
-
-        const container = document.getElementById("inventor-container");
-        const tpl = document.getElementById("inventor-template");
-        const oldInventorEl = document.getElementById("old-inventor-data");
-
-        let oldInventor = [];
-        try { oldInventor = JSON.parse(oldInventorEl?.textContent || "[]"); } catch(e) { oldInventor = []; }
-
-        const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-
-        const renderInventors = (count) => {
-          if (!container || !tpl) return;
-
-          // simpan nilai yang sudah diketik sebelum render ulang
-          const existing = Array.from(container.querySelectorAll('input[name="inventor[]"]'))
-            .map(i => i.value);
-
-          container.innerHTML = "";
-
-          for (let i = 0; i < count; i++) {
-            const node = tpl.content.cloneNode(true);
-            const input = node.querySelector('input[name="inventor[]"]');
-
-            // prioritas isi: existing (kalau user sudah ketik) -> oldInventor (kalau dari server) -> kosong
-            const v = (existing[i] ?? oldInventor[i] ?? "");
-            if (input) input.value = v;
-
-            container.appendChild(node);
-          }
-        };
-
-        const getCount = () => {
-          const n = parseInt(jumlahInput?.value || "1", 10);
-          return clamp(isNaN(n) ? 1 : n, 1, 20);
-        };
-
-        const setCount = (n) => {
-          const v = clamp(n, 1, 20);
-          if (jumlahInput) jumlahInput.value = v;
-          renderInventors(v);
-        };
-
-        // init
-        setCount(getCount());
-
-        // tombol +/- (tidak submit form)
-        if (btnMinus) btnMinus.addEventListener("click", () => setCount(getCount() - 1));
-        if (btnPlus)  btnPlus.addEventListener("click", () => setCount(getCount() + 1));
-
-        // Konsultan followup show/hide + required toggle
-        const konsultan = document.getElementById("konsultanpaten");
-        const follow = document.getElementById("konsultan-followup");
-        const konsultanReqIds = [
-          "nama_badan_hukum","nama_konsultan_paten","nomor_konsultan_paten",
-          "alamat_badan_hukum","alamat_konsultan_paten","telepon_fax"
-        ];
-
-        const setKonsultanRequired = (on) => {
-          konsultanReqIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (on) el.setAttribute("required", "required");
-            else el.removeAttribute("required");
-          });
-        };
-
-        const updateKonsultanUI = () => {
-          const isMelalui = konsultan?.value === "Melalui";
-          if (follow) follow.style.display = isMelalui ? "" : "none";
-          setKonsultanRequired(!!isMelalui);
-        };
-
-        if (konsultan) {
-          konsultan.addEventListener("change", updateKonsultanUI);
-          updateKonsultanUI();
-        }
-
-        // Hak prioritas followup show/hide + required toggle
-        const hak = document.getElementById("hak_prioritas");
-        const hakFollow = document.getElementById("hak-prioritas-followup");
-        const hakReqIds = ["negara","nomor_prioritas","tgl_penerimaan"];
-
-        const setHakRequired = (on) => {
-          hakReqIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (on) el.setAttribute("required", "required");
-            else el.removeAttribute("required");
-          });
-        };
-
-        const updateHakUI = () => {
-          const isYa = hak?.value === "Ya";
-          if (hakFollow) hakFollow.style.display = isYa ? "" : "none";
-          setHakRequired(!!isYa);
-        };
-
-        if (hak) {
-          hak.addEventListener("change", updateHakUI);
-          updateHakUI();
-        }
-      });
-    </script>
-
     {{-- 6) Hak prioritas + Gambar abstrak --}}
     <div class="row-2">
       <div class="col">
@@ -472,5 +359,123 @@
       </div>
     </div>
   </form>
+
+      <script type="application/json" id="old-inventor-data">
+      {!! json_encode(old('inventor', [])) !!}
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const jumlahInput = document.getElementById("jumlah_inventor");
+        const btnMinus = document.getElementById("invMinus");
+        const btnPlus  = document.getElementById("invPlus");
+
+        const container = document.getElementById("inventor-container");
+        const tpl = document.getElementById("inventor-template");
+        const oldInventorEl = document.getElementById("old-inventor-data");
+
+        let oldInventor = [];
+        try { oldInventor = JSON.parse(oldInventorEl?.textContent || "[]"); } catch(e) { oldInventor = []; }
+
+        const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+        const renderInventors = (count) => {
+          if (!container || !tpl) return;
+
+          // simpan nilai yang sudah diketik sebelum render ulang
+          const existing = Array.from(container.querySelectorAll('input[name="inventor[]"]'))
+            .map(i => i.value);
+
+          container.innerHTML = "";
+
+          for (let i = 0; i < count; i++) {
+            const node = tpl.content.cloneNode(true);
+            const input = node.querySelector('input[name="inventor[]"]');
+
+            // prioritas isi: existing (kalau user sudah ketik) -> oldInventor (kalau dari server) -> kosong
+            const v = (existing[i] ?? oldInventor[i] ?? "");
+            if (input) input.value = v;
+
+            container.appendChild(node);
+          }
+        };
+
+        const getCount = () => {
+          const n = parseInt(jumlahInput?.value || "1", 10);
+          return clamp(isNaN(n) ? 1 : n, 1, 20);
+        };
+
+        const setCount = (n) => {
+          const v = clamp(n, 1, 20);
+          if (jumlahInput) jumlahInput.value = v;
+          renderInventors(v);
+        };
+
+        // init
+        setCount(getCount());
+
+        // tombol +/- (tidak submit form)
+        if (btnMinus) btnMinus.addEventListener("click", () => setCount(getCount() - 1));
+        if (btnPlus)  btnPlus.addEventListener("click", () => setCount(getCount() + 1));
+
+        // Konsultan followup show/hide + required toggle
+        const konsultan = document.getElementById("konsultanpaten");
+        const follow = document.getElementById("konsultan-followup");
+        const konsultanReqIds = [
+          "nama_badan_hukum","nama_konsultan_paten","nomor_konsultan_paten",
+          "alamat_badan_hukum","alamat_konsultan_paten","telepon_fax"
+        ];
+
+        const setKonsultanRequired = (on) => {
+          konsultanReqIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (on) el.setAttribute("required", "required");
+            else el.removeAttribute("required");
+          });
+        };
+
+        const updateKonsultanUI = () => {
+          const isMelalui = konsultan?.value === "Melalui";
+          if (follow) follow.style.display = isMelalui ? "" : "none";
+          setKonsultanRequired(!!isMelalui);
+        };
+
+        if (konsultan) {
+          konsultan.addEventListener("change", updateKonsultanUI);
+          updateKonsultanUI();
+        }
+
+        // Hak prioritas followup show/hide + required toggle
+        const hak = document.getElementById("hak_prioritas");
+        const hakFollow = document.getElementById("hak-prioritas-followup");
+        const hakReqIds = ["negara","nomor_prioritas","tgl_penerimaan"];
+
+        const setHakRequired = (on) => {
+          hakReqIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (on) el.setAttribute("required", "required");
+            else el.removeAttribute("required");
+          });
+        };
+
+        const updateHakUI = () => {
+          const isYa = hak?.value === "Ya";
+          if (hakFollow) hakFollow.style.display = isYa ? "" : "none";
+          setHakRequired(!!isYa);
+        };
+
+        if (hak) {
+          hak.addEventListener("change", updateHakUI);
+          updateHakUI();
+        }
+
+        document.querySelector("form").addEventListener("submit", () => {
+          const inputs = document.querySelectorAll('input[name="inventor[]"]');
+          document.getElementById("jumlah_inventor").value = inputs.length;
+        });
+      });
+    </script>
 </div>
 @endsection

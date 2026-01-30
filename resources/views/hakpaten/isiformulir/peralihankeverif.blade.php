@@ -14,6 +14,9 @@
             2. Formulir Permohonan<br>
             3. Surat Pernyataan Kepemilikan Invensi oleh Inventor<br>
             4. Surat Pengalihan<br>
+            5. Scan KTP<br>
+            6. Gambar Prototipe<br>
+            7. Surat Pernyataan (Jika memilih skema penelitian pengembangan (TKT 7-9))
         </p>
       </div>
       <a href="{{ route('patenverif.datadiri') }}" class="btn-verif">Lanjut ke Proses Verifikasi Dokumen</a>

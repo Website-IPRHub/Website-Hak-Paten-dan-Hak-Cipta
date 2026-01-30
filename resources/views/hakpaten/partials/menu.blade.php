@@ -11,10 +11,6 @@
       <h1 class="judul-title">
         <i class="bi bi-file-earmark-text-fill"></i> Sistem Pendaftaran Paten
       </h1>
-      <p class="judul-desc">
-        Sistem menerapkan alur sekuensial, di mana setiap tahapan wajib diselesaikan secara berurutan<br>
-        dan tidak tersedia fitur kembali ke tahapan sebelumnya.
-      </p>
     </div>
 
     <div class="judul-right">

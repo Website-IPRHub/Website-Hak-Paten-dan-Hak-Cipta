@@ -12,7 +12,7 @@
     <div class="content-box">
 
       <div class="link-ciptaan">
-        <h2>Link Ciptaan</h2>
+        <h2>Link Ciptaan untuk Hak Cipta jenis Karya Rekaman Video</h2>
       </div>
 
       @if ($errors->any())
