@@ -127,9 +127,10 @@
           &laquo; Sebelumnya
         </button>
 
-        <a class="btn-next" href="{{ route('suratpernyataan') }}">
-  Selanjutnya &raquo;
-</a>
+        <a class="btn-next" href="{{ route('hakcipta.isiform.suratpernyataan') }}">
+          Selanjutnya &raquo;
+        </a>
+
 
       </div>
 

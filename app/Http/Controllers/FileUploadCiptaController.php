@@ -39,15 +39,15 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/surat-permohonan', [
-            'required', 'file', 'mimes:doc,docx,pdf', 'max:10240'
+            'required', 'file', 'mimes:doc,docx', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
             'surat_permohonan' => $path,
         ]);
 
-        return redirect()->route('hakcipta.suratpernyataan')
-            ->with('success', 'Surat permohonan tersimpan');
+        return redirect()->route('hakcipta.permohonanpendaftaran')
+                ->with('success', 'Surat permohonan tersimpan');
     }
 
     // STEP 3: Surat Pernyataan
@@ -56,14 +56,14 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/surat-pernyataan', [
-            'required', 'file', 'mimes:doc,docx,pdf', 'max:10240'
+            'required', 'file', 'mimes:doc,docx', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
             'surat_pernyataan' => $path,
         ]);
 
-        return redirect()->route('hakcipta.pengalihanhak')
+        return redirect()->route('hakcipta.suratpernyataan')
             ->with('success', 'Surat pernyataan tersimpan');
     }
 
@@ -73,14 +73,14 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/surat-pengalihan', [
-            'required', 'file', 'mimes:doc,docx,pdf', 'max:10240'
+            'required', 'file', 'mimes:doc,docx', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
             'surat_pengalihan' => $path,
         ]);
 
-        return redirect()->route('hakcipta.scanktp')
+        return redirect()->route('hakcipta.pengalihanhak')
             ->with('success', 'Surat pengalihan tersimpan');
     }
 
@@ -90,14 +90,14 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/scan-ktp', [
-            'required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'
+            'required', 'file', 'mimes:pdf', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
             'scan_ktp' => $path,
         ]);
 
-        return redirect()->route('hakcipta.tandaterima')
+        return redirect()->route('hakcipta.scanktp')
             ->with('success', 'Scan KTP tersimpan');
     }
 
@@ -114,7 +114,7 @@ class FileUploadCiptaController extends Controller
             'tanda_terima' => $path,
         ]);
 
-        return redirect()->route('hakcipta.hasilciptaan')
+        return redirect()->route('hakcipta.tandaterima')
             ->with('success', 'Tanda terima tersimpan');
     }
 
@@ -124,14 +124,14 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/hasil-ciptaan', [
-            'required', 'file', 'mimes:pdf,jpg,jpeg,png,zip,rar,mp4', 'max:51200'
+            'required', 'file', 'mimes:pdf', 'max:51200'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
             'hasil_ciptaan' => $path,
         ]);
 
-        return redirect()->route('hakcipta.linkciptaan')
+        return redirect()->route('hakcipta.hasilciptaan')
             ->with('success', 'Hasil ciptaan tersimpan');
     }
 
