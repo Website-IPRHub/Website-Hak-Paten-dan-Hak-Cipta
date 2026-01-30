@@ -52,71 +52,255 @@ function setupLogoutModal() {
 ========================= */
 async function setupChartsIfAny() {
   const chartDataEl = document.getElementById('chart-data');
-  if (!chartDataEl) return; // kalau bukan tab stats, skip
-
-  const canvasPaten = document.getElementById('chartPaten');
-  const canvasCipta = document.getElementById('chartCipta');
-  if (!canvasPaten || !canvasCipta) return;
+  if (!chartDataEl) return;
 
   let Chart;
   try {
-    // ✅ load chart.js hanya saat dibutuhkan
     const mod = await import('chart.js/auto');
     Chart = mod.default;
   } catch (err) {
     console.error('Chart.js gagal diload:', err);
-    return; // penting: jangan bikin fitur lain mati
+    return;
   }
 
-  const payload = JSON.parse(chartDataEl.textContent || '{}');
+  let payload = {};
+  try {
+    payload = JSON.parse(chartDataEl.textContent || '{}');
+  } catch (e) {
+    console.error('chart-data JSON invalid', e);
+    return;
+  }
 
-  const commonOptions = {
-    plugins: { legend: { display: false } },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          precision: 0,
-          callback: (value) => Math.round(value),
-        }
-      }
-    },
-    responsive: true,
-    maintainAspectRatio: false,
+  const THEME = {
+    paten: '#126782', // biru
+    cipta: '#7697A0', // hijau
+    gold:  '#f59e0b', // aksen
+    navy:  '#0b2c5f',
+    grid:  'rgba(11,44,95,0.10)',
   };
 
-  new Chart(canvasPaten, {
-    type: 'bar',
-    data: {
-      labels: payload.patenLabels || [],
-      datasets: [{
-        data: payload.patenData || [],
-        backgroundColor: '#52a0d8ff',
-        borderColor: '#0b2c5f',
-        borderWidth: 0,
-        borderRadius: 10,
-        borderSkipped: false
-      }],
-    },
-    options: commonOptions,
-  });
+  const countTooltip = {
+    callbacks: {
+      label(ctx) {
+        // doughnut/pie: ctx.parsed angka
+        // bar: ctx.parsed.x / ctx.parsed.y
+        const v =
+          (typeof ctx.parsed === 'object' && ctx.parsed !== null)
+            ? (ctx.parsed.x ?? ctx.parsed.y ?? 0)
+            : ctx.parsed;
 
-  new Chart(canvasCipta, {
-    type: 'bar',
-    data: {
-      labels: payload.ciptaLabels || [],
-      datasets: [{
-        data: payload.ciptaData || [],
-        backgroundColor: '#52a0d8ff',
-        borderColor: '#0b2c5f',
-        borderWidth: 0,
-        borderRadius: 10,
-        borderSkipped: false
-      }],
-    },
-    options: commonOptions,
-  });
+        const name = ctx.dataset?.label ? `${ctx.dataset.label}: ` : '';
+        return `${name}${v}`;
+      }
+    }
+  };
+
+  // helper: destroy chart lama kalau function dipanggil ulang
+  const CHARTS = window.__DASH_CHARTS__ || (window.__DASH_CHARTS__ = {});
+  const mount = (key, el, config) => {
+    if (!el) return;
+    if (CHARTS[key]) CHARTS[key].destroy();
+    CHARTS[key] = new Chart(el, config);
+  };
+
+  /* =========================
+     BAR JENIS PATEN
+  ========================= */
+  const elPaten = document.getElementById('chartPaten');
+  if (elPaten && (payload.patenLabels || []).length) {
+    mount('paten', elPaten, {
+      type: 'bar',
+      data: {
+        labels: payload.patenLabels || [],
+        datasets: [{
+          label: 'Jumlah',
+          data: payload.patenData || [],
+          backgroundColor: THEME.paten,
+          borderRadius: 10,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: countTooltip },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
+          x: { grid: { display: false } }
+        },
+      }
+    });
+  }
+
+  /* =========================
+     BAR JENIS CIPTA
+  ========================= */
+  const elCipta = document.getElementById('chartCipta');
+  if (elCipta && (payload.ciptaLabels || []).length) {
+    mount('cipta', elCipta, {
+      type: 'bar',
+      data: {
+        labels: payload.ciptaLabels || [],
+        datasets: [{
+          label: 'Jumlah',
+          data: payload.ciptaData || [],
+          backgroundColor: THEME.cipta,
+          borderRadius: 10,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: countTooltip },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
+          x: { grid: { display: false } }
+        },
+      }
+    });
+  }
+
+  /* =========================
+     DOUGHNUT: TOTAL HKI (Mahasiswa vs Dosen)
+  ========================= */
+  const cRoleAll = document.getElementById('chartRoleAll');
+  if (cRoleAll && payload.roleAll && (payload.roleAll.data || []).length) {
+    mount('roleAll', cRoleAll, {
+      type: 'doughnut',
+      data: {
+        labels: payload.roleAll.labels || ['Mahasiswa', 'Dosen'],
+        datasets: [{
+          label: 'Total',
+          data: payload.roleAll.data || [0, 0],
+          backgroundColor: [THEME.paten, THEME.gold], // ✅ beda jelas
+          borderColor: '#fff',
+          borderWidth: 2,
+          hoverOffset: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: countTooltip,
+          legend: { position: 'bottom' },
+        },
+        cutout: '62%',
+      },
+    });
+  }
+
+  /* =========================
+     STACKED BAR: PATEN vs CIPTA (Mahasiswa & Dosen)
+  ========================= */
+  const cRoleByType = document.getElementById('chartRoleByType');
+  if (cRoleByType && payload.roleByType) {
+    mount('roleByType', cRoleByType, {
+      type: 'bar',
+      data: {
+        labels: payload.roleByType.labels || ['Paten', 'Hak Cipta'],
+        datasets: [
+          {
+            label: 'Mahasiswa',
+            data: payload.roleByType.mahasiswa || [0, 0],
+            backgroundColor: THEME.paten,
+            borderRadius: 10,
+          },
+          {
+            label: 'Dosen',
+            data: payload.roleByType.dosen || [0, 0],
+            backgroundColor: THEME.gold,
+            borderRadius: 10,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, grid: { color: THEME.grid } },
+          y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
+        },
+        plugins: {
+          tooltip: countTooltip,
+          legend: { position: 'bottom' },
+        },
+      },
+    });
+  }
+
+  /* =========================
+     HORIZONTAL BAR: TOP FAKULTAS (dibeda-bedain kebawah)
+  ========================= */
+  /* =========================
+   HORIZONTAL BAR: TOP FAKULTAS (3 WARNA SAJA)
+========================= */
+  const cFak = document.getElementById('chartFakultas');
+  if (cFak && payload.fakultas && (payload.fakultas.labels || []).length) {
+    mount('fakultas', cFak, {
+      type: 'bar',
+      data: {
+        labels: payload.fakultas.labels || [],
+        datasets: [
+          {
+            label: 'Total HKI',
+            data: payload.fakultas.all || [],
+            backgroundColor: THEME.gold,     // ✅ 1 warna
+            borderRadius: 8,
+            barThickness: 10,
+          },
+          {
+            label: 'Paten',
+            data: payload.fakultas.paten || [],
+            backgroundColor: THEME.paten,    // ✅ 1 warna
+            borderRadius: 8,
+            barThickness: 10,
+          },
+          {
+            label: 'Hak Cipta',
+            data: payload.fakultas.cipta || [],
+            backgroundColor: THEME.cipta,    // ✅ 1 warna
+            borderRadius: 8,
+            barThickness: 10,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+
+        // ✅ jangan stacked biar 3 bar muncul berdampingan
+        scales: {
+          x: {
+            stacked: false,
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: THEME.grid },
+          },
+          y: {
+            stacked: false,
+            ticks: { autoSkip: false },
+            grid: { display: false },
+          },
+        },
+
+        plugins: {
+          tooltip: countTooltip,
+          legend: { position: 'bottom' },
+        },
+
+        // ✅ biar 3 bar per fakultas kebaca jelas
+        datasets: {
+          bar: {
+            categoryPercentage: 0.7,
+            barPercentage: 0.9,
+          },
+        },
+      },
+    });
+  }
 }
 
 /* =========================
@@ -131,15 +315,17 @@ function setupStatusFilter() {
   const rows = Array.from(table.querySelectorAll('tbody tr[data-type]'));
 
   const apply = () => {
-    const typeVal = (filterType.value || 'all').toLowerCase(); // all|paten|cipta
+    const typeVal = (filterType.value || 'all').toLowerCase();
     const q = (searchInput.value || '').trim().toLowerCase();
+    const isShortNumber = /^\d{1,2}$/.test(q);
 
     rows.forEach((tr) => {
       const t = (tr.dataset.type || '').toLowerCase();
       const key = (tr.dataset.key || '').toLowerCase();
+      const nop = (tr.dataset.nop || '').toLowerCase();
 
       const okType = typeVal === 'all' || t === typeVal;
-      const okQuery = !q || key.includes(q);
+      const okQuery = !q || (isShortNumber ? nop.includes(q) : key.includes(q));
 
       tr.style.display = okType && okQuery ? '' : 'none';
     });
@@ -149,6 +335,7 @@ function setupStatusFilter() {
   searchInput.addEventListener('input', apply);
   apply();
 }
+
 
 /* =========================
    GENERIC TABLE SEARCH
@@ -163,15 +350,29 @@ function setupTableSearch(inputId, tableId) {
 
   const apply = () => {
     const q = (input.value || '').trim().toLowerCase();
-    rows.forEach((tr) => {
+
+    if (!q) {
+      rows.forEach(tr => tr.style.display = '');
+      return;
+    }
+
+    // ✅ aturan global: angka pendek = fokus no pendaftaran
+    const isShortNumber = /^\d{1,2}$/.test(q);
+
+    rows.forEach(tr => {
       const key = (tr.dataset.key || '').toLowerCase();
-      tr.style.display = (!q || key.includes(q)) ? '' : 'none';
+      const nop = (tr.dataset.nop || '').toLowerCase();
+
+      const ok = isShortNumber ? nop.includes(q) : key.includes(q);
+      tr.style.display = ok ? '' : 'none';
     });
   };
 
   input.addEventListener('input', apply);
   apply();
 }
+
+
 
 /* =========================
    CUSTOM DROPDOWNS (data-dd)
@@ -351,9 +552,54 @@ function setupDetailDrawer() {
   const subEl = document.getElementById('detailSub');
   const bodyEl = document.getElementById('detailBody');
 
-  console.log('drawer elements:', { drawer, backdrop, closeBtn, titleEl, subEl, bodyEl });
-
   if (!drawer || !backdrop || !closeBtn || !bodyEl) return;
+
+  function safeParseInventors(raw) {
+    if (!raw) return [];
+    try {
+      const val = JSON.parse(raw);
+      return Array.isArray(val) ? val : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderInventors(inventors) {
+    if (!Array.isArray(inventors) || inventors.length === 0) return '';
+
+    return `
+      <div class="detail-section">
+        <div style="font-weight:800; margin:10px 0 6px;">Data Inventor</div>
+
+        ${inventors.map((inv, idx) => `
+          <div style="border:1px solid #e6ebf5;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff;">
+            <div style="font-weight:800;color:#0b2c5f;">
+              ${idx + 1}. ${(inv.nama ?? '-')} <span style="font-weight:600;">(${inv.status ?? '-'})</span>
+            </div>
+
+            <div style="margin-top:6px;">
+              <div class="detail-row">
+                <div class="detail-k">NIP/NIM</div>
+                <div class="detail-v">${inv.nip_nim ?? '-'}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">Fakultas</div>
+                <div class="detail-v">${inv.fakultas ?? '-'}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">Email</div>
+                <div class="detail-v">${inv.email ?? '-'}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">No HP</div>
+                <div class="detail-v">${inv.no_hp ?? '-'}</div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
 
   function openDrawer(payload, type) {
     if (titleEl) titleEl.textContent = type === 'paten' ? 'Detail Paten' : 'Detail Hak Cipta';
@@ -364,23 +610,46 @@ function setupDetailDrawer() {
       ['Judul', payload.judul],
       ['Jenis', payload.jenis],
       ...(type === 'cipta' ? [['Jenis Lainnya', payload.jenis_lainnya]] : []),
-      ['Nama Pencipta', payload.nama_pencipta],
-      ['NIP/NIM', payload.nip_nim],
-      ['No HP', payload.no_hp],
-      ['Fakultas', payload.fakultas],
-      ['Email', payload.email],
+
+      // ⬇️ ini data umum pengajuan (tetap tampil)
       ...(type === 'paten' ? [['Prototipe', payload.prototipe]] : []),
       ['Nilai Perolehan', payload.nilai_perolehan],
       ['Sumber Dana', payload.sumber_dana],
       ['Skema Penelitian', payload.skema_penelitian],
     ];
 
-    bodyEl.innerHTML = fields.map(([k, v]) => `
-      <div class="detail-row">
-        <div class="detail-k">${k}</div>
-        <div class="detail-v">${(v ?? '-')}</div>
+    const inventorHtml = renderInventors(payload.inventors || []);
+
+    // fallback kalau paten lama belum punya inventors array
+    const fallbackSingle = (!payload.inventors || payload.inventors.length === 0) ? `
+      <div class="detail-section">
+        <div style="font-weight:800; margin:10px 0 6px;">Data Diri</div>
+        ${[
+          ['Nama', payload.nama_pencipta],
+          ['NIP/NIM', payload.nip_nim],
+          ['Fakultas', payload.fakultas],
+          ['Email', payload.email],
+          ['No HP', payload.no_hp],
+        ].map(([k, v]) => `
+          <div class="detail-row">
+            <div class="detail-k">${k}</div>
+            <div class="detail-v">${(v ?? '-')}</div>
+          </div>
+        `).join('')}
       </div>
-    `).join('');
+    ` : '';
+    
+    bodyEl.innerHTML = `
+      ${fields.map(([k, v]) => `
+        <div class="detail-row">
+          <div class="detail-k">${k}</div>
+          <div class="detail-v">${(v ?? '-')}</div>
+        </div>
+      `).join('')}
+
+      ${inventorHtml}
+      ${fallbackSingle}
+    `;
 
     backdrop.hidden = false;
     drawer.hidden = false;
@@ -396,28 +665,37 @@ function setupDetailDrawer() {
   }
 
   document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.btn-detail');
-  if (!btn) return;
+    const btn = e.target.closest('.btn-detail');
+    if (!btn) return;
 
-  const type = btn.dataset.detailType;
+    const type = (btn.dataset.detailType || '').toLowerCase();
 
-  const payload = {
-    no_pendaftaran: btn.dataset.no,
-    judul: btn.dataset.judul,
-    jenis: btn.dataset.jenis,
-    jenis_lainnya: btn.dataset.jenisLainnya,
-    nama_pencipta: btn.dataset.nama,
-    nip_nim: btn.dataset.nip,
-    no_hp: btn.dataset.hp,
-    email: btn.dataset.email,
-    fakultas: btn.dataset.fakultas,
-    prototipe: btn.dataset.prototipe,
-    nilai_perolehan: btn.dataset.nilai,
-    sumber_dana: btn.dataset.sumber,
-    skema_penelitian: btn.dataset.skema,
-  };
+    const inventors = safeParseInventors(btn.dataset.inventors); // ✅ ambil array inventors
+    let judul = btn.dataset.judul;
+    try { judul = JSON.parse(judul); } catch(e) {}
+    const payload = {
+      no_pendaftaran: btn.dataset.no,
+      judul: judul,
+      jenis: btn.dataset.jenis,
+      jenis_lainnya: btn.dataset.jenisLainnya,
 
-  openDrawer(payload, type);
+      // fallback single
+      nama_pencipta: btn.dataset.nama,
+      nip_nim: btn.dataset.nip,
+      no_hp: btn.dataset.hp,
+      email: btn.dataset.email,
+      fakultas: btn.dataset.fakultas,
+
+      prototipe: btn.dataset.prototipe,
+      nilai_perolehan: btn.dataset.nilai,
+      sumber_dana: btn.dataset.sumber,
+      skema_penelitian: btn.dataset.skema,
+
+      // ✅ array
+      inventors: inventors,
+    };
+
+    openDrawer(payload, type);
   });
 
   closeBtn.addEventListener('click', closeDrawer);
@@ -427,6 +705,8 @@ function setupDetailDrawer() {
     if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
   });
 }
+
+
 
 // resources/js/admin/dashboard.js
 
@@ -447,6 +727,7 @@ async function postFormJson(actionUrl, formData) {
     headers: {
       'X-CSRF-TOKEN': csrfToken(),
       'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest', // ✅ penting biar expectsJson() true
     },
     body: formData
   });

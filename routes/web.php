@@ -68,22 +68,17 @@ Route::get('/debug-mail', function () {
 */
 use App\Http\Controllers\PemohonAuthController;
 
-Route::post('/login', [PemohonAuthController::class, 'login'])->name('pemohon.login');
-Route::post('/logout', [PemohonAuthController::class, 'logout'])->name('pemohon.logout');
+Route::post('/login', [PemohonAuthController::class, 'login'])
+    ->name('pemohon.login');
 
-Route::post('/pemohon/change-password', [PemohonAuthController::class, 'changePassword'])
-  ->name('pemohon.change_password');
-
-/*use App\Http\Controllers\PemohonDashboardController;*/
-
-Route::get('/pemohon/dashboard', [PemohonAuthController::class, 'dashboard'])
-    ->name('pemohon.dashboard');
-
-Route::get('/pemohon/claim/{kode}', [PemohonAuthController::class, 'claim'])
-    ->name('pemohon.claim');
+Route::post('/logout', [PemohonAuthController::class, 'logout'])
+    ->name('pemohon.logout');
 
 Route::get('/pemohon/login', [PemohonAuthController::class, 'showLogin'])
     ->name('pemohon.login.form');
+
+Route::get('/pemohon/claim/{kode}', [PemohonAuthController::class, 'claim'])
+    ->name('pemohon.claim');
 
 Route::get('/pemohon/gantipassword', [PemohonAuthController::class, 'showPreChangePassword'])
     ->name('pemohon.prechange.form');
@@ -91,7 +86,18 @@ Route::get('/pemohon/gantipassword', [PemohonAuthController::class, 'showPreChan
 Route::post('/pemohon/gantipassword', [PemohonAuthController::class, 'storePreChangePassword'])
     ->name('pemohon.prechange.store');
 
-use App\Http\Controllers\PemohonRevisiController;
+Route::post('/pemohon/change-password', [PemohonAuthController::class, 'changePassword'])
+  ->name('pemohon.change_password');
+
+// ====== DASHBOARD PEMOHON (PAKAI PemohonDashboardController) ======
+use App\Http\Controllers\PemohonDashboardController;
+
+Route::middleware('auth:pemohon')->prefix('pemohon')->name('pemohon.')->group(function () {
+    Route::get('/dashboard', [PemohonDashboardController::class, 'index'])->name('dashboard');
+});
+
+Route::get('/pemohon/tanda-terima', [PemohonDashboardController::class, 'downloadTandaTerima'])
+    ->name('pemohon.tanda_terima.download');
 
 Route::post('/pemohon/revisi/upload/{id}', [PemohonAuthController::class, 'uploadRevisi'])
   ->name('pemohon.uploadRevisi');
@@ -102,17 +108,24 @@ Route::post('/revisi/{type}/{id}', [AdminDashboardController::class, 'setRevisi'
 Route::post('/admin/revisi/read/{id}', [AdminDashboardController::class, 'markRevisionRead'])
     ->name('admin.revisi.read');
 
-Route::middleware('auth:pemohon')->prefix('pemohon')->name('pemohon.')->group(function () {
-    Route::get('/dashboard', [PemohonAuthController::class, 'dashboard'])->name('dashboard');
+use App\Http\Controllers\PemohonRevisiController;
+
+Route::get('/paten/pendaftaran', function () {
+    return view('hakpaten.hakpaten');
+})->name('paten.pendaftaran');
+
+Route::prefix('admin')->group(function () {
+    // ... route admin lain
+
+    Route::get('/paten/export-excel', [AdminDashboardController::class, 'exportPatenExcel'])
+        ->name('admin.paten.export_excel');
+
+    Route::get('/paten/export-pdf', [AdminDashboardController::class, 'exportPatenPdf'])
+        ->name('admin.paten.export_pdf');
 });
 
-use App\Http\Controllers\PemohonDashboardController;
-
-Route::get('/pemohon/tanda-terima', [PemohonDashboardController::class, 'downloadTandaTerima'])
-    ->name('pemohon.tanda_terima.download');
-
-
-
+Route::get('/paten/export-csv', [AdminDashboardController::class, 'exportPatenCsv'])
+    ->name('admin.paten.export_csv');
 
 /*
 |--------------------------------------------------------------------------

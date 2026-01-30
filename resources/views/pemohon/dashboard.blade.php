@@ -16,15 +16,27 @@
 
       <div class="pd-actions">
         <button type="button" class="pd-user-btn" id="openAccount">
-          <span class="pd-avatar">{{ strtoupper(substr($pemohon['username'], 0, 2)) }}</span>
+          @php
+            $namaAkun = trim($akun->nama ?? 'PEMOHON');
+            $parts = preg_split('/\s+/', $namaAkun, -1, PREG_SPLIT_NO_EMPTY);
+            $inisial = count($parts) >= 2
+              ? strtoupper(substr($parts[0],0,1).substr($parts[1],0,1))
+              : strtoupper(substr($namaAkun,0,2));
+          @endphp
+
+          <span class="pd-avatar">{{ $inisial }}</span>
+
           <span class="pd-user-text">
-            <span class="pd-user-name">{{ $pemohon['username'] }}</span>
-            <span class="pd-user-role">{{ $pemohon['kategori'] }}</span>
+            <span class="pd-user-name">{{ $akun->nama ?? '-' }}</span>
+            <span class="pd-user-role">{{ $akun->kategori ?? '-' }}</span>
           </span>
+
           <span class="pd-caret">▾</span>
         </button>
 
-        <form method="POST" action="{{ route('pemohon.logout') }}">
+        <form method="POST"
+              action="{{ route('pemohon.logout') }}"
+              onsubmit="return confirm('Kamu yakin mau logout?')">
           @csrf
           <button class="pd-logout" type="submit">Logout</button>
         </form>
@@ -37,9 +49,26 @@
         <div class="pd-note">Status pengajuan saat ini</div>
       </div>
 
+      @php
+        $rank = ['terkirim'=>1,'proses'=>2,'revisi'=>3,'approve'=>4];
+        $current = $rank[$status] ?? 1;
+      @endphp
+
       <div class="pd-tracker" data-active="{{ $activeStatus }}">
         @foreach($steps as $s)
-          <div class="pd-step" data-step="{{ $s['key'] }}">
+          @php
+            $stepRank = $rank[$s['key']] ?? 1;
+
+            if ($stepRank < $current) {
+              $cls = 'is-done';
+            } elseif ($stepRank === $current) {
+              $cls = 'is-run';
+            } else {
+              $cls = 'is-todo';
+            }
+          @endphp
+
+          <div class="pd-step {{ $cls }}" data-step="{{ $s['key'] }}">
             <div class="pd-dot"></div>
 
             <div class="pd-step-body">
@@ -133,9 +162,7 @@
               @endif
 
               {{-- =========================
-                   APPROVE (INI YANG KAMU MAU)
-                   - tampil SELALU di step APPROVE
-                   - disabled kalau belum approve
+                   APPROVE
                    ========================= --}}
               @if($s['key'] === 'approve')
                 @php
@@ -147,8 +174,8 @@
                   {{-- TANDA TERIMA --}}
                   @if($isApprove && $tt)
                     <a class="pd-mini-btn primary"
-                      target="_blank"
-                      href="{{ asset('storage/'.$tt) }}">
+                       target="_blank"
+                       href="{{ asset('storage/'.$tt) }}">
                       Download Tanda Terima
                     </a>
                   @else
@@ -159,10 +186,10 @@
 
                   {{-- PENDAFTARAN --}}
                   @if($isApprove)
-                    <button class="pd-mini-btn outline"
-                            onclick="alert('Menu pendaftaran akan segera tersedia')">
+                    <a href="{{ route('paten.pendaftaran') }}"
+                       class="pd-mini-btn outline">
                       Pendaftaran
-                    </button>
+                    </a>
                   @else
                     <button class="pd-mini-btn outline" disabled>
                       Pendaftaran
@@ -170,6 +197,7 @@
                   @endif
                 </div>
               @endif
+
             </div>
           </div>
         @endforeach
@@ -199,39 +227,60 @@
     </div>
 
     <div class="pa-body">
-      <div class="pa-chip">{{ $pemohon['kategori'] }}</div>
+      <div class="pa-chip">{{ $akun->kategori ?? '-' }}</div>
 
       <div class="pa-kv">
-        <div>
-          <div class="pa-label">Username / Kode Unik</div>
-          <div class="pa-value">{{ $pemohon['username'] }}</div>
-        </div>
 
-        <div>
-          <div class="pa-label">Fakultas</div>
-          <div class="pa-value">{{ $pemohon['fakultas'] }}</div>
-        </div>
+      {{-- Ringkasan Pengajuan (di atas) --}}
 
-        <div>
-          <div class="pa-label">Kategori</div>
-          <div class="pa-value">{{ $pemohon['kategori'] }}</div>
-        </div>
-
-        <div>
-          <div class="pa-label">Jenis</div>
-          <div class="pa-value">{{ $pemohon['jenis'] }}</div>
-        </div>
-
-        <div class="pa-wide">
-          <div class="pa-label">Judul</div>
-          <div class="pa-value">{{ $pemohon['judul'] }}</div>
-        </div>
+      <div class="pa-wide">
+        <div class="pa-label">Judul</div>
+        <div class="pa-value">{{ $akun->judul ?? '-' }}</div>
       </div>
+
+      <div>
+        <div class="pa-label">Kategori Pengajuan</div>
+        <div class="pa-value">{{ $akun->kategori ?? '-' }}</div>
+      </div>
+
+      <div>
+        <div class="pa-label">Jenis</div>
+        <div class="pa-value">{{ $akun->jenis ?? '-' }}</div>
+      </div>
+
+      
+
+      {{-- ✅ INVENTOR (detail per inventor) taruh PALING BAWAH --}}
+      <div class="pa-wide" style="margin-top:10px;">
+        <div class="pa-label">Inventor</div>
+
+        @php
+          $inv = $akun->inventors_arr ?? [];
+        @endphp
+
+        @if(is_array($inv) && count($inv))
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+            @foreach($inv as $idx => $i)
+              <div style="border:1px solid #e8eef7; border-radius:12px; padding:10px;">
+                <div style="font-weight:600;">
+                  {{ ($idx+1) }}. {{ $i['nama'] ?? '-' }}
+                  <span style="font-weight:500;">({{ $i['status'] ?? '-' }})</span>
+                </div>
+                <div style="font-size:14px; margin-top:4px;">
+                  <div><b>Email:</b> {{ $i['email'] ?? '-' }}</div>
+                  <div><b>No. HP:</b> {{ $i['no_hp'] ?? '-' }}</div>
+                  <div><b>Fakultas:</b> {{ $i['fakultas'] ?? '-' }}</div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        @else
+          <div class="pa-value">-</div>
+        @endif
+      </div>
+
     </div>
 
-    <div class="pa-actions">
-      <button type="button" class="pa-btn ghost" id="okAccount">Tutup</button>
-    </div>
   </div>
 </div>
 @endsection

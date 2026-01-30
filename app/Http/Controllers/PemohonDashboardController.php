@@ -19,15 +19,22 @@ class PemohonDashboardController extends Controller
         if (!$pemohon) return redirect()->route('pemohon.login.form');
 
         // kode unik pemohon = no_pendaftaran
-        $kode = $pemohon->kode_unik;
+        $kode = $pemohon->kode_unik
+            ?? $pemohon->no_pendaftaran
+            ?? $pemohon->kode
+            ?? null;
 
-        // cari pengajuan paten dulu
-        $paten = PatenVerif::where('no_pendaftaran', $kode)->first();
+        if (!$kode) {
+            return redirect()->route('pemohon.login.form')
+                ->with('error', 'Kode unik pemohon tidak ditemukan di akun.');
+        }
 
-        // kalau bukan paten, coba cipta
+        // ✅ ambil pengajuan TERBARU
+        $paten = PatenVerif::where('no_pendaftaran', $kode)->latest('id')->first();
+
         $cipta = null;
         if (!$paten) {
-            $cipta = HakCipta::where('no_pendaftaran', $kode)->first();
+            $cipta = HakCipta::where('no_pendaftaran', $kode)->latest('id')->first();
         }
 
         if (!$paten && !$cipta) {
@@ -35,32 +42,71 @@ class PemohonDashboardController extends Controller
                 ->with('error', 'Data pengajuan tidak ditemukan untuk kode ini.');
         }
 
-        // tentukan tipe & id ref untuk status_verifikasi
-        $type = $paten ? 'paten' : 'cipta';
-        $refId = $paten ? $paten->id : $cipta->id;
+        $type   = $paten ? 'paten' : 'cipta';
+        $refId  = $paten ? $paten->id : $cipta->id;
+        $source = $paten ?: $cipta;
 
-        // ambil status dari tabel status_verifikasi (yang admin ubah)
+        // ✅ status_verifikasi: ambil yang sesuai pengajuan terbaru
         $sv = DB::table('status_verifikasi')
             ->where('ref_type', $type)
             ->where('ref_id', $refId)
+            ->where('created_at', '>=', $source->created_at)
+            ->orderByDesc('id')
             ->first();
 
-        $status = strtolower($sv->status ?? 'terkirim'); // terkirim|proses|revisi|diterima|ditolak
+        if (!$sv) {
+            DB::table('status_verifikasi')->insert([
+                'ref_type'   => $type,
+                'ref_id'     => $refId,
+                'status'     => 'terkirim',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $sv = DB::table('status_verifikasi')
+                ->where('ref_type', $type)
+                ->where('ref_id', $refId)
+                ->where('created_at', '>=', $source->created_at)
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        $status = strtolower($sv->status ?? 'terkirim');
         $activeStatus = $status;
 
-        // ambil last updated sesuai updated_at status_verifikasi (biar tanggalnya bener)
-        $updatedAt = $sv?->updated_at ? Carbon::parse($sv->updated_at) : Carbon::now();
+        $updatedAt  = $sv?->updated_at ? Carbon::parse($sv->updated_at) : Carbon::now();
         $updatedStr = $updatedAt->format('d M Y');
 
-        // timeline steps (yang dipakai warna & aktif)
-        $steps = [
-            ['key' => 'terkirim', 'label' => 'TERKIRIM', 'updated_at' => in_array($status, ['Terkirim','Proses','Revisi','Approve']) ? $updatedStr : '-'],
-            ['key' => 'proses',   'label' => 'PROSES',   'updated_at' => in_array($status, ['proses','Revisi','Approve']) ? $updatedStr : '-'],
-            ['key' => 'revisi',   'label' => 'REVISI',   'updated_at' => $status === 'Revisi' ? $updatedStr : '-'],
-            ['key' => 'diterima', 'label' => 'APPROVE',  'updated_at' => $status === 'Approve' ? $updatedStr : '-'],
+        $rank = ['terkirim'=>1, 'proses'=>2, 'revisi'=>3, 'approve'=>4];
+        $currentRank = $rank[$status] ?? 1;
+
+        $baseSteps = [
+            ['key' => 'terkirim', 'label' => 'TERKIRIM'],
+            ['key' => 'proses',   'label' => 'PROSES'],
+            ['key' => 'revisi',   'label' => 'REVISI'],
+            ['key' => 'approve',  'label' => 'APPROVE'],
         ];
 
-        // ambil detail revisi dokumen (catatan + file admin) dari verifikasi_dokumen
+        $steps = array_map(function ($s) use ($rank, $currentRank, $updatedStr) {
+            $stepRank = $rank[$s['key']] ?? 1;
+
+            if ($stepRank < $currentRank) {
+                $cls = 'is-done';
+            } elseif ($stepRank === $currentRank) {
+                $cls = 'is-run';
+            } else {
+                $cls = 'is-todo';
+            }
+
+            return [
+                'key' => $s['key'],
+                'label' => $s['label'],
+                'updated_at' => ($stepRank <= $currentRank) ? $updatedStr : '-',
+                'cls' => $cls,
+            ];
+        }, $baseSteps);
+
+        // revisi docs
         $revisiDocs = collect();
         if ($status === 'revisi') {
             $revisiDocs = VerifikasiDokumen::where([
@@ -72,41 +118,143 @@ class PemohonDashboardController extends Controller
                 ->get();
         }
 
-        // payload ringkas untuk view (biar blade enak)
+        $revRowsByDoc = [];
+
+        if ($status === 'revisi') {
+            $revRowsByDoc = DB::table('revisions')
+                ->where('type', $type)
+                ->where('ref_id', $refId)
+                ->where('from_role', 'admin')
+                ->whereIn('state', ['requested', 'submitted']) // requested = minta revisi, submitted = sudah diupload pemohon
+                ->orderByDesc('id')
+                ->get()
+                ->groupBy('doc_key')
+                ->map(fn($rows) => [$rows->first()]) // ambil row terbaru per doc_key
+                ->toArray();
+        }
+
+        // helper pick
+        $pick = function ($obj, array $keys, $default = '-') {
+            foreach ($keys as $k) {
+                if (is_object($obj) && isset($obj->$k) && $obj->$k !== null && $obj->$k !== '') {
+                    return $obj->$k;
+                }
+                if (is_array($obj) && isset($obj[$k]) && $obj[$k] !== null && $obj[$k] !== '') {
+                    return $obj[$k];
+                }
+            }
+            return $default;
+        };
+
+        // ✅ pengajuan (INI WAJIB ADA, biar $akun bisa pakai $pengajuan)
         $pengajuan = (object) [
             'kode'     => $kode,
             'kategori' => $type === 'paten' ? 'Paten' : 'Hak Cipta',
-            'judul'    => $paten ? ($paten->judul_paten ?? '-') : ($cipta->judul_cipta ?? '-'),
-            'jenis'    => $paten ? ($paten->jenis_paten ?? '-') : ($cipta->jenis_cipta ?? '-'),
-            'email'    => $paten ? ($paten->email ?? '-') : ($cipta->email ?? '-'),
-            'no_hp'    => $paten ? ($paten->no_hp ?? '-') : ($cipta->no_hp ?? '-'),
+
+            'judul'    => $type === 'paten'
+                ? $pick($source, ['judul_paten'])
+                : $pick($source, ['judul_cipta', 'judul', 'judul_pengajuan']),
+
+            'jenis'    => $type === 'paten'
+                ? $pick($source, ['jenis_paten'])
+                : $pick($source, ['jenis_cipta', 'jenis', 'jenis_lainnya']),
+
+            'email'    => $pick($source, ['email'], $pick($pemohon, ['email'])),
+            'no_hp'    => $pick($source, ['no_hp'], $pick($pemohon, ['no_hp', 'hp', 'nomor_hp'])),
             'id'       => $refId,
             'type'     => $type,
         ];
 
+        // ✅ inventors array
+        $inventorsArr = [];
+        $inventorList = '-';
+
+        if ($type === 'paten') {
+            $inventorsRaw = $source->inventors ?? null;
+            $inventorsArr = is_string($inventorsRaw) ? (json_decode($inventorsRaw, true) ?? []) : ($inventorsRaw ?? []);
+
+            $inventorsArr = collect($inventorsArr)->map(function ($i) {
+                $nama   = trim((string)($i['nama'] ?? ''));
+                $status = trim((string)($i['status'] ?? ''));
+
+                $nohp   = $i['no_hp'] ?? ($i['no hp'] ?? ($i['hp'] ?? null));
+                $nohp   = trim((string)($nohp ?? ''));
+
+                $email  = trim((string)($i['email'] ?? ''));
+
+                // ✅ fakultas per inventor (kadang key-nya ketulis "fakultass")
+                $fak = $i['fakultas'] ?? ($i['fakultass'] ?? null);
+                $fak = trim((string)($fak ?? ''));
+
+                return [
+                    'nama'   => $nama ?: '-',
+                    'status' => $status ?: '-',
+                    'email'  => $email ?: '-',
+                    'no_hp'  => $nohp ?: '-',
+                    'fakultas'=> $fak ?: '-',
+                ];
+            })->values()->all();
+
+            if (count($inventorsArr) > 0) {
+                $inventorList = collect($inventorsArr)
+                    ->map(fn($i) => trim($i['nama'].' ('.$i['status'].')'))
+                    ->filter()
+                    ->implode(', ');
+            }
+        } else {
+            $inventorList = $pick($source, ['nama_pencipta', 'nama'], '-');
+        }
+
+        $akun = (object) [
+            'nama'     => $type === 'paten'
+                ? $pick($source, ['nama_pencipta', 'nama'])
+                : $pick($source, ['nama_pencipta', 'nama_pemohon', 'nama']),
+
+            'kode'     => $kode,
+            'fakultas' => $pick($source, ['fakultas']),
+
+            'inventor_list' => $inventorList,
+            'inventors_arr' => $inventorsArr,
+
+            'kategori' => $pengajuan->kategori ?? '-',
+            'jenis'    => $pengajuan->jenis ?? '-',
+            'judul'    => $pengajuan->judul ?? '-',
+            'email'    => $pengajuan->email ?? '-',
+            'no_hp'    => $pengajuan->no_hp ?? '-',
+        ];
+
+        // ✅ INI YANG KAMU KELEWAT: RETURN VIEW
         return view('pemohon.dashboard', compact(
             'pemohon',
             'pengajuan',
+            'akun',
             'sv',
+            'status',
             'steps',
             'activeStatus',
-            'revisiDocs'
+            'revisiDocs',
+            'source',
+            'revRowsByDoc' // kalau blade kamu butuh $source
         ));
     }
+
     public function downloadTandaTerima(Request $request)
     {
         $pemohon = Auth::guard('pemohon')->user();
         if (!$pemohon) return redirect()->route('pemohon.login.form');
 
-        $kode = $pemohon->kode_unik;
+        $kode = $pemohon->kode_unik
+            ?? $pemohon->no_pendaftaran
+            ?? $pemohon->kode
+            ?? null;
 
-        // cari pengajuan paten dulu
-        $paten = PatenVerif::where('no_pendaftaran', $kode)->first();
+        if (!$kode) abort(403, 'Kode unik pemohon tidak ditemukan.');
 
-        // kalau bukan paten, coba cipta
+        // ✅ konsisten ambil TERBARU
+        $paten = PatenVerif::where('no_pendaftaran', $kode)->latest('id')->first();
         $cipta = null;
         if (!$paten) {
-            $cipta = HakCipta::where('no_pendaftaran', $kode)->first();
+            $cipta = HakCipta::where('no_pendaftaran', $kode)->latest('id')->first();
         }
 
         if (!$paten && !$cipta) {
@@ -115,13 +263,15 @@ class PemohonDashboardController extends Controller
 
         $type  = $paten ? 'paten' : 'cipta';
         $refId = $paten ? $paten->id : $cipta->id;
+        $source = $paten ?: $cipta;
 
         $sv = DB::table('status_verifikasi')
-            ->where('ref_type', $type)
-            ->where('ref_id', $refId)
-            ->first();
+        ->where('ref_type', $type)
+        ->where('ref_id', $refId)
+        ->where('created_at', '>=', $source->created_at)
+        ->orderByDesc('id')
+        ->first();
 
-        // wajib approve
         $status = strtolower($sv->status ?? 'terkirim');
         if ($status !== 'approve') {
             abort(403, 'Tanda terima hanya bisa didownload setelah status APPROVE.');
@@ -132,12 +282,11 @@ class PemohonDashboardController extends Controller
         }
 
         if (!Storage::disk('public')->exists($sv->tanda_terima_pdf)) {
-        abort(404, 'File tanda terima tidak ditemukan di storage/public.');
+            abort(404, 'File tanda terima tidak ditemukan di storage/public.');
         }
 
         return response()->download(
             storage_path('app/public/' . $sv->tanda_terima_pdf)
         );
     }
-
 }

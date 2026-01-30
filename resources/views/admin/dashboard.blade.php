@@ -23,8 +23,11 @@
 
     <div class="header-actions">
 
-        <a href="{{ route('admin.dashboard', ['tab'=>'status','sub'=>'revisi']) }}" class="notif-btn">
-            Notif Revisi
+       <a href="{{ route('admin.dashboard', ['tab'=>'status','sub'=>'revisi']) }}"
+          class="notif-icon-btn"
+          title="Notif Revisi">
+            <img src="{{ asset('images/notif.png') }}" alt="Notif" class="notif-ic">
+
             @if(($notifCount ?? 0) > 0)
                 <span class="notif-badge">{{ $notifCount }}</span>
             @endif
@@ -118,17 +121,6 @@
             Status Verifikasi
         </a>
 
-        @if($tab === 'status')
-        <a class="side-sublink {{ $sub==='revisi' ? 'active' : '' }}"
-            href="{{ route('admin.dashboard', ['tab'=>'status','sub'=>'revisi']) }}">
-            Revisi
-            @if(($notifCount ?? 0) > 0)
-            <span class="side-badge">{{ $notifCount }}</span>
-            @endif
-        </a>
-        @endif
-
-
          <div class="side-group">
 
       </div>
@@ -181,6 +173,25 @@
                     </div>
                 </div>
 
+                 <div class="stats-charts">
+                  <div class="chart-card">
+                    <div class="chart-title">Total HKI Mahasiswa / Dosen</div>
+                    <canvas id="chartRoleAll"></canvas>
+                  </div>
+
+                  <div class="chart-card">
+                    <div class="chart-title">Jumlah Mahasiswa atau Dosen (Paten / Cipta)</div>
+                    <canvas id="chartRoleByType"></canvas>
+                  </div>
+                </div>
+
+                {{-- ✅ BARU: horizontal bar fakultas (kayak contoh) --}}
+                <div class="stats-charts">
+                  <div class="chart-card" style="grid-column: 1 / -1;">
+                    <div class="chart-title">Fakultas Pengajuan (Total / Paten / Cipta)</div>
+                    <canvas id="chartFakultas"></canvas>
+                  </div>
+                </div>
             </section>
         @endif
 
@@ -188,8 +199,23 @@
         @if($tab === 'cipta')
         <div class="page-head">
             <h2 class="page-title">Data Hak Cipta</h2>
+            
+            <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
+              <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
+                <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:35px;height:35px;vertical-align:middle;">
+                Excel
+              </a>
 
-            <div class="page-actions">
+               <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
+                  <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:35px;height:35px;">
+                  PDF
+              </a>
+
+              <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
+                  <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:35px;height:35px;">
+                  CSV
+              </a>
+
             <input id="searchCipta" class="search-input" type="text" placeholder="Cari..." />
             </div>
         </div>
@@ -257,7 +283,7 @@
                     ->contains(fn($d) => (($d->status ?? '') === 'revisi'));
                 @endphp
 
-                <tr data-key="{{ $ciptaKey }}">
+                <tr data-key="{{ $ciptaKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
                     <td>{{ $i+1 }}</td>
 
                     <td>{{ $row->no_pendaftaran ?? '-' }}</td>
@@ -265,18 +291,6 @@
                     <td>
                     <div class="title-wrap">
                         <div class="title-main">{{ $row->judul_cipta ?? '-' }}</div>
-
-                        <div class="title-meta">
-                        <div class="meta-fakultas">{{ $row->fakultas ?? '-' }}</div>
-
-                        <div class="meta-emails">
-                            @foreach(preg_split('/[\s,;]+/', $row->email ?? '') as $mail)
-                            @php $mail = trim($mail); @endphp
-                            @if($mail)
-                                <a href="mailto:{{ $mail }}" class="email-chip">{{ $mail }}</a>
-                            @endif
-                            @endforeach
-                        </div>
                         </div>
                     </div>
                     </td>
@@ -399,23 +413,51 @@
                     <td class="cell-actions">
                         <div class="action-stack">
                             {{-- Detail --}}
-                            <button type="button"
+                            @php
+                            // inventors di paten_verifs: biasanya kolom "inventors" (json string)
+                            $invArr = [];
+                            if (!empty($row->inventors)) {
+                              $invArr = is_string($row->inventors) ? (json_decode($row->inventors, true) ?? []) : ($row->inventors ?? []);
+                            }
+
+                            // normalisasi biar key-nya konsisten (ini penting)
+                            $invArr = collect($invArr)->map(function($i){
+                              return [
+                                'nama'     => $i['nama'] ?? '-',
+                                'status'   => $i['status'] ?? '-',
+                                'nip_nim'  => $i['nip_nim'] ?? ($i['nip'] ?? ($i['nim'] ?? '-')),
+                                'no_hp'    => $i['no_hp'] ?? ($i['nomor_hp'] ?? ($i['hp'] ?? '-')),
+                                'fakultas' => $i['fakultas'] ?? '-',
+                                'email'    => $i['email'] ?? '-',
+                              ];
+                            })->values()->all();
+                          @endphp
+
+                          <button type="button"
                             class="btn-mini btn-detail"
-                            data-detail-type="cipta"
+                            data-detail-type="paten"
                             data-no="{{ $row->no_pendaftaran }}"
-                            data-judul="{{ $row->judul_cipta }}"
-                            data-jenis="{{ $row->jenis_cipta }}"
-                            data-jenis-lainnya="{{ $row->jenis_lainnya }}"
+                            data-judul="{{ $row->judul_paten }}"
+                            data-jenis="{{ $row->jenis_paten }}"
+
+                            {{-- fallback single (kalau inventors kosong) --}}
                             data-nama="{{ $row->nama_pencipta }}"
                             data-nip="{{ $row->nip_nim }}"
                             data-hp="{{ $row->nomor_hp ?? $row->no_hp }}"
                             data-email="{{ $row->email }}"
                             data-fakultas="{{ $row->fakultas }}"
+
+                            data-prototipe="{{ $row->prototipe }}"
                             data-nilai="{{ $row->nilai_perolehan }}"
                             data-sumber="{{ $row->sumber_dana }}"
-                            >
+                            data-skema="{{ $row->skema_penelitian }}"
+
+                            {{-- ✅ INI KUNCINYA: WAJIB ADA --}}
+                            data-inventors='@json($invArr)'
+                          >
                             Detail
-                            </button>
+                          </button>
+
 
                             {{-- Hapus --}}
                             <button type="button"
@@ -474,8 +516,24 @@
         <div class="page-head">
             <h2 class="page-title">Data Paten</h2>
 
-            <div class="page-actions">
-            <input id="searchPaten" class="search-input" type="text" placeholder="Cari..." />
+            <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
+              <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
+                <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:35px;height:35px;vertical-align:middle;">
+                Excel
+              </a>
+
+               <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
+                  <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:35px;height:35px;">
+                  PDF
+              </a>
+
+              <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
+                  <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:35px;height:35px;">
+                  CSV
+              </a>
+
+
+              <input id="searchPaten" class="search-input" type="text" placeholder="Cari..." />
             </div>
         </div>
 
@@ -542,7 +600,7 @@
                     ->contains(fn($d) => (($d->status ?? '') === 'revisi'));
                 @endphp
 
-                <tr data-key="{{ $patenKey }}">
+                <tr data-key="{{ $patenKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
                     <td>{{ $i+1 }}</td>
 
                     <td>{{ $row->no_pendaftaran ?? '-' }}</td>
@@ -552,16 +610,6 @@
                         <div class="title-main">{{ $row->judul_paten ?? '-' }}</div>
 
                         <div class="title-meta">
-                        <div class="meta-fakultas">{{ $row->fakultas ?? '-' }}</div>
-
-                        <div class="meta-emails">
-                            @foreach(preg_split('/[\s,;]+/', $row->email ?? '') as $mail)
-                            @php $mail = trim($mail); @endphp
-                            @if($mail)
-                                <a href="mailto:{{ $mail }}" class="email-chip">{{ $mail }}</a>
-                            @endif
-                            @endforeach
-                        </div>
                         </div>
                     </div>
 
@@ -672,7 +720,7 @@
                                 class="btn-mini btn-detail"
                                 data-detail-type="paten"
                                 data-no="{{ $row->no_pendaftaran }}"
-                                data-judul="{{ $row->judul_paten }}"
+                                data-judul='@json($row->judul_paten ?? "-")'
                                 data-jenis="{{ $row->jenis_paten }}"
                                 data-nama="{{ $row->nama_pencipta }}"
                                 data-nip="{{ $row->nip_nim }}"
@@ -683,6 +731,7 @@
                                 data-nilai="{{ $row->nilai_perolehan }}"
                                 data-sumber="{{ $row->sumber_dana }}"
                                 data-skema="{{ $row->skema_penelitian }}"
+                                data-inventors='@json($row->inventors_arr ?? [])'
                             >
                                 Detail
                             </button>
@@ -697,13 +746,13 @@
                             </div>
 
                             <form class="js-send-revisi-form action-revisi"
-                            method="POST"
-                            action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'paten','id'=>$row->id]) }}"
-                            @if(!$hasDocRevisi) hidden @endif
-                            data-send-revisi>
-                            @csrf
-                            <button type="submit" class="btn-mini btn-revisi">Kirim Permintaan Revisi</button>
-                            <div class="inline-msg" data-inline-msg></div>
+                              method="POST"
+                              action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'paten','id'=>$row->id]) }}"
+                              @if(!$hasDocRevisi) hidden @endif
+                              data-send-revisi>
+                              @csrf
+                              <button type="submit" class="btn-mini btn-revisi">Kirim Permintaan Revisi</button>
+                              <div class="inline-msg" data-inline-msg></div>
                             </form>
 
                         </div>
@@ -758,7 +807,7 @@
       </div>
 
       <input id="searchStatus" class="search-input" type="text"
-             placeholder="Cari no pendaftaran / status" />
+             placeholder="Cari..." />
     </div>
   </div>
 
@@ -777,9 +826,21 @@
 
       <tbody>
       @forelse($dataStatus as $i => $row)
+        @php
+          $statusKey = strtolower(implode(' ', array_filter([
+            $row->type ?? '',              // paten/cipta (kategori)
+            $row->no_pendaftaran ?? '',
+            $row->status ?? '',
+            $row->jenis ?? '',
+            $row->judul ?? '',
+            $row->email ?? '',             // kalau ada di $dataStatus
+          ])));
+        @endphp
+
         <tr
           data-type="{{ strtolower($row->type) }}"
-          data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.($row->status ?? '').' '.($row->jenis ?? '').' '.($row->judul ?? '')) }}"
+          data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}"
+          data-key="{{ $statusKey }}"
         >
           <td class="center">{{ $i + 1 }}</td>
           <td>{{ strtoupper($row->type) }}</td>
@@ -845,134 +906,157 @@
 @endif
 
     {{-- ================= SUB: REVISI (UPLOAD PEMOHON) ================= --}}
-@if($tab === 'status' && $sub === 'revisi')
-  <div class="page-head" style="align-items:flex-start;">
-    <div>
-      <h2 class="page-title" style="margin-bottom:4px;">Revisi Masuk (Upload Pemohon)</h2>
-      <p class="muted" style="font-size:13px;margin:0;">
-        Daftar dokumen revisi yang sudah diupload pemohon (siap dicek admin).
-      </p>
-    </div>
+    @if($tab === 'status' && $sub === 'revisi')
+      <div class="page-head" style="align-items:flex-start;">
+        <div>
+          <h2 class="page-title" style="margin-bottom:4px;">Revisi Masuk (Upload Pemohon)</h2>
+          <p class="muted" style="font-size:13px;margin:0;">
+            Daftar dokumen revisi yang sudah diupload pemohon (siap dicek admin).
+          </p>
+        </div>
 
-    <div class="page-actions">
-      <input id="searchRevisi" class="search-input" type="text"
-             placeholder="Cari no pendaftaran / judul" />
-    </div>
-  </div>
+        <div class="page-actions">
+          <input id="searchRevisi" class="search-input" type="text"
+                placeholder="Cari..." />
+        </div>
+      </div>
 
-  <div class="table-card">
-    <table class="data-table" id="revisiTable">
-      <thead>
-        <tr>
-          <th style="width:70px;">No</th>
-          <th style="width:125px;">Kategori</th>
-          <th style="width:150px;">Jenis</th>
-          <th style="min-width:160px;">No Pendaftaran</th>
-          <th style="min-width:240px;">Judul</th>
-          <th style="min-width:360px;">Dokumen Revisi Masuk</th>
-        </tr>
-      </thead>
+      <div class="table-card">
+        <table class="data-table" id="revisiTable">
+          <thead>
+            <tr>
+              <th style="width:70px;">No</th>
+              <th style="width:125px;">Kategori</th>
+              <th style="width:150px;">Jenis</th>
+              <th style="min-width:160px;">No Pendaftaran</th>
+              <th style="min-width:240px;">Judul</th>
+              <th style="min-width:360px;">Dokumen Revisi Masuk</th>
+            </tr>
+          </thead>
 
-      <tbody>
-        @php $n=1; @endphp
+          <tbody>
+            @php $n=1; @endphp
 
-        @forelse($revisiItems as $row)
-          @php
-            // ini dari controller: $row->revisi_masuk (rows dari table revisions)
-            $items = collect($row->revisi_masuk ?? []);
-          @endphp
+          @forelse($revisiItems as $row)
+            @php
+              // ini dari controller: $row->revisi_masuk (rows dari table revisions)
+              $items = collect($row->revisi_masuk ?? []);
 
-          <tr data-key="{{ strtolower(($row->no_pendaftaran ?? '').' '.($row->judul ?? '')) }}">
-            <td class="center">{{ $n++ }}</td>
-            <td>{{ strtoupper($row->type) }}</td>
-            <td>{{ $row->jenis ?? '-' }}</td>
-            <td>{{ $row->no_pendaftaran ?? '-' }}</td>
-            <td>{{ $row->judul ?? '-' }}</td>
+              // ✅ gabung semua isi revisi biar search bisa "apa saja"
+              $itemsBlob = $items->map(function($rv) use ($docLabels) {
+                return implode(' ', array_filter([
+                  $rv->doc_key ?? '',
+                  $docLabels[$rv->doc_key] ?? '',
+                  $rv->note ?? '',
+                  basename($rv->pemohon_file_path ?? ''),
+                  basename($rv->file_path ?? ''), // lampiran admin
+                  $rv->updated_at ?? '',
+                ]));
+              })->implode(' ');
 
-            <td>
-              @if($items->count() === 0)
-                <span class="badge badge-warn">Belum ada upload revisi dari pemohon</span>
-              @else
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                  @foreach($items as $rv)
-                    <div style="padding:10px;border:1px solid #e6ebf5;border-radius:12px;background:#fff;">
-                      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-                        <div style="font-weight:800;color:#0b2c5f;">
-                          {{ $docLabels[$rv->doc_key] ?? ($rv->doc_key ?? 'Dokumen') }}
+              $revisiKey = strtolower(implode(' ', array_filter([
+                $row->type ?? '',                 // paten/cipta
+                $row->jenis ?? '',
+                $row->no_pendaftaran ?? '',
+                $row->judul ?? '',
+                $itemsBlob,
+              ])));
+            @endphp
+
+            <tr
+              data-key="{{ $revisiKey }}"
+              data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}"
+            >
+                <td class="center">{{ $n++ }}</td>
+                <td>{{ strtoupper($row->type) }}</td>
+                <td>{{ $row->jenis ?? '-' }}</td>
+                <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+                <td>{{ $row->judul ?? '-' }}</td>
+
+                <td>
+                  @if($items->count() === 0)
+                    <span class="badge badge-warn">Belum ada upload revisi dari pemohon</span>
+                  @else
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                      @foreach($items as $rv)
+                        <div style="padding:10px;border:1px solid #e6ebf5;border-radius:12px;background:#fff;">
+                          <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                            <div style="font-weight:800;color:#0b2c5f;">
+                              {{ $docLabels[$rv->doc_key] ?? ($rv->doc_key ?? 'Dokumen') }}
+                            </div>
+
+                            {{-- optional: tandai notif sudah dibaca --}}
+                            <form method="POST" action="{{ route('admin.revisi.read', $rv->id) }}">
+                              @csrf
+                              <button type="submit" class="btn-mini">Tandai dibaca</button>
+                            </form>
+                          </div>
+
+                          @if(!empty($rv->note))
+                            <div class="muted" style="margin-top:4px;font-size:12px;">
+                              Catatan admin: {{ $rv->note }}
+                            </div>
+                          @endif
+
+                          <div style="margin-top:8px;font-size:12px;">
+                            <b>File Pemohon:</b>
+                            @if(!empty($rv->pemohon_file_path))
+                              <a href="{{ asset('storage/'.$rv->pemohon_file_path) }}" target="_blank">
+                                {{ basename($rv->pemohon_file_path) }}
+                              </a>
+                            @else
+                              <span class="muted">-</span>
+                            @endif
+                          </div>
+
+                          <div style="margin-top:6px;font-size:12px;">
+                            <b>Lampiran Admin:</b>
+                            @if(!empty($rv->file_path))
+                              <a href="{{ asset('storage/'.$rv->file_path) }}" target="_blank">
+                                {{ basename($rv->file_path) }}
+                              </a>
+                            @else
+                              <span class="muted">-</span>
+                            @endif
+                          </div>
+
+                          @if(!empty($rv->updated_at))
+                            <div class="muted" style="margin-top:6px;font-size:12px;">
+                              Updated: {{ \Carbon\Carbon::parse($rv->updated_at)->format('d M Y H:i') }}
+                            </div>
+                          @endif
                         </div>
-
-                        {{-- optional: tandai notif sudah dibaca --}}
-                        <form method="POST" action="{{ route('admin.revisi.read', $rv->id) }}">
-                          @csrf
-                          <button type="submit" class="btn-mini">Tandai dibaca</button>
-                        </form>
-                      </div>
-
-                      @if(!empty($rv->note))
-                        <div class="muted" style="margin-top:4px;font-size:12px;">
-                          Catatan admin: {{ $rv->note }}
-                        </div>
-                      @endif
-
-                      <div style="margin-top:8px;font-size:12px;">
-                        <b>File Pemohon:</b>
-                        @if(!empty($rv->pemohon_file_path))
-                          <a href="{{ asset('storage/'.$rv->pemohon_file_path) }}" target="_blank">
-                            {{ basename($rv->pemohon_file_path) }}
-                          </a>
-                        @else
-                          <span class="muted">-</span>
-                        @endif
-                      </div>
-
-                      <div style="margin-top:6px;font-size:12px;">
-                        <b>Lampiran Admin:</b>
-                        @if(!empty($rv->file_path))
-                          <a href="{{ asset('storage/'.$rv->file_path) }}" target="_blank">
-                            {{ basename($rv->file_path) }}
-                          </a>
-                        @else
-                          <span class="muted">-</span>
-                        @endif
-                      </div>
-
-                      @if(!empty($rv->updated_at))
-                        <div class="muted" style="margin-top:6px;font-size:12px;">
-                          Updated: {{ \Carbon\Carbon::parse($rv->updated_at)->format('d M Y H:i') }}
-                        </div>
-                      @endif
+                      @endforeach
                     </div>
-                  @endforeach
-                </div>
-              @endif
-            </td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="6" class="center muted">Belum ada upload revisi dari pemohon</td>
-          </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+                  @endif
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="6" class="center muted">Belum ada upload revisi dari pemohon</td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
 
-  <div class="table-footer" data-pager="revisi">
-    <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
-    <div class="table-controls">
-      <label class="entries-wrap">
-        Show
-        <select class="entries-select" data-entries>
-          <option value="10">10</option>
-          <option value="20" selected>20</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-        </select>
-        entries
-      </label>
-      <div class="pagination" data-pagination></div>
-    </div>
-  </div>
-@endif
+      <div class="table-footer" data-pager="revisi">
+        <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
+        <div class="table-controls">
+          <label class="entries-wrap">
+            Show
+            <select class="entries-select" data-entries>
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+            entries
+          </label>
+          <div class="pagination" data-pagination></div>
+        </div>
+      </div>
+    @endif
 
 
 <!-- MODAL KONFIRMASI LOGOUT -->
@@ -1058,6 +1142,25 @@
       'patenData'   => array_values($patenJenis),
       'ciptaLabels' => array_keys($ciptaJenis),
       'ciptaData'   => array_values($ciptaJenis),
+
+      // ✅ chart baru: role
+      'roleAll' => [
+        'labels' => ['Mahasiswa','Dosen'],
+        'data'   => [(int)$totalMahasiswaHKI, (int)$totalDosenHKI],
+      ],
+      'roleByType' => [
+        'labels' => ['Paten','Hak Cipta'],
+        'mahasiswa' => [(int)$patenMahasiswa, (int)$ciptaMahasiswa],
+        'dosen'     => [(int)$patenDosen, (int)$ciptaDosen],
+      ],
+
+      // ✅ chart baru: fakultas (3 dataset)
+      'fakultas' => [
+        'labels' => array_keys($allFakultasMap),
+        'all'    => array_values($allFakultasMap),
+        'paten'  => array_values($patenFakultasMap),
+        'cipta'  => array_values($ciptaFakultasMap),
+      ],
     ]) !!}
   </script>
 @endif

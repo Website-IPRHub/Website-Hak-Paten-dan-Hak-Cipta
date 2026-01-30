@@ -15,7 +15,9 @@ use App\Models\PatenVerif;
 use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\Process\Process;
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\PatenInventorExport;
+use Maatwebsite\Excel\Excel as ExcelExcel;
 
 use App\Mail\DiterimaMail;
 use App\Mail\RevisiMail;
@@ -55,12 +57,77 @@ class AdminDashboardController extends Controller
             ->map(fn ($v) => (int)$v)
             ->toArray();
 
+       // =========================
+        // STATISTIK TAMBAHAN (MAHASISWA/DOSEN + FAKULTAS)
+        // =========================
+
+        // ===== PATEN: hitung dari JSON inventors (status + fakultas)
+        $patenRows = DB::table('paten_verifs')->select('inventors')->get();
+
+        $patenMahasiswa = 0;
+        $patenDosen = 0;
+        $patenFakultasMap = [];
+
+        foreach ($patenRows as $r) {
+            $arr = [];
+            if (is_string($r->inventors) && trim($r->inventors) !== '') {
+                $decoded = json_decode($r->inventors, true);
+                $arr = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($r->inventors)) {
+                $arr = $r->inventors;
+            }
+
+            foreach ($arr as $inv) {
+                $st = strtolower(trim((string)($inv['status'] ?? '')));
+                if ($st === 'mahasiswa') $patenMahasiswa++;
+                if ($st === 'dosen') $patenDosen++;
+
+                $fk = trim((string)($inv['fakultas'] ?? ''));
+                if ($fk !== '') {
+                    $patenFakultasMap[$fk] = ($patenFakultasMap[$fk] ?? 0) + 1;
+                }
+            }
+        }
+
+        // ===== CIPTA: belum fix → sementara 0 biar gak error
+        $ciptaMahasiswa = 0;
+        $ciptaDosen = 0;
+        $ciptaFakultasMap = [];
+
+        // ===== TOTAL HKI (paten + cipta)
+        $totalMahasiswaHKI = $patenMahasiswa + $ciptaMahasiswa;
+        $totalDosenHKI     = $patenDosen + $ciptaDosen;
+
+        // ===== FAKULTAS TOTAL (gabung)
+        $allFakultasMap = $patenFakultasMap;
+        foreach ($ciptaFakultasMap as $fk => $cnt) {
+            $allFakultasMap[$fk] = ($allFakultasMap[$fk] ?? 0) + $cnt;
+        }
+
+        // urutkan fakultas descending & ambil top N biar rapih
+        arsort($allFakultasMap);
+        arsort($patenFakultasMap);
+        arsort($ciptaFakultasMap);
+
+        $TOP = 12;
+        $allFakultasMap   = array_slice($allFakultasMap, 0, $TOP, true);
+        $patenFakultasMap = array_slice($patenFakultasMap, 0, $TOP, true);
+        $ciptaFakultasMap = array_slice($ciptaFakultasMap, 0, $TOP, true);
+
         // default collections biar blade aman
         $dataPaten   = collect();
         $dataCipta   = collect();
         $dataStatus  = collect();
         $revisiItems = collect();
         $notifCount  = 0;
+
+        // ✅ NOTIF REVISI HARUS DIHITUNG GLOBAL (SEMUA TAB)
+        $notifCount = DB::table('revisions')
+            ->whereIn('type', ['paten', 'cipta'])
+            ->where('state', 'submitted')
+            ->whereNotNull('pemohon_file_path')
+            ->where('is_read_admin', 0)
+            ->count();
 
         // keys dokumen per tipe
         $keysByType = [
@@ -101,6 +168,32 @@ class AdminDashboardController extends Controller
                 ->orderByDesc('p.id')
                 ->get();
 
+            $dataPaten = $dataPaten->map(function ($r) {
+                $raw = $r->inventors ?? null;
+
+                $arr = [];
+                if (is_string($raw) && trim($raw) !== '') {
+                    $decoded = json_decode($raw, true);
+                    $arr = is_array($decoded) ? $decoded : [];
+                } elseif (is_array($raw)) {
+                    $arr = $raw;
+                }
+
+                // normalisasi key biar konsisten
+                $r->inventors_arr = collect($arr)->map(function ($i) {
+                    return [
+                        'nama'    => $i['nama'] ?? '-',
+                        'status'  => $i['status'] ?? '-',
+                        'email'   => $i['email'] ?? '-',
+                        'no_hp'   => $i['no_hp'] ?? ($i['no hp'] ?? ($i['hp'] ?? '-')),
+                        'nip_nim' => $i['nip_nim'] ?? ($i['nipnim'] ?? ($i['nip'] ?? '-')),
+                        'fakultas'=> $i['fakultas'] ?? '-',
+                    ];
+                })->values()->all();
+
+                return $r;
+            });
+
             $dataPaten = $this->attachDocsToRows($dataPaten, 'paten', $keysByType['paten']);
         }
 
@@ -130,6 +223,7 @@ class AdminDashboardController extends Controller
                     DB::raw('p.judul_paten as judul'),
                     DB::raw('p.jenis_paten as jenis'),
                     'p.email',
+                    'p.inventors',
 
                     'p.draft_paten',
                     'p.form_permohonan',
@@ -250,8 +344,6 @@ class AdminDashboardController extends Controller
                 })
                 ->filter()
                 ->values();
-
-            $notifCount = $incoming->count();
         }
 
         return view('admin.dashboard', compact(
@@ -268,6 +360,16 @@ class AdminDashboardController extends Controller
             'totalCipta',
             'patenJenis',
             'ciptaJenis',
+
+             'totalMahasiswaHKI',
+            'totalDosenHKI',
+            'patenMahasiswa',
+            'patenDosen',
+            'ciptaMahasiswa',
+            'ciptaDosen',
+            'allFakultasMap',
+            'patenFakultasMap',
+            'ciptaFakultasMap',
         ));
     }
 
@@ -361,6 +463,62 @@ class AdminDashboardController extends Controller
         return $row->nomor_hp ?? $row->no_hp ?? null;
     }
 
+    private function getPemohonName($row): string
+    {
+        // ambil nama yang paling mungkin ada
+        return $row->nama_pencipta
+            ?? $row->nama
+            ?? $row->username
+            ?? 'Pemohon';
+    }
+
+    private function buildWaStatusMessage(
+    string $kategori,
+    string $judul,
+    string $no,
+    string $status
+    ): string {
+        $statusUpper = strtoupper($status);
+
+        $body = match ($status) {
+            'terkirim' =>
+                "Pengajuan {$kategori} telah KAMI TERIMA dan berhasil tercatat dalam sistem.\n" .
+                "Saat ini status pengajuan: {$statusUpper}.",
+
+            'proses' =>
+                "Pengajuan {$kategori} sedang dalam tahap PEMERIKSAAN / VERIFIKASI oleh petugas.\n" .
+                "Saat ini status pengajuan: {$statusUpper}.",
+
+            'revisi' =>
+                "Pengajuan {$kategori} MEMERLUKAN PERBAIKAN (REVISI) pada dokumen yang diajukan.\n" .
+                "Mohon meninjau catatan revisi pada sistem, kemudian melakukan unggah ulang dokumen sesuai arahan.\n" .
+                "Saat ini status pengajuan: {$statusUpper}.",
+
+            'approve' =>
+                "Pengajuan {$kategori} telah DISETUJUI (APPROVE).\n" .
+                "Silakan mengunduh Tanda Terima melalui sistem dan melanjutkan proses sesuai ketentuan yang berlaku.\n" .
+                "Saat ini status pengajuan: {$statusUpper}.",
+
+            default =>
+                "Status pengajuan {$kategori} telah diperbarui.\n" .
+                "Saat ini status pengajuan: {$statusUpper}.",
+        };
+
+        return
+            "Yth. Bapak/Ibu\n\n" .
+            "Dengan hormat,\n" .
+            "{$body}\n\n" .
+            "Rincian Pengajuan:\n" .
+            "• Kategori : {$kategori}\n" .
+            "• No. Pendaftaran : {$no}\n" .
+            "• Judul : {$judul}\n\n" .
+            "Untuk memantau perkembangan status pengajuan, silakan mengakses halaman berikut secara berkala:\n" .
+            "http://127.0.0.1:8000/pemohon/login\n\n" .
+            "Apabila diperlukan informasi lebih lanjut, silakan menghubungi admin atau layanan terkait.\n\n" .
+            "Hormat kami,\n" .
+            "Admin HKI";
+    }
+
 // ========= STATUS VERIFIKASI (tabel status_verifikasi) =========
    public function updateStatusVerifikasi(Request $request, string $type, int $id)
     {
@@ -448,6 +606,9 @@ class AdminDashboardController extends Controller
 
         // email status tertentu (silakan atur)
         $autoStatuses = ['terkirim','proses'];
+        
+        // ✅ WA status: tambahin revisi & approve
+        $waStatuses = ['terkirim','proses','revisi','approve'];
 
         $emails = $this->parseEmails($row->email);
         $emailSent = false;
@@ -466,16 +627,11 @@ class AdminDashboardController extends Controller
         }
 
         $waLink = null;
-        if (in_array($newStatus, $autoStatuses, true)) {
+        if (in_array($newStatus, $waStatuses, true)) {
             $phone = $this->getPemohonPhone($row);
+            $nama  = $this->getPemohonName($row);
 
-            $waMsg =
-                "Halo,\n".
-                "Status pengajuan {$kategori} Anda telah diperbarui.\n".
-                "No Pendaftaran: {$no}\n".
-                "Judul: {$judul}\n".
-                "Status: ".strtoupper($newStatus)."\n\n".
-                "Terima kasih.";
+            $waMsg = $this->buildWaStatusMessage($kategori, $judul, $no, $newStatus, $nama);
 
             $waLink = $this->makeWaLink($phone, $waMsg);
         }
@@ -935,6 +1091,18 @@ class AdminDashboardController extends Controller
     {
         $row = PatenVerif::findOrFail($id);
 
+        // HAPUS RELASI STATUS (WAJIB)
+        DB::table('status_verifikasi')
+            ->where(['ref_type' => 'paten', 'ref_id' => $id])
+            ->delete();
+
+        VerifikasiDokumen::where(['ref_type' => 'paten', 'ref_id' => $id])->delete();
+
+        DB::table('revisions')
+            ->where(['type' => 'paten', 'ref_id' => $id])
+            ->delete();
+
+        // hapus file paten verif
         $paths = [
             $row->draft_paten,
             $row->form_permohonan,
@@ -957,6 +1125,16 @@ class AdminDashboardController extends Controller
     public function destroyCipta($id)
     {
         $row = HakCipta::findOrFail($id);
+
+        DB::table('status_verifikasi')
+            ->where(['ref_type' => 'cipta', 'ref_id' => $id])
+            ->delete();
+
+        VerifikasiDokumen::where(['ref_type' => 'cipta', 'ref_id' => $id])->delete();
+
+        DB::table('revisions')
+            ->where(['type' => 'cipta', 'ref_id' => $id])
+            ->delete();
 
         $paths = [
             $row->surat_permohonan,
@@ -1049,76 +1227,159 @@ class AdminDashboardController extends Controller
     }
 
     private function generateTandaTerimaPdf(string $type, int $id): string
-{
-    $meta = $this->getRowByType($type, $id);
+    {
+        $meta = $this->getRowByType($type, $id);
 
-    // 1) template docx (taruh di: storage/app/templates/tanda_terima.docx)
-    $template = storage_path('app/templates/tanda_terima.docx');
-    if (!file_exists($template)) {
-        throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
+        // 1) template docx (taruh di: storage/app/templates/tanda_terima.docx)
+        $template = storage_path('app/templates/tanda_terima.docx');
+        if (!file_exists($template)) {
+            throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
+        }
+
+        // 2) isi docx dari template
+        $doc = new TemplateProcessor($template);
+
+        // NOTE: placeholder di DOCX harus ${jenis} dan ${judul}
+        $doc->setValue('jenis', ucfirst(strtolower($meta['kategori'])));
+        $doc->setValue('judul', $meta['judul']);
+
+        // simpan docx sementara
+        $tmpDir = storage_path('app/tmp');
+        if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
+
+        $tmpDocx = $tmpDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.docx";
+        $doc->saveAs($tmpDocx);
+
+        // 3) convert ke PDF pakai LibreOffice
+        $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';
+        // kalau x86, pakai ini:
+        // $soffice = 'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe';
+
+        if (!file_exists($soffice)) {
+            throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
+        }
+
+        $outDir = storage_path('app/public/tanda_terima');
+        if (!is_dir($outDir)) mkdir($outDir, 0777, true);
+
+        $process = new Process([
+            $soffice,
+            '--headless',
+            '--nologo',
+            '--nofirststartwizard',
+            '--convert-to', 'pdf',
+            '--outdir', $outDir,
+            $tmpDocx,
+        ]);
+
+        $process->setTimeout(60);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new \Exception("Gagal convert DOCX ke PDF: ".$process->getErrorOutput());
+        }
+
+        // 4) hasil pdf dari LibreOffice biasanya: tanda_terima_type_id.pdf (nama docx sama)
+        $generatedPdf = $outDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.pdf";
+
+        if (!file_exists($generatedPdf)) {
+            // kadang LO bikin nama beda, fallback cari pdf terbaru
+            $pdfs = glob($outDir . DIRECTORY_SEPARATOR . "*.pdf");
+            rsort($pdfs);
+            if (!empty($pdfs)) $generatedPdf = $pdfs[0];
+        }
+
+        if (!file_exists($generatedPdf)) {
+            throw new \Exception("PDF tidak ditemukan setelah convert.");
+        }
+
+        // bersihin docx tmp
+        @unlink($tmpDocx);
+
+        // return path untuk DB (relative ke disk public)
+        return "tanda_terima/" . basename($generatedPdf);
     }
 
-    // 2) isi docx dari template
-    $doc = new TemplateProcessor($template);
+    public function exportPatenExcel(Request $request)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
 
-    // NOTE: placeholder di DOCX harus ${jenis} dan ${judul}
-    $doc->setValue('jenis', strtoupper($meta['kategori']));
-    $doc->setValue('judul', $meta['judul']);
-
-    // simpan docx sementara
-    $tmpDir = storage_path('app/tmp');
-    if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
-
-    $tmpDocx = $tmpDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.docx";
-    $doc->saveAs($tmpDocx);
-
-    // 3) convert ke PDF pakai LibreOffice
-    $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';
-    // kalau x86, pakai ini:
-    // $soffice = 'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe';
-
-    if (!file_exists($soffice)) {
-        throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
+        $file = 'data_paten_' . now()->format('Ymd_His') . '.xlsx';
+        return Excel::download(new PatenInventorExport(), $file);
     }
 
-    $outDir = storage_path('app/public/tanda_terima');
-    if (!is_dir($outDir)) mkdir($outDir, 0777, true);
+    public function exportPatenPdf(Request $request)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
 
-    $process = new Process([
-        $soffice,
-        '--headless',
-        '--nologo',
-        '--nofirststartwizard',
-        '--convert-to', 'pdf',
-        '--outdir', $outDir,
-        $tmpDocx,
-    ]);
+        $items = PatenVerif::orderByDesc('id')->get()->map(function ($p) {
 
-    $process->setTimeout(60);
-    $process->run();
+            $raw = $p->inventors ?? null;
 
-    if (!$process->isSuccessful()) {
-        throw new \Exception("Gagal convert DOCX ke PDF: ".$process->getErrorOutput());
+            if (is_string($raw) && trim($raw) !== '') {
+                $inventors = json_decode($raw, true);
+                $inventors = is_array($inventors) ? $inventors : [];
+            } elseif (is_array($raw)) {
+                $inventors = $raw;
+            } else {
+                $inventors = [];
+            }
+
+            if (count($inventors) === 0) {
+                $inventors = [[
+                    'nama' => $p->nama_pencipta ?? '-',
+                    'status' => '-',
+                    'nip_nim' => $p->nip_nim ?? '-',
+                    'fakultas' => $p->fakultas ?? '-',
+                    'no_hp' => $p->no_hp ?? '-',
+                    'email' => $p->email ?? '-',
+                ]];
+            }
+
+            $inventors = collect($inventors)->map(function ($i) {
+                return [
+                    'nama' => $i['nama'] ?? '-',
+                    'status' => $i['status'] ?? '-',
+                    'nip_nim' => $i['nip_nim'] ?? '-',
+                    'fakultas' => $i['fakultas'] ?? '-',
+                    'no_hp' => $i['no_hp'] ?? '-',
+                    'email' => $i['email'] ?? '-',
+                ];
+            })->values()->all();
+
+            return (object)[
+                'no_pendaftaran' => $p->no_pendaftaran ?? '-',
+                'judul_paten' => $p->judul_paten ?? '-',
+                'jenis_paten' => $p->jenis_paten ?? '-',
+                'inventors' => $inventors,
+            ];
+        });
+
+        // ✅ karena file view kamu ada di resources/views/export/paten_inventor_pdf.blade.php
+        $pdf = Pdf::loadView('export.pateninventorpdf', [
+            'items' => $items
+        ])->setPaper('a4', 'landscape');
+
+        $file = 'data_paten_' . now()->format('Ymd_His') . '.pdf';
+        return $pdf->download($file);
     }
 
-    // 4) hasil pdf dari LibreOffice biasanya: tanda_terima_type_id.pdf (nama docx sama)
-    $generatedPdf = $outDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.pdf";
+    public function exportPatenCsv(Request $request)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
 
-    if (!file_exists($generatedPdf)) {
-        // kadang LO bikin nama beda, fallback cari pdf terbaru
-        $pdfs = glob($outDir . DIRECTORY_SEPARATOR . "*.pdf");
-        rsort($pdfs);
-        if (!empty($pdfs)) $generatedPdf = $pdfs[0];
+        $file = 'data_paten_' . now()->format('Ymd_His') . '.csv';
+
+        return Excel::download(
+            new PatenInventorExport(),
+            $file,
+            ExcelExcel::CSV
+        );
     }
-
-    if (!file_exists($generatedPdf)) {
-        throw new \Exception("PDF tidak ditemukan setelah convert.");
-    }
-
-    // bersihin docx tmp
-    @unlink($tmpDocx);
-
-    // return path untuk DB (relative ke disk public)
-    return "tanda_terima/" . basename($generatedPdf);
-}
 }
