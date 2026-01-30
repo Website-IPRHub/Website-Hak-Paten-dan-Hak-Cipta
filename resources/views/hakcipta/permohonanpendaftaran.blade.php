@@ -16,10 +16,9 @@
       </div>
 
       <div class="hero-buttons-start">
-        <div class="button-unduh">
         <div class="button-upload">
           <form id="draftForm"
-                action="{{ route('hakcipta.permohonanpendaftaran.upload') }}"
+                action="{{ route('hakcipta.permohonanpendaftaran.uploadPendaftaran') }}"
                 method="POST"
                 enctype="multipart/form-data">
             @csrf
@@ -46,11 +45,9 @@
 
             <button id="submitUpload" type="submit" hidden>Kirim</button>
 
-            
-
-            @error('file')
-              <div class="text-danger" style="margin-top:8px;">{{ $message }}</div>
-            @enderror
+            <div id="fileError" style="display:none; margin-top:8px; color:#dc2626; font-weight:600;">
+              Tipe file tidak sesuai.
+            </div>
           </form>
         </div>
       </div>
@@ -63,7 +60,7 @@
         &laquo; Sebelumnya
       </button>
 
-      <a class="btn-next" href="{{ route('hakcipta.suratpernyataan') }}">
+      <a class="btn-next" href="{{ route('hakcipta.suratpernyataan')}}">
         Selanjutnya &raquo;
       </a>
     </div>

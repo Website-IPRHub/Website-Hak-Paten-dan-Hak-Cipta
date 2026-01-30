@@ -246,7 +246,7 @@
         <label class="label">Dihasilkan dari Skema Penelitian? <span class="req">*</span></label>
         <img src="/images/Skema%20Penelitian.jpg" class="skema-img" alt="Skema">
 
-        <select class="input" name="skema_penelitian" required>
+        <select class="input input-full" name="skema_penelitian" required>
           <option value="" selected disabled>-- Pilih Skema --</option>
           <option value="Penelitian Dasar (TKT 1 - 3)" {{ old('skema_penelitian')=='Penelitian Dasar (TKT 1 - 3)' ? 'selected' : '' }}>
             Penelitian Dasar (TKT 1 - 3)

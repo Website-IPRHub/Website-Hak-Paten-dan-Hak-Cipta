@@ -343,16 +343,18 @@ Route::middleware('cipta.seq')->group(function () {
     Route::get('/hak-cipta/scanktp', fn () => view('hakcipta.scanktp'))->name('hakcipta.scanktp');
     Route::get('/hak-cipta/hasilciptaan', fn () => view('hakcipta.hasilciptaan'))->name('hakcipta.hasilciptaan');
     Route::get('/hak-cipta/linkciptaan', fn () => view('hakcipta.linkciptaan'))->name('hakcipta.linkciptaan');
-});
 
-// Upload per step (POST)
-Route::post('/hak-cipta/upload-permohonan', [FileUploadCiptaController::class, 'suratPermohonan'])->name('hakcipta.permohonanpendaftaran.upload');
-Route::post('/hak-cipta/upload-pernyataan', [FileUploadCiptaController::class, 'suratPernyataan'])->name('hakcipta.suratpernyataan.upload');
-Route::post('/hak-cipta/upload-pengalihan', [FileUploadCiptaController::class, 'suratPengalihan'])->name('hakcipta.pengalihanhak.upload');
-Route::post('/hak-cipta/upload-scanktp', [FileUploadCiptaController::class, 'scanKtp'])->name('hakcipta.scanktp.uploadScanKTP');
-Route::post('/hak-cipta/upload-tandaterima', [FileUploadCiptaController::class, 'tandaTerima'])->name('hakcipta.tandaterima.upload');
-Route::post('/hak-cipta/upload-hasilciptaan', [FileUploadCiptaController::class, 'hasilCiptaan'])->name('hakcipta.hasilciptaan.uploadScanKTP');
-Route::post('/hak-cipta/simpan-link', [FileUploadCiptaController::class, 'linkCiptaan'])->name('hakcipta.linkciptaan.store');
+ });
+
+ // Upload per step (POST)
+    Route::post('/hak-cipta/upload-permohonan', [FileUploadCiptaController::class, 'suratPermohonan'])->name('hakcipta.permohonanpendaftaran.uploadPendaftaran');
+    Route::post('/hak-cipta/upload-pernyataan', [FileUploadCiptaController::class, 'suratPernyataan'])->name('hakcipta.suratpernyataan.uploadPernyataan');
+    Route::post('/hak-cipta/upload-pengalihan', [FileUploadCiptaController::class, 'suratPengalihan'])->name('hakcipta.pengalihanhak.uploadPengalihan');
+    Route::post('/hak-cipta/upload-scanktp', [FileUploadCiptaController::class, 'scanKtp'])->name('hakcipta.scanktp.uploadScanKTP');
+    Route::post('/hak-cipta/upload-tandaterima', [FileUploadCiptaController::class, 'tandaTerima'])->name('hakcipta.tandaterima.uploadTandaTerima');
+    Route::post('/hak-cipta/upload-hasilciptaan', [FileUploadCiptaController::class, 'hasilCiptaan'])->name('hakcipta.hasilciptaan.uploadHasilCiptaan');
+    Route::post('/hak-cipta/simpan-link', [FileUploadCiptaController::class, 'linkCiptaan'])->name('hakcipta.linkciptaan.store');
+
 
 // Download template hak cipta
 Route::prefix('hak-cipta')->group(function () {

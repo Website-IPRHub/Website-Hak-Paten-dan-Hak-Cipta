@@ -18,7 +18,7 @@
             </div>
             <div class="hero-buttons-start">
                 <div class="button-upload">
-                    <form id="draftForm" action="{{ route('hakcipta.tandaterima.upload') }}" method="POST" enctype="multipart/form-data">
+                    <form id="draftForm" action="{{ route('hakcipta.tandaterima.uploadTandaTerima') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <input

@@ -39,7 +39,7 @@
               data-max-mb="10"
             >
 
-            <button id="uploadButton" type="button" class="btn-upload">
+            <button id="uploadButton" type="submit" class="btn-upload">
               Upload
             </button>
 
@@ -65,15 +65,20 @@
       <button
         type="button"
         class="btn-prev"
-        data-fallback="{{ route('hakciptapendaftaran') }}"
         onclick="history.back()"
       >
         &laquo; Sebelumnya
       </button>
 
-      <a class="btn-next" href="{{ route('hakcipta.suratpernyataan') }}">
+      <button
+        type="submit"
+        class="btn-selanjutnya"
+        form="draftForm"
+        data-btn-submit
+        disabled
+      >
         Selanjutnya &raquo;
-      </a>
+      </button>
     </div>
 
   </div>

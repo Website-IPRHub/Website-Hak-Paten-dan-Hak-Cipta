@@ -17,7 +17,7 @@
             </div>
             <div class="hero-buttons-start">
                 <div class="button-upload">
-                    <form id="draftForm" action="{{ route('hakcipta.hasilciptaan.uploadScanKTP') }}" method="POST" enctype="multipart/form-data">
+                    <form id="draftForm" action="{{ route('hakcipta.hasilciptaan.uploadHasilCiptaan') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <input
@@ -50,7 +50,7 @@
         </div>
         <div class="actions-bar">
             <button type="button" class="btn-prev"
-                data-fallback="{{ route('hakcipta.tandaterima',) }}"
+                data-fallback="{{ route('hakcipta.tandaterima') }}"
                 onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
                 &laquo; Sebelumnya
             </button>

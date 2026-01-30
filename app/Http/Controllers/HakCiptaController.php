@@ -59,9 +59,11 @@ class HakCiptaController extends Controller
             ];
         }
 
-        $jenisCipta = $validated['jenis_cipta'] === 'Lainnya'
-                ? trim((string) ($validated['jenis_cipta_lainnya'] ?? ''))
-                : $validated['jenis_cipta'];
+        $jenisCipta = $validated['jenis_cipta']; // tetap enum
+        $jenisLainnya = $validated['jenis_cipta'] === 'Lainnya'
+        ? trim((string) ($validated['jenis_cipta_lainnya'] ?? ''))
+        : null;
+
 
 
         $payload = [

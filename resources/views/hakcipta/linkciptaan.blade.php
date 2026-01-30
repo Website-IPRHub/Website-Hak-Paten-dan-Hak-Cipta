@@ -33,6 +33,14 @@
 
         <div class="btn-center">
           <button type="submit" class="btn-selanjutnya-submit">Submit</button>
+          <button
+            type="button"
+            class="btn-prev-desk"
+            data-fallback="{{ route('hakcipta.hasilciptaan') }}"
+            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+          >
+            &laquo; Sebelumnya
+          </button>
         </div>
       </form>
 
