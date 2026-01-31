@@ -247,9 +247,9 @@ Route::prefix('hak-cipta')->name('hakcipta.isiform.')->group(function () {
 });
 
 
-Route::post('/isiform', [FormPendaftaranCiptaanController::class, 'store'])->name('isiform.store');
-Route::post('/invensi', [PernyataanCiptaController::class, 'store'])->name('invensi.store');
-Route::post('/pengalihan', [PengalihanHakCiptaController::class, 'store'])->name('pengalihanhak.store');
+Route::post('/isiform', [FormPendaftaranCiptaanController::class, 'store'])->name('isiformCipta.store');
+Route::post('/pernyataan', [PernyataanCiptaController::class, 'store'])->name('pernyataanCipta.store');
+Route::post('/pengalihan', [PengalihanHakCiptaController::class, 'store'])->name('pengalihanhakCipta.store');
 
 
 

@@ -13,7 +13,7 @@
     <p>Isi formulir ini untuk mendapatkan dokumen formulir pendaftaran hak cipta</p>
   </div>
 
-  <form class="form" method="POST" action="{{ route('isiform.store') }}">
+  <form class="form" method="POST" action="{{ route('isiformCipta.store') }}">
     @csrf
 
     {{-- GRID UTAMA --}}
