@@ -23,7 +23,7 @@
 <section class="section-full section-content">
   <div class="section-inner">
     <div class="content-box tracking-box">
-      <h2>Cek Status Pendaftaran</h2>
+      <h2>Cek Status Verifikasi</h2>
 
       <form action="{{ route('tracking') }}" method="GET" class="tracking-form horizontal">
         <input
