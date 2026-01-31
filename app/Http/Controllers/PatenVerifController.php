@@ -92,7 +92,6 @@ class PatenVerifController extends Controller
             'surat_kepemilikan',
             'surat_pengalihan',
             'scan_ktp',
-            'tanda_terima',
             'gambar_prototipe',
             'deskripsi_singkat_prototipe',
         ] as $field) {
@@ -194,6 +193,8 @@ class PatenVerifController extends Controller
         ] as $field) {
             $payload[$field] = $payload[$field] ?? '';
         }
+
+        unset($payload['tanda_terima']);
 
         $verif = PatenVerif::create($payload);
 

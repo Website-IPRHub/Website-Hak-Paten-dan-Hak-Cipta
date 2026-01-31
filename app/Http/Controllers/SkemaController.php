@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Paten;
 use App\Models\PatenVerif;
+use App\Models\HakCiptaVerif;
+use App\Models\HakCipta;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Carbon\Carbon;
@@ -64,6 +66,7 @@ class SkemaController extends Controller
 
       return redirect()->route('draftpaten');
 }
+
 
 
     // ===== Shared helpers =====

@@ -1,69 +1,53 @@
-.section-steps{
-  background:#F0F6FD;
-  padding:12px 0;
-}
-
-.section-steps .section-inner{
-  overflow: visible !important; /* pastikan scroll ul tidak kepotong */
-}
-
-/* UL */
-.menu-steps{
+.paten-steps{
   list-style:none;
-  margin:0 !important;
-  padding:6px 16px !important;
+  margin:0;
+  padding:6px 16px;
 
-  display:flex !important;
-  align-items:center !important;
-  justify-content:flex-start !important;
+  display:flex;
+  align-items:center;
+  gap:14px;
 
-  gap:14px !important;
+  flex-wrap:nowrap;
+  overflow-x:auto;          /* tetap bisa geser */
+  overflow-y:hidden;
 
-  flex-wrap:nowrap !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-
+  white-space:nowrap;
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
 
   width:100%;
   box-sizing:border-box;
+
+  /* hide scrollbar */
+  scrollbar-width: none;     /* Firefox */
+}
+.paten-steps::-webkit-scrollbar{ display:none; } /* Chrome/Edge/Safari */
+
+/* item normal */
+.paten-steps > .paten-step{
+  display:inline-flex;
+  flex:0 0 auto;
+  margin:0;
+  padding:0;
 }
 
-/* LI (atau .step kalau dipakai di elemen lain) */
-.menu-steps > li,
-.menu-steps .step{
-  flex:0 0 auto !important;
-  flex-shrink:0 !important;
-}
-
-/* A */
-.menu-steps a,
-.step a{
-  display:inline-flex !important;
+.paten-steps > .paten-step > a{
+  display:inline-flex;
   align-items:center;
-  gap:8px;
+  white-space:nowrap;
+  min-width:max-content;
 
   padding:10px 14px;
   border-radius:18px;
-
-  white-space:nowrap !important;
-
-  /* kunci paling penting biar gak “nabrak” */
-  flex:0 0 auto !important;
-  flex-shrink:0 !important;
-  width:max-content !important;
-
   text-decoration:none;
   font-size:14px;
+  font-family: 'inter', sans-serif;
   font-weight:600;
   color:#1E1E1E;
 }
 
-.step.active a{ background:#fff; }
-
-.step.disabled a{
+.paten-steps > .paten-step.is-active > a{ background:#fff; }
+.paten-steps > .paten-step.is-disabled > a{
   pointer-events:none;
-  cursor:not-allowed;
   opacity:.55;
 }

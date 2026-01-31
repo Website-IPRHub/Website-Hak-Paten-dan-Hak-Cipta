@@ -42,6 +42,7 @@
               name="file"
               hidden
               required
+              accept=".pdf"
               data-allowed="pdf"
               data-max-mb="10"
             >

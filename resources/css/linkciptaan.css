@@ -68,3 +68,61 @@
   background: #637caf;       
   transform: translateY(-2px);
 }
+
+
+/* ===============================
+   INPUT LINK CIPTAAN
+   =============================== */
+
+.input-link-ciptaan {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+
+  border: 2px solid #d1d5db;
+  border-radius: 14px;
+
+  background-color: #ffffff;
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* placeholder */
+.input-link-ciptaan::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* PAS DI KLIK / FOCUS */
+.input-link-ciptaan:focus {
+  border-color: #2563eb; /* biru */
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  background-color: #f8fbff;
+}
+
+/* HOVER (BIAR HIDUP DIKIT) */
+.input-link-ciptaan:hover {
+  border-color: #93c5fd;
+}
+
+/* ERROR STATE (KALAU MAU) */
+.input-link-ciptaan.is-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
+}
+
+/* MOBILE FRIENDLY */
+@media (max-width: 640px) {
+  .input-link-ciptaan {
+    font-size: 15px;
+    min-height: 48px;
+  }
+}

@@ -18,6 +18,7 @@ use Symfony\Component\Process\Process;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\PatenInventorExport;
 use Maatwebsite\Excel\Excel as ExcelExcel;
+use App\Http\Controllers\HakCiptaInventorExport; // nanti bikin classnya
 
 use App\Mail\DiterimaMail;
 use App\Mail\RevisiMail;
@@ -37,32 +38,55 @@ class AdminDashboardController extends Controller
         $tab  = $request->query('tab', 'stats');
         $sub  = $request->query('sub', 'all'); // all | revisi
 
+        // ==================================================
+        // ✅ DEFAULT INIT (WAJIB biar compact() gak error)
+        // ==================================================
+        $totalPaten = 0;
+        $totalCipta = 0;
+        $totalAll   = 0;
+
+        $patenJenis = [];
+        $ciptaJenis = [];
+
+        $patenMahasiswa = 0;
+        $patenDosen = 0;
+        $ciptaMahasiswa = 0;
+        $ciptaDosen = 0;
+
+        $allFakultasMap = [];
+        $patenFakultasMap = [];
+        $ciptaFakultasMap = [];
+
         // =========================
         // STATISTIK
+       // =========================
+        // STATISTIK (PAKAI TABEL PENDAFTARAN)
         // =========================
-        $totalPaten = DB::table('paten_verifs')->count();
-        $totalCipta = HakCipta::count();
+        $totalPaten = DB::table('paten')->count();       // ✅ pendaftaran paten
+        $totalCipta = DB::table('hak_cipta')->count();   // ✅ pendaftaran cipta
         $totalAll   = $totalPaten + $totalCipta;
 
-        $patenJenis = DB::table('paten_verifs')
+        $patenJenis = DB::table('paten')
             ->select('jenis_paten', DB::raw('count(*) as total'))
             ->groupBy('jenis_paten')
             ->pluck('total', 'jenis_paten')
             ->map(fn ($v) => (int)$v)
             ->toArray();
 
-        $ciptaJenis = HakCipta::select('jenis_cipta', DB::raw('count(*) as total'))
+        $ciptaJenis = DB::table('hak_cipta')
+            ->select('jenis_cipta', DB::raw('count(*) as total'))
             ->groupBy('jenis_cipta')
             ->pluck('total', 'jenis_cipta')
             ->map(fn ($v) => (int)$v)
             ->toArray();
 
        // =========================
-        // STATISTIK TAMBAHAN (MAHASISWA/DOSEN + FAKULTAS)
+        // =========================
+        // STATISTIK TAMBAHAN (MAHASISWA/DOSEN + FAKULTAS) - PAKAI PENDAFTARAN
         // =========================
 
-        // ===== PATEN: hitung dari JSON inventors (status + fakultas)
-        $patenRows = DB::table('paten_verifs')->select('inventors')->get();
+        // ===== PATEN
+        $patenRows = DB::table('paten')->select('inventors')->get();
 
         $patenMahasiswa = 0;
         $patenDosen = 0;
@@ -89,10 +113,50 @@ class AdminDashboardController extends Controller
             }
         }
 
-        // ===== CIPTA: belum fix → sementara 0 biar gak error
+        // ===== CIPTA (PAKAI KOLOM fakultas DARI TABEL hak_cipta)
         $ciptaMahasiswa = 0;
         $ciptaDosen = 0;
         $ciptaFakultasMap = [];
+
+        // kalau kamu belum punya pembagian mahasiswa/dosen di tabel hak_cipta,
+        // minimal fakultasnya dulu yang bener:
+        // ===== CIPTA (PAKAI inventors JSON)
+        $ciptaRows = DB::table('hak_cipta')->select('inventors', 'fakultas')->get();
+
+        $ciptaMahasiswa = 0;
+        $ciptaDosen = 0;
+        $ciptaFakultasMap = [];
+
+        foreach ($ciptaRows as $r) {
+            // fakultas (kalau ada kolom fakultas langsung)
+            $fk = trim((string)($r->fakultas ?? ''));
+            if ($fk !== '') {
+                $ciptaFakultasMap[$fk] = ($ciptaFakultasMap[$fk] ?? 0) + 1;
+            }
+
+            // inventors json
+            $arr = [];
+            if (is_string($r->inventors) && trim($r->inventors) !== '') {
+                $decoded = json_decode($r->inventors, true);
+                $arr = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($r->inventors)) {
+                $arr = $r->inventors;
+            }
+
+            foreach ($arr as $inv) {
+                $st = strtolower(trim((string)($inv['status'] ?? ''))); // "Mahasiswa" -> "mahasiswa"
+                if ($st === 'mahasiswa') $ciptaMahasiswa++;
+                if ($st === 'dosen') $ciptaDosen++;
+
+                // kalau mau fakultas dari inventors (lebih akurat kalau kolom fakultas kosong)
+                $fk2 = trim((string)($inv['fakultas'] ?? ''));
+                if ($fk2 !== '') {
+                    $ciptaFakultasMap[$fk2] = ($ciptaFakultasMap[$fk2] ?? 0) + 1;
+                }
+            }
+        }
+
+
 
         // ===== TOTAL HKI (paten + cipta)
         $totalMahasiswaHKI = $patenMahasiswa + $ciptaMahasiswa;
@@ -110,9 +174,22 @@ class AdminDashboardController extends Controller
         arsort($ciptaFakultasMap);
 
         $TOP = 12;
-        $allFakultasMap   = array_slice($allFakultasMap, 0, $TOP, true);
-        $patenFakultasMap = array_slice($patenFakultasMap, 0, $TOP, true);
-        $ciptaFakultasMap = array_slice($ciptaFakultasMap, 0, $TOP, true);
+        $TOP = 12;
+
+        // ambil TOP dari TOTAL (jadi label utama)
+        arsort($allFakultasMap);
+        $topLabels = array_slice(array_keys($allFakultasMap), 0, $TOP);
+
+        // bikin map top total (buat “Total HKI”)
+        $allFakultasMap = [];
+        foreach ($topLabels as $fk) {
+            $allFakultasMap[$fk] = ($patenFakultasMap[$fk] ?? 0) + ($ciptaFakultasMap[$fk] ?? 0);
+        }
+
+        // sekarang paksa paten/cipta hanya pakai label itu juga
+        $patenFakultasMap = array_intersect_key($patenFakultasMap, $allFakultasMap);
+        $ciptaFakultasMap = array_intersect_key($ciptaFakultasMap, $allFakultasMap);
+
 
         // default collections biar blade aman
         $dataPaten   = collect();
@@ -201,9 +278,24 @@ class AdminDashboardController extends Controller
         // TAB CIPTA
         // =========================
         if ($tab === 'cipta') {
-            $dataCipta = HakCipta::orderByDesc('id')->get();
+            $dataCipta = DB::table('hak_cipta_verifs as c')
+                ->leftJoin('status_verifikasi as sv', function ($join) {
+                    $join->on('sv.ref_id', '=', 'c.id')
+                        ->where('sv.ref_type', '=', 'cipta');
+                })
+                ->select([
+                    'c.*',
+                    DB::raw("COALESCE(sv.status,'terkirim') as status"),
+                    'sv.sertifikat_path',
+                    'sv.emailed_at',
+                ])
+                ->orderByDesc('c.id')
+                ->get();
+
+            $dataCipta = collect($dataCipta);
             $dataCipta = $this->attachDocsToRows($dataCipta, 'cipta', $keysByType['cipta']);
         }
+
 
         // =========================
         // TAB STATUS (gabung paten + cipta)
@@ -212,69 +304,74 @@ class AdminDashboardController extends Controller
         if ($tab === 'status') {
 
             // ---- PATEN
+            // ---- PATEN
             $paten = DB::table('paten_verifs as p')
-                ->leftJoin('status_verifikasi as sv', function ($join) {
-                    $join->on('sv.ref_id', '=', 'p.id')
-                        ->where('sv.ref_type', '=', 'paten');
-                })
-                ->select([
-                    'p.id',
-                    'p.no_pendaftaran',
-                    DB::raw('p.judul_paten as judul'),
-                    DB::raw('p.jenis_paten as jenis'),
-                    'p.email',
-                    'p.inventors',
+            ->leftJoin('status_verifikasi as sv', function ($join) {
+                $join->on('sv.ref_id', '=', 'p.id')
+                    ->where('sv.ref_type', '=', 'paten');
+            })
+            ->select([
+                'p.id',
+                'p.no_pendaftaran',
+                DB::raw('p.judul_paten as judul'),
+                DB::raw('p.jenis_paten as jenis'),
+                'p.email',
+                'p.inventors',
 
-                    'p.draft_paten',
-                    'p.form_permohonan',
-                    'p.surat_kepemilikan',
-                    'p.surat_pengalihan',
-                    'p.scan_ktp',
-                    'p.tanda_terima',
-                    'p.gambar_prototipe',
+                'p.draft_paten',
+                'p.form_permohonan',
+                'p.surat_kepemilikan',
+                'p.surat_pengalihan',
+                'p.scan_ktp',
+                'p.gambar_prototipe',
 
-                    DB::raw("'paten' as type"),
-                    DB::raw("COALESCE(sv.status,'terkirim') as status"),
-                    'sv.sertifikat_path',
-                    'sv.emailed_at',
-                ])
-                ->orderByDesc('p.id')
-                ->get();
+                DB::raw("'paten' as type"),
+                DB::raw("COALESCE(sv.status,'terkirim') as status"),
+                'sv.sertifikat_path',
+                'sv.emailed_at',
+            ])
+            ->orderByDesc('p.id')
+            ->get();
+
 
             // ---- CIPTA
-            $cipta = HakCipta::query()
-                ->leftJoin('status_verifikasi as sv', function ($join) {
-                    $join->on('sv.ref_id', '=', 'hak_cipta.id')
-                        ->where('sv.ref_type', '=', 'cipta');
-                })
-                ->select([
-                    'hak_cipta.id',
-                    'hak_cipta.no_pendaftaran',
-                    'hak_cipta.judul_cipta as judul',
-                    'hak_cipta.jenis_cipta as jenis',
-                    'hak_cipta.jenis_lainnya',
-                    'hak_cipta.email',
+          $cipta = DB::table('hak_cipta_verifs')
+            ->leftJoin('status_verifikasi as sv', function ($join) {
+                $join->on('sv.ref_id', '=', 'hak_cipta_verifs.id')
+                    ->where('sv.ref_type', '=', 'cipta');
+            })
+            ->select([
+                'hak_cipta_verifs.id',
+                'hak_cipta_verifs.no_pendaftaran',
+                DB::raw('hak_cipta_verifs.judul_cipta as judul'),
+                DB::raw('hak_cipta_verifs.jenis_cipta as jenis'),
+                // 'hak_cipta_verifs.jenis_lainnya', // ✅ HAPUS
 
-                    'hak_cipta.surat_permohonan',
-                    'hak_cipta.surat_pernyataan',
-                    'hak_cipta.surat_pengalihan',
-                    'hak_cipta.tanda_terima',
-                    'hak_cipta.scan_ktp',
-                    'hak_cipta.hasil_ciptaan',
+                'hak_cipta_verifs.email',
 
-                    DB::raw("'cipta' as type"),
-                    DB::raw("COALESCE(sv.status,'terkirim') as status"),
-                    'sv.sertifikat_path',
-                    'sv.emailed_at',
-                ])
-                ->orderByDesc('hak_cipta.id')
-                ->get()
-                ->map(function ($r) {
-                    if (strtolower((string)$r->jenis) === 'lainnya') {
-                        $r->jenis = $r->jenis_lainnya ?: 'Lainnya';
-                    }
-                    return $r;
-                });
+                'hak_cipta_verifs.surat_permohonan',
+                'hak_cipta_verifs.surat_pernyataan',
+                'hak_cipta_verifs.surat_pengalihan',
+                'hak_cipta_verifs.tanda_terima',
+                'hak_cipta_verifs.scan_ktp',
+                'hak_cipta_verifs.hasil_ciptaan',
+
+                DB::raw("'cipta' as type"),
+                DB::raw("COALESCE(sv.status,'terkirim') as status"),
+                'sv.sertifikat_path',
+                'sv.emailed_at',
+            ])
+            ->orderByDesc('hak_cipta_verifs.id')
+            ->get()
+            ->map(function ($r) {
+                // ✅ kalau jenis = lainnya tapi kamu gak punya kolom jenis_lainnya,
+                // ya tampilkan "Lainnya" aja (atau biarkan aslinya)
+                if (strtolower((string)$r->jenis) === 'lainnya') {
+                    $r->jenis = 'Lainnya';
+                }
+                return $r;
+            });
+
 
             $dataStatus = $paten->concat($cipta)->values();
 
@@ -573,7 +670,8 @@ class AdminDashboardController extends Controller
             $kategori = 'PATEN';
             $judul = $row->judul_paten ?? '-';
         } else {
-            $row = HakCipta::findOrFail($id);
+            $row = DB::table('hak_cipta_verifs')->where('id', $id)->first();
+            if (!$row) abort(404);
             $kategori = 'HAK CIPTA';
             $judul = $row->judul_cipta ?? '-';
         }
@@ -1124,7 +1222,8 @@ class AdminDashboardController extends Controller
 
     public function destroyCipta($id)
     {
-        $row = HakCipta::findOrFail($id);
+        $row = DB::table('hak_cipta_verifs')->where('id', $id)->first();
+        if (!$row) abort(404);
 
         DB::table('status_verifikasi')
             ->where(['ref_type' => 'cipta', 'ref_id' => $id])
@@ -1137,19 +1236,19 @@ class AdminDashboardController extends Controller
             ->delete();
 
         $paths = [
-            $row->surat_permohonan,
-            $row->surat_pernyataan,
-            $row->surat_pengalihan,
-            $row->tanda_terima,
-            $row->scan_ktp,
-            $row->hasil_ciptaan,
+            $row->surat_permohonan ?? null,
+            $row->surat_pernyataan ?? null,
+            $row->surat_pengalihan ?? null,
+            $row->tanda_terima ?? null,
+            $row->scan_ktp ?? null,
+            $row->hasil_ciptaan ?? null,
         ];
 
         foreach ($paths as $p) {
             if ($p) Storage::disk('public')->delete($p);
         }
 
-        $row->delete();
+        DB::table('hak_cipta_verifs')->where('id', $id)->delete(); // ✅ ini penggantinya
 
         return back()->with('success', 'Data hak cipta berhasil dihapus.');
     }
@@ -1193,24 +1292,31 @@ class AdminDashboardController extends Controller
     {
         if ($type === 'paten') {
             $row = PatenVerif::findOrFail($id);
+
             return [
-                'row' => $row,
+                'row'      => $row,
                 'kategori' => 'PATEN',
-                'judul' => $row->judul_paten ?? '-',
-                'email' => $row->email,
-                'no' => $row->no_pendaftaran ?? '-',
+                'judul'    => $row->judul_paten ?? '-',
+                'jenis'    => $row->jenis_paten ?? '-',   // ✅ sudah benar
+                'email'    => $row->email,
+                'no'       => $row->no_pendaftaran ?? '-',
             ];
         }
 
-        $row = HakCipta::findOrFail($id);
+        $row = DB::table('hak_cipta_verifs')->where('id', $id)->first();
+        if (!$row) abort(404);
+
         return [
-            'row' => $row,
-            'kategori' => 'HAK CIPTA',
-            'judul' => $row->judul_cipta ?? '-',
-            'email' => $row->email,
-            'no' => $row->no_pendaftaran ?? '-',
+            'row'           => $row,
+            'kategori'      => 'HAK CIPTA',
+            'judul'         => $row->judul_cipta ?? '-',
+            'email'         => $row->email,
+            'jenis'         => $row->jenis_cipta ?? '-',      // ✅ FIX: ini yang benar
+            'jenis_lainnya' => $row->jenis_lainnya ?? null,   // ✅ FIX: pakai $row
+            'no'            => $row->no_pendaftaran ?? '-',
         ];
     }
+
 
     public function markRevisionRead(Request $request, int $id)
     {
@@ -1240,8 +1346,47 @@ class AdminDashboardController extends Controller
         $doc = new TemplateProcessor($template);
 
         // NOTE: placeholder di DOCX harus ${jenis} dan ${judul}
-        $doc->setValue('jenis', ucfirst(strtolower($meta['kategori'])));
-        $doc->setValue('judul', $meta['judul']);
+
+        // ==========================
+        // ✅ FIX: ambil "jenis" spesifik (bukan kategori paten/cipta)
+        // ==========================
+       // ==========================
+        // ✅ FIX: ambil "jenis" & "judul" yang benar
+        // ==========================
+        $jenis = '-';
+        $judul = '-';
+
+        if (strtolower($type) === 'paten') {
+            // JUDUL PATEN
+            $judul = $meta['judul_paten'] ?? ($meta['judul'] ?? '-');
+
+            // JENIS PATEN (Paten / Paten Sederhana)
+            $jenis = $meta['jenis_paten'] ?? ($meta['jenis'] ?? '-');
+        } else {
+            // JUDUL CIPTA
+            $judul = $meta['judul_cipta'] ?? ($meta['judul'] ?? '-');
+
+            // JENIS CIPTA (Buku / Program Komputer / dll)
+            $jenis = $meta['jenis_cipta'] ?? ($meta['jenis'] ?? '-');
+
+            // kalau cipta pilih "Lainnya"
+            $jc = strtolower(trim((string)($meta['jenis_cipta'] ?? $meta['jenis'] ?? '')));
+            if ($jc === 'lainnya') {
+                $jenis = $meta['jenis_lainnya'] ?? 'Lainnya';
+            }
+        }
+
+        $jenis = trim((string)$jenis);
+        if ($jenis === '') $jenis = '-';
+
+        $judul = trim((string)$judul);
+        if ($judul === '') $judul = '-';
+
+        $doc->setValue('jenis', $jenis);
+        $doc->setValue('judul', $judul);
+        // ==========================
+
+        // ==========================
 
         // simpan docx sementara
         $tmpDir = storage_path('app/tmp');
@@ -1276,7 +1421,7 @@ class AdminDashboardController extends Controller
         $process->run();
 
         if (!$process->isSuccessful()) {
-            throw new \Exception("Gagal convert DOCX ke PDF: ".$process->getErrorOutput());
+            throw new \Exception("Gagal convert DOCX ke PDF: " . $process->getErrorOutput());
         }
 
         // 4) hasil pdf dari LibreOffice biasanya: tanda_terima_type_id.pdf (nama docx sama)
@@ -1381,5 +1526,85 @@ class AdminDashboardController extends Controller
             $file,
             ExcelExcel::CSV
         );
+    }
+
+    public function exportCiptaExcel(Request $request)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
+
+        $file = 'data_hak_cipta_' . now()->format('Ymd_His') . '.xlsx';
+        return Excel::download(new \App\Http\Controllers\HakCiptaInventorExport(), $file);
+    }
+
+    public function exportCiptaCsv(Request $request)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
+
+        $file = 'data_hak_cipta_' . now()->format('Ymd_His') . '.csv';
+        return Excel::download(new \App\Http\Controllers\HakCiptaInventorExport(), $file, ExcelExcel::CSV);
+    }
+
+
+    public function exportCiptaPdf(Request $request)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
+
+        $items = DB::table('hak_cipta_verifs')
+            ->orderByDesc('id')
+            ->get()
+            ->flatMap(function ($c) {
+
+                $raw = $c->inventors ?? null;
+
+                if (is_string($raw) && trim($raw) !== '') {
+                    $inventors = json_decode($raw, true);
+                    $inventors = is_array($inventors) ? $inventors : [];
+                } elseif (is_array($raw)) {
+                    $inventors = $raw;
+                } else {
+                    $inventors = [];
+                }
+
+                if (count($inventors) === 0) {
+                    $inventors = [[
+                        'urut'     => 1,
+                        'nama'     => $c->nama_pencipta ?? '-',
+                        'status'   => $c->status_pencipta ?? ($c->status_inventor ?? ($c->role ?? '-')),
+                        'nip_nim'  => $c->nip_nim ?? '-',
+                        'fakultas' => $c->fakultas ?? '-',
+                        'no_hp'    => $c->nomor_hp ?? ($c->no_hp ?? '-'),
+                        'email'    => $c->email ?? '-',
+                    ]];
+                }
+
+                return collect($inventors)->map(function ($i, $idx) use ($c) {
+                    return (object)[
+                        'no_pendaftaran' => $c->no_pendaftaran ?? '-',
+                        'judul'          => $c->judul_cipta ?? '-',
+                        'jenis'          => $c->jenis_cipta ?? '-',
+                        'inventor_ke'    => $i['urut'] ?? ($idx + 1),
+                        'nama'           => $i['nama'] ?? '-',
+                        'status'         => $i['status'] ?? '-',
+                        'nip_nim'        => $i['nip_nim'] ?? ($i['nip'] ?? ($i['nim'] ?? '-')),
+                        'fakultas'       => $i['fakultas'] ?? '-',
+                        'no_hp'          => $i['no_hp'] ?? ($i['nomor_hp'] ?? ($i['hp'] ?? '-')),
+                        'email'          => $i['email'] ?? '-',
+                    ];
+                });
+            })
+            ->values();
+
+        $pdf = Pdf::loadView('export.ciptainventorpdf', [
+            'items' => $items
+        ])->setPaper('a4', 'landscape');
+
+        $file = 'data_hak_cipta_' . now()->format('Ymd_His') . '.pdf';
+        return $pdf->download($file);
     }
 }

@@ -79,21 +79,41 @@ async function setupChartsIfAny() {
     grid:  'rgba(11,44,95,0.10)',
   };
 
-  const countTooltip = {
-    callbacks: {
-      label(ctx) {
-        // doughnut/pie: ctx.parsed angka
-        // bar: ctx.parsed.x / ctx.parsed.y
-        const v =
-          (typeof ctx.parsed === 'object' && ctx.parsed !== null)
-            ? (ctx.parsed.x ?? ctx.parsed.y ?? 0)
-            : ctx.parsed;
+const countTooltip = {
+  filter(ctx) {
+    let v = 0;
 
-        const name = ctx.dataset?.label ? `${ctx.dataset.label}: ` : '';
-        return `${name}${v}`;
-      }
+    // pie/doughnut
+    if (typeof ctx.parsed === 'number') v = ctx.parsed;
+
+    // bar charts
+    else if (ctx.parsed && typeof ctx.parsed === 'object') {
+      const indexAxis = ctx.chart?.options?.indexAxis || 'x'; // 'x' = vertical bar, 'y' = horizontal bar
+      v = (indexAxis === 'y')
+        ? (typeof ctx.parsed.x === 'number' ? ctx.parsed.x : 0)   // horizontal: value ada di x
+        : (typeof ctx.parsed.y === 'number' ? ctx.parsed.y : 0);  // vertical: value ada di y
     }
-  };
+
+    return v !== 0;
+  },
+
+  callbacks: {
+    label(ctx) {
+      let v = 0;
+
+      if (typeof ctx.parsed === 'number') v = ctx.parsed;
+      else if (ctx.parsed && typeof ctx.parsed === 'object') {
+        const indexAxis = ctx.chart?.options?.indexAxis || 'x';
+        v = (indexAxis === 'y')
+          ? (typeof ctx.parsed.x === 'number' ? ctx.parsed.x : 0)
+          : (typeof ctx.parsed.y === 'number' ? ctx.parsed.y : 0);
+      }
+
+      const name = ctx.dataset?.label ? `${ctx.dataset.label}: ` : '';
+      return `${name}${v}`;
+    }
+  }
+};
 
   // helper: destroy chart lama kalau function dipanggil ulang
   const CHARTS = window.__DASH_CHARTS__ || (window.__DASH_CHARTS__ = {});
@@ -123,7 +143,18 @@ async function setupChartsIfAny() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: countTooltip },
+
+       interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x', // ✅ karena bar vertikal
+        },
+
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...countTooltip, position: 'nearest' },
+        },
+
         scales: {
           y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
           x: { grid: { display: false } }
@@ -152,7 +183,18 @@ async function setupChartsIfAny() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: countTooltip },
+
+        interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x', // ✅ karena bar vertikal
+        },
+
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...countTooltip, position: 'nearest' },
+        },
+
         scales: {
           y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
           x: { grid: { display: false } }
@@ -218,15 +260,23 @@ async function setupChartsIfAny() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+
+        interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x', // ✅ karena bar vertikal
+        },
+
         scales: {
           x: { stacked: true, grid: { color: THEME.grid } },
           y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
         },
+
         plugins: {
-          tooltip: countTooltip,
+          tooltip: { ...countTooltip, position: 'nearest' },
           legend: { position: 'bottom' },
         },
-      },
+      }
     });
   }
 
@@ -270,6 +320,12 @@ async function setupChartsIfAny() {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
+
+         interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'y',
+          },
 
         // ✅ jangan stacked biar 3 bar muncul berdampingan
         scales: {
@@ -609,7 +665,7 @@ function setupDetailDrawer() {
       ['No Pendaftaran', payload.no_pendaftaran],
       ['Judul', payload.judul],
       ['Jenis', payload.jenis],
-      ...(type === 'cipta' ? [['Jenis Lainnya', payload.jenis_lainnya]] : []),
+      ...(type === 'cipta' && payload.jenis_lainnya && String(payload.jenis_lainnya).trim() !== '-'? [['Jenis Lainnya', payload.jenis_lainnya]]: []),
 
       // ⬇️ ini data umum pengajuan (tetap tampil)
       ...(type === 'paten' ? [['Prototipe', payload.prototipe]] : []),
@@ -621,24 +677,6 @@ function setupDetailDrawer() {
     const inventorHtml = renderInventors(payload.inventors || []);
 
     // fallback kalau paten lama belum punya inventors array
-    const fallbackSingle = (!payload.inventors || payload.inventors.length === 0) ? `
-      <div class="detail-section">
-        <div style="font-weight:800; margin:10px 0 6px;">Data Diri</div>
-        ${[
-          ['Nama', payload.nama_pencipta],
-          ['NIP/NIM', payload.nip_nim],
-          ['Fakultas', payload.fakultas],
-          ['Email', payload.email],
-          ['No HP', payload.no_hp],
-        ].map(([k, v]) => `
-          <div class="detail-row">
-            <div class="detail-k">${k}</div>
-            <div class="detail-v">${(v ?? '-')}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : '';
-    
     bodyEl.innerHTML = `
       ${fields.map(([k, v]) => `
         <div class="detail-row">
@@ -648,7 +686,6 @@ function setupDetailDrawer() {
       `).join('')}
 
       ${inventorHtml}
-      ${fallbackSingle}
     `;
 
     backdrop.hidden = false;
@@ -670,30 +707,38 @@ function setupDetailDrawer() {
 
     const type = (btn.dataset.detailType || '').toLowerCase();
 
-    const inventors = safeParseInventors(btn.dataset.inventors); // ✅ ambil array inventors
+    let inventors = safeParseInventors(btn.dataset.inventors);
+
+    // ✅ kalau inventors kosong (cipta/paten lama), bikin 1 item inventor dari data single
+    if (!inventors || inventors.length === 0) {
+      inventors = [{
+        nama: btn.dataset.nama || '-',
+        status: btn.dataset.statusInventor || btn.dataset.role || '-', // kalau ga ada ya '-'
+        nip_nim: btn.dataset.nip || '-',
+        fakultas: btn.dataset.fakultas || '-',
+        email: btn.dataset.email || '-',
+        no_hp: btn.dataset.hp || '-',
+      }];
+    }
+
     let judul = btn.dataset.judul;
     try { judul = JSON.parse(judul); } catch(e) {}
+
     const payload = {
       no_pendaftaran: btn.dataset.no,
       judul: judul,
       jenis: btn.dataset.jenis,
       jenis_lainnya: btn.dataset.jenisLainnya,
 
-      // fallback single
-      nama_pencipta: btn.dataset.nama,
-      nip_nim: btn.dataset.nip,
-      no_hp: btn.dataset.hp,
-      email: btn.dataset.email,
-      fakultas: btn.dataset.fakultas,
-
       prototipe: btn.dataset.prototipe,
       nilai_perolehan: btn.dataset.nilai,
       sumber_dana: btn.dataset.sumber,
       skema_penelitian: btn.dataset.skema,
 
-      // ✅ array
+      // ✅ sekarang selalu ada inventors (minimal 1)
       inventors: inventors,
     };
+
 
     openDrawer(payload, type);
   });

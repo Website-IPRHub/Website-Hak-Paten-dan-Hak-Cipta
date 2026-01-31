@@ -199,3 +199,10 @@ a#nextLink.btn-selanjutnya.is-disabled{
     justify-content: center;
   }
 }
+
+.nama{
+  max-width: 1100px;   /* samain sama container utama kamu */
+  margin: 0 auto;      /* biar tengah */
+  padding: 0 190px;     /* biar ga mepet kiri */
+}
+

@@ -24,7 +24,7 @@ body{
    HEADER
 ========================= */
 .admin-header{
-  height: 72px;
+  height: 75px;
   background: linear-gradient(180deg,#081f4d,#0b2c5f);
   display:flex;
   align-items:center;
@@ -32,7 +32,7 @@ body{
   padding: 0 24px;
 }
 
-.brand img{ height: 46px; }
+.brand img{ height: 60px; }
 
 .header-actions{
   display:flex;
@@ -1535,5 +1535,94 @@ body.admin-page{
 /* Card-nya juga dibesarin */
 #chartFakultas{
   min-height: 560px;
+}
+
+/* =========================
+   DETAIL MODAL CENTER (OVERRIDE)
+   taruh PALING BAWAH admin.css
+========================= */
+/* ubah drawer jadi modal tengah */
+#detailDrawer.detail-drawer{
+  position: fixed;
+  top: 80px;                 /* JARAK AMAN DARI HEADER */
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: min(860px, 92vw);
+  max-height: calc(100vh - 120px);
+
+  height: auto;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+
+  overflow: hidden;
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* header tetep rapih */
+#detailDrawer .detail-drawer-head{
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
+}
+
+/* body yang scroll */
+#detailDrawer .detail-drawer-body{
+  overflow: auto;
+  max-height: calc(100vh - 200px); /* kurangin tinggi header */
+  padding-top: 12px;
+}
+
+/* biar mobile aman */
+@media (max-width: 520px){
+  #detailDrawer.detail-drawer{
+    width: 94vw;
+    max-height: 90vh;
+    padding: 14px;
+  }
+}
+
+/* ===== FIX: DETAIL DRAWER JANGAN KETIMPA HEADER/HERO ===== */
+:root{
+  --admin-header-h: 72px;   /* samain sama punya kamu */
+  --admin-hero-h: 110px;    /* samain sama punya kamu */
+  --drawer-gap: 16px;
+}
+
+#detailBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 9998;
+}
+
+#detailDrawer.detail-drawer{
+  position: fixed;
+  top: calc(var(--admin-header-h) + var(--admin-hero-h) + var(--drawer-gap));
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+
+  width: min(900px, 92vw);
+  max-height: calc(100vh - (var(--admin-header-h) + var(--admin-hero-h) + (var(--drawer-gap) * 2)));
+
+  z-index: 10001;           /* lebih tinggi dari header */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* yang scroll cuma isi drawer */
+#detailDrawer .detail-drawer-body{
+  overflow-y: auto;
+  flex: 1;
+}
+
+[hidden] { 
+  display: none !important; 
 }
 

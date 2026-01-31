@@ -30,46 +30,73 @@ class PemohonDashboardController extends Controller
         }
 
         // ✅ ambil pengajuan TERBARU
-        $paten = PatenVerif::where('no_pendaftaran', $kode)->latest('id')->first();
+        $paten = PatenVerif::where('no_pendaftaran', $kode)
+            ->orderByDesc('created_at')
+            ->first();
 
-        $cipta = null;
-        if (!$paten) {
-            $cipta = HakCipta::where('no_pendaftaran', $kode)->latest('id')->first();
-        }
+        $cipta = DB::table('hak_cipta_verifs')
+            ->where('no_pendaftaran', $kode)
+            ->orderByDesc('created_at')
+            ->first();
 
-        if (!$paten && !$cipta) {
+        $source = null;
+        $type   = null;
+
+        if ($paten && $cipta) {
+            $patenAt = Carbon::parse($paten->created_at);
+            $ciptaAt = Carbon::parse($cipta->created_at);
+
+            if ($patenAt->greaterThan($ciptaAt)) {
+                $source = $paten; $type = 'paten';
+            } else {
+                $source = $cipta; $type = 'cipta';
+            }
+        } elseif ($paten) {
+            $source = $paten; $type = 'paten';
+        } elseif ($cipta) {
+            $source = $cipta; $type = 'cipta';
+        } else {
             return redirect()->route('pemohon.login.form')
                 ->with('error', 'Data pengajuan tidak ditemukan untuk kode ini.');
         }
 
-        $type   = $paten ? 'paten' : 'cipta';
-        $refId  = $paten ? $paten->id : $cipta->id;
-        $source = $paten ?: $cipta;
+        $refId = $source->id;
+
 
         // ✅ status_verifikasi: ambil yang sesuai pengajuan terbaru
-        $sv = DB::table('status_verifikasi')
-            ->where('ref_type', $type)
-            ->where('ref_id', $refId)
-            ->where('created_at', '>=', $source->created_at)
-            ->orderByDesc('id')
-            ->first();
-
-        if (!$sv) {
-            DB::table('status_verifikasi')->insert([
-                'ref_type'   => $type,
-                'ref_id'     => $refId,
-                'status'     => 'terkirim',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
             $sv = DB::table('status_verifikasi')
                 ->where('ref_type', $type)
                 ->where('ref_id', $refId)
-                ->where('created_at', '>=', $source->created_at)
-                ->orderByDesc('id')
                 ->first();
-        }
+
+        // ambil status_verifikasi TANPA filter created_at
+            $svRow = DB::table('status_verifikasi')
+                ->where('ref_type', $type)
+                ->where('ref_id', $refId)
+                ->first();
+
+           // ✅ status_verifikasi: cukup BACA (jangan update database tiap buka dashboard)
+            $sv = DB::table('status_verifikasi')
+                ->where('ref_type', $type)
+                ->where('ref_id', $refId)
+                ->orderByDesc('id') // ambil row status terbaru
+                ->first();
+
+            $status = strtolower($sv->status ?? 'terkirim');
+            $activeStatus = $status;
+
+            $updatedAt = $sv?->updated_at
+                ? Carbon::parse($sv->updated_at)
+                : (isset($source->created_at) ? Carbon::parse($source->created_at) : Carbon::now());
+
+            $updatedStr = $updatedAt->format('d M Y');
+
+            // refresh
+            $sv = DB::table('status_verifikasi')
+                ->where('ref_type', $type)
+                ->where('ref_id', $refId)
+                ->first();
+
 
         $status = strtolower($sv->status ?? 'terkirim');
         $activeStatus = $status;
@@ -166,6 +193,7 @@ class PemohonDashboardController extends Controller
         ];
 
         // ✅ inventors array
+ // ✅ inventors array
         $inventorsArr = [];
         $inventorList = '-';
 
@@ -182,16 +210,15 @@ class PemohonDashboardController extends Controller
 
                 $email  = trim((string)($i['email'] ?? ''));
 
-                // ✅ fakultas per inventor (kadang key-nya ketulis "fakultass")
                 $fak = $i['fakultas'] ?? ($i['fakultass'] ?? null);
                 $fak = trim((string)($fak ?? ''));
 
                 return [
-                    'nama'   => $nama ?: '-',
-                    'status' => $status ?: '-',
-                    'email'  => $email ?: '-',
-                    'no_hp'  => $nohp ?: '-',
-                    'fakultas'=> $fak ?: '-',
+                    'nama'     => $nama ?: '-',
+                    'status'   => $status ?: '-',
+                    'email'    => $email ?: '-',
+                    'no_hp'    => $nohp ?: '-',
+                    'fakultas' => $fak ?: '-',
                 ];
             })->values()->all();
 
@@ -201,9 +228,25 @@ class PemohonDashboardController extends Controller
                     ->filter()
                     ->implode(', ');
             }
+
         } else {
-            $inventorList = $pick($source, ['nama_pencipta', 'nama'], '-');
+            // ✅ HAK CIPTA: bikin inventors_arr minimal 1 orang supaya modal bisa render detail
+            $nama = $pick($source, ['nama_pencipta', 'nama', 'nama_pemohon'], $pick($pemohon, ['nama']));
+            $email = $pick($source, ['email'], $pick($pemohon, ['email']));
+            $nohp  = $pick($source, ['no_hp', 'hp', 'nomor_hp'], $pick($pemohon, ['no_hp', 'hp', 'nomor_hp']));
+            $fak   = $pick($source, ['fakultas'], $pick($pemohon, ['fakultas']));
+
+            $inventorsArr = [[
+                'nama'     => $nama ?: '-',
+                'status'   => 'Pencipta',      // biar konsisten kaya paten (ada label peran)
+                'email'    => $email ?: '-',
+                'no_hp'    => $nohp ?: '-',
+                'fakultas' => $fak ?: '-',
+            ]];
+
+            $inventorList = $nama ?: '-';
         }
+
 
         $akun = (object) [
             'nama'     => $type === 'paten'
@@ -252,9 +295,10 @@ class PemohonDashboardController extends Controller
 
         // ✅ konsisten ambil TERBARU
         $paten = PatenVerif::where('no_pendaftaran', $kode)->latest('id')->first();
-        $cipta = null;
+        $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
+
         if (!$paten) {
-            $cipta = HakCipta::where('no_pendaftaran', $kode)->latest('id')->first();
+            $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
         }
 
         if (!$paten && !$cipta) {

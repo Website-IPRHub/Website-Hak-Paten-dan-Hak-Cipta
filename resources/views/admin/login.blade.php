@@ -11,7 +11,7 @@
 
     <header class="admin-header">
         <div class="brand">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo">
+            <img src="{{ asset('images/logo.jpg') }}" alt="Logo">
         </div>
 
         <a href="#" class="user-icon">

@@ -19,37 +19,46 @@ class PemohonAuthController extends Controller
     }
 
     // INI YANG DIPANGGIL DARI HALAMAN HASIL SUBMIT (TOMBOL LOGIN)
-    public function claim($kode)
-    {
-        $exists = DB::table('paten_verifs')->where('no_pendaftaran', $kode)->exists();
-        if (!$exists) {
-            return redirect()->route('pemohon.login.form')->with('error', 'Kode tidak valid.');
-        }
+   public function claim($kode)
+{
+    $isPaten = DB::table('paten_verifs')->where('no_pendaftaran', $kode)->exists();
+    $isCipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->exists();
 
-        session(['prefill_kode' => $kode]);
-
-        // cari akun dulu
-        $pemohon = Pemohon::where('kode_unik', $kode)->first();
-
-        // kalau belum ada → baru buat + generate password random
-        if (!$pemohon) {
-            $plainPassword = Str::random(10);
-
-            $pemohon = Pemohon::create([
-                'kode_unik' => $kode,
-                'password'  => Hash::make($plainPassword),
-            ]);
-
-            session()->flash('prefill_password', $plainPassword);
-
-            return redirect()->route('pemohon.login.form')
-                ->with('success', 'Akun berhasil dibuat. Silakan login atau ganti password.');
-        }
-
-        // kalau sudah ada → jangan reset password
-        return redirect()->route('pemohon.login.form')
-            ->with('success', 'Akun sudah ada. Silakan login.');
+    if (!$isPaten && !$isCipta) {
+        return redirect()->route('pemohon.login.form')->with('error', 'Kode tidak valid.');
     }
+
+    session(['prefill_kode' => $kode]);
+
+    $pemohon = Pemohon::where('kode_unik', $kode)->first();
+
+    // kalau belum ada -> create
+    if (!$pemohon) {
+        $pemohon = Pemohon::create([
+            'kode_unik' => $kode,
+            'password'  => Hash::make($kode),
+        ]);
+
+        session()->flash('prefill_password', $kode);
+
+        return redirect()->route('pemohon.login.form')
+            ->with('success', 'Akun berhasil dibuat. Username & password = kode pengajuan. Silakan login');
+    }
+
+    // ✅ kalau akun SUDAH ADA tapi passwordnya BUKAN kode (akun lama/random),
+    // set password = kode SEKALI supaya konsisten sama aturan kamu
+    if (!Hash::check($kode, $pemohon->password)) {
+        $pemohon->password = Hash::make($kode);
+        $pemohon->save();
+    }
+
+    // biar password muncul juga
+    session()->flash('prefill_password', $kode);
+
+    return redirect()->route('pemohon.login.form')
+        ->with('success', 'Akun berhasil dibuat. Username & password = kode pengajuan. Silakan login');
+}
+
 
     public function login(Request $request)
     {

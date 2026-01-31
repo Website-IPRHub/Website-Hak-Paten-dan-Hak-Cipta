@@ -9,78 +9,103 @@ use Illuminate\Validation\Rule;
 
 class HakCiptaController extends Controller
 {
+    private const TABLE = 'hak_cipta';
     public function start(Request $request)
     {
         $enumFakultas   = $this->getEnumValues('hak_cipta', 'fakultas');
         $enumSumberDana = $this->getEnumValues('hak_cipta', 'sumber_dana');
 
-        $data = $request->validate([
-            'jenis_hak_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
-            'jenis_hak_cipta_lainnya' => 'nullable|string|max:255',
+        $jumlah = (int) $request->input('jumlah_inventor', 1);
+        $jumlah = max(1, min(20, $jumlah));
+
+        $validated = $request->validate([
+            'jenis_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
+            'jenis_cipta_lainnya' => 'nullable|string|max:255',
 
             // FIX: ini harus sesuai form
-            'judul_hak_cipta' => 'required|string|max:255',
+            'judul_cipta' => 'required|string|max:255',
 
-            'nama_pencipta' => 'required|string|max:255',
-            'nip_nim' => 'required|string|max:255',
-            'no_hp' => 'required|string|max:255',
-            'fakultas' => empty($enumFakultas) ? 'required|string|max:255' : ['required', Rule::in($enumFakultas)],
-            'email' => [
-                'required',
-                function ($attribute, $value, $fail) {
-                    $emails = array_values(array_filter(array_map('trim', explode(';', $value))));
+            'inventor'               => ['required', 'array'],
+            'inventor.nama'          => ['required', 'array', "size:$jumlah"],
+            'inventor.nip_nim'       => ['required', 'array', "size:$jumlah"],
+            'inventor.fakultas'      => ['required', 'array', "size:$jumlah"],
+            'inventor.no_hp'         => ['required', 'array', "size:$jumlah"],
+            'inventor.email'         => ['required', 'array', "size:$jumlah"],
+            'inventor.status'        => ['required', 'array', "size:$jumlah"],
 
-                    if (count($emails) === 0) {
-                        return $fail('Email wajib diisi.');
-                    }
+            'inventor.nama.*'        => ['required', 'string', 'max:255'],
+            'inventor.nip_nim.*'     => ['required', 'string', 'max:255'],
+            'inventor.fakultas.*'    => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
+            'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
+            'inventor.email.*'       => ['required', 'email', 'max:255'],
+            'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
 
-                    foreach ($emails as $email) {
-                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                            return $fail("Format email tidak valid: $email");
-                        }
-                    }
-                }
-            ],
-
-            'nilai_perolehan_hak_cipta' => 'required|string|max:255',
+            'nilai_perolehan' => 'required|string|max:255',
             'sumber_dana' => empty($enumSumberDana) ? 'required|string|max:255' : ['required', Rule::in($enumSumberDana)],
             'skema_penelitian' => 'required|string|max:255',
         ]);
 
-        if ($data['jenis_hak_cipta'] === 'Lainnya' && empty($data['jenis_hak_cipta_lainnya'])) {
-            return back()
-                ->withErrors(['jenis_hak_cipta_lainnya' => 'Wajib diisi jika memilih "Lainnya".'])
-                ->withInput();
+        // inventors aman (anti undefined index)
+        $inventors = [];
+        for ($i = 0; $i < $jumlah; $i++) {
+            $inventors[] = [
+                'urut'     => $i + 1,
+                'nama'     => trim((string) data_get($validated, "inventor.nama.$i", '')),
+                'nip_nim'  => trim((string) data_get($validated, "inventor.nip_nim.$i", '')),
+                'fakultas' => trim((string) data_get($validated, "inventor.fakultas.$i", '')),
+                'no_hp'    => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
+                'email'    => trim((string) data_get($validated, "inventor.email.$i", '')),
+                'status'   => trim((string) data_get($validated, "inventor.status.$i", '')),
+            ];
         }
 
-        // bikin nomor
-        $data['no_pendaftaran'] = $this->generateNoPendaftaran();
-        $data['status'] = 'terkirim';
+        $jenisCipta = $validated['jenis_cipta']; // tetap enum
+        $jenisLainnya = $validated['jenis_cipta'] === 'Lainnya'
+        ? trim((string) ($validated['jenis_cipta_lainnya'] ?? ''))
+        : null;
 
-        // default dokumen (sesuaikan kolom yang beneran ada di tabel hak_cipta kamu)
+
+
+        $payload = [
+            'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
+            'jenis_cipta'      => $jenisCipta,
+            'judul_cipta'      => $validated['judul_cipta'],
+
+            'inventors'        => $inventors,
+
+            // mirror inventor pertama ke kolom single
+            'nama_pencipta'    => $inventors[0]['nama'] ?? '',
+            'nip_nim'          => $inventors[0]['nip_nim'] ?? '',
+            'fakultas'         => $inventors[0]['fakultas'] ?? '',
+            'no_hp'            => $inventors[0]['no_hp'] ?? '',
+            'email'            => $inventors[0]['email'] ?? '',
+
+            'nilai_perolehan'  => $validated['nilai_perolehan'],
+            'sumber_dana'      => $validated['sumber_dana'],
+            'skema_penelitian' => $validated['skema_penelitian'],
+
+            // PENTING: awalnya Draft (karena upload per-step)
+            'status'           => 'Draft',
+        ];
+
+        
+        // default kolom dokumen (boleh nusll)
         foreach ([
-            'surat_permohonan', 'surat_pernyataan', 'surat_pengalihan',
-            'scan_ktp', 'tanda_terima', 'hasil_ciptaan', 'link_ciptaan'
+            'surat_permohonan',
+            'surat_pernyataan',
+            'surat_pengalihan',
+            'tanda_terima',
+            'scan_ktp',
+            'hasil_ciptaan',
+            'link_ciptaan',
         ] as $field) {
-            $data[$field] = $data[$field] ?? '';
+            $payload[$field] = $payload[$field] ?? null;
         }
 
-        // MAPPING ke kolom DB (model kamu pakai judul_cipta, jenis_cipta, nilai_perolehan)
-        $data['judul_cipta'] = $data['judul_hak_cipta'];
-        $data['jenis_cipta'] = $data['jenis_hak_cipta'];
-        $data['nilai_perolehan'] = $data['nilai_perolehan_hak_cipta'];
-
-        unset(
-            $data['judul_hak_cipta'],
-            $data['jenis_hak_cipta'],
-            $data['jenis_hak_cipta_lainnya'],
-            $data['nilai_perolehan_hak_cipta']
-        );
-
-        $cipta = HakCipta::create($data);
+        $verif = HakCipta::create($payload);
 
         // FIX: samain sama middleware
-        session(['cipta_id' => $cipta->id]);
+        session(['cipta_id' => $verif->id]);
 
         return redirect()->route('hakcipta.permohonanpendaftaran');
     }
@@ -88,92 +113,269 @@ class HakCiptaController extends Controller
     // API FLOW (JSON)
     public function store(Request $request)
     {
-        // VALIDASI DASAR
-        $request->validate([
-            'jenis_cipta'      => 'required|in:Buku,Modul,Program Komputer,Karya Rekaman Video,Lainnya',
-            'judul_cipta'      => 'required|string',
-            'nama_pencipta'    => 'required|string',
-            'nip_nim'          => 'required|string',
-            'fakultas'         => 'required|string',
-            'no_hp'            => 'required|string',
+        $enumFakultas   = $this->getEnumValues(self::TABLE, 'fakultas');
+        $enumSumberDana = $this->getEnumValues(self::TABLE, 'sumber_dana');
 
-            'email' => [
-                'required',
-                function ($attribute, $value, $fail) {
-                    $emails = array_values(array_filter(array_map('trim', explode(';', (string)$value))));
-                    if (count($emails) === 0) {
-                        return $fail('Email wajib diisi.');
-                    }
-                    foreach ($emails as $email) {
-                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                            return $fail("Format email tidak valid: $email");
-                        }
-                    }
-                }
-            ],
+        $jumlah = (int) $request->input('jumlah_inventor', 1);
+        $jumlah = max(1, min(20, $jumlah));
 
-            'nilai_perolehan'  => 'required|string',
-            'sumber_dana'      => 'required|string',
-            'skema_penelitian' => 'nullable|string',
+        $validated = $request->validate([
+            'jumlah_inventor' => ['required', 'integer', 'min:1', 'max:20'],
+            'jenis_cipta'     => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+            'judul_cipta'     => ['required', 'string', 'max:255'],
 
-            // dokumen (kalau API kamu kirim path/filename)
-            'surat_permohonan' => 'nullable|string',
-            'surat_pernyataan' => 'nullable|string',
-            'surat_pengalihan' => 'nullable|string',
-            'tanda_terima'     => 'nullable|string',
-            'scan_ktp'         => 'nullable|string',
-            'hasil_ciptaan'    => 'nullable|string',
-            'link_ciptaan'     => 'nullable|string',
+            'inventor'               => ['required', 'array'],
+            'inventor.nama'          => ['required', 'array', "size:$jumlah"],
+            'inventor.nip_nim'       => ['required', 'array', "size:$jumlah"],
+            'inventor.fakultas'      => ['required', 'array', "size:$jumlah"],
+            'inventor.no_hp'         => ['required', 'array', "size:$jumlah"],
+            'inventor.email'         => ['required', 'array', "size:$jumlah"],
+            'inventor.status'        => ['required', 'array', "size:$jumlah"],
+
+            'inventor.nama.*'        => ['required', 'string', 'max:255'],
+            'inventor.nip_nim.*'     => ['required', 'string', 'max:255'],
+            'inventor.fakultas.*'    => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
+            'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
+            'inventor.email.*'       => ['required', 'email', 'max:255'],
+            'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
+
+            'nilai_perolehan'  => ['required', 'string', 'max:255'],
+            'sumber_dana'      => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
+            'skema_penelitian' => ['required', 'string', 'max:255'],
         ]);
 
-        // AUTO GENERATE NO PENDAFTARAN
-        $noPendaftaran = $this->generateNoPendaftaran();
-
-        // SIMPAN DATA
-        $cipta = new HakCipta();
-        $cipta->no_pendaftaran = $noPendaftaran;
-
-        $cipta->jenis_cipta = $request->jenis_cipta;
-        $cipta->judul_cipta = $request->judul_cipta;
-        $cipta->nama_pencipta = $request->nama_pencipta;
-        $cipta->nip_nim = $request->nip_nim;
-        $cipta->fakultas = $request->fakultas;
-        $cipta->no_hp = $request->no_hp;
-        $cipta->email = $request->email;
-        $cipta->nilai_perolehan = $request->nilai_perolehan;
-        $cipta->sumber_dana = $request->sumber_dana;
-        $cipta->skema_penelitian = $request->skema_penelitian;
-
-        // DOKUMEN
-        $cipta->surat_permohonan = $request->surat_permohonan;
-        $cipta->surat_pernyataan = $request->surat_pernyataan;
-        $cipta->surat_pengalihan = $request->surat_pengalihan;
-        $cipta->tanda_terima = $request->tanda_terima;
-        $cipta->scan_ktp = $request->scan_ktp;
-        $cipta->hasil_ciptaan = $request->hasil_ciptaan;
-        $cipta->link_ciptaan = $request->link_ciptaan;
-
-        // default status kalau kolom status ada
-        if (empty($cipta->status)) {
-            $cipta->status = 'draft';
+        $inventors = [];
+        for ($i = 0; $i < $jumlah; $i++) {
+            $inventors[] = [
+                'urut'     => $i + 1,
+                'nama'     => trim((string) data_get($validated, "inventor.nama.$i", '')),
+                'nip_nim'  => trim((string) data_get($validated, "inventor.nip_nim.$i", '')),
+                'fakultas' => trim((string) data_get($validated, "inventor.fakultas.$i", '')),
+                'no_hp'    => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
+                'email'    => trim((string) data_get($validated, "inventor.email.$i", '')),
+                'status'   => trim((string) data_get($validated, "inventor.status.$i", '')),
+            ];
         }
 
-        $cipta->save();
+        $payload = [
+            'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
+            'jenis_cipta'      => $validated['jenis_cipta'],
+            'judul_cipta'      => $validated['judul_cipta'],
+
+            'inventors'        => $inventors,
+
+            'nama_pencipta'    => $inventors[0]['nama'] ?? '',
+            'nip_nim'          => $inventors[0]['nip_nim'] ?? '',
+            'fakultas'         => $inventors[0]['fakultas'] ?? '',
+            'no_hp'            => $inventors[0]['no_hp'] ?? '',
+            'email'            => $inventors[0]['email'] ?? '',
+
+            'nilai_perolehan'  => $validated['nilai_perolehan'],
+            'sumber_dana'      => $validated['sumber_dana'],
+            'skema_penelitian' => $validated['skema_penelitian'],
+
+            'status'           => 'Draft',
+        ];
+
+        foreach ([
+            'surat_permohonan',
+            'surat_pernyataan',
+            'surat_pengalihan',
+            'tanda_terima',
+            'scan_ktp',
+            'hasil_ciptaan',
+            'link_ciptaan',
+        ] as $field) {
+            $payload[$field] = $payload[$field] ?? null;
+        }
+
+        $verif = HakCipta::create($payload);
 
         return response()->json([
-            'message' => 'Pengajuan hak cipta berhasil',
-            'id' => $cipta->id,
-            'no_pendaftaran' => $cipta->no_pendaftaran,
-            'status' => $cipta->status,
-        ], 201);
+            'message'        => 'Pengajuan hak cipta berhasil',
+            'cipta_id'       => $verif->id,
+            'no_pendaftaran' => $verif->no_pendaftaran,
+        ]);
     }
 
-    private function generateNoPendaftaran(): string
+    // =========================
+    // STEP PAGES (GET)
+    // =========================
+
+    public function index()
+    {
+        return view('hakcipta.datadiricipta');
+    }
+
+    public function formpermohonan(HakCipta $verif)
+    {
+        $draft = $this->getDraft($verif, 'formpermohonan');
+        return view('hakcipta.formulirdaftarcipta', compact('verif'));
+    }
+
+
+    public function suratpernyataan(HakCipta $verif)
+    {
+        $draft = $this->getDraft($verif, 'suratpernyataan');
+        return view('hakcipta.suratpernyataanverif', compact('verif', 'draft'));
+    }
+
+    public function pengalihanhak(HakCipta $verif)
+    {
+        $draft = $this->getDraft($verif, 'pengalihanhak');
+        return view('hakcipta.pengalihanhak', compact('verif', 'draft'));
+    }
+
+    public function scanktp(HakCipta $verif)
+    {
+        $draft = $this->getDraft($verif, 'scanktp');
+        return view('hakcipta.scanktpverif', compact('verif', 'draft'));
+    }
+
+    public function hasilciptaan(HakCipta $verif)
+    {
+        $draft = $this->getDraft($verif, 'hasilciptaan');
+        return view('hakcipta.hasilciptaanverif', compact('verif', 'draft'));
+    }
+
+    public function linkciptaan(HakCipta $verif)
+    {
+        $draft = $this->getDraft($verif, 'linkciptaan');
+        return view('hakcipta.linkciptaan', compact('verif', 'draft'));
+    }
+    
+
+    // =========================
+    // UPLOADS (POST)
+    // =========================
+
+    /**
+     * route name: ciptaverif.upload.form (blade kamu pakai ini)
+     * kolom DB: surat_permohonan
+     */
+    public function uploadForm(Request $request, HakCipta $verif)
+    {
+        return $this->uploadSuratPermohonan($request, $verif);
+    }
+
+    public function uploadSuratPermohonan(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        ]);
+
+        $path = $this->storeUploadedOriginalName($request, 'verif/surat_permohonan');
+        $verif->update(['surat_permohonan' => $path]);
+
+        return back()->with('success', 'Surat Permohonan berhasil diupload');
+    }
+
+    public function uploadSuratPernyataan(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        ]);
+
+        $path = $this->storeUploadedOriginalName($request, 'verif/surat_pernyataan');
+        $verif->update(['surat_pernyataan' => $path]);
+
+        return back()->with('success', 'Surat Pernyataan berhasil diupload');
+    }
+
+    public function uploadSuratPengalihan(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        ]);
+
+        $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
+        $verif->update(['surat_pengalihan' => $path]);
+
+        return back()->with('success', 'Surat Pengalihan berhasil diupload');
+    }
+
+    public function uploadTandaTerima(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $path = $this->storeUploadedOriginalName($request, 'verif/tanda_terima');
+        $verif->update(['tanda_terima' => $path]);
+
+        return back()->with('success', 'Tanda Terima berhasil diupload');
+    }
+
+    public function uploadKTP(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $path = $this->storeUploadedOriginalName($request, 'verif/scan_ktp');
+        $verif->update(['scan_ktp' => $path]);
+
+        return back()->with('success', 'Scan KTP berhasil diupload');
+    }
+
+    public function uploadHasilCiptaan(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $path = $this->storeUploadedOriginalName($request, 'verif/hasil_ciptaan');
+        $verif->update(['hasil_ciptaan' => $path]);
+
+        return back()->with('success', 'Hasil Ciptaan berhasil diupload');
+    }
+
+    public function saveLinkCiptaan(Request $request, HakCipta $verif)
+    {
+        $request->validate([
+            'link_ciptaan' => ['required', 'url', 'max:255'],
+        ]);
+
+        $verif->update(['link_ciptaan' => $request->link_ciptaan]);
+
+        return back()->with('success', 'Link ciptaan tersimpan');
+    }
+
+    // =========================
+    // FINAL SUBMIT
+    // =========================
+    public function submitFinal(HakCipta $verif)
+    {
+        $verif->update(['status' => 'Terkirim']);
+        return redirect()->route('ciptaverif.hasil', ['verif' => $verif->id]);
+    }
+
+    public function hasilSubmit(HakCipta $verif)
+    {
+        return view('hakcipta.hasilsubmitverif', compact('verif'));
+    }
+
+    // =========================
+    // HELPERS
+    // =========================
+
+    private function storeUploadedOriginalName(Request $request, string $dir): string
+    {
+        $file = $request->file('file');
+
+        $original = $file->getClientOriginalName();
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
+
+        return $file->storeAs($dir, $safeName, 'public');
+    }
+
+    private function generateNoPendaftaranVerif(): string
     {
         $year   = now()->format('Y');
-        $prefix = 'EC00' . $year;
+        $prefix = 'VP0' . $year;
 
-        $last = HakCipta::where('no_pendaftaran', 'like', $prefix . '%')
+        $last = DB::table(self::TABLE)
+            ->where('no_pendaftaran', 'like', $prefix . '%')
             ->orderByDesc('no_pendaftaran')
             ->value('no_pendaftaran');
 
@@ -187,7 +389,16 @@ class HakCiptaController extends Controller
 
     private function getEnumValues(string $table, string $field): array
     {
-        $column = DB::selectOne("SHOW COLUMNS FROM {$table} WHERE Field = '{$field}'");
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table)) return [];
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $field)) return [];
+
+        $tableSql = DB::getQueryGrammar()->wrapTable($table);
+
+        $column = DB::selectOne(
+            "SHOW COLUMNS FROM {$tableSql} WHERE Field = ?",
+            [$field]
+        );
+
         if (!$column || !isset($column->Type)) return [];
 
         if (preg_match("/^enum\((.*)\)$/", $column->Type, $matches)) {
@@ -195,5 +406,24 @@ class HakCiptaController extends Controller
         }
 
         return [];
+    }
+
+    private function saveDraft(Request $request, HakCipta $verif, string $step, array $onlyKeys)
+    {
+        $data = $request->only($onlyKeys);
+
+        foreach ($data as $k => $v) {
+            if (is_string($v)) $data[$k] = trim($v);
+        }
+
+        session()->put("draft.{$verif->id}.{$step}", array_merge(
+            session("draft.{$verif->id}.{$step}", []),
+            $data
+        ));
+    }
+
+    private function getDraft(HakCipta $verif, string $step): array
+    {
+        return session("draft.{$verif->id}.{$step}", []);
     }
 }

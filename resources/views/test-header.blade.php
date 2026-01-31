@@ -30,7 +30,7 @@
     <h3>Daftarkan Karya Anda, Wujudkan Kontribusi Nyata</h3>
     <div class="hero-buttons-center">
         <a href="{{ route('menuhakpaten') }}" class="btn-hak-paten">Hak Paten</a>
-        <a href="{{ route('hakcipta') }}" class="btn-hak-cipta">Hak Cipta</a>
+        <a href="{{ route('menucipta') }}" class="btn-hak-cipta">Hak Cipta</a>
     </div>
   </div>
   <div class="container-langkah">

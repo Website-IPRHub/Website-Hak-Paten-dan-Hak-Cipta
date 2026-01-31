@@ -186,8 +186,10 @@
 
                   {{-- PENDAFTARAN --}}
                   @if($isApprove)
-                    <a href="{{ route('paten.pendaftaran') }}"
-                       class="pd-mini-btn outline">
+                    <a href="{{ $pengajuan->type === 'cipta'
+                          ? route('hakcipta.pendaftaran')
+                          : route('paten.pendaftaran') }}"
+                      class="pd-mini-btn outline">
                       Pendaftaran
                     </a>
                   @else
@@ -195,13 +197,12 @@
                       Pendaftaran
                     </button>
                   @endif
-                </div>
-              @endif
+                </div> {{-- nutup .pd-approve-actions --}}
+              @endif  {{-- nutup @if($s['key'] === 'approve') --}}
 
-            </div>
-          </div>
+            </div> {{-- nutup .pd-step-body --}}
+          </div>   {{-- nutup .pd-step --}}
         @endforeach
-      </div>
 
       <div class="pd-legend">
         <div class="pd-leg"><span class="pd-leg-dot done"></span> Selesai</div>
@@ -275,7 +276,8 @@
             @endforeach
           </div>
         @else
-          <div class="pa-value">-</div>
+          {{-- fallback buat hak cipta / data non-array --}}
+          <div class="pa-value">{{ $akun->inventor_list ?? '-' }}</div>
         @endif
       </div>
 

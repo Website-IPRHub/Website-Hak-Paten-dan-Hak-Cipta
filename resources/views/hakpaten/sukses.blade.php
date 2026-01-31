@@ -18,11 +18,6 @@
         </p>
       @endif
 
-      <div class="kode-box">
-        <span>Kode Pengajuan</span>
-        <strong>{{ session('no_pendaftaran') ?? '-' }}</strong>
-      </div>
-
       <div class="submit-actions">
         <a href="{{ url('/header') }}" class="btn-primary">Kembali ke Beranda</a>
       </div>

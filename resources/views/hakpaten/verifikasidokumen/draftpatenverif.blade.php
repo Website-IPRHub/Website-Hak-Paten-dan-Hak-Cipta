@@ -38,12 +38,12 @@
             </button>
 
             <span id="fileName" class="file-name">
-  @if($verif->draft_paten)
-    {{ basename($verif->draft_paten) }}
-  @else
-    Belum pilih file
-  @endif
-</span>
+              @if($verif->draft_paten)
+                {{ basename($verif->draft_paten) }}
+              @else
+                Belum pilih file
+              @endif
+            </span>
 
 
             {{-- submit beneran (disembunyikan, dipencet via JS setelah pilih file) --}}

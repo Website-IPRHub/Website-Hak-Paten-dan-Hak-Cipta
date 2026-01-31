@@ -21,6 +21,10 @@ use App\Http\Controllers\IsiformController;
 use App\Http\Controllers\InvensiController;
 use App\Http\Controllers\PengalihanHakController;
 use App\Http\Controllers\SkemaController;
+use App\Http\Controllers\FormPendaftaranCiptaanController;
+use App\Http\Controllers\HakCiptaVerifController;
+use App\Http\Controllers\PernyataanCiptaController;
+use App\Http\Controllers\PengalihanHakCiptaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +118,11 @@ Route::get('/paten/pendaftaran', function () {
     return view('hakpaten.hakpaten');
 })->name('paten.pendaftaran');
 
+Route::get('/hak-cipta/pendaftaran', function () {
+    return view('hakcipta.hakcipta');
+})->name('hakcipta.pendaftaran');
+
+
 Route::prefix('admin')->group(function () {
     // ... route admin lain
 
@@ -127,6 +136,16 @@ Route::prefix('admin')->group(function () {
 Route::get('/paten/export-csv', [AdminDashboardController::class, 'exportPatenCsv'])
     ->name('admin.paten.export_csv');
 
+Route::get('/admin/cipta/export-excel', [AdminDashboardController::class, 'exportCiptaExcel'])
+    ->name('admin.cipta.export_excel');
+
+Route::get('/admin/cipta/export-pdf', [AdminDashboardController::class, 'exportCiptaPdf'])
+    ->name('admin.cipta.export_pdf');
+
+Route::get('/admin/cipta/export-csv', [AdminDashboardController::class, 'exportCiptaCsv'])
+    ->name('admin.cipta.export_csv');
+
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -136,6 +155,8 @@ Route::get('/', fn () => view('welcome'))->name('welcome');
 Route::get('/header', fn () => view('test-header'))->name('test-header');
 
 Route::get('/hak-paten', fn () => view('hakpaten.menuhakpaten'))->name('menuhakpaten');
+
+Route::get('/hak-cipta/form', fn () => view('hakcipta.menucipta'))->name('menucipta');
 Route::get('/hak-paten/form', fn () => view('hakpaten.hakpaten'))->name('hakpaten');
 
 Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
@@ -297,12 +318,104 @@ Route::get('/hak-paten/download-template-surat-terima-berkas', function () {
 
 /*
 |--------------------------------------------------------------------------
-| HAK CIPTA FLOW (session + anti-skip)
+| HAK CIPTA FLOW ISI FORM
 |--------------------------------------------------------------------------
 */
-// Step 1 (create row + set session cipta_id)
-Route::post('/hak-cipta/start', [HakCiptaController::class, 'start'])->name('hakcipta.start');
+Route::prefix('hak-cipta')->name('hakcipta.isiform.')->group(function () {
+    Route::view('/pendaftaranCiptaan', 'hakcipta.isiform.formpendaftaranciptaan')->name('formpendaftaran');
+    Route::view('/suratpernyataan-isiform', 'hakcipta.isiform.suratpernyataan')->name('suratpernyataan');
+    Route::view('/pengalihanhakcipta', 'hakcipta.isiform.pengalihanhakcipta')->name('pengalihanhak');
+    Route::view('/peralihancipta', 'hakcipta.isiform.peralihanverifcipta')->name('peralihanverifcipta');
+});
 
+
+Route::post('/isiform', [FormPendaftaranCiptaanController::class, 'store'])->name('isiform.store');
+Route::post('/invensi', [PernyataanCiptaController::class, 'store'])->name('invensi.store');
+Route::post('/pengalihan', [PengalihanHakCiptaController::class, 'store'])->name('pengalihanhak.store');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| HAK CIPTA FLOW Verif
+|--------------------------------------------------------------------------
+*/
+
+
+// STEP 1 - tampilkan form
+Route::get('/cipta-verif', [HakCiptaVerifController::class, 'index'])
+    ->name('ciptaverif.index');
+
+// STEP 1 - submit form
+Route::post('/cipta-verif', [HakCiptaVerifController::class, 'start'])
+    ->name('ciptaverif.start');
+
+
+Route::view('/hak-cipta/data-diri', 'hakcipta.verifikasi.datadiricipta')->name('datadiricipta');
+
+Route::post('/cipta-verif', [HakCiptaVerifController::class, 'start'])->name('ciptaverif.start');
+
+
+Route::view('/hak-cipta/data-diri', 'hakcipta.verifikasi.datadiricipta')
+  ->name('datadiricipta');
+
+  Route::get(
+    '/cipta-verif/{verif}/formulir-permohonan',
+    [HakCiptaVerifController::class, 'formpermohonan']
+)->name('ciptaverif.formulirpermohonan');
+
+  Route::get(
+    '/cipta-verif/{verif}/surat-pernyataan',
+    [HakCiptaVerifController::class, 'suratpernyataan']
+)->name('ciptaverif.suratpernyataan');
+
+  Route::get(
+    '/cipta-verif/{verif}/surat-pengalihan',
+    [HakCiptaVerifController::class, 'pengalihanhak']
+)->name('ciptaverif.suratpengalihan');
+
+Route::get(
+  '/cipta-verif/{verif}/scan-ktp',
+  [HakCiptaVerifController::class, 'scanktp']
+)->name('ciptaverif.scanktp');
+
+
+Route::get(
+    '/cipta-verif/{verif}/hasil-ciptaan',
+    [HakCiptaVerifController::class, 'hasilciptaan']
+)->name('ciptaverif.hasilciptaan');
+
+Route::get(
+    '/cipta-verif/{verif}/link-ciptaan',
+    [HakCiptaVerifController::class, 'linkciptaan']
+)->name('ciptaverif.linkciptaan');
+
+Route::post('/cipta-verif/{verif}/submit-final',
+    [HakCiptaVerifController::class, 'submitFinal']
+)->name('ciptaverif.submit.final');
+
+Route::get('/cipta-verif/{verif}/hasil',
+    [HakCiptaVerifController::class, 'hasilSubmit']
+)->name('ciptaverif.hasil');
+
+
+// Submit actions
+
+Route::post('/cipta-verif/{verif}/upload-form', [HakCiptaVerifController::class, 'uploadSuratPermohonan'])->name('ciptaverif.upload.form');
+Route::post('/cipta-verif/{verif}/upload-invensi', [HakCiptaVerifController::class, 'uploadSuratPernyataan'])
+  ->name('ciptaverif.upload.invensi');
+Route::post('/cipta-verif/{verif}/upload-surat', [HakCiptaVerifController::class, 'uploadSuratPengalihan'])
+  ->name('ciptaverif.upload.pengalihan');
+Route::post('/cipta-verif/{verif}/upload-scan-ktp', [HakCiptaVerifController::class, 'uploadKTP'])
+  ->name('ciptaverif.upload.scanktp');
+Route::post('/cipta-verif/{verif}/upload-hasil-ciptaan', [HakCiptaVerifController::class, 'uploadHasilCiptaan'])
+  ->name('ciptaverif.upload.hasilciptaan');
+Route::post('/cipta-verif/{verif}/upload-link-ciptaan', [HakCiptaVerifController::class, 'saveLinkCiptaan'])
+  ->name('ciptaverif.upload.linkciptaan');
+
+  // INI PENDAFTARAN CIPTA
+Route::view('/hak-cipta/data-diri-pendaftaran', 'hakcipta.hakcipta')->name('hakciptapendaftaran');
+Route::post('/hak-cipta/start', [HakCiptaController::class, 'start'])->name('hakcipta.start');
 // Step pages (GET) - anti skip
 Route::middleware('cipta.seq')->group(function () {
     Route::get('/hak-cipta/permohonan-pendaftaran', fn () => view('hakcipta.permohonanpendaftaran'))->name('hakcipta.permohonanpendaftaran');
@@ -312,23 +425,25 @@ Route::middleware('cipta.seq')->group(function () {
     Route::get('/hak-cipta/scanktp', fn () => view('hakcipta.scanktp'))->name('hakcipta.scanktp');
     Route::get('/hak-cipta/hasilciptaan', fn () => view('hakcipta.hasilciptaan'))->name('hakcipta.hasilciptaan');
     Route::get('/hak-cipta/linkciptaan', fn () => view('hakcipta.linkciptaan'))->name('hakcipta.linkciptaan');
-});
 
-// Upload per step (POST)
-Route::post('/hak-cipta/upload-permohonan', [FileUploadCiptaController::class, 'suratPermohonan'])->name('hakcipta.permohonanpendaftaran.upload');
-Route::post('/hak-cipta/upload-pernyataan', [FileUploadCiptaController::class, 'suratPernyataan'])->name('hakcipta.suratpernyataan.upload');
-Route::post('/hak-cipta/upload-pengalihan', [FileUploadCiptaController::class, 'suratPengalihan'])->name('hakcipta.pengalihanhak.upload');
-Route::post('/hak-cipta/upload-scanktp', [FileUploadCiptaController::class, 'scanKtp'])->name('hakcipta.scanktp.uploadScanKTP');
-Route::post('/hak-cipta/upload-tandaterima', [FileUploadCiptaController::class, 'tandaTerima'])->name('hakcipta.tandaterima.upload');
-Route::post('/hak-cipta/upload-hasilciptaan', [FileUploadCiptaController::class, 'hasilCiptaan'])->name('hakcipta.hasilciptaan.uploadScanKTP');
-Route::post('/hak-cipta/simpan-link', [FileUploadCiptaController::class, 'linkCiptaan'])->name('hakcipta.linkciptaan.store');
+ });
+
+ // Upload per step (POST)
+    Route::post('/hak-cipta/upload-permohonan', [FileUploadCiptaController::class, 'suratPermohonan'])->name('hakcipta.permohonanpendaftaran.uploadPendaftaran');
+    Route::post('/hak-cipta/upload-pernyataan', [FileUploadCiptaController::class, 'suratPernyataan'])->name('hakcipta.suratpernyataan.uploadPernyataan');
+    Route::post('/hak-cipta/upload-pengalihan', [FileUploadCiptaController::class, 'suratPengalihan'])->name('hakcipta.pengalihanhak.uploadPengalihan');
+    Route::post('/hak-cipta/upload-scanktp', [FileUploadCiptaController::class, 'scanKtp'])->name('hakcipta.scanktp.uploadScanKTP');
+    Route::post('/hak-cipta/upload-tandaterima', [FileUploadCiptaController::class, 'tandaTerima'])->name('hakcipta.tandaterima.uploadTandaTerima');
+    Route::post('/hak-cipta/upload-hasilciptaan', [FileUploadCiptaController::class, 'hasilCiptaan'])->name('hakcipta.hasilciptaan.uploadHasilCiptaan');
+    Route::post('/hak-cipta/simpan-link', [FileUploadCiptaController::class, 'linkCiptaan'])->name('hakcipta.linkciptaan.store');
+
 
 // Download template hak cipta
 Route::prefix('hak-cipta')->group(function () {
     Route::get('/download-template-permohonan', function () {
-        $path = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.doc');
+        $path = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.docx');
         if (!File::exists($path)) abort(404, 'File Tidak Tersedia');
-        return response()->download($path, 'Permohonan Pendaftaran Ciptaan 2021.doc');
+        return response()->download($path, 'Permohonan Pendaftaran Ciptaan 2021.docx');
     })->name('hakcipta.download.template.permohonan');
 
     Route::get('/download-template-pernyataan', function () {

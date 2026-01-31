@@ -18,7 +18,7 @@
  <body class="admin-page">
     <header class="admin-header">
     <div class="brand">
-        <img src="{{ asset('images/LogoDirinovki2026.png') }}" alt="Logo">
+        <img src="{{ asset('images/logo.jpg') }}?v={{ filemtime(public_path('images/logo.jpg')) }}" alt="Logo">
     </div>
 
     <div class="header-actions">
@@ -201,17 +201,17 @@
             <h2 class="page-title">Data Hak Cipta</h2>
             
             <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
-              <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
+              <a class="btn-mini" href="{{ route('admin.cipta.export_excel') }}" title="Download Excel">
                 <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:35px;height:35px;vertical-align:middle;">
                 Excel
               </a>
 
-               <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
+               <a class="btn-mini" href="{{ route('admin.cipta.export_pdf') }}" title="Download PDF">
                   <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:35px;height:35px;">
                   PDF
               </a>
 
-              <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
+              <a class="btn-mini" href="{{ route('admin.cipta.export_csv') }}" title="Download CSV">
                   <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:35px;height:35px;">
                   CSV
               </a>
@@ -414,49 +414,56 @@
                         <div class="action-stack">
                             {{-- Detail --}}
                             @php
-                            // inventors di paten_verifs: biasanya kolom "inventors" (json string)
-                            $invArr = [];
-                            if (!empty($row->inventors)) {
-                              $invArr = is_string($row->inventors) ? (json_decode($row->inventors, true) ?? []) : ($row->inventors ?? []);
-                            }
+                              $invArr = [];
+                              if (!empty($row->inventors)) {
+                                $invArr = is_string($row->inventors)
+                                  ? (json_decode($row->inventors, true) ?? [])
+                                  : $row->inventors;
+                              }
 
-                            // normalisasi biar key-nya konsisten (ini penting)
-                            $invArr = collect($invArr)->map(function($i){
-                              return [
-                                'nama'     => $i['nama'] ?? '-',
-                                'status'   => $i['status'] ?? '-',
-                                'nip_nim'  => $i['nip_nim'] ?? ($i['nip'] ?? ($i['nim'] ?? '-')),
-                                'no_hp'    => $i['no_hp'] ?? ($i['nomor_hp'] ?? ($i['hp'] ?? '-')),
-                                'fakultas' => $i['fakultas'] ?? '-',
-                                'email'    => $i['email'] ?? '-',
-                              ];
-                            })->values()->all();
+                              // normalisasi key biar JS konsisten
+                              $invArr = collect($invArr)->map(function($i){
+                                return [
+                                  'nama'     => $i['nama'] ?? '-',
+                                  'status'   => $i['status'] ?? '-',          // <- INI penting
+                                  'nip_nim'  => $i['nip_nim'] ?? '-',
+                                  'no_hp'    => $i['no_hp'] ?? '-',
+                                  'fakultas' => $i['fakultas'] ?? '-',
+                                  'email'    => $i['email'] ?? '-',
+                                ];
+                              })->values()->all();
+                            @endphp
+
+                          @php
+                            $jenisCiptaFix = $row->jenis_cipta ?? '-';
+                            if (strtolower($jenisCiptaFix) === 'lainnya') {
+                              $jenisCiptaFix = $row->jenis_lainnya ?? 'Lainnya';
+                            }
                           @endphp
 
                           <button type="button"
-                            class="btn-mini btn-detail"
-                            data-detail-type="paten"
-                            data-no="{{ $row->no_pendaftaran }}"
-                            data-judul="{{ $row->judul_paten }}"
-                            data-jenis="{{ $row->jenis_paten }}"
+                          class="btn-mini btn-detail"
+                          data-detail-type="cipta"
+                          data-no="{{ $row->no_pendaftaran ?? '-' }}"
+                          data-judul='@json($row->judul_cipta ?? "-")'
+                          data-jenis="{{ $row->jenis_cipta ?? '-' }}"
+                          data-jenis-lainnya="{{ $row->jenis_lainnya ?? '' }}"
 
-                            {{-- fallback single (kalau inventors kosong) --}}
-                            data-nama="{{ $row->nama_pencipta }}"
-                            data-nip="{{ $row->nip_nim }}"
-                            data-hp="{{ $row->nomor_hp ?? $row->no_hp }}"
-                            data-email="{{ $row->email }}"
-                            data-fakultas="{{ $row->fakultas }}"
+                          data-nama="{{ $row->nama_pencipta ?? '-' }}"
+                          data-status-inventor="{{ $row->status_pencipta ?? $row->status_inventor ?? $row->role ?? '-' }}"
+                          data-nip="{{ $row->nip_nim ?? '-' }}"
+                          data-hp="{{ $row->no_hp ?? '-' }}"
+                          data-email="{{ $row->email ?? '-' }}"
+                          data-fakultas="{{ $row->fakultas ?? '-' }}"
 
-                            data-prototipe="{{ $row->prototipe }}"
-                            data-nilai="{{ $row->nilai_perolehan }}"
-                            data-sumber="{{ $row->sumber_dana }}"
-                            data-skema="{{ $row->skema_penelitian }}"
+                          data-nilai="{{ $row->nilai_perolehan ?? '' }}"
+                          data-sumber="{{ $row->sumber_dana ?? '' }}"
+                          data-skema="{{ $row->skema_penelitian ?? '' }}"
 
-                            {{-- ✅ INI KUNCINYA: WAJIB ADA --}}
-                            data-inventors='@json($invArr)'
-                          >
-                            Detail
-                          </button>
+                          data-inventors='@json($invArr)'
+                        >
+                          Detail
+                        </button>
 
 
                             {{-- Hapus --}}
@@ -1136,6 +1143,14 @@
 
 {{-- ✅ Data chart dipindah ke JSON (JS yang render) --}}
 @if($tab === 'stats')
+  @php
+    $fLabels = array_keys($allFakultasMap);
+
+    $fAll   = array_map(fn($k) => (int)($allFakultasMap[$k] ?? 0), $fLabels);
+    $fPaten = array_map(fn($k) => (int)($patenFakultasMap[$k] ?? 0), $fLabels);
+    $fCipta = array_map(fn($k) => (int)($ciptaFakultasMap[$k] ?? 0), $fLabels);
+  @endphp
+
   <script id="chart-data" type="application/json">
     {!! json_encode([
       'patenLabels' => array_keys($patenJenis),
@@ -1143,7 +1158,6 @@
       'ciptaLabels' => array_keys($ciptaJenis),
       'ciptaData'   => array_values($ciptaJenis),
 
-      // ✅ chart baru: role
       'roleAll' => [
         'labels' => ['Mahasiswa','Dosen'],
         'data'   => [(int)$totalMahasiswaHKI, (int)$totalDosenHKI],
@@ -1154,12 +1168,12 @@
         'dosen'     => [(int)$patenDosen, (int)$ciptaDosen],
       ],
 
-      // ✅ chart baru: fakultas (3 dataset)
+      // ✅ fakultas (sejajar urutan label)
       'fakultas' => [
-        'labels' => array_keys($allFakultasMap),
-        'all'    => array_values($allFakultasMap),
-        'paten'  => array_values($patenFakultasMap),
-        'cipta'  => array_values($ciptaFakultasMap),
+        'labels' => $fLabels,
+        'all'    => $fAll,
+        'paten'  => $fPaten,
+        'cipta'  => $fCipta,
       ],
     ]) !!}
   </script>

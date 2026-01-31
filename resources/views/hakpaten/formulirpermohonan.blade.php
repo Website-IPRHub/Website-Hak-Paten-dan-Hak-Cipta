@@ -23,10 +23,9 @@
 
           <form
             id="draftForm"
-            action="{{ route('formulirpermohonan.upload') }}"
             method="POST"
+            action="{{ route('formulirpermohonan.upload') }}"
             enctype="multipart/form-data"
-            data-upload-form
           >
             @csrf
 
@@ -35,18 +34,24 @@
               name="file"
               hidden
               required
+              accept=".doc,.docx"
               data-allowed="doc,docx"
               data-max-mb="10"
             >
 
-            <button type="button" class="btn-upload" data-btn-pick>
-              Pilih File
+            <button id="uploadButton" type="submit" class="btn-upload">
+              Upload
             </button>
 
-            <span class="file-name" data-file-name>
-              Belum pilih file
+            <span id="fileName" class="file-name">
+              @if($cipta->surat_permohonan)
+                {{ basename($cipta->surat_permohonan) }}
+              @else
+                Belum pilih file
+              @endif
             </span>
 
+            <button id="submitUpload" type="submit" hidden>Kirim</button>
           </form>
 
         </div>
