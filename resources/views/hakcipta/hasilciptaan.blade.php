@@ -7,12 +7,32 @@
 @php $activeStep = 7; @endphp
 @include('hakcipta.partials.menu')
 
+
+@php
+    $jenis = strtolower($cipta->jenis_hak_cipta ?? $cipta->jenis_ciptaan ?? '');
+
+    $isVideo = str_contains($jenis, 'video') || str_contains($jenis, 'rekaman');
+
+    $accept = '.pdf,.doc,.docx';
+    $allowedText = 'PDF/DOC/DOCX';
+
+    if (str_contains($jenis, 'program') || str_contains($jenis, 'komputer') || str_contains($jenis, 'software')) {
+        $accept = '.pdf,.doc,.docx,.zip,.rar';
+        $allowedText = 'PDF/DOC/DOCX/ZIP/RAR';
+    }
+
+    if ($isVideo) {
+        $accept = '.pdf';
+        $allowedText = 'PDF (screenshot video)';
+    }
+@endphp
+
 <section class="section-full section-content">
     <div class="section-inner">
         <div class="content-box">
             <div class="hasil-ciptaan">
             <h2>Hasil Ciptaan *</h2>
-            <p>*Ukuran Maksimal File 10Mb
+            <p>*Ukuran Maksimal File 10Mb<br>
 *Khusus jenis Karya Rekaman Video mengupload screenshoot video (pdf)</p>
             </div>
             <div class="hero-buttons-start">

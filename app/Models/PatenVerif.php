@@ -40,6 +40,7 @@ class PatenVerif extends Model
         'tanda_terima',
         'gambar_prototipe',
         'deskripsi_singkat_prototipe',
+        'link_ciptaan',
 
         // verifikasi
         'status_verif',

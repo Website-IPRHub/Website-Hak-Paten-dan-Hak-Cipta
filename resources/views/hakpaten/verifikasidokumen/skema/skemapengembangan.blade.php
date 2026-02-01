@@ -114,7 +114,7 @@
            hidden
            accept=".doc,.docx">
 
-    <button id="uploadButton" type="button">Upload</button>
+    <button id="uploadButton" type="button" class="btn-upload">Upload</button>
     <span id="fileName">Belum Pilih File</span>
   </form>
 </div>

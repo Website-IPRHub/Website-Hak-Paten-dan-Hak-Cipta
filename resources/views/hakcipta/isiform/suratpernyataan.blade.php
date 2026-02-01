@@ -13,7 +13,7 @@
     <p>Isi formulir ini untuk mendapatkan dokumen surat pernyataan hak cipta</p>
   </div>
 
-  <form class="form" method="POST" action="{{ route('invensi.store') }}">
+  <form class="form" method="POST" action="{{ route('pernyataanCipta.store') }}">
     @csrf
 
       <div class="field span-2">

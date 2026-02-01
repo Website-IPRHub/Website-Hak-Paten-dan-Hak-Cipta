@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Test Header')
+@section('title','Landing Page')
 
 @section('content')
 
@@ -22,8 +22,8 @@
   </div>
   <div class="hero-search">
     <form action="{{ route('tracking') }}" method="GET" class="search-form">
-      <input type="text" name="q" class="search-input" placeholder="Masukkan No Pendaftaran (contoh: EC00XXXXXXXXX)" value="{{ request('q') }}" required>
-      <button type="submit" class="search-btn">Cek Status</button>
+      <input type="text" name="q" class="search-input" placeholder="Masukkan No Pengajuan (contoh: EC00XXXXXXXXX)" value="{{ request('q') }}" required>
+      <button type="submit" class="search-btn">Cek Status Verifikasi</button>
     </form>
   </div>
   <div class="hero-daftar">

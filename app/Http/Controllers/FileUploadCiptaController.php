@@ -26,11 +26,11 @@ class FileUploadCiptaController extends Controller
         $noPendaftaran = HakCipta::where('id', $ciptaId)->value('no_pendaftaran');
 
         $originalName = $file->getClientOriginalName();
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
         $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $ext  = $file->getClientOriginalExtension();
-        $finalName = $noPendaftaran . '_' . $base . '.' . $ext;
+       
 
-        return $file->storeAs($folder, $finalName, 'public');
+        return $file->storeAs($folder, $safeName, 'public');
     }
 
     // STEP 2: Surat Permohonan (simpan ke kolom surat_permohonan)
@@ -150,5 +150,6 @@ class FileUploadCiptaController extends Controller
 
         return redirect()->route('hakcipta.linkciptaan')
             ->with('success', 'Link ciptaan tersimpan');
+
     }
 }

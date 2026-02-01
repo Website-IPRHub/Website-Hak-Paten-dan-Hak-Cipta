@@ -191,9 +191,9 @@ Route::prefix('hak-paten')->group(function () {
         ->name('hakpaten.peralihankeverif');
 });
 
-Route::post('/isiform', [IsiformController::class, 'store'])->name('isiform.store');
-Route::post('/invensi', [InvensiController::class, 'store'])->name('invensi.store');
-Route::post('/pengalihan', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
+Route::post('/isiformpaten', [IsiformController::class, 'store'])->name('isiform.store');
+Route::post('/invensipaten', [InvensiController::class, 'store'])->name('invensi.store');
+Route::post('/pengalihanpaten', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
 
 /*
 |--------------------------------------------------------------------------
@@ -329,9 +329,9 @@ Route::prefix('hak-cipta')->name('hakcipta.isiform.')->group(function () {
 });
 
 
-Route::post('/isiform', [FormPendaftaranCiptaanController::class, 'store'])->name('isiform.store');
-Route::post('/invensi', [PernyataanCiptaController::class, 'store'])->name('invensi.store');
-Route::post('/pengalihan', [PengalihanHakCiptaController::class, 'store'])->name('pengalihanhak.store');
+Route::post('/isiform', [FormPendaftaranCiptaanController::class, 'store'])->name('isiformCipta.store');
+Route::post('/pernyataan', [PernyataanCiptaController::class, 'store'])->name('pernyataanCipta.store');
+Route::post('/pengalihan', [PengalihanHakCiptaController::class, 'store'])->name('pengalihanhakCipta.store');
 
 
 

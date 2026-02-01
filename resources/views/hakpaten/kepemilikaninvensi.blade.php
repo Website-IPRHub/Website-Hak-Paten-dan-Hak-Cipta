@@ -71,7 +71,7 @@
         &laquo; Sebelumnya
       </button>
 
-      {{-- ➡️ SELANJUTNYA --}}
+
       <button
         type="submit"
         class="btn-selanjutnya"
