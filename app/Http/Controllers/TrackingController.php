@@ -3,16 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\HakCipta;
-use App\Models\Paten;
-use App\Models\PatenVerif;
 use Illuminate\Support\Facades\DB;
 
 class TrackingController extends Controller
 {
     public function index(Request $request)
     {
-        // kalau halaman dibuka tanpa q, tampilkan form saja (biar gak error validate)
         if (!$request->filled('q')) {
             return view('tracking');
         }
@@ -23,52 +19,45 @@ class TrackingController extends Controller
 
         $q = trim($request->q);
 
-        $hakCipta = null;
+        // Cari di tabel verif (sesuai admin)
+        $cipta = null;
         $paten = null;
-        $patenVerif = null;
 
-        // routing by prefix (biar gak query tabel yang gak ada)
         if (str_starts_with($q, 'HC')) {
-            $hakCipta = HakCipta::where('no_pendaftaran', $q)->first();
+            $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $q)->first();
         } elseif (str_starts_with($q, 'VP')) {
-            $patenVerif = PatenVerif::where('no_pendaftaran', $q)->first();
+            $paten = DB::table('paten_verifs')->where('no_pendaftaran', $q)->first();
         } else {
-            // fallback kalau format lain: coba semuanya (kalau tabel ada)
-            $hakCipta = HakCipta::where('no_pendaftaran', $q)->first();
-            // $paten = Paten::where('no_pendaftaran', $q)->first(); // jangan dulu kalau tabel belum ada
-            $patenVerif = PatenVerif::where('no_pendaftaran', $q)->first();
+            // fallback: coba dua-duanya
+            $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $q)->first();
+            $paten = DB::table('paten_verifs')->where('no_pendaftaran', $q)->first();
         }
 
-        if (!$hakCipta && !$paten && !$patenVerif) {
+        if (!$cipta && !$paten) {
             return view('tracking', [
                 'q' => $q,
                 'found' => false,
             ]);
         }
 
-        // tentukan type + data (prioritas: HakCipta > Paten > PatenVerif)
-        if ($hakCipta) {
-            $type  = 'cipta';
-            $data  = $hakCipta;
+        // Samain ref_type dengan admin
+        if ($cipta) {
+            $type  = 'cipta';          // ✅ sama dengan admin
+            $data  = $cipta;
             $jenis = 'Hak Cipta';
-        } elseif ($paten) {
-            $type  = 'paten';
-            $data  = $paten;
-            $jenis = 'Hak Paten';
         } else {
-            $type  = 'paten_verif';     // pastikan ini MATCH dengan ref_type di tabel status_verifikasi
-            $data  = $patenVerif;
-            $jenis = 'Verifikasi Paten';
+            $type  = 'paten';          // ✅ sama dengan admin
+            $data  = $paten;
+            $jenis = 'Paten';
         }
 
-        // ambil status dari status_verifikasi (sumber utama dari admin)
         $sv = DB::table('status_verifikasi')
             ->where('ref_type', $type)
             ->where('ref_id', $data->id)
             ->first();
 
         $status    = $sv->status ?? 'terkirim';
-        $updatedAt = $sv->updated_at ?? $data->updated_at;
+        $updatedAt = $sv->updated_at ?? ($data->updated_at ?? null);
 
         return view('tracking', [
             'q' => $q,
