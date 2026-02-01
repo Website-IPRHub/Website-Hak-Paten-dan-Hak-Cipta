@@ -194,6 +194,8 @@ class PatenVerifController extends Controller
             $payload[$field] = $payload[$field] ?? '';
         }
 
+        unset($payload['tanda_terima']);
+
         $verif = PatenVerif::create($payload);
 
         return response()->json([

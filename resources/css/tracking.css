@@ -122,6 +122,8 @@
 .legend .doing{ border-color:#f59e0b; }
 .legend .todo{ border-color:#ef4444; }
 
+<<<<<<< HEAD
+=======
 .tracking-form.horizontal {
   display: flex;
   align-items: center;
@@ -135,3 +137,4 @@
 .tracking-btn {
   white-space: nowrap;
 }
+>>>>>>> c7784b815c4dad854a0d4f33f7fa2a9cc165b295

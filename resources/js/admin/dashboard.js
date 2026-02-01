@@ -13,7 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupTableSearch('searchPaten', 'patenTable');
   setupTableSearch('searchCipta', 'ciptaTable');
+  setupTableSearch('searchRevisi', 'revisiTable');
+  
+  setupPager('revisiTable', 'searchRevisi', 'revisi');
+  setupPager('patenTable', 'searchPaten', 'paten');
+  setupPager('ciptaTable', 'searchCipta', 'cipta');
+  setupPager('statusTable', 'searchStatus', 'status'); // status pakai filter + search
 
+  setupRevisiPopup();
+  
   setupDetailDrawer();
 });
 
@@ -44,71 +52,311 @@ function setupLogoutModal() {
 ========================= */
 async function setupChartsIfAny() {
   const chartDataEl = document.getElementById('chart-data');
-  if (!chartDataEl) return; // kalau bukan tab stats, skip
-
-  const canvasPaten = document.getElementById('chartPaten');
-  const canvasCipta = document.getElementById('chartCipta');
-  if (!canvasPaten || !canvasCipta) return;
+  if (!chartDataEl) return;
 
   let Chart;
   try {
-    // ✅ load chart.js hanya saat dibutuhkan
     const mod = await import('chart.js/auto');
     Chart = mod.default;
   } catch (err) {
     console.error('Chart.js gagal diload:', err);
-    return; // penting: jangan bikin fitur lain mati
+    return;
   }
 
-  const payload = JSON.parse(chartDataEl.textContent || '{}');
+  let payload = {};
+  try {
+    payload = JSON.parse(chartDataEl.textContent || '{}');
+  } catch (e) {
+    console.error('chart-data JSON invalid', e);
+    return;
+  }
 
-  const commonOptions = {
-    plugins: { legend: { display: false } },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          precision: 0,
-          callback: (value) => Math.round(value),
-        }
-      }
-    },
-    responsive: true,
-    maintainAspectRatio: false,
+  const THEME = {
+    paten: '#126782', // biru
+    cipta: '#7697A0', // hijau
+    gold:  '#f59e0b', // aksen
+    navy:  '#0b2c5f',
+    grid:  'rgba(11,44,95,0.10)',
   };
 
-  new Chart(canvasPaten, {
-    type: 'bar',
-    data: {
-      labels: payload.patenLabels || [],
-      datasets: [{
-        data: payload.patenData || [],
-        backgroundColor: '#52a0d8ff',
-        borderColor: '#0b2c5f',
-        borderWidth: 0,
-        borderRadius: 10,
-        borderSkipped: false
-      }],
-    },
-    options: commonOptions,
-  });
+const countTooltip = {
+  filter(ctx) {
+    let v = 0;
 
-  new Chart(canvasCipta, {
-    type: 'bar',
-    data: {
-      labels: payload.ciptaLabels || [],
-      datasets: [{
-        data: payload.ciptaData || [],
-        backgroundColor: '#52a0d8ff',
-        borderColor: '#0b2c5f',
-        borderWidth: 0,
-        borderRadius: 10,
-        borderSkipped: false
-      }],
-    },
-    options: commonOptions,
-  });
+    // pie/doughnut
+    if (typeof ctx.parsed === 'number') v = ctx.parsed;
+
+    // bar charts
+    else if (ctx.parsed && typeof ctx.parsed === 'object') {
+      const indexAxis = ctx.chart?.options?.indexAxis || 'x'; // 'x' = vertical bar, 'y' = horizontal bar
+      v = (indexAxis === 'y')
+        ? (typeof ctx.parsed.x === 'number' ? ctx.parsed.x : 0)   // horizontal: value ada di x
+        : (typeof ctx.parsed.y === 'number' ? ctx.parsed.y : 0);  // vertical: value ada di y
+    }
+
+    return v !== 0;
+  },
+
+  callbacks: {
+    label(ctx) {
+      let v = 0;
+
+      if (typeof ctx.parsed === 'number') v = ctx.parsed;
+      else if (ctx.parsed && typeof ctx.parsed === 'object') {
+        const indexAxis = ctx.chart?.options?.indexAxis || 'x';
+        v = (indexAxis === 'y')
+          ? (typeof ctx.parsed.x === 'number' ? ctx.parsed.x : 0)
+          : (typeof ctx.parsed.y === 'number' ? ctx.parsed.y : 0);
+      }
+
+      const name = ctx.dataset?.label ? `${ctx.dataset.label}: ` : '';
+      return `${name}${v}`;
+    }
+  }
+};
+
+  // helper: destroy chart lama kalau function dipanggil ulang
+  const CHARTS = window.__DASH_CHARTS__ || (window.__DASH_CHARTS__ = {});
+  const mount = (key, el, config) => {
+    if (!el) return;
+    if (CHARTS[key]) CHARTS[key].destroy();
+    CHARTS[key] = new Chart(el, config);
+  };
+
+  /* =========================
+     BAR JENIS PATEN
+  ========================= */
+  const elPaten = document.getElementById('chartPaten');
+  if (elPaten && (payload.patenLabels || []).length) {
+    mount('paten', elPaten, {
+      type: 'bar',
+      data: {
+        labels: payload.patenLabels || [],
+        datasets: [{
+          label: 'Jumlah',
+          data: payload.patenData || [],
+          backgroundColor: THEME.paten,
+          borderRadius: 10,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+       interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x', // ✅ karena bar vertikal
+        },
+
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...countTooltip, position: 'nearest' },
+        },
+
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
+          x: { grid: { display: false } }
+        },
+      }
+    });
+  }
+
+  /* =========================
+     BAR JENIS CIPTA
+  ========================= */
+  const elCipta = document.getElementById('chartCipta');
+  if (elCipta && (payload.ciptaLabels || []).length) {
+    mount('cipta', elCipta, {
+      type: 'bar',
+      data: {
+        labels: payload.ciptaLabels || [],
+        datasets: [{
+          label: 'Jumlah',
+          data: payload.ciptaData || [],
+          backgroundColor: THEME.cipta,
+          borderRadius: 10,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x', // ✅ karena bar vertikal
+        },
+
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...countTooltip, position: 'nearest' },
+        },
+
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
+          x: { grid: { display: false } }
+        },
+      }
+    });
+  }
+
+  /* =========================
+     DOUGHNUT: TOTAL HKI (Mahasiswa vs Dosen)
+  ========================= */
+  const cRoleAll = document.getElementById('chartRoleAll');
+  if (cRoleAll && payload.roleAll && (payload.roleAll.data || []).length) {
+    mount('roleAll', cRoleAll, {
+      type: 'doughnut',
+      data: {
+        labels: payload.roleAll.labels || ['Mahasiswa', 'Dosen'],
+        datasets: [{
+          label: 'Total',
+          data: payload.roleAll.data || [0, 0],
+          backgroundColor: [THEME.paten, THEME.gold], // ✅ beda jelas
+          borderColor: '#fff',
+          borderWidth: 2,
+          hoverOffset: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: countTooltip,
+          legend: { position: 'bottom' },
+        },
+        cutout: '62%',
+      },
+    });
+  }
+
+  /* =========================
+     STACKED BAR: PATEN vs CIPTA (Mahasiswa & Dosen)
+  ========================= */
+  const cRoleByType = document.getElementById('chartRoleByType');
+  if (cRoleByType && payload.roleByType) {
+    mount('roleByType', cRoleByType, {
+      type: 'bar',
+      data: {
+        labels: payload.roleByType.labels || ['Paten', 'Hak Cipta'],
+        datasets: [
+          {
+            label: 'Mahasiswa',
+            data: payload.roleByType.mahasiswa || [0, 0],
+            backgroundColor: THEME.paten,
+            borderRadius: 10,
+          },
+          {
+            label: 'Dosen',
+            data: payload.roleByType.dosen || [0, 0],
+            backgroundColor: THEME.gold,
+            borderRadius: 10,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x', // ✅ karena bar vertikal
+        },
+
+        scales: {
+          x: { stacked: true, grid: { color: THEME.grid } },
+          y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: THEME.grid } },
+        },
+
+        plugins: {
+          tooltip: { ...countTooltip, position: 'nearest' },
+          legend: { position: 'bottom' },
+        },
+      }
+    });
+  }
+
+  /* =========================
+     HORIZONTAL BAR: TOP FAKULTAS (dibeda-bedain kebawah)
+  ========================= */
+  /* =========================
+   HORIZONTAL BAR: TOP FAKULTAS (3 WARNA SAJA)
+========================= */
+  const cFak = document.getElementById('chartFakultas');
+  if (cFak && payload.fakultas && (payload.fakultas.labels || []).length) {
+    mount('fakultas', cFak, {
+      type: 'bar',
+      data: {
+        labels: payload.fakultas.labels || [],
+        datasets: [
+          {
+            label: 'Total HKI',
+            data: payload.fakultas.all || [],
+            backgroundColor: THEME.gold,     // ✅ 1 warna
+            borderRadius: 8,
+            barThickness: 10,
+          },
+          {
+            label: 'Paten',
+            data: payload.fakultas.paten || [],
+            backgroundColor: THEME.paten,    // ✅ 1 warna
+            borderRadius: 8,
+            barThickness: 10,
+          },
+          {
+            label: 'Hak Cipta',
+            data: payload.fakultas.cipta || [],
+            backgroundColor: THEME.cipta,    // ✅ 1 warna
+            borderRadius: 8,
+            barThickness: 10,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+
+         interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'y',
+          },
+
+        // ✅ jangan stacked biar 3 bar muncul berdampingan
+        scales: {
+          x: {
+            stacked: false,
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: THEME.grid },
+          },
+          y: {
+            stacked: false,
+            ticks: { autoSkip: false },
+            grid: { display: false },
+          },
+        },
+
+        plugins: {
+          tooltip: countTooltip,
+          legend: { position: 'bottom' },
+        },
+
+        // ✅ biar 3 bar per fakultas kebaca jelas
+        datasets: {
+          bar: {
+            categoryPercentage: 0.7,
+            barPercentage: 0.9,
+          },
+        },
+      },
+    });
+  }
 }
 
 /* =========================
@@ -123,15 +371,17 @@ function setupStatusFilter() {
   const rows = Array.from(table.querySelectorAll('tbody tr[data-type]'));
 
   const apply = () => {
-    const typeVal = (filterType.value || 'all').toLowerCase(); // all|paten|cipta
+    const typeVal = (filterType.value || 'all').toLowerCase();
     const q = (searchInput.value || '').trim().toLowerCase();
+    const isShortNumber = /^\d{1,2}$/.test(q);
 
     rows.forEach((tr) => {
       const t = (tr.dataset.type || '').toLowerCase();
       const key = (tr.dataset.key || '').toLowerCase();
+      const nop = (tr.dataset.nop || '').toLowerCase();
 
       const okType = typeVal === 'all' || t === typeVal;
-      const okQuery = !q || key.includes(q);
+      const okQuery = !q || (isShortNumber ? nop.includes(q) : key.includes(q));
 
       tr.style.display = okType && okQuery ? '' : 'none';
     });
@@ -141,6 +391,7 @@ function setupStatusFilter() {
   searchInput.addEventListener('input', apply);
   apply();
 }
+
 
 /* =========================
    GENERIC TABLE SEARCH
@@ -155,15 +406,29 @@ function setupTableSearch(inputId, tableId) {
 
   const apply = () => {
     const q = (input.value || '').trim().toLowerCase();
-    rows.forEach((tr) => {
+
+    if (!q) {
+      rows.forEach(tr => tr.style.display = '');
+      return;
+    }
+
+    // ✅ aturan global: angka pendek = fokus no pendaftaran
+    const isShortNumber = /^\d{1,2}$/.test(q);
+
+    rows.forEach(tr => {
       const key = (tr.dataset.key || '').toLowerCase();
-      tr.style.display = (!q || key.includes(q)) ? '' : 'none';
+      const nop = (tr.dataset.nop || '').toLowerCase();
+
+      const ok = isShortNumber ? nop.includes(q) : key.includes(q);
+      tr.style.display = ok ? '' : 'none';
     });
   };
 
   input.addEventListener('input', apply);
   apply();
 }
+
+
 
 /* =========================
    CUSTOM DROPDOWNS (data-dd)
@@ -343,9 +608,54 @@ function setupDetailDrawer() {
   const subEl = document.getElementById('detailSub');
   const bodyEl = document.getElementById('detailBody');
 
-  console.log('drawer elements:', { drawer, backdrop, closeBtn, titleEl, subEl, bodyEl });
-
   if (!drawer || !backdrop || !closeBtn || !bodyEl) return;
+
+  function safeParseInventors(raw) {
+    if (!raw) return [];
+    try {
+      const val = JSON.parse(raw);
+      return Array.isArray(val) ? val : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderInventors(inventors) {
+    if (!Array.isArray(inventors) || inventors.length === 0) return '';
+
+    return `
+      <div class="detail-section">
+        <div style="font-weight:800; margin:10px 0 6px;">Data Inventor</div>
+
+        ${inventors.map((inv, idx) => `
+          <div style="border:1px solid #e6ebf5;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff;">
+            <div style="font-weight:800;color:#0b2c5f;">
+              ${idx + 1}. ${(inv.nama ?? '-')} <span style="font-weight:600;">(${inv.status ?? '-'})</span>
+            </div>
+
+            <div style="margin-top:6px;">
+              <div class="detail-row">
+                <div class="detail-k">NIP/NIM</div>
+                <div class="detail-v">${inv.nip_nim ?? '-'}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">Fakultas</div>
+                <div class="detail-v">${inv.fakultas ?? '-'}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">Email</div>
+                <div class="detail-v">${inv.email ?? '-'}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">No HP</div>
+                <div class="detail-v">${inv.no_hp ?? '-'}</div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
 
   function openDrawer(payload, type) {
     if (titleEl) titleEl.textContent = type === 'paten' ? 'Detail Paten' : 'Detail Hak Cipta';
@@ -355,24 +665,28 @@ function setupDetailDrawer() {
       ['No Pendaftaran', payload.no_pendaftaran],
       ['Judul', payload.judul],
       ['Jenis', payload.jenis],
-      ...(type === 'cipta' ? [['Jenis Lainnya', payload.jenis_lainnya]] : []),
-      ['Nama Pencipta', payload.nama_pencipta],
-      ['NIP/NIM', payload.nip_nim],
-      ['No HP', payload.no_hp],
-      ['Fakultas', payload.fakultas],
-      ['Email', payload.email],
+      ...(type === 'cipta' && payload.jenis_lainnya && String(payload.jenis_lainnya).trim() !== '-'? [['Jenis Lainnya', payload.jenis_lainnya]]: []),
+
+      // ⬇️ ini data umum pengajuan (tetap tampil)
       ...(type === 'paten' ? [['Prototipe', payload.prototipe]] : []),
       ['Nilai Perolehan', payload.nilai_perolehan],
       ['Sumber Dana', payload.sumber_dana],
       ['Skema Penelitian', payload.skema_penelitian],
     ];
 
-    bodyEl.innerHTML = fields.map(([k, v]) => `
-      <div class="detail-row">
-        <div class="detail-k">${k}</div>
-        <div class="detail-v">${(v ?? '-')}</div>
-      </div>
-    `).join('');
+    const inventorHtml = renderInventors(payload.inventors || []);
+
+    // fallback kalau paten lama belum punya inventors array
+    bodyEl.innerHTML = `
+      ${fields.map(([k, v]) => `
+        <div class="detail-row">
+          <div class="detail-k">${k}</div>
+          <div class="detail-v">${(v ?? '-')}</div>
+        </div>
+      `).join('')}
+
+      ${inventorHtml}
+    `;
 
     backdrop.hidden = false;
     drawer.hidden = false;
@@ -388,28 +702,45 @@ function setupDetailDrawer() {
   }
 
   document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.btn-detail');
-  if (!btn) return;
+    const btn = e.target.closest('.btn-detail');
+    if (!btn) return;
 
-  const type = btn.dataset.detailType;
+    const type = (btn.dataset.detailType || '').toLowerCase();
 
-  const payload = {
-    no_pendaftaran: btn.dataset.no,
-    judul: btn.dataset.judul,
-    jenis: btn.dataset.jenis,
-    jenis_lainnya: btn.dataset.jenisLainnya,
-    nama_pencipta: btn.dataset.nama,
-    nip_nim: btn.dataset.nip,
-    no_hp: btn.dataset.hp,
-    email: btn.dataset.email,
-    fakultas: btn.dataset.fakultas,
-    prototipe: btn.dataset.prototipe,
-    nilai_perolehan: btn.dataset.nilai,
-    sumber_dana: btn.dataset.sumber,
-    skema_penelitian: btn.dataset.skema,
-  };
+    let inventors = safeParseInventors(btn.dataset.inventors);
 
-  openDrawer(payload, type);
+    // ✅ kalau inventors kosong (cipta/paten lama), bikin 1 item inventor dari data single
+    if (!inventors || inventors.length === 0) {
+      inventors = [{
+        nama: btn.dataset.nama || '-',
+        status: btn.dataset.statusInventor || btn.dataset.role || '-', // kalau ga ada ya '-'
+        nip_nim: btn.dataset.nip || '-',
+        fakultas: btn.dataset.fakultas || '-',
+        email: btn.dataset.email || '-',
+        no_hp: btn.dataset.hp || '-',
+      }];
+    }
+
+    let judul = btn.dataset.judul;
+    try { judul = JSON.parse(judul); } catch(e) {}
+
+    const payload = {
+      no_pendaftaran: btn.dataset.no,
+      judul: judul,
+      jenis: btn.dataset.jenis,
+      jenis_lainnya: btn.dataset.jenisLainnya,
+
+      prototipe: btn.dataset.prototipe,
+      nilai_perolehan: btn.dataset.nilai,
+      sumber_dana: btn.dataset.sumber,
+      skema_penelitian: btn.dataset.skema,
+
+      // ✅ sekarang selalu ada inventors (minimal 1)
+      inventors: inventors,
+    };
+
+
+    openDrawer(payload, type);
   });
 
   closeBtn.addEventListener('click', closeDrawer);
@@ -419,6 +750,399 @@ function setupDetailDrawer() {
     if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
   });
 }
+
+
+
+// resources/js/admin/dashboard.js
+
+function csrfToken() {
+  const el = document.querySelector('meta[name="csrf-token"]');
+  return el ? el.getAttribute('content') : '';
+}
+
+function toast(msg, type = 'success') {
+  // simpel: pakai alert dulu biar cepat jalan
+  // kalau kamu punya toast UI sendiri, ganti fungsi ini
+  console.log(`[${type}]`, msg);
+}
+
+async function postFormJson(actionUrl, formData) {
+  const res = await fetch(actionUrl, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': csrfToken(),
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest', // ✅ penting biar expectsJson() true
+    },
+    body: formData
+  });
+
+  let json = null;
+  try { json = await res.json(); } catch (e) {}
+
+  if (!res.ok) {
+    const msg = (json && json.message) ? json.message : `Request gagal (${res.status})`;
+    throw new Error(msg);
+  }
+  return json;
+}
+
+function setBadge(badgeEl, status) {
+  if (!badgeEl) return;
+  // hapus class badge-xxx lama
+  badgeEl.className = badgeEl.className
+    .split(' ')
+    .filter(c => !c.startsWith('badge-'))
+    .join(' ')
+    .trim();
+
+  badgeEl.classList.add(`badge-${status}`);
+  badgeEl.textContent = String(status).toUpperCase();
+}
+
+function toggleSendRevisiForm(rowEl, hasRevisi) {
+  if (!rowEl) return;
+  const f = rowEl.querySelector('[data-send-revisi]');
+  if (!f) return;
+  f.hidden = !hasRevisi;
+}
+
+
+// ============================
+// 1) AJAX untuk verifikasi dokumen (OK / REVISI) - paten & cipta
+// ============================
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (form.classList.contains('js-doc-form')) {
+    e.preventDefault();
+
+    const td = form.closest('td');
+    const tr = form.closest('tr');
+    const actionUrl = form.getAttribute('action');
+    const fd = new FormData(form);
+
+    // 🔥 loading state
+    setFormLoading(form, true, 'Menyimpan...');
+
+    try {
+      const json = await postFormJson(actionUrl, fd);
+
+      if (!json || !json.ok) throw new Error(json?.message || 'Gagal simpan');
+
+      const docKey = json.doc?.doc_key;
+      const status = json.doc?.status || 'pending';
+
+      if (td && docKey) {
+        const badge = td.querySelector(`[data-doc-badge][data-doc-key="${docKey}"]`);
+        setBadge(badge, status);
+      }
+
+      if (tr) toggleSendRevisiForm(tr, !!json.has_revisi);
+
+      toast(json.message || 'Tersimpan');
+
+    } catch (err) {
+      toast(err.message || 'Error', 'error');
+      alert(err.message || 'Terjadi error');
+    } finally {
+      // ✅ balikin tombol normal walau error
+      setFormLoading(form, false);
+    }
+  }
+});
+
+function setFormLoading(form, loading, labelWhenLoading = 'Menyimpan...') {
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const ddBtn = form.querySelector('[data-dd-btn]'); // tombol dropdown status
+
+  if (submitBtn && !submitBtn.dataset.originalText) {
+    submitBtn.dataset.originalText = submitBtn.textContent.trim();
+  }
+
+  if (loading) {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = labelWhenLoading;
+    }
+    if (ddBtn) ddBtn.disabled = true; // dropdown dimatiin sementara
+    form.classList.add('is-loading');  // opsional styling
+  } else {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset.originalText || 'Simpan';
+    }
+    if (ddBtn) ddBtn.disabled = false; // dropdown balik normal
+    form.classList.remove('is-loading');
+  }
+}
+
+// ============================
+// 2) AJAX untuk "Kirim Permintaan Revisi" (paten & cipta)
+// ============================
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (form.classList.contains('js-send-revisi-form')) {
+    e.preventDefault();
+
+    const actionUrl = form.getAttribute('action');
+    const fd = new FormData(form);
+    const msgEl = form.querySelector('[data-inline-msg]');
+
+    setFormLoading(form, true, 'Mengirim...');
+
+    try {
+      const json = await postFormJson(actionUrl, fd);
+      if (!json || !json.ok) throw new Error(json?.message || 'Gagal kirim revisi');
+
+      if (msgEl) {
+        msgEl.textContent = json.message || 'Terkirim ✅';
+        msgEl.style.color = 'green';
+        setTimeout(() => { msgEl.textContent = ''; }, 2500);
+      }
+
+      if (json.wa_link) window.open(json.wa_link, '_blank');
+
+    } catch (err) {
+      if (msgEl) {
+        msgEl.textContent = err.message || 'Terjadi error';
+        msgEl.style.color = 'red';
+      }
+    } finally {
+      setFormLoading(form, false);
+    }
+  }
+});
+
+
+// ============================
+// 3) AJAX untuk update status (TAB STATUS)
+// ============================
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (form.classList.contains('js-status-form')) {
+    e.preventDefault();
+
+    const actionUrl = form.getAttribute('action');
+    const tr = form.closest('tr');
+    const fd = new FormData(form);
+
+    // Laravel spoof PUT
+    if (!fd.get('_method')) fd.append('_method', 'PUT');
+
+    // ✅ loading state
+    setFormLoading(form, true, 'Menyimpan...');
+
+    const msgEl = form.querySelector('[data-inline-msg]');
+    if (msgEl) {
+      msgEl.textContent = 'Menyimpan perubahan...';
+      msgEl.style.color = '#444';
+    }
+
+    try {
+      const json = await postFormJson(actionUrl, fd);
+      if (!json || !json.ok) throw new Error(json?.message || 'Gagal update status');
+
+      // update label dropdown
+      const hiddenInput = form.querySelector('input[name="status"]');
+      const ddLabel = form.querySelector('[data-dd-label]');
+      const newStatus = json.data?.status || hiddenInput?.value;
+      if (ddLabel && newStatus) ddLabel.textContent = newStatus;
+
+      // inject tombol WA kalau ada
+      if (tr) {
+        const slot = tr.querySelector('[data-wa-slot]');
+        if (slot) {
+          slot.innerHTML = '';
+          if (json.wa_link) {
+            const a = document.createElement('a');
+            a.href = json.wa_link;
+            a.target = '_blank';
+            a.className = 'btn-mini';
+            a.textContent = 'Kirim WA';
+            slot.appendChild(a);
+          }
+        }
+      }
+
+      // ✅ sukses message
+      if (msgEl) {
+        msgEl.textContent = json.message || 'Tersimpan ✅';
+        msgEl.style.color = 'green';
+
+        // auto hilang 2 detik
+        setTimeout(() => { msgEl.textContent = ''; }, 2000);
+      }
+
+    } catch (err) {
+      if (msgEl) {
+        msgEl.textContent = err.message || 'Terjadi error';
+        msgEl.style.color = 'red';
+      }
+    } finally {
+      setFormLoading(form, false);
+    }
+  }
+});
+
+function setupPager(tableId, searchInputId, pagerKey) {
+  const table = document.getElementById(tableId);
+  const footer = document.querySelector(`.table-footer[data-pager="${pagerKey}"]`);
+  if (!table || !footer) return;
+
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+
+  const infoEl = footer.querySelector('[data-info]');
+  const entriesEl = footer.querySelector('[data-entries]');
+  const paginationEl = footer.querySelector('[data-pagination]');
+
+  const allRows = Array.from(tbody.querySelectorAll('tr'));
+
+  // simpan pilihan entries per tab
+  const lsKey = `entriesPerPage:${pagerKey}`;
+  let perPage = parseInt(localStorage.getItem(lsKey) || (entriesEl?.value || '20'), 10);
+  if (entriesEl) entriesEl.value = String(perPage);
+
+  let currentPage = 1;
+
+  const getVisibleRows = () => {
+    // ambil row yang sedang tampil (tidak display:none)
+    return allRows.filter(tr => tr.style.display !== 'none');
+  };
+
+  const render = () => {
+    const visible = getVisibleRows();
+    const total = visible.length;
+
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    // hide semua dulu
+    allRows.forEach(r => (r.hidden = true));
+
+    const start = (currentPage - 1) * perPage;
+    const end = Math.min(start + perPage, total);
+
+    for (let i = start; i < end; i++) {
+      visible[i].hidden = false;
+    }
+
+    // info text
+    const showingFrom = total === 0 ? 0 : start + 1;
+    const showingTo = end;
+    if (infoEl) infoEl.textContent = `Showing ${showingFrom} to ${showingTo} of ${total} entries`;
+
+    // pagination buttons
+    if (!paginationEl) return;
+    paginationEl.innerHTML = '';
+
+    const mkBtn = (label, onClick, opts = {}) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'page-btn' + (opts.active ? ' active' : '');
+      b.textContent = label;
+      if (opts.disabled) b.disabled = true;
+      b.addEventListener('click', onClick);
+      return b;
+    };
+
+    paginationEl.appendChild(
+      mkBtn('Prev', () => { currentPage--; render(); }, { disabled: currentPage === 1 })
+    );
+
+    for (let p = 1; p <= totalPages; p++) {
+      paginationEl.appendChild(
+        mkBtn(String(p), () => { currentPage = p; render(); }, { active: p === currentPage })
+      );
+    }
+
+    paginationEl.appendChild(
+      mkBtn('Next', () => { currentPage++; render(); }, { disabled: currentPage === totalPages })
+    );
+  };
+
+  // entries change
+  if (entriesEl) {
+    entriesEl.addEventListener('change', () => {
+      perPage = parseInt(entriesEl.value, 10);
+      localStorage.setItem(lsKey, String(perPage));
+      currentPage = 1;
+      render();
+    });
+  }
+
+  // hook ke search input: tiap search berubah -> reset page dan render ulang
+  const searchInput = document.getElementById(searchInputId);
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      currentPage = 1;
+      // tunggu filter/search kamu jalan dulu
+      requestAnimationFrame(render);
+    });
+  }
+
+  // hook tambahan untuk status filter dropdown (karena status pakai filterType)
+  if (pagerKey === 'status') {
+    const filterType = document.getElementById('filterType');
+    if (filterType) {
+      filterType.addEventListener('change', () => {
+        currentPage = 1;
+        requestAnimationFrame(render);
+      });
+    }
+  }
+
+  render();
+}
+
+function setupRevisiPopup() {
+  document.addEventListener('click', (e) => {
+    // toggle open
+    const btn = e.target.closest('[data-rev-btn]');
+    if (btn) {
+      e.preventDefault();
+      const wrap = btn.closest('[data-rev]');
+      const pop = wrap?.querySelector('[data-rev-pop]');
+      if (!pop) return;
+
+      // tutup yang lain dulu
+      document.querySelectorAll('[data-rev-pop]').forEach(p => {
+        if (p !== pop) p.hidden = true;
+      });
+
+      pop.hidden = !pop.hidden;
+      return;
+    }
+
+    // klik di luar -> tutup
+    if (!e.target.closest('[data-rev]')) {
+      document.querySelectorAll('[data-rev-pop]').forEach(p => p.hidden = true);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('[data-rev-pop]').forEach(p => p.hidden = true);
+    }
+  });
+}
+
+  function initNotifRevisiButton() {
+  const btn = document.getElementById('btnNotifRevisi');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    window.location.href = '/admin/dashboard?tab=status';
+  });
+}
+
+
 
 
 
