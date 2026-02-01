@@ -230,21 +230,55 @@ class PemohonDashboardController extends Controller
             }
 
         } else {
-            // ✅ HAK CIPTA: bikin inventors_arr minimal 1 orang supaya modal bisa render detail
-            $nama = $pick($source, ['nama_pencipta', 'nama', 'nama_pemohon'], $pick($pemohon, ['nama']));
-            $email = $pick($source, ['email'], $pick($pemohon, ['email']));
-            $nohp  = $pick($source, ['no_hp', 'hp', 'nomor_hp'], $pick($pemohon, ['no_hp', 'hp', 'nomor_hp']));
-            $fak   = $pick($source, ['fakultas'], $pick($pemohon, ['fakultas']));
+            // ✅ HAK CIPTA: ambil inventors dari DB kalau ada (JSON)
+            $inventorsRaw =
+                $source->inventors
+                ?? $source->pencipta
+                ?? $source->inventor
+                ?? null;
 
-            $inventorsArr = [[
-                'nama'     => $nama ?: '-',
-                'status'   => 'Pencipta',      // biar konsisten kaya paten (ada label peran)
-                'email'    => $email ?: '-',
-                'no_hp'    => $nohp ?: '-',
-                'fakultas' => $fak ?: '-',
-            ]];
+            $inventorsArr = is_string($inventorsRaw)
+                ? (json_decode($inventorsRaw, true) ?? [])
+                : ($inventorsRaw ?? []);
 
-            $inventorList = $nama ?: '-';
+            $inventorsArr = collect($inventorsArr)->map(function ($i) use ($pick, $source, $pemohon) {
+                $nama   = trim((string)($i['nama'] ?? ''));
+                $status = trim((string)($i['status'] ?? $i['kategori'] ?? $i['peran'] ?? '')); // ambil mahasiswa/dosen
+
+                $nohp   = $i['no_hp'] ?? ($i['no hp'] ?? ($i['hp'] ?? null));
+                $email  = trim((string)($i['email'] ?? ''));
+                $fak    = $i['fakultas'] ?? null;
+
+                return [
+                    'nama'     => $nama ?: '-',
+                    'status'   => $status ?: '-',   // ✅ bukan "Pencipta"
+                    'email'    => $email ?: '-',
+                    'no_hp'    => trim((string)($nohp ?? '-')),
+                    'fakultas' => trim((string)($fak ?? '-')),
+                ];
+            })->values()->all();
+
+            // fallback kalau gak ada JSON inventors
+            if (count($inventorsArr) === 0) {
+                $nama  = $pick($source, ['nama_pencipta', 'nama', 'nama_pemohon'], $pick($pemohon, ['nama']));
+                $email = $pick($source, ['email'], $pick($pemohon, ['email']));
+                $nohp  = $pick($source, ['no_hp', 'hp', 'nomor_hp'], $pick($pemohon, ['no_hp', 'hp', 'nomor_hp']));
+                $fak   = $pick($source, ['fakultas'], $pick($pemohon, ['fakultas']));
+                $statusPemohon = $pick($source, ['status', 'kategori'], $pick($pemohon, ['kategori'])); // mahasiswa/dosen
+
+                $inventorsArr = [[
+                    'nama'     => $nama ?: '-',
+                    'status'   => $statusPemohon ?: '-',  // ✅ ambil dari data, bukan Pencipta
+                    'email'    => $email ?: '-',
+                    'no_hp'    => $nohp ?: '-',
+                    'fakultas' => $fak ?: '-',
+                ]];
+            }
+
+            $inventorList = collect($inventorsArr)
+                ->map(fn($i) => trim($i['nama'].' ('.$i['status'].')'))
+                ->filter()
+                ->implode(', ');
         }
 
 

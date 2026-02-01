@@ -20,7 +20,6 @@
 
       <div class="submit-actions">
         <a href="{{ url('/header') }}" class="btn-primary">Kembali ke Beranda</a>
-        <a href="#" class="btn-secondary">Login</a>
       </div>
 
     </div>

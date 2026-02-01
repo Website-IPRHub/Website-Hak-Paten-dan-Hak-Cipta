@@ -387,7 +387,7 @@ class HakCiptaVerifController extends Controller
     private function generateNoPendaftaranVerif(): string
     {
         $year   = now()->format('Y');
-        $prefix = 'VP0' . $year;
+        $prefix = 'VC0' . $year;
 
         $last = DB::table(self::TABLE)
             ->where('no_pendaftaran', 'like', $prefix . '%')
