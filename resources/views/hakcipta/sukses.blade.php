@@ -10,7 +10,8 @@
       <h2>Pendaftaran Hak Cipta Berhasil</h2>
 
       <p class="desc">
-        Terima kasih. Data dan dokumen Anda telah berhasil dikirim.
+        Terima kasih. Data pendaftaran hak cipta Anda telah berhasil dikirim.
+          Silakan simpan kode pengajuan berikut untuk keperluan tracking. dikirim.
       </p>
 
       <div class="submit-actions">
