@@ -14,7 +14,6 @@
       @else
         <p class="desc">
           Terima kasih. Data pendaftaran paten Anda telah berhasil dikirim.
-          Silakan simpan kode pengajuan berikut untuk keperluan tracking.
         </p>
       @endif
 

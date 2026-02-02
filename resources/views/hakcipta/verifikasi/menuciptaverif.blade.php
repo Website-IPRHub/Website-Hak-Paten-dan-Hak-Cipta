@@ -12,7 +12,7 @@
   <div class="section-inner judul-inner">
     <div class="judul-left">
       <h1 class="judul-title">
-        <i class="bi bi-file-earmark-text-fill"></i> Sistem Verifikasi Paten
+        <i class="bi bi-file-earmark-text-fill"></i> Sistem Verifikasi Hak Cipta
       </h1>
       <p class="judul-desc">Verifikasi & lengkapi dokumen hak cipta di sini.</p>
     </div>
