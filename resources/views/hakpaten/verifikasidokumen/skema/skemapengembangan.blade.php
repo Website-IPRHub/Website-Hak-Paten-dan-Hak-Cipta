@@ -5,7 +5,8 @@
 @section('content')
 <div class="judul">
   <h2>Skema Penelitian Pengembangan (TKT 7 - 9)</h2>
-  <p>Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.</p>
+  <p>Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.<br>
+Form ini diisi oleh Inventor 1</p>
 </div>
 
 @if(session('success'))

@@ -72,9 +72,9 @@ async function setupChartsIfAny() {
   }
 
   const THEME = {
-    paten: '#126782', // biru
+    paten: '#0D416E', // biru
     cipta: '#7697A0', // hijau
-    gold:  '#f59e0b', // aksen
+    gold:  '#B2D7F6', // aksen
     navy:  '#0b2c5f',
     grid:  'rgba(11,44,95,0.10)',
   };

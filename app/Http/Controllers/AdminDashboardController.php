@@ -660,9 +660,10 @@ class AdminDashboardController extends Controller
             DB::table('status_verifikasi')
                 ->where(['ref_type' => $type, 'ref_id' => $id])
                 ->update([
-                    'tanda_terima_pdf' => $path,
-                    'updated_at' => now(),
-                ]);
+  'tanda_terima_pdf' => $path,
+  'updated_at' => now(),
+]);
+
         }
         // ✅ ambil row pengajuan untuk email/wa
         if ($type === 'paten') {
@@ -685,10 +686,10 @@ class AdminDashboardController extends Controller
             DB::table('status_verifikasi')
                 ->where(['ref_type' => $type, 'ref_id' => $id])
                 ->update([
-                    'tanda_terima_pdf' => $path,
-                    'tanda_terima_generated_at' => now(),
-                    'updated_at' => now(),
-                ]);
+  'tanda_terima_pdf' => $path,
+  'updated_at' => now(),
+]);
+
 
             // refresh old supaya bawahnya kebaca sudah ada pdf
             $old->tanda_terima_pdf = $path;
@@ -1331,119 +1332,138 @@ class AdminDashboardController extends Controller
 
     return back()->with('success', 'Notifikasi dibaca.');
     }
-
+    
     private function generateTandaTerimaPdf(string $type, int $id): string
-    {
-        $meta = $this->getRowByType($type, $id);
+{
+    $meta = $this->getRowByType($type, $id);
 
-        // 1) template docx (taruh di: storage/app/templates/tanda_terima.docx)
-        $template = storage_path('app/templates/tanda_terima.docx');
-        if (!file_exists($template)) {
-            throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
+    $template = storage_path('app/templates/tanda_terima.docx');
+    if (!file_exists($template)) {
+        throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
+    }
+
+    $doc = new TemplateProcessor($template);
+
+    // ambil jenis + judul dari getRowByType()
+    $judul = trim((string)($meta['judul'] ?? '-')) ?: '-';
+    $jenis = trim((string)($meta['jenis'] ?? '-')) ?: '-';
+
+    if (strtolower($type) === 'cipta') {
+        if (strtolower(trim((string)($meta['jenis'] ?? ''))) === 'lainnya') {
+            $jenis = trim((string)($meta['jenis_lainnya'] ?? 'Lainnya')) ?: 'Lainnya';
         }
+    }
 
-        // 2) isi docx dari template
-        $doc = new TemplateProcessor($template);
+    $doc->setValue('jenis', $jenis);
+    $doc->setValue('judul', $judul);
 
-        // NOTE: placeholder di DOCX harus ${jenis} dan ${judul}
+    // tmp dir + tmp docx
+    $tmpDir = storage_path('app/tmp');
+    if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
 
-        // ==========================
-        // ✅ FIX: ambil "jenis" spesifik (bukan kategori paten/cipta)
-        // ==========================
-       // ==========================
-        // ✅ FIX: ambil "jenis" & "judul" yang benar
-        // ==========================
-        $jenis = '-';
-        $judul = '-';
+    $tmpDocx = $tmpDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.docx";
+    $doc->saveAs($tmpDocx);
 
-        if (strtolower($type) === 'paten') {
-            // JUDUL PATEN
-            $judul = $meta['judul_paten'] ?? ($meta['judul'] ?? '-');
+    // LibreOffice path
+    $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';;
+    if (!file_exists($soffice)) {
+        @unlink($tmpDocx);
+        throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
+    }
 
-            // JENIS PATEN (Paten / Paten Sederhana)
-            $jenis = $meta['jenis_paten'] ?? ($meta['jenis'] ?? '-');
-        } else {
-            // JUDUL CIPTA
-            $judul = $meta['judul_cipta'] ?? ($meta['judul'] ?? '-');
+    // ✅ convert ke folder TEMP yang pasti bisa ditulis
+    $convertOut = storage_path('app/lo_out');
+    if (!is_dir($convertOut)) mkdir($convertOut, 0777, true);
 
-            // JENIS CIPTA (Buku / Program Komputer / dll)
-            $jenis = $meta['jenis_cipta'] ?? ($meta['jenis'] ?? '-');
+    // ✅ profile khusus
+    $loProfile = storage_path('app/lo_profile');
+    if (!is_dir($loProfile)) mkdir($loProfile, 0777, true);
 
-            // kalau cipta pilih "Lainnya"
-            $jc = strtolower(trim((string)($meta['jenis_cipta'] ?? $meta['jenis'] ?? '')));
-            if ($jc === 'lainnya') {
-                $jenis = $meta['jenis_lainnya'] ?? 'Lainnya';
-            }
+    // LibreOffice lebih “suka” forward-slash
+    $sofficeArg = $soffice;
+    $tmpDocxArg = str_replace('\\', '/', $tmpDocx);
+    $outDirArg  = str_replace('\\', '/', $convertOut);
+    $profileUri = 'file:///' . str_replace('\\', '/', $loProfile);
+    $profileArg = '-env:UserInstallation=' . $profileUri;
+
+    $process = new \Symfony\Component\Process\Process([
+        $sofficeArg,
+        '--headless',
+        '--nologo',
+        '--nofirststartwizard',
+        '--nodefault',
+        '--norestore',
+        $profileArg,
+        '--convert-to', 'pdf:writer_pdf_Export',
+        '--outdir', $outDirArg,
+        $tmpDocxArg,
+    ]);
+
+    // ✅ ini sering ngaruh kalau jalan di Apache/Nginx service user
+    $process->setEnv([
+        'USERPROFILE' => $loProfile,
+        'APPDATA'     => $loProfile,
+        'TEMP'        => $loProfile,
+        'TMP'         => $loProfile,
+    ]);
+
+    $process->setTimeout(120);
+    $process->run();
+
+    // cari output pdf (LibreOffice kadang output namanya beda / casing beda)
+    $expectedPdf = $convertOut . DIRECTORY_SEPARATOR . pathinfo($tmpDocx, PATHINFO_FILENAME) . '.pdf';
+
+    $pdfPath = null;
+
+    if (file_exists($expectedPdf)) {
+        $pdfPath = $expectedPdf;
+    } else {
+        // fallback: ambil pdf terbaru dari convertOut
+        $pdfs = glob($convertOut . DIRECTORY_SEPARATOR . '*.pdf');
+        if ($pdfs) {
+            usort($pdfs, fn($a, $b) => filemtime($b) <=> filemtime($a));
+            $pdfPath = $pdfs[0];
         }
+    }
 
-        $jenis = trim((string)$jenis);
-        if ($jenis === '') $jenis = '-';
+    if (!$pdfPath || !file_exists($pdfPath)) {
+        // DEBUG: list isi folder biar ketahuan LO naro di mana / ada file lain
+        $outList = @scandir($convertOut) ?: [];
+        $tmpList = @scandir($tmpDir) ?: [];
 
-        $judul = trim((string)$judul);
-        if ($judul === '') $judul = '-';
-
-        $doc->setValue('jenis', $jenis);
-        $doc->setValue('judul', $judul);
-        // ==========================
-
-        // ==========================
-
-        // simpan docx sementara
-        $tmpDir = storage_path('app/tmp');
-        if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
-
-        $tmpDocx = $tmpDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.docx";
-        $doc->saveAs($tmpDocx);
-
-        // 3) convert ke PDF pakai LibreOffice
-        $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';
-        // kalau x86, pakai ini:
-        // $soffice = 'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe';
-
-        if (!file_exists($soffice)) {
-            throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
-        }
-
-        $outDir = storage_path('app/public/tanda_terima');
-        if (!is_dir($outDir)) mkdir($outDir, 0777, true);
-
-        $process = new Process([
-            $soffice,
-            '--headless',
-            '--nologo',
-            '--nofirststartwizard',
-            '--convert-to', 'pdf',
-            '--outdir', $outDir,
-            $tmpDocx,
-        ]);
-
-        $process->setTimeout(60);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new \Exception("Gagal convert DOCX ke PDF: " . $process->getErrorOutput());
-        }
-
-        // 4) hasil pdf dari LibreOffice biasanya: tanda_terima_type_id.pdf (nama docx sama)
-        $generatedPdf = $outDir . DIRECTORY_SEPARATOR . "tanda_terima_{$type}_{$id}.pdf";
-
-        if (!file_exists($generatedPdf)) {
-            // kadang LO bikin nama beda, fallback cari pdf terbaru
-            $pdfs = glob($outDir . DIRECTORY_SEPARATOR . "*.pdf");
-            rsort($pdfs);
-            if (!empty($pdfs)) $generatedPdf = $pdfs[0];
-        }
-
-        if (!file_exists($generatedPdf)) {
-            throw new \Exception("PDF tidak ditemukan setelah convert.");
-        }
-
-        // bersihin docx tmp
         @unlink($tmpDocx);
 
-        // return path untuk DB (relative ke disk public)
-        return "tanda_terima/" . basename($generatedPdf);
+        throw new \Exception(
+            "PDF tidak ditemukan setelah convert.\n" .
+            "ExitCode: " . $process->getExitCode() . "\n" .
+            "ErrorOutput: " . $process->getErrorOutput() . "\n" .
+            "Output: " . $process->getOutput() . "\n" .
+            "Isi convertOut: " . implode(', ', $outList) . "\n" .
+            "Isi tmpDir: " . implode(', ', $tmpList) . "\n"
+        );
     }
+
+    // ✅ pindah ke public storage (biar bisa diakses)
+    $finalDir = storage_path('app/public/tanda_terima');
+    if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
+
+    $finalName = "tanda_terima_{$type}_{$id}_" . now()->format('Ymd_His') . ".pdf";
+    $finalPath = $finalDir . DIRECTORY_SEPARATOR . $finalName;
+
+    // move (rename) kalau bisa, kalau beda drive fallback copy+unlink
+    if (!@rename($pdfPath, $finalPath)) {
+        if (!@copy($pdfPath, $finalPath)) {
+            @unlink($tmpDocx);
+            throw new \Exception("Gagal memindahkan PDF ke: {$finalPath}");
+        }
+        @unlink($pdfPath);
+    }
+
+    @unlink($tmpDocx);
+
+    return "tanda_terima/" . $finalName;
+}
+
 
     public function exportPatenExcel(Request $request)
     {
