@@ -186,10 +186,14 @@
 
                   {{-- PENDAFTARAN --}}
                   @if($isApprove)
-                    <a href="{{ $pengajuan->type === 'cipta'
-                          ? route('hakcipta.pendaftaran')
-                          : route('paten.pendaftaran') }}"
-                      class="pd-mini-btn outline">
+                    <a
+                      href="{{ $pengajuan->type === 'cipta'
+                              ? 'https://docs.google.com/forms/d/e/1FAIpQLSd2tIsKiNc_QdeMyXUHM4Aqb5daA8vZSCf2emeGdG7sYtDacg/viewform'
+                              : 'https://docs.google.com/forms/d/e/1FAIpQLScPxGrDYcArCH81GFcAx_guFztjEdd__UypVnDKBMNtB16A4w/viewform' }}"
+                      class="pd-mini-btn outline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Pendaftaran
                     </a>
                   @else
@@ -214,7 +218,7 @@
   </div>
 </main>
 
-{{-- ✅ MODAL AKUN (klik user -> muncul tengah) --}}
+{{--  MODAL AKUN (klik user -> muncul tengah) --}}
 <div class="pa-backdrop" id="paBackdrop" hidden></div>
 
 <div class="pa-modal" id="paModal" hidden role="dialog" aria-modal="true" aria-labelledby="paTitle">
@@ -251,7 +255,7 @@
 
       
 
-      {{-- ✅ INVENTOR (detail per inventor) taruh PALING BAWAH --}}
+      {{-- INVENTOR (detail per inventor) taruh PALING BAWAH --}}
       <div class="pa-wide" style="margin-top:10px;">
         <div class="pa-label">Inventor</div>
 
