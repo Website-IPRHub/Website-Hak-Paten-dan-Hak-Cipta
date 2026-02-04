@@ -30,7 +30,7 @@
               name="file"
               hidden
               required
-              accept=".doc,.docx"
+              accept=".doc,.docx,.pdf"
             >
 
             <button id="uploadButton" type="button" class="btn-upload">

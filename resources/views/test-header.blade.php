@@ -28,17 +28,17 @@
     <span class="label">Daftar Hak Cipta</span>
   </a>
 
-  <a href="{{ route('menucipta') }}" class="icon-btn industri">
+  <a href="{{ route('daftar') }}" class="icon-btn industri">
     <span class="icon"><i class="fa-solid fa-pen-ruler"></i></span>
     <span class="label">Daftar Desain Industri</span>
   </a>
 
-  <a href="{{ route('menucipta') }}" class="icon-btn dtlst">
+  <a href="{{ route('daftar') }}" class="icon-btn dtlst">
     <span class="icon"><i class="fa-solid fa-microchip"></i></span>
     <span class="label">Daftar Desain Tata Letak<br/>Sirkuit Terpadu</span>
   </a>
 
-  <a href="{{ route('menucipta') }}" class="icon-btn rahasia">
+  <a href="{{ route('daftar') }}" class="icon-btn rahasia">
     <span class="icon"><i class="fa-solid fa-user-secret"></i></span>
     <span class="label">Daftar Rahasia Dagang</span>
   </a>
@@ -48,7 +48,9 @@
   <div class="hero-card">
     <h1>Tentang KI Hub</h1>
     <p>
-      Bagian ini adalah abstrak yang digunakan sebagai sarana untuk menyampaikan benang merah dari isi laporan PKL jd ini adalah pppppp dsakajdijaeiorioeqiro kjHADsioqheroqoeur kwhdwqhruhqur akawhruhqweroieqjoijqeio IWIHRIOQHOIRHOIQHER IWEQROIEIQRIOEQHIOHIOEJ FIPWEJOIEHWTJWEOIJWTEEW EAOIFHWEIOTH9Een oiehoiehrreoiwqrj iehoiwtho8eeoi
+       KI Hub adalah pusat layanan terpadu pengelolaan Kekayaan Intelektual yang dirancang untuk mendukung dosen dan mahasiswa dalam melindungi serta mengelola hasil inovasi dan riset.<br>
+      Melalui KI Hub, proses pengajuan kekayaan intelektual menjadi lebih terstruktur, transparan, dan terdokumentasi dengan baik. <br>
+      Website ini hadir sebagai jembatan antara inovator dan sistem perlindungan hukum, sehingga setiap karya memiliki nilai, kepastian, dan dampak berkelanjutan.
     </p>
   </div>
 
@@ -63,7 +65,7 @@
     <div class="container-langkah-langkah">
         <h3>Langkah-Langkah Pendaftaran Paten / Hak Cipta</h3>
         <p>1. Lengkapi persyaratan pendaftaran Paten atau Hak Cipta sesuai yang tertera pada menu.</p>
-        <p>2. Print/cetak draft Paten/Hak Cipta yang telah diisi (tanpa meterai dan ttd), kemudian diajukan ke Bagian Inovasi, Gedung UPT Perpustakaan Lt 5 untuk diverifikasi kelengkapannya (mohon membawa laptop untuk koreksi di tempat).</p>
+        <p>2. Print/cetak draft Paten/Hak Cipta yang telah diisi (tanpa meterai dan ttd), kemudian diajukan ke Bagian Innovation Hub, Gedung UPT Perpustakaan Lt 5 untuk diverifikasi kelengkapannya (mohon membawa laptop untuk koreksi di tempat).</p>
         <p>3. Draft berkas Paten/Hak Cipta yang telah diverifikasi, mohon dilengkapi ttd semua inventor/pencipta dan meterai dan dikumpulkan ke Bagian Inovasi, Gedung UPT Perpustakaan lt 5, Pada jam kerja berikut Senin – Kamis 09.00 – 12.00 & 13.00 – 15.00 WIB dan Jumat 09.00 – 11.30 & 13.30 – 15.30 WIB (*Jam Pelayanan dapat berubah sewaktu waktu).</p>
         <p>4. Jika telah mendapat nomor urut, mohon mengisi kelengkapan data dan upload softfile pengajuan (tanpa meterai dan tanpa ttd) pada menu yang tersedia diatas. </p>
         <p>5. Surat Catatan Ciptaan Kekayaan Intelektual akan dikirimkan melalui email masing – masing pencipta.</p>

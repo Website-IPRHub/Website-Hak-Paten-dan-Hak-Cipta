@@ -22,7 +22,7 @@
                         enctype="multipart/form-data"
                     >
                         @csrf
-                        <input id="draftFile" type="file" name="file" hidden accept=".jpg,.jpeg,.png,.svg">
+                        <input id="draftFile" type="file" name="file" hidden accept=".jpg,.jpeg,.png,.svg,.pdf">
 
 
                         <button id="uploadButton" type="button" class="btn-upload">
@@ -30,12 +30,12 @@
                         </button>
 
                         <span id="fileName" class="file-name">
-  @if($verif->gambar_prototipe)
-    {{ basename($verif->gambar_prototipe) }}
-  @else
-    Belum pilih file
-  @endif
-</span>
+                            @if($verif->gambar_prototipe)
+                                {{ basename($verif->gambar_prototipe) }}
+                            @else
+                                Belum pilih file
+                            @endif
+                        </span>
 
 
                         {{-- submit beneran (disembunyikan, dipencet via JS setelah pilih file) --}}

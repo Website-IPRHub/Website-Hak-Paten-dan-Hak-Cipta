@@ -15,7 +15,7 @@
 
     <div class="judul-right">
       <div class="profile-badge">
-        <span>Kelengkapan Profile: {{ $percent }}%</span>
+        <span>Kelengkapan Formulir: {{ $percent }}%</span>
         <i class="bi bi-info-circle-fill"></i>
       </div>
 

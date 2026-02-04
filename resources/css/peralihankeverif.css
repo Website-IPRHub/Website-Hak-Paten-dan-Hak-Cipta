@@ -130,24 +130,24 @@
   align-self: center;
 }
 
-.btn-selanjutnya::after{
+.btn-verif::after{
 
   font-weight: 900;
   transform: translateY(-1px);
 }
 
-.btn-selanjutnya:hover{
+.btn-verif:hover{
   background: #637caf;
   transform: translateY(-2px);
   box-shadow: 0 16px 32px rgba(52,76,123,0.32);
 }
 
-.btn-selanjutnya:active{
+.btn-verif:active{
   transform: translateY(0);
   box-shadow: 0 10px 22px rgba(52,76,123,0.24);
 }
 
-.btn-selanjutnya:focus-visible{
+.btn-verif:focus-visible{
   outline: 3px solid rgba(99,124,175,0.55);
   outline-offset: 3px;
 }
@@ -173,7 +173,7 @@
     padding: 14px 14px 14px 14px;
   }
 
-  .btn-selanjutnya{
+  .btn-verif{
     width: 100%;
   }
 }

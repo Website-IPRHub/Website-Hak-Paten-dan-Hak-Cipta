@@ -39,7 +39,7 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/surat-permohonan', [
-            'required', 'file', 'mimes:doc,docx', 'max:10240'
+            'required', 'file', 'mimes:doc,docx,pdf', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
@@ -56,7 +56,7 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/surat-pernyataan', [
-            'required', 'file', 'mimes:doc,docx', 'max:10240'
+            'required', 'file', 'mimes:doc,docx,pdf', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([
@@ -73,7 +73,7 @@ class FileUploadCiptaController extends Controller
         $ciptaId = $this->ciptaIdOrAbort();
 
         $path = $this->storeFile($request, 'file', 'hakcipta/surat-pengalihan', [
-            'required', 'file', 'mimes:doc,docx', 'max:10240'
+            'required', 'file', 'mimes:doc,docx,pdf', 'max:10240'
         ]);
 
         HakCipta::where('id', $ciptaId)->update([

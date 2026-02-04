@@ -44,6 +44,8 @@ class PengalihanHakCiptaController extends Controller
             'inventor.email.*' => ['required', 'email', 'max:255'],
             'inventor.no_hp' => ['required', 'array'],
             'inventor.no_hp.*' => ['required', 'string', 'max:30'],
+
+            'download_format' => ['required', 'in:pdf,docx'],
         ]);
 
         $jumlah = (int) $data['jumlah_inventor'];
@@ -103,6 +105,40 @@ class PengalihanHakCiptaController extends Controller
         $out = sys_get_temp_dir() . '/hakcipta_' . uniqid() . '.docx';
         $tp->saveAs($out);
 
-        return response()->download($out, 'Surat Pengalihan Hak Cipta.docx')->deleteFileAfterSend(true);
+        $format = $data['download_format'];
+
+        if ($format === 'docx') {
+        return response()
+                    ->download($out, 'Surat Pengalihan Hak Cipta.docx')
+                    ->deleteFileAfterSend(true);
+        }
+
+        // === Convert DOCX 
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) {
+            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        }
+        if (!file_exists($soffice)) {
+            abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
+        }
+
+        $outDir  = dirname($out);
+        $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
+
+        // command (quotes penting di Windows)
+        $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
+            . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
+
+        $output = [];
+        $code = 0;
+        exec($cmd, $output, $code);
+
+        if ($code !== 0 || !file_exists($pdfPath)) {
+            abort(500, "Gagal convert PDF. ExitCode=$code\n" . implode("\n", $output));
+        }
+
+        return response()
+            ->download($pdfPath, 'Surat Pengalihan Hak Cipta.pdf')
+            ->deleteFileAfterSend(true);
     }
 }
