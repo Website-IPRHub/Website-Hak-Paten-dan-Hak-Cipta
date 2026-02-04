@@ -28,17 +28,17 @@
     <span class="label">Daftar Hak Cipta</span>
   </a>
 
-  <a href="{{ route('menucipta') }}" class="icon-btn industri">
+  <a href="{{ route('daftar') }}" class="icon-btn industri">
     <span class="icon"><i class="fa-solid fa-pen-ruler"></i></span>
     <span class="label">Daftar Desain Industri</span>
   </a>
 
-  <a href="{{ route('menucipta') }}" class="icon-btn dtlst">
+  <a href="{{ route('daftar') }}" class="icon-btn dtlst">
     <span class="icon"><i class="fa-solid fa-microchip"></i></span>
     <span class="label">Daftar Desain Tata Letak<br/>Sirkuit Terpadu</span>
   </a>
 
-  <a href="{{ route('menucipta') }}" class="icon-btn rahasia">
+  <a href="{{ route('daftar') }}" class="icon-btn rahasia">
     <span class="icon"><i class="fa-solid fa-user-secret"></i></span>
     <span class="label">Daftar Rahasia Dagang</span>
   </a>

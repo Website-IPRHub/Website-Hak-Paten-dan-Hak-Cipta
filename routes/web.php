@@ -157,6 +157,7 @@ Route::get('/header', fn () => view('test-header'))->name('test-header');
 Route::get('/hak-paten', fn () => view('hakpaten.menuhakpaten'))->name('menuhakpaten');
 
 Route::get('/hak-cipta/form', fn () => view('hakcipta.menucipta'))->name('menucipta');
+Route::get('/test-header', fn () => view('daftar'))->name('daftar');
 Route::get('/hak-paten/form', fn () => view('hakpaten.hakpaten'))->name('hakpaten');
 
 Route::get('/hak-cipta', fn () => view('hakcipta.hakcipta'))->name('hakcipta');
