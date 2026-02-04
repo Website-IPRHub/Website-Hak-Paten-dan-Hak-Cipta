@@ -37,6 +37,8 @@ class PengalihanHakController extends Controller
             'inventor.pekerjaan.*'        => ['required', 'string', 'max:100'],
             'inventor.alamat.*'           => ['required', 'string'],
             'inventor.kode_pos.*'         => ['required', 'string', 'max:20'],
+
+            'download_format' => ['required', 'in:pdf,docx'],
         ]);
 
         $jumlah = (int) $data['jumlah_inventor'];
@@ -59,7 +61,6 @@ class PengalihanHakController extends Controller
 
         /**
          * === 1) CLONE tabel inventor ===
-         * Pastikan di DOCX ada placeholder ${nama_lengkap} di row template tabel.
          */
 
         // === CLONE IDENTITAS INVENTOR (atas) pakai BLOCK ===
@@ -77,7 +78,7 @@ class PengalihanHakController extends Controller
 
 
 
-        // CLONE daftar bawah (bukan tabel, bukan ttd)
+        // CLONE daftar bawah 
         $tp->cloneBlock('list_inventor', $jumlah, true, true);
 
         for ($i = 1; $i <= $jumlah; $i++) {
@@ -91,6 +92,40 @@ class PengalihanHakController extends Controller
         $out = tempnam(sys_get_temp_dir(), 'invensi_') . '.docx';
         $tp->saveAs($out);
 
-        return response()->download($out, 'Surat Pernyataan Pengalihan Hak.docx')->deleteFileAfterSend(true);
+        $format = $data['download_format'];
+
+        if ($format === 'docx') {
+        return response()
+                    ->download($out, 'Surat Pernyataan Pengalihan Hak.docx')
+                    ->deleteFileAfterSend(true);
+        }
+
+        // === Convert DOCX 
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) {
+            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        }
+        if (!file_exists($soffice)) {
+            abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
+        }
+
+        $outDir  = dirname($out);
+        $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
+
+        // command (quotes penting di Windows)
+        $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
+            . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
+
+        $output = [];
+        $code = 0;
+        exec($cmd, $output, $code);
+
+        if ($code !== 0 || !file_exists($pdfPath)) {
+            abort(500, "Gagal convert PDF. ExitCode=$code\n" . implode("\n", $output));
+        }
+
+        return response()
+            ->download($pdfPath, 'Surat Pernyataan Pengalihan Hak.pdf')
+            ->deleteFileAfterSend(true);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class IsiformController extends Controller
 {
@@ -46,6 +48,9 @@ class IsiformController extends Controller
             'lampiran' => ['nullable', 'array'],
             'lampiran.*' => ['in:surat_kuasa,pengalihan,bukti_pemilikan,do_eo,dok_prioritas,dok_pct,jasad_renik,dok_lain'],
             'lampiran_lainnya' => ['nullable', 'string', 'max:1000'],
+
+            'download_format' => ['required', 'in:pdf,docx'],
+
         ]);
 
         // validasi jumlah inventor vs inventor[]
@@ -57,6 +62,7 @@ class IsiformController extends Controller
         if ($action !== 'download') {
             return back()->with('success', 'OK')->withInput();
         }
+
 
         // ===== TEMPLATE PATH =====
         $templatePath = public_path('templates/Form Daftar Paten (2025).docx');
@@ -182,6 +188,42 @@ class IsiformController extends Controller
         $out = tempnam(sys_get_temp_dir(), 'paten_') . '.docx';
         $tp->saveAs($out);
 
-        return response()->download($out, 'Form Daftar Paten (2025).docx')->deleteFileAfterSend(true);
+        $format = $data['download_format'];
+
+        if ($format === 'docx') {
+            return response()
+                ->download($out, 'Form Daftar Paten (2025).docx')
+                ->deleteFileAfterSend(true);
+        }
+
+        // === Convert DOCX -> PDF
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) {
+            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        }
+        if (!file_exists($soffice)) {
+            abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
+        }
+
+        $outDir  = dirname($out);
+        $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
+
+        // command (quotes penting di Windows)
+        $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
+            . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
+
+        $output = [];
+        $code = 0;
+        exec($cmd, $output, $code);
+
+        if ($code !== 0 || !file_exists($pdfPath)) {
+            abort(500, "Gagal convert PDF. ExitCode=$code\n" . implode("\n", $output));
+        }
+
+        return response()
+            ->download($pdfPath, 'Form Daftar Paten (2025).pdf')
+            ->deleteFileAfterSend(true);
+
+
     }
 }
