@@ -4,6 +4,12 @@
   p { margin: 0; opacity: 0.8; }
 }
 
+.judul p {
+  font-family: 'inter', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+}
+
 .alert-success {
   margin: 12px 40px;
   color: #0a7a2f;
@@ -234,7 +240,6 @@ a#nextLink.btn-selanjutnya,
   padding: var(--btn-pad-y) var(--btn-pad-x) !important;
   border-radius: var(--btn-radius) !important;
 
-  background: var(--btn-bg) !important;
   color: var(--btn-text) !important;
 
   font-family: 'Inter', sans-serif !important;

@@ -5,8 +5,9 @@
 @section('content')
 <div class="judul">
   <h2>Skema Penelitian Pengembangan (TKT 7 - 9)</h2>
-  <p>Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.<br>
-Form ini diisi oleh Inventor 1</p>
+  <p>Catatan: Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.<br>
+      Form ini diisi oleh Inventor 1 (Dosen)</p>
+<p>Upload surat pernyataan skema pengembangan HARUS sudah dilengkapi dengan tanda tangan dan bermaterai</p>
 </div>
 
 @if(session('success'))
@@ -25,7 +26,7 @@ Form ini diisi oleh Inventor 1</p>
     <div class="col">
       <div class="field">
         <label class="label">Nama Lengkap <span class="req">*</span></label>
-        <input class="input" name="nama_lengkap" placeholder="Masukkan nama lengkap"
+        <input class="input" name="nama_lengkap" placeholder="Masukkan nama lengkap Dosen (Inventor 1)"
                value="{{ old('nama_lengkap') }}" required>
         @error('nama_lengkap') <small class="error">{{ $message }}</small> @enderror
       </div>
@@ -49,8 +50,16 @@ Form ini diisi oleh Inventor 1</p>
     <div class="col">
       <div class="field">
         <label class="label">NIDN/NIP <span class="req">*</span></label>
-        <input class="input" name="nidn_nip" placeholder="Masukkan NIDN/NIP"
-               value="{{ old('nidn_nip') }}" required>
+        <input
+                        type="text"
+                        class="input nidn-nip-input"
+                        name="nidn_nip"
+                        placeholder="Masukkan NIDN/NIP Anda"
+                        required
+                      >
+                      <small class="nip-warning">
+                        NIDN/NIP harus terdiri dari 8 atau 18 digit angka
+                      </small>
         @error('nidn_nip') <small class="error">{{ $message }}</small> @enderror
       </div>
 
@@ -101,28 +110,27 @@ Form ini diisi oleh Inventor 1</p>
   </div>
 
   <div class="actions-right">
-    {{-- FORM UPLOAD (verif) --}}
-<div class="button-upload">
-  <form id="draftForm"
-        action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
-        method="POST" enctype="multipart/form-data">
-    @csrf
-
-    <input id="draftFile"
-           type="file"
-           name="file"
-           required
-           hidden
-           accept=".doc,.docx">
-
-    <button id="uploadButton" type="button" class="btn-upload">Upload</button>
-    <span id="fileName">Belum Pilih File</span>
-  </form>
-</div>
-
-
     {{-- tombol unduh submit ke form download --}}
     <button class="unduh" type="submit" form="downloadForm">Unduh</button>
+
+    {{-- FORM UPLOAD (verif) --}}
+    <div class="button-upload">
+      <form id="draftForm"
+            action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
+            method="POST" enctype="multipart/form-data">
+        @csrf
+
+        <input id="draftFile"
+              type="file"
+              name="file"
+              required
+              hidden
+              accept=".doc,.docx">
+
+        <button id="uploadButton" type="button" class="btn-upload">Upload</button>
+        <span id="fileName">Belum Pilih File</span>
+      </form>
+    </div>
   </div>
 </div>
 

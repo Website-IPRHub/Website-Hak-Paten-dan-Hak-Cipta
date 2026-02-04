@@ -76,7 +76,11 @@ class SkemaController extends Controller
             'nama_lengkap'      => ['required', 'string', 'max:255'],
             'program_studi'     => ['required', 'string', 'max:255'],
             'judul_paten'       => ['required', 'string', 'max:255'],
-            'nidn_nip'          => ['required', 'string', 'max:255'],
+           'nidn_nip' => [
+    'required',
+    'regex:/^(\d{8}|\d{18})$/'
+],
+
             'fakultas'          => ['required', 'string', 'max:255'],
             'tanggal_pengisian' => ['required', 'date'],
         ]);

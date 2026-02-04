@@ -41,9 +41,6 @@
               value="{{ old('jumlah_inventor', 1) }}"
               required
             >
-            @error('jumlah_inventor')
-              <small style="color:red">{{ $message }}</small>
-            @enderror
           </div>
 
           {{-- Jenis Hak Cipta (radio) --}}
@@ -183,7 +180,16 @@
 
                 <div class="field">
                   <label class="label">NIP/NIM <span class="req">*</span></label>
-                  <input type="text" class="input" name="inventor[nip_nim][]" placeholder="Masukkan NIP/NIM Anda" required>
+                  <input
+                        type="text"
+                        class="input nip-input"
+                        name="inventor[nip_nim][]"
+                        placeholder="Masukkan NIP/NIM Anda"
+                        required
+                      >
+                      <small class="nip-warning">
+                        NIP/NIM harus terdiri dari 14 atau 18 digit angka
+                      </small>
                 </div>
 
                 <div class="field">
@@ -217,6 +223,20 @@
                   <label class="label">Email <span class="req">*</span></label>
                   <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required>
                 </div>
+
+                <div class="field nidn-wrap" style="display:none;">
+                  <label class="label">NIDN <span class="req">*</span></label>
+                  <input
+                    type="text"
+                    class="input nidn-input"
+                    name="inventor[nidn][]"
+                    placeholder="8 digit NIDN"
+                  >
+                  <small class="nidn-warning">
+                    NIDN harus 8 digit angka
+                  </small>
+                </div>
+
 
                 <div class="field">
                   <label class="label">Status <span class="req">*</span></label>
@@ -290,5 +310,6 @@
     </form>
   </div>
 </section>
+
 
 @endsection

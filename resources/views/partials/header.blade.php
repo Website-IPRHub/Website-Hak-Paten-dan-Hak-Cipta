@@ -43,7 +43,7 @@
             </nav>
 
         <a href="#" class="nav-button">
-            Pendaftaran Kekayaan Intelektual (Paten / Hak Cipta)
+            Pendaftaran Kekayaan Intelektual
         </a>
     </div>
 

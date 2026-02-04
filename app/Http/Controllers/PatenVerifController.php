@@ -20,6 +20,8 @@ class PatenVerifController extends Controller
 
         $jumlah = (int) $request->input('jumlah_inventor', 1);
         $jumlah = max(1, min(20, $jumlah));
+                //eror
+        $messages = ['inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',];
 
         $validated = $request->validate([
             'jumlah_inventor'  => ['required', 'integer', 'min:1', 'max:20'],
@@ -35,17 +37,56 @@ class PatenVerifController extends Controller
             'inventor.status'        => ['required', 'array', "size:$jumlah"],
 
             'inventor.nama.*'        => ['required', 'string', 'max:255'],
-            'inventor.nip_nim.*'     => ['required', 'string', 'max:255'],
+            'inventor.nip_nim.*'     => ['required', 'regex:/^.{14}$|^.{18}$/'],
             'inventor.fakultas.*'    => empty($enumFakultas) ? ['required','string'] : ['required', Rule::in($enumFakultas)],
             'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
             'inventor.email.*'       => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
+            'inventor.nidn'   => ['required', 'array', "size:$jumlah"],
+            'inventor.nidn.*' => ['nullable', 'string', 'max:255'],
+
 
             'prototipe'        => ['required', 'in:Sudah,Belum'],
             'nilai_perolehan'  => ['required', 'string', 'max:255'],
             'sumber_dana'      => empty($enumSumberDana) ? ['required','string'] : ['required', Rule::in($enumSumberDana)],
             'skema_penelitian' => ['required', 'string', 'max:255'],
-        ]);
+        ], $messages);
+
+        if (($validated['inventor']['status'][0] ?? null) !== 'Dosen') {
+            return back()->withErrors([
+                'inventor.status.0' => 'Inventor pertama wajib berstatus Dosen'
+            ])->withInput();
+        }
+
+        if (empty($validated['inventor']['nidn'][0])) {
+            return back()->withErrors([
+                'inventor.nidn.0' => 'NIDN wajib diisi untuk inventor pertama'
+            ])->withInput();
+        }
+
+        for ($i = 1; $i < $jumlah; $i++) {
+            if (
+                ($validated['inventor']['status'][$i] ?? null) === 'Dosen'
+                && empty($validated['inventor']['nidn'][$i])
+            ) {
+                return back()->withErrors([
+                    "inventor.nidn.$i" => "NIDN wajib diisi untuk inventor ke-" . ($i + 1)
+                ])->withInput();
+            }
+
+            if (
+                ($validated['inventor']['status'][$i] ?? null) === 'Mahasiswa'
+                && !empty($validated['inventor']['nidn'][$i])
+            ) {
+                return back()->withErrors([
+                    "inventor.nidn.$i" => "Mahasiswa tidak boleh memiliki NIDN"
+                ])->withInput();
+            }
+        }
+
+        $validated['inventor']['status'][0] = 'Dosen';
+
+
 
         // build inventors JSON
         $inventors = [];
@@ -58,10 +99,14 @@ class PatenVerifController extends Controller
                 'no_hp'    => trim((string) $validated['inventor']['no_hp'][$i]),
                 'email'    => trim((string) $validated['inventor']['email'][$i]),
                 'status'   => trim((string) $validated['inventor']['status'][$i]),
+                'nidn' => trim((string) ($validated['inventor']['nidn'][$i] ?? '')),
+
             ];
         }
 
         $fakultas = $inventors[0]['fakultas'] ?? null;
+        
+
 
         $payload = [
             'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
@@ -122,6 +167,9 @@ class PatenVerifController extends Controller
 
         $jumlah = (int) $request->input('jumlah_inventor', 1);
         $jumlah = max(1, min(20, $jumlah));
+        $messages = [
+    'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
+];
 
         $validated = $request->validate([
             'jumlah_inventor'  => ['required', 'integer', 'min:1', 'max:20'],
@@ -137,20 +185,59 @@ class PatenVerifController extends Controller
             'inventor.status'        => ['required', 'array', "size:$jumlah"],
 
             'inventor.nama.*'        => ['required', 'string', 'max:255'],
-            'inventor.nip_nim.*'     => ['required', 'string', 'max:255'],
+            'inventor.nip_nim.*'     => ['required', 'regex:/^.{14}$|^.{18}$/'],
             'inventor.fakultas.*'    => empty($enumFakultas) ? ['required','string'] : ['required', Rule::in($enumFakultas)],
             'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
             'inventor.email.*'       => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
+            'inventor.nidn'   => ['required', 'array', "size:$jumlah"],
+            'inventor.nidn.*' => ['nullable', 'string', 'max:255'],
+
 
             'prototipe'        => ['required', 'in:Sudah,Belum'],
             'nilai_perolehan'  => ['required', 'string', 'max:255'],
             'sumber_dana'      => empty($enumSumberDana) ? ['required','string'] : ['required', Rule::in($enumSumberDana)],
             'skema_penelitian' => ['required', 'string', 'max:255'],
-        ]);
+        ], $messages);
+
+        // Inventor pertama wajib DOSEN
+        if (($validated['inventor']['status'][0] ?? null) !== 'Dosen') {
+            return back()
+                ->withErrors(['inventor.status.0' => 'Inventor pertama wajib berstatus Dosen'])
+                ->withInput();
+        }
+
+        // Inventor pertama wajib NIDN
+        if (empty($validated['inventor']['nidn'][0])) {
+            return back()
+                ->withErrors(['inventor.nidn.0' => 'NIDN wajib diisi untuk inventor pertama'])
+                ->withInput();
+        }
+
+        // Inventor ke-2 dan seterusnya
+        for ($i = 1; $i < $jumlah; $i++) {
+            if (
+                ($validated['inventor']['status'][$i] ?? null) === 'Dosen'
+                && empty($validated['inventor']['nidn'][$i])
+            ) {
+                return back()
+                    ->withErrors([
+                        "inventor.nidn.$i" => "NIDN wajib diisi untuk inventor ke-" . ($i + 1)
+                    ])
+                    ->withInput();
+            }
+        }
+
+        $validated['inventor']['status'][0] = 'Dosen';
+
 
         $inventors = [];
         for ($i = 0; $i < $jumlah; $i++) {
+
+            if (($validated['inventor']['status'][$i] ?? null) === 'Mahasiswa') {
+                $validated['inventor']['nidn'][$i] = '';
+            }
+
             $inventors[] = [
                 'urut'     => $i + 1,
                 'nama'     => trim((string) $validated['inventor']['nama'][$i]),
@@ -159,8 +246,13 @@ class PatenVerifController extends Controller
                 'no_hp'    => trim((string) $validated['inventor']['no_hp'][$i]),
                 'email'    => trim((string) $validated['inventor']['email'][$i]),
                 'status'   => trim((string) $validated['inventor']['status'][$i]),
+                'nidn' => trim((string) ($validated['inventor']['nidn'][$i] ?? '')),
+
             ];
         }
+
+        
+
 
         $payload = [
             'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
