@@ -1,12 +1,12 @@
 /* ===== Footer Base ===== */
 .site-footer{
-  margin-top: 80px;
+  margin-top: 0;
   font-family: Inter, sans-serif;
 }
 
 /* ===== Top ===== */
 .footer-top{
-  background: #03061F;
+  background: #0c113b;
 }
 
 .footer-inner{

@@ -4,34 +4,60 @@
 
 @section('content')
 
-
+<div class="content-y">
   <div class="hero">
-    <img src="{{ asset('images/Gedung-WP.jpg') }}" class="hero-img" alt="gedung">
+  <img src="{{ asset('images/bg2.jpg') }}" class="hero-img" alt="gedung">
 
-    <div class="hero-text">
-      <h1>Selamat Datang</h1>
-      <h2>di Pendaftaran Kekayaan Intelektual (Paten / Cipta)</h2>
-    </div>
+  <div class="hero-text">
+    <h1>Selamat Datang</h1>
+    <h2>di KI Hub Universitas Diponegoro</h2>
+  </div>
+</div>
 
+  <div class="hero-daftar">
+    <h3>Ayo daftarkan KI Anda</h3>
+    <div class="hero-buttons-center icon-menu">
+      <div class="hero-buttons-center icon-menu">
+  <a href="{{ route('menuhakpaten') }}" class="icon-btn paten">
+    <span class="icon"><i class="fa-solid fa-lightbulb"></i></span>
+    <span class="label">Daftar Paten</span>
+  </a>
+
+  <a href="{{ route('menucipta') }}" class="icon-btn cipta">
+    <span class="icon"><i class="fa-regular fa-copyright"></i></span>
+    <span class="label">Daftar Hak Cipta</span>
+  </a>
+
+  <a href="{{ route('menucipta') }}" class="icon-btn industri">
+    <span class="icon"><i class="fa-solid fa-pen-ruler"></i></span>
+    <span class="label">Daftar Desain Industri</span>
+  </a>
+
+  <a href="{{ route('menucipta') }}" class="icon-btn dtlst">
+    <span class="icon"><i class="fa-solid fa-microchip"></i></span>
+    <span class="label">Daftar Desain Tata Letak<br/>Sirkuit Terpadu</span>
+  </a>
+
+  <a href="{{ route('menucipta') }}" class="icon-btn rahasia">
+    <span class="icon"><i class="fa-solid fa-user-secret"></i></span>
+    <span class="label">Daftar Rahasia Dagang</span>
+  </a>
+</div>
+
+    <!-- CARD PUTIH DI TENGAH GAMBAR -->
+  <div class="hero-card">
+    <h1>Tentang KI Hub</h1>
+    <p>
+      Bagian ini adalah abstrak yang digunakan sebagai sarana untuk menyampaikan benang merah dari isi laporan PKL jd ini adalah pppppp dsakajdijaeiorioeqiro kjHADsioqheroqoeur kwhdwqhruhqur akawhruhqweroieqjoijqeio IWIHRIOQHOIRHOIQHER IWEQROIEIQRIOEQHIOHIOEJ FIPWEJOIEHWTJWEOIJWTEEW EAOIFHWEIOTH9Een oiehoiehrreoiwqrj iehoiwtho8eeoi
+    </p>
   </div>
-  <div class="panduan-hki">
-    <h2>
-      <a href="https://drive.google.com/file/d/1eLTA7Uw_9ykRL43qV6G7wLcHZA2nlVdK/view" target="_blank">Panduan Kekayaan Intelektual
-      </a>
-    </h2>
-  </div>
+
   <div class="hero-search">
     <form action="{{ route('tracking') }}" method="GET" class="search-form">
       <input type="text" name="q" class="search-input" placeholder="Masukkan No Pengajuan (contoh: EC00XXXXXXXXX)" value="{{ request('q') }}" required>
       <button type="submit" class="search-btn">Cek Status Verifikasi</button>
     </form>
   </div>
-  <div class="hero-daftar">
-    <h3>Daftarkan Karya Anda, Wujudkan Kontribusi Nyata</h3>
-    <div class="hero-buttons-center">
-        <a href="{{ route('menuhakpaten') }}" class="btn-hak-paten">Hak Paten</a>
-        <a href="{{ route('menucipta') }}" class="btn-hak-cipta">Hak Cipta</a>
-    </div>
   </div>
   <div class="container-langkah">
     <div class="container-langkah-langkah">
@@ -57,4 +83,6 @@
         <p>8. Informasi lebih lanjut dapat menghubungi melalui Call Center 0811-3848-555 pada hari-jam kerja 07.30-16.00 WIB.</p>
     </div>
   </div>
+</div>
 @endsection
+

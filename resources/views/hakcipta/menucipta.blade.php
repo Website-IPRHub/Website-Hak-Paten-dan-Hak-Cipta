@@ -31,9 +31,19 @@
     </div>
    </div>
 
-    <div class="button-daftar-ptn">
-      <h3>Siap Daftarkan Ciptaan Anda?</h3>
-      <a href="{{ route('hakcipta.isiform.formpendaftaran') }}" class="btn-dftr">Daftar Cipta</a>
+    <div class="cta-row">
+      <div class="panduan-hki">
+        <h2>
+          <a href="https://drive.google.com/file/d/1eLTA7Uw_9ykRL43qV6G7wLcHZA2nlVdK/view" target="_blank">
+            Panduan Kekayaan Intelektual
+          </a>
+        </h2>
+      </div>
+
+      <div class="button-daftar-ptn">
+        <h3>Siap Daftarkan Ciptaan Anda?</h3>
+        <a href="{{ route('hakcipta.isiform.formpendaftaran') }}" class="btn-dftr">Daftar Paten</a>
+      </div>
     </div>
   </div>
 </div>
