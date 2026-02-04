@@ -135,7 +135,7 @@
               name="file"
               required
               hidden
-              accept=".doc,.docx">
+              accept=".doc,.docx,.pdf">
 
         <button id="uploadButton" type="button" class="btn-upload">Upload</button>
         <span id="fileName">Belum Pilih File</span>
