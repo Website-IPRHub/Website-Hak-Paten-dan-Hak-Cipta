@@ -111,7 +111,17 @@
 
   <div class="actions-right">
     {{-- tombol unduh submit ke form download --}}
-    <button class="unduh" type="submit" form="downloadForm">Unduh</button>
+    <div class="actions-right2" style="display:flex; gap:10px; align-items:center;">
+        <select form="downloadForm" name="download_format" class="input" style="width:160px;">
+          <option value="pdf"  {{ old('download_format','pdf')=='pdf' ? 'selected' : '' }}>PDF</option>
+          <option value="docx" {{ old('download_format')=='docx' ? 'selected' : '' }}>DOCX</option>
+        </select>
+
+        <button form="downloadForm" class="unduh" type="submit" name="action" value="download">
+          Unduh
+        </button>
+
+      </div>
 
     {{-- FORM UPLOAD (verif) --}}
     <div class="button-upload">

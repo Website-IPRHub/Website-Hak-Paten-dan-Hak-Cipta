@@ -76,13 +76,10 @@ class SkemaController extends Controller
             'nama_lengkap'      => ['required', 'string', 'max:255'],
             'program_studi'     => ['required', 'string', 'max:255'],
             'judul_paten'       => ['required', 'string', 'max:255'],
-           'nidn_nip' => [
-    'required',
-    'regex:/^(\d{8}|\d{18})$/'
-],
-
+            'nidn_nip'          => ['required', 'regex:/^(\d{8}|\d{18})$/'],
             'fakultas'          => ['required', 'string', 'max:255'],
             'tanggal_pengisian' => ['required', 'date'],
+            'download_format'   => ['required', 'in:pdf,docx'],   // <--- baru
         ]);
 
         $templatePath = public_path('templates/Surat Pernyatan TKT 7-9.docx');
@@ -99,13 +96,48 @@ class SkemaController extends Controller
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id')->translatedFormat('d F Y');
         $tp->setValue('tanggal_pengisian', $tgl);
 
+        // generate DOCX temp
         $out = tempnam(sys_get_temp_dir(), 'tkt_') . '.docx';
         $tp->saveAs($out);
 
+        // ===== DOCX =====
+        if ($data['download_format'] === 'docx') {
+            return response()
+                ->download($out, 'Surat Pernyataan TKT 7-9.docx')
+                ->deleteFileAfterSend(true);
+        }
+
+        // ===== PDF (convert dari DOCX template via LibreOffice) =====
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) {
+            $soffice = 'D:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        }
+        if (!file_exists($soffice)) {
+            abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
+        }
+
+        $outDir  = dirname($out);
+        $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
+
+        $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
+            . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
+
+        $output = [];
+        $code = 0;
+        exec($cmd, $output, $code);
+
+        if ($code !== 0 || !file_exists($pdfPath)) {
+            @unlink($out);
+            abort(500, "Gagal convert PDF. ExitCode=$code\n" . implode("\n", $output));
+        }
+
+        @unlink($out); 
+
         return response()
-            ->download($out, 'Surat Pernyataan TKT 7-9.docx')
+            ->download($pdfPath, 'Surat Pernyataan TKT 7-9.pdf')
             ->deleteFileAfterSend(true);
     }
+
 
     private function handleUpload(
         Request $request,
@@ -115,7 +147,7 @@ class SkemaController extends Controller
         string $fallbackRedirect,
     ) {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $file = $request->file('file');
