@@ -33,7 +33,7 @@
               hidden
               required
               accept=".doc,.docx,.pdf"
-              data-allowed="doc,docx,.pdf"
+              data-allowed="doc,docx,pdf"
               data-max-mb="10"
             >
 

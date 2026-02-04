@@ -311,7 +311,7 @@ class PatenVerifController extends Controller
     public function uploadDraft(Request $request, PatenVerif $verif)
 {
     $request->validate([
-        'file' => ['required', 'file', 'mimes:doc,docx', 'max:5120'],
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:5120'],
     ]);
 
     $path = $this->storeUploadedOriginalName($request, 'verif/draft');
@@ -406,7 +406,7 @@ public function deskripsiprodukverif(PatenVerif $verif){
     public function uploadForm(Request $request, PatenVerif $verif)
 {
     $request->validate([
-        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
     ]);
 
     $path = $this->storeUploadedOriginalName($request, 'verif/form_permohonan');
@@ -420,7 +420,7 @@ public function deskripsiprodukverif(PatenVerif $verif){
     public function uploadInvensi(Request $request, PatenVerif $verif)
 {
     $request->validate([
-        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
     ]);
 
     $path = $this->storeUploadedOriginalName($request, 'verif/surat_kepemilikan');
@@ -433,7 +433,7 @@ public function deskripsiprodukverif(PatenVerif $verif){
     public function uploadPengalihan(Request $request, PatenVerif $verif)
 {
     $request->validate([
-        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
     ]);
 
     $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
@@ -465,7 +465,7 @@ public function deskripsiprodukverif(PatenVerif $verif){
     public function uploadGambarr(Request $request, PatenVerif $verif)
 {
     $request->validate([
-        'file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg', 'max:10240'],
+        'file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,pdf', 'max:10240'],
     ]);
 
     if ($request->hasFile('file')) {

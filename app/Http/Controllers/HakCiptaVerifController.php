@@ -287,7 +287,7 @@ class HakCiptaVerifController extends Controller
     public function uploadSuratPermohonan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_permohonan');
@@ -299,7 +299,7 @@ class HakCiptaVerifController extends Controller
     public function uploadSuratPernyataan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_pernyataan');
@@ -311,7 +311,7 @@ class HakCiptaVerifController extends Controller
     public function uploadSuratPengalihan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
