@@ -124,6 +124,8 @@
 .btn-dftr:hover{ transform: translateY(-2px); opacity: 0.95; }
 .btn-dftr:active{ transform: translateY(0); }
 
+
+
 /* ni buat responsive */
 @media (max-width: 900px){
   .hero-layout{
@@ -149,4 +151,39 @@
     margin-right: 0;
     gap: 10px;
   }
+}
+
+/* Biar panduan gak ikut style h2 gede */
+.panduan-hki h2{
+  margin: 0;
+  font-size: 0; /* matiin pengaruh font-size h2 */
+}
+.panduan-hki{
+  margin: 0; /* reset */
+  margin-bottom: 20px;
+  margin-left: 50px;
+}
+
+.panduan-hki a{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 15px;
+  background: #6883ac;
+  border: 2px solid #d1d5db;
+  color: #fff;
+  text-decoration: none;
+  font: 700 18px "Inter", sans-serif;
+  white-space: nowrap;
+}
+
+
+.panduan-hki a:hover{
+  transform: translateY(-2px);
+  opacity: .95;
+}
+
+.panduan-hki a:active{
+  transform: translateY(0);
 }

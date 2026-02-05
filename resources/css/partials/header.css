@@ -54,6 +54,46 @@
   object-fit: contain;
 }
 
+/* ====== LOGO DIGEDEIN ====== */
+.brand-logo-wrap{
+  height: 64px;      /* tadinya 52px */
+  width: 140px;      /* tadinya 100px */
+  padding: 8px 14px; /* tadinya 6px 10px */
+}
+
+/* opsional: kalau masih kekecilan, naikin lagi */
+.brand-logo{
+  transform: scale(1.05);
+  transform-origin: center;
+}
+
+
+/* ====== NAVBAR HEIGHT BIAR PAS SAMA LOGO ====== */
+.navbar-inner{
+  height: 84px; /* tadinya 72px */
+}
+
+
+/* ====== HURUF NAV DIGEDEIN ====== */
+.nav-link{
+  font-size: 18px;  /* tadinya 13px */
+  padding: 10px 6px; /* biar area klik lebih enak */
+}
+
+.nav-button{
+  font-size: 15px;  /* tadinya 13px */
+  padding: 12px 16px; /* tadinya 10px 12px */
+}
+
+
+/* ====== (opsional) TOPBAR TEXT DIGEDEIN ====== */
+.topbar{
+  font-size: 13px; /* tadinya 12px */
+}
+.topbar-inner{
+  height: 40px; /* tadinya 36px */
+}
+
 
 .nav-right{
   margin-left: auto;          
@@ -90,4 +130,17 @@
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* khusus logo UNDIP berdampak (anjangin) */
+.brand-logo-wrap--impact{
+  width: 240px;       /* bikin lebih panjang */
+  height: 64px;       /* samain dengan logo utama yang udah digedein */
+  padding: 8px 16px;
+}
+
+/* biar gambar banner panjang kebaca, jangan terlalu nge-zoom */
+.brand-logo--impact{
+  transform: scale(1);      /* override dari transform 1.05 */
+  object-fit: contain;
 }

@@ -35,18 +35,38 @@ class HakCiptaVerifController extends Controller
             'inventor.no_hp'         => ['required', 'array', "size:$jumlah"],
             'inventor.email'         => ['required', 'array', "size:$jumlah"],
             'inventor.status'        => ['required', 'array', "size:$jumlah"],
+            'inventor.nidn' => ['nullable', 'array'],
 
             'inventor.nama.*'        => ['required', 'string', 'max:255'],
-            'inventor.nip_nim.*'     => ['required', 'string', 'max:255'],
+            'inventor.nip_nim.*'     => ['required', 'regex:/^.{14}$|^.{18}$/'],
             'inventor.fakultas.*'    => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
             'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
             'inventor.email.*'       => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
+            'inventor.nidn' => ['nullable', 'array'],
+
 
             'nilai_perolehan'  => ['required', 'string', 'max:255'],
             'sumber_dana'      => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
             'skema_penelitian' => ['required', 'string', 'max:255'],
         ]);
+
+        foreach ($validated['inventor']['status'] as $i => $status) {
+            $nidn = trim((string) ($validated['inventor']['nidn'][$i] ?? ''));
+
+            if ($status === 'Dosen') {
+                if (!preg_match('/^\d{8}$/', $nidn)) {
+                    return back()
+                        ->withErrors(["inventor.nidn.$i" => 'NIDN wajib 8 digit angka untuk Dosen'])
+                        ->withInput();
+                }
+                $validated['inventor']['nidn'][$i] = $nidn;
+            } else {
+                $validated['inventor']['nidn'][$i] = null;
+            }
+        }
+
+
 
         // inventors aman (anti undefined index)
         $inventors = [];
@@ -59,6 +79,8 @@ class HakCiptaVerifController extends Controller
                 'no_hp'    => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
                 'email'    => trim((string) data_get($validated, "inventor.email.$i", '')),
                 'status'   => trim((string) data_get($validated, "inventor.status.$i", '')),
+                'nidn' => trim((string) data_get($validated, "inventor.nidn.$i", '')),
+
             ];
         }
                 $jenisCipta = $validated['jenis_cipta'] === 'Lainnya'
@@ -107,7 +129,7 @@ class HakCiptaVerifController extends Controller
         session(['cipta_id' => $verif->id]);
 
         return redirect()->route('ciptaverif.formulirpermohonan', ['verif' => $verif->id]);
-    }
+}
 
     /**
      * API store (kalau dipakai)
@@ -139,6 +161,8 @@ class HakCiptaVerifController extends Controller
             'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
             'inventor.email.*'       => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
+            'inventor.nidn' => ['nullable', 'array'],
+
 
             'nilai_perolehan'  => ['required', 'string', 'max:255'],
             'sumber_dana'      => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
@@ -263,7 +287,7 @@ class HakCiptaVerifController extends Controller
     public function uploadSuratPermohonan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_permohonan');
@@ -275,7 +299,7 @@ class HakCiptaVerifController extends Controller
     public function uploadSuratPernyataan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_pernyataan');
@@ -287,7 +311,7 @@ class HakCiptaVerifController extends Controller
     public function uploadSuratPengalihan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
         ]);
 
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');

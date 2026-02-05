@@ -123,13 +123,15 @@
         </a>
       </div>
 
-  <div class="actions-right" style="display:flex; gap:10px;">
-    <button class="unduh" type="submit" name="action" value="download">
-      Unduh
-    </button>
+      <div class="actions-right" style="display:flex; gap:10px; align-items:center;">
+        <select name="download_format" class="input" style="width:160px;">
+          <option value="pdf" {{ old('download_format','pdf')=='pdf' ? 'selected' : '' }}>PDF</option>
+          <option value="docx" {{ old('download_format')=='docx' ? 'selected' : '' }}>DOCX</option>
+        </select>
 
-  </div>
-</div>
+        <button class="unduh" type="submit" name="action" value="download">Unduh</button>
+      </div>
+    </div>
 
   </form>
 </div>
