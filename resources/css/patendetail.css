@@ -1,0 +1,1148 @@
+/* =========================
+   PATEN DETAIL ONLY
+========================= */
+/* =========================
+   LAYOUT FIX: NGISI KANAN, TIDAK CENTER
+========================= */
+/* =========================
+   LAYOUT FINAL: RATA KIRI-KANAN
+========================= */
+body.paten-detail-page .dash-layout{
+  gap: 0 !important;
+}
+
+
+
+/* ===== HEADER BACK BUTTON ===== */
+body.paten-detail-page .page-head-left{ margin-bottom: 14px; }
+body.paten-detail-page .back-btn{ font-size: 14px; }
+
+/* ===== CARD DETAIL PATEN ===== */
+body.paten-detail-page .card-paten{
+  background:#fff;
+  border:1px solid rgba(11,44,95,.10);
+  border-radius:18px;
+  padding:26px 20px;
+  box-shadow:0 12px 28px rgba(0,0,0,.06);
+  margin-bottom: 16px;
+}
+
+body.paten-detail-page .paten-head{ margin-bottom: 14px; }
+body.paten-detail-page .paten-title{
+  margin:0;
+  font-size:25px;
+  font-weight:800;
+  color:#0b2c5f;
+}
+body.paten-detail-page .paten-sub{
+  margin-top:6px;
+  font-size:17px;
+  color:rgba(0,0,0,.55);
+}
+
+body.paten-detail-page .paten-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 28px;
+}
+
+body.paten-detail-page .paten-info{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+body.paten-detail-page .paten-row{
+  display:grid;
+  grid-template-columns: 170px 18px 1fr;
+  align-items:start;
+  column-gap: 8px;
+}
+
+body.paten-detail-page .p-label{ font-weight:700; color:#0b2c5f; }
+body.paten-detail-page .p-colon{ text-align:center; color:rgba(0,0,0,.55); font-weight:700; }
+body.paten-detail-page .p-value{ font-weight:500; color:#111; line-height:1.5; word-break:break-word; }
+
+/* =========================
+   STATUS BADGE (DOKUMEN)
+   blade: <span class="badge badge-{{ $statusDoc }}">
+========================= */
+body.paten-detail-page .doc-item .badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.2px;
+  border:1px solid transparent;
+  white-space:nowrap;
+}
+
+body.paten-detail-page .doc-item .badge::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background: currentColor;
+  opacity:.55;
+}
+
+/* default fallback kalau ada status lain */
+body.paten-detail-page .doc-item .badge{
+  background: rgba(11,44,95,.08);
+  color:#0b2c5f;
+  border-color: rgba(11,44,95,.16);
+}
+
+/* PENDING */
+body.paten-detail-page .doc-item .badge.badge-pending{
+  background: rgba(11,44,95,.08);
+  color:#0b2c5f;
+  border-color: rgba(11,44,95,.16);
+}
+
+/* OK */
+body.paten-detail-page .doc-item .badge.badge-ok{
+  background: rgba(40,167,69,.16);
+  color:#1f7a1f;
+  border-color: rgba(40,167,69,.26);
+}
+
+/* REVISI */
+body.paten-detail-page .doc-item .badge.badge-revisi{
+  background: rgba(255,193,7,.18);
+  color:#8a6b00;
+  border-color: rgba(255,193,7,.30);
+}
+
+/* ===== ACCORDION ===== */
+body.paten-detail-page .acc-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+body.paten-detail-page .acc-card{
+  background:#fff;
+  border:1px solid rgba(11,44,95,.12);
+  border-left:5px solid rgba(11,44,95,.18);
+  border-radius:16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.06);
+}
+
+body.paten-detail-page .acc-head{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:26px 20px;
+  min-height: unset; /* 🔥 ini penting */
+  cursor:pointer;
+  user-select:none;
+  background:#fff;
+  border:0;
+  text-align:left;
+}
+
+body.paten-detail-page .acc-title{
+  font-weight: 800;
+  color:#0b2c5f;
+  font-size:25px;
+  line-height:1.25;
+}
+
+body.paten-detail-page .acc-sub{
+  font-size:17px;
+  line-height:1.45;
+  color: rgba(0,0,0,0.6);
+  margin-top:4px;
+}
+
+/* ===== DOKUMEN ===== */
+
+body.paten-detail-page .doc-top{
+  align-items:flex-start;
+  gap:14px;
+}
+
+body.paten-detail-page .doc-link{
+  display:inline-block;
+  margin-top:6px;
+  max-width:340px;
+}
+
+body.paten-detail-page .doc-actions{
+  margin-top:12px;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* ===== REVISI MASUK ===== */
+body.paten-detail-page .incoming-wrap{
+  margin-top:14px;
+  padding:14px 14px 12px;
+  border-top: 0;
+  background: rgba(11,44,95,.03); /* kuning lembut */
+  border: 1px solid rgba(11,44,95,.10);
+  border-radius: 14px;
+}
+
+body.paten-detail-page .incoming-title{
+  font-size:16px;
+  font-weight: 900;
+  color:#ecdaa6;
+  margin-bottom: 8px;
+}
+
+/* details/summary biar jelas bisa dibuka */
+body.paten-detail-page .incoming-details{
+  margin-top: 10px;
+}
+
+body.paten-detail-page .incoming-summary{
+  cursor:pointer;
+  font-weight:800;
+  color:#0b2c5f;
+  font-size:13px;
+  padding:8px 10px;
+  border-radius:10px;
+  background: rgba(11,44,95,.06);
+  border:1px solid rgba(11,44,95,.10);
+  list-style:none;
+}
+
+/* hilangkan marker default di beberapa browser */
+body.paten-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
+
+body.paten-detail-page .incoming-row{
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+/* catatan panjang */
+body.paten-detail-page .cell-note{
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+  max-height: 3.6em;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* mobile */
+@media (max-width: 900px){
+  body.paten-detail-page .doc-link{ max-width: 70vw; }
+}
+
+/* =========================
+   DETAIL DOKUMEN - UI IMPROVE
+========================= */
+
+/* section content biar tidak "flat" */
+body.paten-detail-page .acc-body{
+  border-top:1px solid rgba(11,44,95,.10);
+  background: #fbfcff;
+  padding: 16px 18px 18px;
+}
+
+/* doc item jadi lebih kebaca */
+body.paten-detail-page .doc-item{
+  background: #fff;
+  border: 1px solid rgba(11,44,95,.10);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+}
+
+/* =========================
+   TABEL REVISI (DIV GRID) - PEMBEDA JELAS
+========================= */
+body.paten-detail-page .incoming-table{
+  margin-top:10px;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid rgba(11,44,95,.10);
+  background:#fff;
+}
+
+/* row jadi grid rapih */
+body.paten-detail-page .incoming-row{
+  display:grid;
+  grid-template-columns: 1.2fr 1fr 140px 1fr;
+  gap:12px;
+  padding:10px 12px;
+  align-items:start;
+  border-top:1px solid rgba(11,44,95,.08);
+}
+
+/* header beda tone */
+body.paten-detail-page .incoming-head{
+  background: rgba(11,44,95,.06);
+  border-top:0;
+  font-weight:900;
+  color:#0b2c5f;
+  font-size:13px;
+}
+
+/* cell */
+body.paten-detail-page .incoming-cell{
+  font-size:13px;
+  line-height:1.45;
+  color:#111;
+  word-break: break-word;
+}
+
+/* zebra untuk baris isi */
+body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):nth-child(even){
+  background: rgba(11,44,95,.03);
+}
+
+/* hover UX */
+body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
+  background: rgba(11,44,95,.06);
+}
+
+@media (max-width: 900px){
+  body.paten-detail-page .incoming-row{
+    grid-template-columns: 1fr;
+  }
+  body.paten-detail-page .incoming-head{
+    display:none;
+  }
+  body.paten-detail-page .incoming-cell{
+    padding:8px 10px;
+    border:1px solid rgba(11,44,95,.08);
+    border-radius:10px;
+    background:#fff;
+  }
+}
+
+/* ===== FIX RATA KIRI-KANAN (PADDING CUMA DI DASH-CONTENT) ===== */
+
+body.paten-detail-page .dash-layout{
+  gap: 0 !important;
+}
+
+/* DETAIL PATEN: padding kiri-kanan sama, tapi tetap ada napas dari sidebar */
+
+body.paten-detail-page .dash-layout,
+body.paten-detail-page .admin-page{
+  padding-right: 0 !important;
+}
+
+
+/* =========================
+   INVENTOR - FIX SEJAJAR TITIK DUA
+========================= */
+body.paten-detail-page .inv-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+}
+
+body.paten-detail-page .inv-card{
+  border: 1px solid rgba(11,44,95,.14);
+  border-radius: 16px;
+  padding: 20px 24px;
+  width: 100%;
+}
+
+/* KUNCI: inv-row jadi GRID 3 kolom (label : value) */
+body.paten-detail-page .inv-row{
+  display: grid !important;
+  grid-template-columns: 140px 14px 1fr;  /* label | : | value */
+  column-gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+body.paten-detail-page .inv-k{
+  font-weight: 700;
+  color: #0b2c5f;
+}
+
+body.paten-detail-page .inv-colon{
+  text-align: center;
+  color: rgba(0,0,0,.55);
+  font-weight: 800;
+}
+
+body.paten-detail-page .inv-v{
+  color: #111;
+  word-break: break-word;
+}
+
+/* mobile: 1 kolom card biar ga sempit */
+@media (max-width: 900px){
+  body.paten-detail-page .inv-grid{
+    grid-template-columns: 1fr;
+  }
+  body.paten-detail-page .inv-row{
+    grid-template-columns: 120px 14px 1fr;
+  }
+}
+
+/* =========================
+   INVENTOR - SPACING + GRID RESPONSIF
+========================= */
+
+/* 1) rapetin jarak judul accordion -> konten */
+body.paten-detail-page [data-acc-body="inv"]{
+  padding-top: 12px !important;  /* sebelumnya kebesaran */
+}
+
+/* kalau ada wrapper lain yang kasih margin atas gede, rapetin juga */
+body.paten-detail-page [data-acc-body="inv"] .inv-grid{
+  margin-top: 10px; /* jarak dari garis header */
+}
+
+/* 2) bikin card inventor bisa sejajar kalau banyak */
+body.paten-detail-page .inv-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); /* auto sejajar */
+  gap: 14px;
+  align-items: start;
+}
+
+/* card ngisi kolom */
+body.paten-detail-page .inv-card{
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+/* optional: biar card lebih “pas” */
+body.paten-detail-page .inv-name{
+  margin-bottom: 10px;
+}
+
+/* titik dua tetap sejajar (kalau kamu pakai grid row yang kemarin) */
+body.paten-detail-page .inv-row{
+  display: grid !important;
+  grid-template-columns: 140px 14px 1fr;
+  column-gap: 10px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+
+/* mobile: 1 kolom */
+@media (max-width: 900px){
+  body.paten-detail-page .inv-grid{
+    grid-template-columns: 1fr;
+  }
+  body.paten-detail-page .inv-row{
+    grid-template-columns: 120px 14px 1fr;
+  }
+}
+
+/* =========================
+   REVISI MASUK (PEMOHON) - lebih enak dilihat
+========================= */
+
+/* wrapper revisi masuk */
+body.paten-detail-page .incoming-wrap{
+  margin-top: 14px;
+  padding: 14px 14px 12px;
+
+  /* warna soft, gak nusuk mata */
+  background: linear-gradient(180deg, rgba(245,248,255,.95), rgba(255,255,255,.95));
+  border: 1px solid rgba(11,44,95,.12);
+  border-radius: 14px;
+
+  /* aksen kiri biar “ni area khusus” */
+  border-left: 6px solid rgba(11,44,95,.18);
+  box-shadow: 0 10px 22px rgba(0,0,0,.04);
+}
+
+/* header revisi */
+body.paten-detail-page .incoming-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+
+  font-size: 14px;
+  font-weight: 900;
+  color: #0b2c5f;
+  margin-bottom: 8px;
+}
+
+/* teks “Belum ada upload revisi” */
+body.paten-detail-page .incoming-wrap .muted{
+  color: rgba(0,0,0,.55);
+  font-size: 12px;
+}
+
+/* details container */
+body.paten-detail-page .incoming-details{
+  margin-top: 10px;
+}
+
+/* tombol summary */
+body.paten-detail-page .incoming-summary{
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 12px;
+  color: #0b2c5f;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: rgba(11,44,95,.06);
+  border: 1px solid rgba(11,44,95,.10);
+  list-style: none;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+body.paten-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
+
+/* tabel revisi (kalau kamu pakai incoming-table & incoming-row) */
+body.paten-detail-page .incoming-table{
+  margin-top: 10px;
+  border-radius: 12px;
+  overflow: hidden;
+
+  border: 1px solid rgba(11,44,95,.10);
+  background: rgba(255,255,255,.85);
+}
+
+/* row grid */
+body.paten-detail-page .incoming-row{
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 140px 1fr;
+  gap: 12px;
+  padding: 12px 12px;
+  align-items: start;
+  border-top: 1px solid rgba(11,44,95,.07);
+}
+
+/* header row */
+body.paten-detail-page .incoming-head{
+  background: linear-gradient(90deg, rgba(11,44,95,.08), rgba(11,44,95,.04));
+  border-top: 0;
+  font-weight: 900;
+  color: #0b2c5f;
+  font-size: 12px;
+}
+
+/* isi cell */
+body.paten-detail-page .incoming-cell{
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(0,0,0,.82);
+  word-break: break-word;
+}
+
+/* zebra halus */
+body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):nth-child(even){
+  background: rgba(11,44,95,.03);
+}
+
+/* hover biar interaktif */
+body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
+  background: rgba(11,44,95,.06);
+}
+
+/* catatan panjang biar nyaman dibaca */
+body.paten-detail-page .cell-note{
+  max-height: 4.2em;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* link file di revisi biar lebih “klik-able” */
+body.paten-detail-page .incoming-table .doc-link{
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(11,44,95,.45);
+}
+body.paten-detail-page .incoming-table .doc-link:hover{
+  border-bottom-style: solid;
+}
+
+/* mobile: jadi kartu-kartu */
+@media (max-width: 900px){
+  body.paten-detail-page .incoming-row{
+    grid-template-columns: 1fr;
+  }
+  body.paten-detail-page .incoming-head{ display:none; }
+
+  body.paten-detail-page .incoming-cell{
+    padding: 10px 10px;
+    border: 1px solid rgba(11,44,95,.08);
+    border-radius: 12px;
+    background: #fff;
+  }
+}
+
+/* =========================
+   SECTION HEADER (DETAIL PATEN / DOKUMEN / INVENTOR)
+========================= */
+
+/* card section */
+body.paten-detail-page .acc-card{
+  border-radius: 16px;
+  overflow: hidden; /* biar header & body nyatu */
+  border: 1px solid rgba(11,44,95,.14);
+  box-shadow: 0 10px 25px rgba(0,0,0,.06);
+}
+
+/* HEADER */
+body.paten-detail-page .acc-head{
+  background: linear-gradient(
+    90deg,
+    #123b7a,
+    #1b4fa3
+  );
+  border-left: 6px solid #0b2c5f;
+  padding: 20px 22px;
+  transition: background .25s ease;
+}
+/* judul */
+body.paten-detail-page .acc-title{
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+/* subjudul */
+body.paten-detail-page .acc-sub{
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+}
+
+/* icon panah */
+body.paten-detail-page .acc-head svg,
+body.paten-detail-page .acc-head i{
+  color: #0b2c5f;
+  opacity: .8;
+}
+
+/* aktif / dibuka */
+body.paten-detail-page .acc-card.open .acc-head{
+  background: linear-gradient(
+    90deg,
+    #0b2c5f,
+    #0f3a78
+  );
+}
+
+/* BODY */
+body.paten-detail-page .acc-body{
+  background: #fbfcff;
+  border-top: 1px solid rgba(11,44,95,.12);
+  padding: 18px 20px 22px;
+}
+
+/* =========================
+   DETAIL PATEN HEADER (NON ACCORDION)
+========================= */
+body.paten-detail-page .card-paten{
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+/* header area di dalam card paten */
+body.paten-detail-page .card-paten .paten-head{
+  background: linear-gradient(
+    90deg,
+    #0b2c5f,
+    #123b7a
+  );
+  padding: 22px 26px;
+  margin: -26px -20px 20px; /* tarik keluar padding card */
+}
+
+/* judul */
+body.paten-detail-page .paten-title{
+  color: #fff;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+/* subtitle */
+body.paten-detail-page .paten-sub{
+  color: rgba(255,255,255,.85);
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+/* =========================================================
+   PATEN DETAIL - POLISHING (TARUH PALING BAWAH)
+========================================================= */
+
+
+/* Biar konten tidak nempel sidebar tapi kanan-kiri tetap seimbang */
+@media (min-width: 1100px){
+  body.paten-detail-page [data-paten-detail]{
+    margin-left: 24px !important;  /* napas dari sidebar */
+    margin-right: 24px !important; /* kanan sama */
+  }
+}
+@media (max-width: 1100px){
+  body.paten-detail-page [data-paten-detail]{
+    margin: 0 !important;
+  }
+}
+
+/* ---------- 2) Theme vars biar konsisten ---------- */
+body.paten-detail-page{
+  --navy: #0b2c5f;
+  --navy2:#08306f;
+  --ink:  #0f172a;
+  --muted: rgba(15,23,42,.65);
+
+  --line: rgba(11,44,95,.14);
+  --soft: rgba(11,44,95,.06);
+
+  --ok-bg: rgba(34,197,94,.18);
+  --ok-tx: #137a2c;
+
+  --rev-bg: rgba(245,158,11,.18);
+  --rev-tx: #8a5a00;
+
+  --pend-bg: rgba(148,163,184,.22);
+  --pend-tx: #334155;
+}
+
+/* ---------- 3) Header Accordion (Detail Dokumen / Inventor) lebih tegas ---------- */
+/* Ini buat area head-nya tetep berwarna walau di klik */
+body.paten-detail-page .acc-card{
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--navy);
+  overflow: hidden;
+}
+
+body.paten-detail-page .acc-head{
+  background: linear-gradient(90deg, rgba(11,44,95,.14), rgba(11,44,95,.06));
+  padding: 22px 20px;
+}
+
+body.paten-detail-page .acc-title{
+  color: var(--navy);
+  font-size: 24px;
+}
+
+body.paten-detail-page .acc-sub{
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* hover biar “hidup” */
+body.paten-detail-page .acc-head:hover{
+  background: linear-gradient(90deg, rgba(11,44,95,.18), rgba(11,44,95,.08));
+}
+
+/* body accordion tetap terang tapi ada depth */
+body.paten-detail-page .acc-body{
+  background: #f8fbff;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- 4) Badge status: lebih solid & enak ---------- */
+body.paten-detail-page .doc-item .badge{
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid transparent;
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+}
+
+body.paten-detail-page .doc-item .badge.badge-ok{
+  background: var(--ok-bg);
+  color: var(--ok-tx);
+  border-color: rgba(34,197,94,.28);
+}
+
+body.paten-detail-page .doc-item .badge.badge-revisi{
+  background: var(--rev-bg);
+  color: var(--rev-tx);
+  border-color: rgba(245,158,11,.32);
+}
+
+body.paten-detail-page .doc-item .badge.badge-pending{
+  background: var(--pend-bg);
+  color: var(--pend-tx);
+  border-color: rgba(148,163,184,.35);
+}
+
+/* ---------- 5) Tombol OK / Revisi biar keliatan "aksi utama" ---------- */
+body.paten-detail-page .doc-actions .btn-mini{
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+body.paten-detail-page .doc-actions .btn-mini:first-child{
+  border-color: rgba(34,197,94,.35);
+}
+
+body.paten-detail-page .doc-actions .btn-mini:last-child{
+  border-color: rgba(245,158,11,.35);
+}
+
+/* ---------- 6) Revisi Masuk: premium, ga norak, tetap keliatan penting ---------- */
+body.paten-detail-page .incoming-wrap{
+  background: linear-gradient(180deg, rgba(11,44,95,.05), rgba(11,44,95,.02));
+  border: 1px solid rgba(11,44,95,.14);
+  border-left: 6px solid rgba(245,158,11,.75); /* highlight revisi */
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+}
+
+body.paten-detail-page .incoming-title{
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+/* summary "Detail Revisi (x)" */
+body.paten-detail-page .incoming-summary{
+  background: rgba(255,255,255,.85);
+  border: 1px solid rgba(11,44,95,.14);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 900;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+/* tabel revisi biar lebih modern */
+body.paten-detail-page .incoming-table{
+  border: 1px solid rgba(11,44,95,.14);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+body.paten-detail-page .incoming-head{
+  background: rgba(11,44,95,.08);
+  color: var(--navy);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+body.paten-detail-page .incoming-row{
+  border-top: 1px solid rgba(11,44,95,.10);
+}
+
+body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
+  background: rgba(11,44,95,.05);
+}
+
+/* ---------- 7) Inventor: jarak judul lebih rapet + card auto nyamping ---------- */
+/* rapetin jarak area atas */
+body.paten-detail-page .acc-body .inv-grid{
+  margin-top: 10px;
+}
+
+/* auto-fit: kalau ada 2 inventor -> otomatis 2 kolom, 3 inventor -> bisa 3 kolom (kalau muat) */
+body.paten-detail-page .inv-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+body.paten-detail-page .inv-card{
+  background: #fff;
+  border: 1px solid rgba(11,44,95,.14);
+  border-radius: 16px;
+  padding: 18px 18px;
+  box-shadow: 0 10px 22px rgba(0,0,0,.05);
+}
+
+body.paten-detail-page .inv-name{
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+/* titik dua sejajar & lebih rapih */
+body.paten-detail-page .inv-row{
+  display: grid;
+  grid-template-columns: 120px 14px 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+body.paten-detail-page .inv-row b{
+  width: auto !important;
+  flex: unset !important;
+}
+
+body.paten-detail-page .inv-row b::after{ content: ""; } /* matiin yang auto ":" lama */
+
+/* kamu butuh span colon? kalau HTML gak ada, pakai pseudo */
+body.paten-detail-page .inv-row b{
+  position: relative;
+}
+body.paten-detail-page .inv-row b::after{
+  content: ":";
+  position: absolute;
+  right: -10px;
+  color: rgba(0,0,0,.55);
+  font-weight: 800;
+}
+
+/* ===============================
+   CLEAN MODE: TANPA GARIS KIRI
+   (Detail Dokumen & Inventor)
+=============================== */
+
+/* matiin border kiri card accordion */
+body.paten-detail-page .acc-card{
+  border-left: none !important;
+}
+
+/* kalau sebelumnya ada pseudo / aksen kiri */
+body.paten-detail-page .acc-card::before,
+body.paten-detail-page .acc-head::before{
+  display: none !important;
+  content: none !important;
+}
+
+/* rapihin radius biar konsisten */
+body.paten-detail-page .acc-card{
+  border-radius: 18px;
+}
+
+/* header tetap cakep tapi clean */
+body.paten-detail-page .acc-head{
+  background: linear-gradient(
+    90deg,
+    rgba(11,44,95,.12),
+    rgba(11,44,95,.04)
+  );
+}
+
+/* =========================
+   ACCORDION HEADER (TEGAS & CLEAN)
+========================= */
+body.paten-detail-page .acc-head{
+  background: linear-gradient(
+    90deg,
+    #123b7a,
+    #1b4fa3
+  );
+  padding: 20px 22px;
+  transition: background .25s ease;
+}
+
+/* judul */
+body.paten-detail-page .acc-title{
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+/* subjudul */
+body.paten-detail-page .acc-sub{
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+}
+
+/* =========================
+   LAYOUT FINAL (SIMETRIS)
+========================= */
+/* =========================
+   FIX: HEADER ACCORDION HARUS BIRU PERMANEN
+   (Detail Dokumen + Detail Inventor)
+========================= */
+
+body.paten-detail-page .acc-head,
+body.paten-detail-page .acc-card.open .acc-head,
+body.paten-detail-page .acc-head:hover,
+body.paten-detail-page .acc-head:active,
+body.paten-detail-page .acc-head:focus{
+  background: linear-gradient(90deg,#0b2c5f,#123b7a) !important;
+}
+
+/* teksnya putih */
+body.paten-detail-page .acc-title{
+  color: #fff !important;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+body.paten-detail-page .acc-sub{
+  color: rgba(255,255,255,.85) !important;
+  font-size: 14px;
+}
+
+/* panah/ikon biar keliatan */
+body.paten-detail-page .acc-head svg,
+body.paten-detail-page .acc-head i{
+  color: #fff !important;
+  opacity: .9 !important;
+}
+
+/* optional: biar clean dan nyatu */
+body.paten-detail-page .acc-card{
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(11,44,95,.12);
+}
+
+/*==============tombol simpan dan kirim=============== */
+.docs-footer-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:14px;
+}
+.btn-send-right{
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  padding:12px 18px;
+  border-radius:12px;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  min-width:240px;
+}
+
+/* badge lebih kecil di tabel revisi */
+.incoming-table .badge-small{
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+
+/* kalau badge existing kamu masih kegedean */
+.incoming-table .badge{
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+/* ===== DOT STATUS UPLOAD PEMOHON (merah/hijau) ===== */
+body.paten-detail-page .doc-dot{
+  display:inline-block;
+  width:8px;height:8px;border-radius:999px;
+  margin-right:8px;vertical-align:middle;
+  box-shadow:0 0 0 3px rgba(0,0,0,.06);
+}
+body.paten-detail-page .doc-dot.red{
+  background:#e74c3c;
+  box-shadow:0 0 0 3px rgba(231,76,60,.12);
+}
+body.paten-detail-page .doc-dot.green{
+  background:#2ecc71;
+  box-shadow:0 0 0 3px rgba(46,204,113,.12);
+}
+
+/* ===== CATATAN POTONG + LIHAT DETAIL ===== */
+body.paten-detail-page details.note-detail{cursor:pointer;}
+body.paten-detail-page details.note-detail summary{
+  list-style:none;
+  cursor:pointer;
+}
+body.paten-detail-page details.note-detail summary::-webkit-details-marker{display:none;}
+
+body.paten-detail-page .note-short{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 420px;
+}
+body.paten-detail-page details.note-detail[open] .note-short{display:none;}
+body.paten-detail-page .note-full{display:none; margin-top:6px;}
+body.paten-detail-page details.note-detail[open] .note-full{display:block;}
+
+@media (max-width: 900px){
+  body.paten-detail-page .note-short{max-width: 70vw;}
+}
+
+.doc-dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  margin-right:8px;
+  vertical-align:middle;
+}
+
+.doc-dot.red{
+  background:#e74c3c;
+  box-shadow:0 0 0 3px rgba(231,76,60,.12);
+}
+
+.doc-dot.green{
+  background:#22c55e;
+  box-shadow:0 0 0 3px rgba(34,197,94,.14);
+}
+
+/* dot indikator (muncul hanya kalau blade render) */
+.doc-dot{
+  display:inline-block;
+  width:8px;height:8px;border-radius:999px;
+  margin-right:8px;vertical-align:middle;
+}
+.doc-dot.red{
+  background:#ef4444;
+  box-shadow:0 0 0 3px rgba(239,68,68,.14);
+}
+.doc-dot.green{
+  background:#22c55e;
+  box-shadow:0 0 0 3px rgba(34,197,94,.14);
+}
+
+/* box catatan admin biar lebih gede & enak dibaca */
+.rev-admin-box{
+  background:#f7f9fc;
+  border:1px solid rgba(11,44,95,.10);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-top:10px;
+}
+.rev-admin-box .ttl{ font-weight:900; margin-bottom:6px; color:#0b2c5f; }
+.rev-admin-box .meta{ font-size:12px; color:rgba(0,0,0,.55); margin-top:6px; }
+
+/* catatan panjang: "lihat detail" */
+.note-detail summary{
+  cursor:pointer;
+  font-weight:700;
+  color:#0b2c5f;
+}
+.note-full{
+  margin-top:8px;
+  white-space:pre-wrap;
+  line-height:1.45;
+}
+
+/* Biar tombol OK + Revisi selalu sejajar */
+body.paten-detail-page .doc-actions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap !important; /* jangan turun ke baris baru */
+}
+
+/* Samain tinggi tombol */
+body.paten-detail-page .doc-actions .btn-mini{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;          /* boleh kamu sesuaikan */
+  padding: 0 14px;
+  line-height: 34px;
+}
+
+/* Kalau ada form bikin tombol jadi “ketarik” beda tinggi */
+body.paten-detail-page .doc-actions form{
+  margin: 0;
+}
+body.paten-detail-page .doc-actions form button{
+  width: auto;
+}

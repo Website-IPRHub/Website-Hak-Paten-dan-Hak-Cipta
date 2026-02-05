@@ -904,7 +904,24 @@ document.addEventListener('submit', async (e) => {
         setTimeout(() => { msgEl.textContent = ''; }, 2500);
       }
 
-      if (json.wa_link) window.open(json.wa_link, '_blank');
+      if (json.wa_link) {
+        if (window.Swal) {
+          Swal.fire({
+            title: 'Berhasil',
+            text: json.message || 'Revisi terkirim.',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: 'Kirim WA',
+            cancelButtonText: 'Tutup'
+          }).then((r) => {
+            if (r.isConfirmed) window.open(json.wa_link, '_blank');
+          });
+        } else {
+          // fallback kalau sweetalert belum di-include
+          const ok = confirm('Revisi terkirim. Kirim WA sekarang?');
+          if (ok) window.open(json.wa_link, '_blank');
+        }
+      }
 
     } catch (err) {
       if (msgEl) {
@@ -1141,8 +1158,3 @@ function setupRevisiPopup() {
     window.location.href = '/admin/dashboard?tab=status';
   });
 }
-
-
-
-
-

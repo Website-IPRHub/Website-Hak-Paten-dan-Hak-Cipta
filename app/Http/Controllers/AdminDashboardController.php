@@ -912,7 +912,9 @@ class AdminDashboardController extends Controller
     public function setVerifikasiDokumen(Request $request, string $type, int $id)
     {
         if (!$request->session()->get('admin_logged_in')) {
-            return redirect()->route('admin.login.form');
+                return $request->expectsJson()
+                ? response()->json(['ok'=>false,'message'=>'Unauthorized'], 401)
+                : redirect()->route('admin.login.form');
         }
         if (!in_array($type, ['paten', 'cipta'])) abort(404);
 
@@ -934,6 +936,9 @@ class AdminDashboardController extends Controller
         if ($action === 'revisi') {
             if (!trim((string)$request->input('note'))) {
                 // ✅ FIX: balik ke halaman asal (tab paten/cipta/status)
+                if ($request->expectsJson()) {
+                    return response()->json(['ok'=>false,'message'=>'Catatan revisi wajib diisi.'], 422);
+                }
                 return redirect()->back()->with('success', 'Catatan revisi wajib diisi.');
             }
             $data['note'] = $request->input('note');
@@ -944,15 +949,41 @@ class AdminDashboardController extends Controller
             $data['admin_attachment_path'] = null;
         }
 
-        if ($request->hasFile('admin_attachment')) {
-            $path = $request->file('admin_attachment')->store('admin_revisi', 'public');
+       if ($request->hasFile('admin_attachment')) {
+            $file = $request->file('admin_attachment');
+            $path = $file->store('admin_revisi', 'public');
+
             $data['admin_attachment_path'] = $path;
+            $data['admin_attachment_name'] = $file->getClientOriginalName(); // ✅ tambah ini
         }
 
         VerifikasiDokumen::updateOrCreate(
             ['ref_type' => $type, 'ref_id' => $id, 'doc_key' => $docKey],
             $data + ['created_at' => now()]
         );
+
+        if ($action === 'revisi') {
+        // simpan juga ke revisions supaya langsung muncul di tabel detail revisi
+        DB::table('revisions')->updateOrInsert(
+            [
+            'type'   => $type,
+            'ref_id' => $id,
+            'doc_key'=> $docKey,
+            ],
+            [
+            'from_role'          => 'admin',
+            'state'              => 'requested',
+            'note'               => $data['note'],
+            'file_path'          => $data['admin_attachment_path'] ?? null, // lampiran admin
+            'pemohon_file_path'  => null,                                   // belum ada
+            'is_read_admin'      => 1,
+            'is_read_pemohon'    => 0,
+            'updated_at'         => now(),
+            'created_at'         => now(),
+            ]
+        );
+        }
+
 
         // kalau ada minimal 1 dokumen revisi => status_verifikasi jadi revisi
         $hasRevisi = VerifikasiDokumen::where(['ref_type'=>$type,'ref_id'=>$id])
@@ -1162,7 +1193,7 @@ class AdminDashboardController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'ok' => true,
-                    'message' => 'Email revisi terkirim.',
+                    'message' => 'Kirim WhatsApp sekarang.',
                     'emails' => $emails,
                     'wa_link' => $waLink,
                 ]);
@@ -1627,4 +1658,125 @@ class AdminDashboardController extends Controller
         $file = 'data_hak_cipta_' . now()->format('Ymd_His') . '.pdf';
         return $pdf->download($file);
     }
+
+    public function detailPaten(Request $request, int $id)
+{
+    if (!$request->session()->get('admin_logged_in')) {
+        return redirect()->route('admin.login.form');
+    }
+
+    $row = DB::table('paten_verifs as p')
+        ->leftJoin('status_verifikasi as sv', function ($join) {
+            $join->on('sv.ref_id', '=', 'p.id')
+                ->where('sv.ref_type', '=', 'paten');
+        })
+        ->select([
+            'p.*',
+            DB::raw("COALESCE(sv.status,'terkirim') as status"),
+        ])
+        ->where('p.id', $id)
+        ->first();
+
+    if (!$row) abort(404);
+
+    // inventors array
+    $invArr = [];
+    if (!empty($row->inventors)) {
+        $decoded = json_decode($row->inventors, true);
+        $invArr = is_array($decoded) ? $decoded : [];
+    }
+    $row->inventors_arr = collect($invArr)->map(function ($i) {
+        return [
+            'nama'     => $i['nama'] ?? '-',
+            'status'   => $i['status'] ?? '-',
+            'email'    => $i['email'] ?? '-',
+            'no_hp'    => $i['no_hp'] ?? ($i['no hp'] ?? ($i['hp'] ?? '-')),
+            'nip_nim'  => $i['nip_nim'] ?? ($i['nipnim'] ?? ($i['nip'] ?? '-')),
+            'fakultas' => $i['fakultas'] ?? '-',
+        ];
+    })->values()->all();
+
+    // attach docs (pakai helper yang sudah ada)
+    $docKeys = [
+        'draft_paten',
+        'form_permohonan',
+        'surat_kepemilikan',
+        'surat_pengalihan',
+        'scan_ktp',
+        'tanda_terima',
+        'gambar_prototipe',
+    ];
+
+    $rowCol = collect([$row]);
+    $rowCol = $this->attachDocsToRows($rowCol, 'paten', $docKeys);
+    $row = $rowCol->first();
+
+    // revisi masuk dari pemohon (tabel revisions)
+    $incoming = DB::table('revisions')
+        ->where('type','paten')
+        ->where('ref_id',$id)
+        ->whereIn('state',['requested','submitted']) // ✅ tampilkan request admin juga
+        ->orderByDesc('updated_at')
+        ->get()
+        ->groupBy('doc_key');
+
+   return view('admin.patendetail', [
+    'name' => $request->session()->get('admin_name', 'Admin'),
+    'row' => $row,
+    'incomingByDoc' => $incoming,
+    'tab' => 'paten',
+    'notifCount' => $notifCount ?? 0,
+    ]);
 }
+
+    public function detailCipta(Request $request, int $id)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return redirect()->route('admin.login.form');
+        }
+
+        $row = DB::table('hak_cipta_verifs as c')
+            ->leftJoin('status_verifikasi as sv', function ($join) {
+                $join->on('sv.ref_id', '=', 'c.id')
+                    ->where('sv.ref_type', '=', 'cipta');
+            })
+            ->select([
+                'c.*',
+                DB::raw("COALESCE(sv.status,'terkirim') as status"),
+            ])
+            ->where('c.id', $id)
+            ->first();
+
+        if (!$row) abort(404);
+
+        $docKeys = [
+            'surat_permohonan',
+            'surat_pernyataan',
+            'surat_pengalihan',
+            'tanda_terima',
+            'scan_ktp',
+            'hasil_ciptaan',
+        ];
+
+        $rowCol = collect([$row]);
+        $rowCol = $this->attachDocsToRows($rowCol, 'cipta', $docKeys);
+        $row = $rowCol->first();
+
+        $incoming = DB::table('revisions')
+            ->where('type', 'cipta')
+            ->where('ref_id', $id)
+            ->where('state', 'submitted')
+            ->whereNotNull('pemohon_file_path')
+            ->orderByDesc('updated_at')
+            ->get()
+            ->groupBy('doc_key');
+
+        return view('admin.ciptadetail', [
+            'name' => $request->session()->get('admin_name', 'Admin'),
+            'row' => $row,
+            'incomingByDoc' => $incoming,
+            'tab' => 'cipta',
+        ]);
+    }
+}
+
