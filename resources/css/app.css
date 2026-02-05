@@ -456,3 +456,12 @@ html, body{
   transform: rotate(-3deg); 
   z-index: 5;
 }
+
+.jam-layanan{
+  margin: 8px 0 0;
+  padding-left: 18px;
+  line-height: 1.8;
+}
+.jam-layanan li{
+  margin: 4px 0;
+}

@@ -131,3 +131,16 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+/* khusus logo UNDIP berdampak (anjangin) */
+.brand-logo-wrap--impact{
+  width: 240px;       /* bikin lebih panjang */
+  height: 64px;       /* samain dengan logo utama yang udah digedein */
+  padding: 8px 16px;
+}
+
+/* biar gambar banner panjang kebaca, jangan terlalu nge-zoom */
+.brand-logo--impact{
+  transform: scale(1);      /* override dari transform 1.05 */
+  object-fit: contain;
+}

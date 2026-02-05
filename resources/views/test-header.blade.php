@@ -64,11 +64,18 @@
   <div class="container-langkah">
     <div class="container-langkah-langkah">
         <h3>Langkah-Langkah Pendaftaran Paten / Hak Cipta</h3>
-        <p>1. Lengkapi persyaratan pendaftaran Paten atau Hak Cipta sesuai yang tertera pada menu.</p>
-        <p>2. Print/cetak draft Paten/Hak Cipta yang telah diisi (tanpa meterai dan ttd), kemudian diajukan ke Bagian Innovation Hub, Gedung UPT Perpustakaan Lt 5 untuk diverifikasi kelengkapannya (mohon membawa laptop untuk koreksi di tempat).</p>
-        <p>3. Draft berkas Paten/Hak Cipta yang telah diverifikasi, mohon dilengkapi ttd semua inventor/pencipta dan meterai dan dikumpulkan ke Bagian Inovasi, Gedung UPT Perpustakaan lt 5, Pada jam kerja berikut Senin – Kamis 09.00 – 12.00 & 13.00 – 15.00 WIB dan Jumat 09.00 – 11.30 & 13.30 – 15.30 WIB (*Jam Pelayanan dapat berubah sewaktu waktu).</p>
-        <p>4. Jika telah mendapat nomor urut, mohon mengisi kelengkapan data dan upload softfile pengajuan (tanpa meterai dan tanpa ttd) pada menu yang tersedia diatas. </p>
-        <p>5. Surat Catatan Ciptaan Kekayaan Intelektual akan dikirimkan melalui email masing – masing pencipta.</p>
+        <p>1. Pemohon mengakses website KI Hub dan mengisi formulir pengajuan Paten atau Hak Cipta sesuai dengan persyaratan yang tertera pada menu yang tersedia.</p>
+        <p>2. Berkas pengajuan akan diverifikasi oleh Admin. Pemohon dimohon untuk menunggu hingga status pengajuan dinyatakan disetujui (approved).</p>
+        <p>3. Setelah pengajuan disetujui oleh Admin, pemohon mencetak (print) draft Paten/Hak Cipta yang telah diisi (tanpa meterai dan tanpa tanda tangan), kemudian mengajukannya ke Bagian Innovation Hub, Gedung UPT Perpustakaan Lantai 5 untuk dilakukan verifikasi kelengkapan berkas.
+<br>(mohon membawa laptop untuk koreksi di tempat apabila diperlukan).</p>
+        <p>4. Draft berkas Paten/Hak Cipta yang telah diverifikasi selanjutnya dilengkapi dengan tanda tangan seluruh inventor/pencipta serta meterai, kemudian dikumpulkan ke Bagian Inovasi, Gedung UPT Perpustakaan Lantai 5 pada jam kerja berikut:<br>
+              <ul class="jam-layanan">
+                <li><strong>Senin – Kamis</strong>: 09.00 – 12.00 WIB &amp; 13.00 – 15.00 WIB.</li>
+                <li><strong>Jumat</strong>: 09.00 – 11.30 WIB &amp; 13.30 – 15.30 WIB.</li>
+              </ul>
+      </p>
+        <p>5. Setelah memperoleh nomor urut, pemohon dimohon untuk melengkapi data dan mengunggah (upload) softfile pengajuan (tanpa meterai dan tanpa tanda tangan) melalui menu yang tersedia pada website KI Hub.</p>
+        <p>6. Surat Catatan Ciptaan Kekayaan Intelektual akan dikirimkan melalui email masing-masing inventor/pencipta.</p>
     </div>
   </div>
   <div class="container-catatan-awal">
