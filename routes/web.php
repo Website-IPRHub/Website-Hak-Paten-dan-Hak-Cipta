@@ -52,6 +52,12 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/verifikasi-dokumen/{type}/{id}/set', [AdminDashboardController::class, 'setVerifikasiDokumen'])->name('admin.verifikasi_dokumen.set');
     Route::post('/verifikasi-dokumen/{type}/{id}/send-revisi', [AdminDashboardController::class, 'sendRevisiEmail'])->name('admin.verifikasi_dokumen.sendRevisi');
+
+    Route::get('/admin/paten/{id}/detail', [AdminDashboardController::class, 'detailPaten'])
+    ->name('admin.paten.detail');
+
+    Route::get('/admin/cipta/{id}/detail', [AdminDashboardController::class, 'detailCipta'])
+        ->name('admin.cipta.detail');
 });
 
 Route::get('/debug-mail', function () {
