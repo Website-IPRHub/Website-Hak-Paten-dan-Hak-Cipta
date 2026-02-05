@@ -31,8 +31,8 @@
               name="file"
               hidden
               required
-              accept=".doc,.docx"
-              data-allowed="doc,docx"
+              accept=".doc,.docx,.pdf"
+              data-allowed="doc,docx,pdf"
             >
 
             <button id="uploadButton" type="button" class="btn-upload">

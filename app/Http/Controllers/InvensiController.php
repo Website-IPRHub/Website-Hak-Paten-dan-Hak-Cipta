@@ -39,6 +39,8 @@ class InvensiController extends Controller
         'inventor.no_hp.*'           => ['required', 'string', 'max:50'],
         'inventor.email.*'           => ['required', 'email', 'max:100'],
         'inventor.kode_pos.*'        => ['required', 'string', 'max:20'],
+
+        'download_format' => ['required', 'in:pdf,docx'],
     ]);
 
     $jumlah = (int) $data['jumlah_inventor'];
@@ -49,14 +51,14 @@ class InvensiController extends Controller
 
     session(['hakpaten.invensi' => $data]);
 
-    // ✅ kalau klik tombol Next
+    // kalau klik tombol Next
     if ($request->input('action') === 'next') {
         return redirect()
             ->route('hakpaten.pengalihanhakformulir')
             ->with('success', 'Data invensi tersimpan.');
     }
 
-    // ✅ selain itu: download docx
+    // selain itu: download docx
     $templatePath = $this->pickTemplate($jumlah);
     if (!file_exists($templatePath)) {
         abort(500, 'Template DOCX tidak ditemukan: ' . $templatePath);
@@ -91,9 +93,42 @@ class InvensiController extends Controller
     $out = tempnam(sys_get_temp_dir(), 'invensi_') . '.docx';
     $tp->saveAs($out);
 
-    return response()
-        ->download($out, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx')
-        ->deleteFileAfterSend(true);
+    $format = $data['download_format'];
+
+    if ($format === 'docx') {
+       return response()
+                ->download($out, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.docx')
+                ->deleteFileAfterSend(true);
+     }
+
+        // === Convert DOCX 
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) {
+            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        }
+        if (!file_exists($soffice)) {
+            abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
+        }
+
+        $outDir  = dirname($out);
+        $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
+
+        // command (quotes penting di Windows)
+        $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
+            . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
+
+        $output = [];
+        $code = 0;
+        exec($cmd, $output, $code);
+
+        if ($code !== 0 || !file_exists($pdfPath)) {
+            abort(500, "Gagal convert PDF. ExitCode=$code\n" . implode("\n", $output));
+        }
+
+        return response()
+            ->download($pdfPath, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.pdf')
+            ->deleteFileAfterSend(true);
+
 }
 
 }

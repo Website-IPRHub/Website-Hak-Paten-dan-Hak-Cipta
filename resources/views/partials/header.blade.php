@@ -18,7 +18,13 @@
           <img src="{{ asset('images/Logo Dirinovki 2026.jpg') }}" class="brand-logo" alt="Logo">
         </span>
       </a>
-
+      <a href="https://dirinovki.undip.ac.id" class="brand brand-impact">
+        <span class="brand-logo-wrap brand-logo-wrap--impact">
+          <img src="{{ asset('images/Dikti-Berdampak-Undip Bermartabat Bermanfaat.png') }}"
+              class="brand-logo brand-logo--impact"
+              alt="Logo Undip Berdampak">
+        </span>
+      </a>
 
       <div class="nav-right">
         <nav class="nav-menu">
@@ -43,7 +49,7 @@
             </nav>
 
         <a href="#" class="nav-button">
-            Pendaftaran Kekayaan Intelektual (Paten / Hak Cipta)
+            Pendaftaran Kekayaan Intelektual
         </a>
     </div>
 

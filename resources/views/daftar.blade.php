@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Daftar Cipta')
+@section('title','Test Header')
 
 @section('content')
 
@@ -12,26 +12,17 @@
 
   <div class="right">
     <div class="menu-hak-paten">
-        <h2>Alur Pendaftaran Ciptaan</h2>
+        <h2>Alur Pendaftaran</h2>
         <div class="flow">
             <div class="step">
             <span class="dot"></span>
-            <p>Isi Formulir</p>
-        </div>
-
-        <div class="step">
-            <span class="dot"></span>
-            <p>Verifikasi Berkas</p>
-        </div>
-
-        <div class="step">
-            <span class="dot"></span>
-            <p>Pendaftaran Hak Cipta</p>
+            <p>Datang Langsung ke Gedung <br>Perpustakaan Universitas Diponegoro (UNDIP)<br>Lantai 5 Innovation Hub</p>
         </div>
     </div>
    </div>
 
-    <div class="cta-row">
+   
+   <div class="cta-row">
       <div class="panduan-hki">
         <h2>
           <a href="https://drive.google.com/file/d/1eLTA7Uw_9ykRL43qV6G7wLcHZA2nlVdK/view" target="_blank">
@@ -41,10 +32,11 @@
       </div>
 
       <div class="button-daftar-ptn">
-        <h3>Siap Daftarkan Ciptaan Anda?</h3>
-        <a href="{{ route('hakcipta.isiform.formpendaftaran') }}" class="btn-dftr">Daftar Paten</a>
+        <h3>Siap Daftarkan Karya Anda?</h3>
+        <a href="#" class="btn-dftr">Daftar Karya</a>
       </div>
     </div>
+
   </div>
 </div>
 

@@ -12,6 +12,17 @@
   <div class="section-inner">
     <h1 class="datadiri-title">Data Pemohon <span class="req">*</span></h1>
 
+    @if ($errors->any())
+      <div class="alert alert-danger">
+          <ul>
+              @foreach ($errors->all() as $error)
+                  <li>{{ $error }}</li>
+              @endforeach
+          </ul>
+      </div>
+  @endif
+
+
     <form id="draftForm"class="paten-form" action="{{ route('patenverif.start') }}" method="POST" novalidate>
       @csrf
 
@@ -24,7 +35,7 @@
             <input
               type="number"
               class="input"
-              id="jumlah_inventor"
+              id="jumlah_inventor_verif"
               name="jumlah_inventor"
               min="1"
               max="20"
@@ -97,21 +108,33 @@
         <div class="field">
             <label class="label">Data Inventor <span class="req">*</span></label>
 
-            <div id="inventor-container"></div>
-            <template id="inventor-template">
+            <div id="inventor-container-verif"></div>
+
+            <template id="inventor-template-first-verif">
               <div class="inventor-card">
                 <p class="inventor-head">Inventor <span class="inv-no"></span></p>
+                <p>Catatan: Data Inventor 1 HARUS diisi dengan data Dosen</p>
 
                 <div class="inventor-grid">
                   <div class="inventor-col">
                     <div class="field">
-                      <label class="label">Nama Inventor</label>
+                      <label class="label">Nama Inventor <span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
                     </div>
 
                     <div class="field">
-                      <label class="label">NIP/NIM</label>
-                      <input type="text" class="input" name="inventor[nip_nim][]" placeholder="Masukkan NIP/NIM Anda" required>
+                      <label class="label">NIP/NIM <span class="req">*</span></label>
+                      <input
+                        type="text"
+                        class="input nip-input"
+                        name="inventor[nip_nim][]"
+                        placeholder="Masukkan NIP/NIM Anda"
+                        required
+                      >
+                      <small class="nip-warning">
+                        NIP/NIM harus terdiri dari 14 atau 18 digit angka
+                      </small>
+
                     </div>
 
                     <div class="field">
@@ -137,13 +160,101 @@
 
                   <div class="inventor-col">
                     <div class="field">
-                      <label class="label">No. HP</label>
+                      <label class="label">No. HP<span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required>
                     </div>
 
                     <div class="field">
-                      <label class="label">Email</label>
+                      <label class="label">Email <span class="req">*</span></label>
                       <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required>
+                    </div>
+
+                    <!-- NIDN wajib untuk inventor 1 -->
+                    <div class="field">
+                      <label class="label">NIDN <span class="req">*</span></label>
+                      <input
+                        type="text"
+                        class="input nidn-input"
+                        name="inventor[nidn][]"
+                        placeholder="NIDN"
+                      >
+                      <small class="nidn-warning">NIDN harus 8 karakter</small>
+                    </div>
+
+                    <!-- Status fix Dosen (pakai hidden biar terkirim) -->
+                    <div class="field">
+                      <label class="label">Status Inventor <span class="req">*</span></label>
+                      <input type="text" class="input" value="Dosen" disabled>
+                      <input type="hidden" name="inventor[status][]" value="Dosen">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+
+
+            <template id="inventor-template-verif">
+              <div class="inventor-card">
+                <p class="inventor-head">Inventor <span class="inv-no"></span></p>
+
+                <div class="inventor-grid">
+                  <div class="inventor-col">
+                    <div class="field">
+                      <label class="label">Nama Inventor <span class="req">*</span></label>
+                      <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
+                    </div>
+
+                    <div class="field">
+                      <label class="label">NIP/NIM <span class="req">*</span></label>
+                      <input
+                        type="text"
+                        class="input nip-input"
+                        name="inventor[nip_nim][]"
+                        placeholder="Masukkan NIP/NIM Anda"
+                        required
+                      >
+                      <small class="nip-warning">
+                        NIP/NIM harus terdiri dari 14 atau 18 digit angka
+                      </small>
+
+                    </div>
+
+                    <div class="field">
+                      <label class="label">Fakultas <span class="req">*</span></label>
+                      <select class="input" name="inventor[fakultas][]" required>
+                        <option value="" selected disabled>-- Pilih Fakultas --</option>
+                        <option value="Fakultas Teknik">Fakultas Teknik</option>
+                        <option value="Fakultas Sains dan Matematika">Fakultas Sains dan Matematika</option>
+                        <option value="Fakultas Kesehatan Masyarakat">Fakultas Kesehatan Masyarakat</option>
+                        <option value="Fakultas Kedokteran">Fakultas Kedokteran</option>
+                        <option value="Fakultas Perikanan dan Ilmu Kelautan">Fakultas Perikanan dan Ilmu Kelautan</option>
+                        <option value="Fakultas Peternakan dan Pertanian">Fakultas Peternakan dan Pertanian</option>
+                        <option value="Fakultas Psikologi">Fakultas Psikologi</option>
+                        <option value="Fakultas Hukum">Fakultas Hukum</option>
+                        <option value="Fakultas Ilmu Sosial dan Ilmu Politik">Fakultas Ilmu Sosial dan Ilmu Politik</option>
+                        <option value="Fakultas Ilmu Budaya">Fakultas Ilmu Budaya</option>
+                        <option value="Fakultas Ekonomi dan Bisnis">Fakultas Ekonomi dan Bisnis</option>
+                        <option value="Sekolah Vokasi">Sekolah Vokasi</option>
+                        <option value="Sekolah Pasca Sarjana">Sekolah Pasca Sarjana</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="inventor-col">
+                    <div class="field">
+                      <label class="label">No. HP <span class="req">*</span></label>
+                      <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required>
+                    </div>
+
+                    <div class="field">
+                      <label class="label">Email <span class="req">*</span></label>
+                      <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required>
+                    </div>
+
+                    <div class="field nidn-field" style="display:none;">
+                      <label class="label">NIDN <span class="req">*</span></label>
+                      <input type="text" class="input" name="inventor[nidn][]" placeholder="Masukkan NIDN">
                     </div>
 
                     <div class="field">
@@ -196,5 +307,4 @@
     </form>
   </div>
 </section>
-
 @endsection
