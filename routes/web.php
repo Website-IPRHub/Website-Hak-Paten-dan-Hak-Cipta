@@ -60,6 +60,12 @@ Route::prefix('admin')->group(function () {
         ->name('admin.cipta.detail');
 });
 
+Route::post(
+  '/admin/verifikasi-dokumen/{type}/{id}/approve',
+  [AdminDashboardController::class, 'approveAjax']
+)->name('admin.verifikasi_dokumen.approve');
+
+
 Route::get('/debug-mail', function () {
     return [
         'mailer'   => config('mail.default'),

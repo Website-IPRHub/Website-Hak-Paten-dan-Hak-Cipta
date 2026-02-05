@@ -241,7 +241,10 @@
               <div class="paten-row">
                 <div class="p-label">Status Pengajuan</div><div class="p-colon">:</div>
                 <div class="p-value">
-                  <span class="status-badge s-{{ strtolower($row->status ?? 'pending') }}">
+                 <span
+                    id="statusPengajuanBadge"
+                    class="status-badge s-{{ strtolower($row->status ?? 'pending') }}"
+                  >
                     {{ strtoupper($row->status ?? '-') }}
                   </span>
                 </div>
@@ -442,12 +445,11 @@
 
               {{-- ✅ Approve: disable kalau pemohon belum upload revisi sama sekali --}}
               {{-- ✅ Approve: AJAX, tidak reload halaman --}}
-              <button
+             <button
                 type="button"
                 id="btnApprove"
                 class="btn-approve-right"
-                data-type="paten"
-                data-id="{{ $row->id }}"
+                data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'paten','id'=>$row->id]) }}"
                 {{ $canApprove ? '' : 'disabled' }}
               >
                 Approve

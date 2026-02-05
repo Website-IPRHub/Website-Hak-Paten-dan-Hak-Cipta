@@ -1778,5 +1778,86 @@ class AdminDashboardController extends Controller
             'tab' => 'cipta',
         ]);
     }
+    // =========================
+    // APPROVE VIA AJAX (DETAIL)
+    // =========================
+    public function approveAjax(Request $request, string $type, int $id)
+    {
+        if (!$request->session()->get('admin_logged_in')) {
+            return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if (!in_array($type, ['paten', 'cipta'], true)) {
+            return response()->json(['ok' => false, 'message' => 'Type tidak valid'], 404);
+        }
+
+        // ✅ RULE: minimal ada 1 upload revisi pemohon
+        $hasPemohonUpload = DB::table('revisions')
+            ->where('type', $type)
+            ->where('ref_id', $id)
+            ->where('state', 'submitted')
+            ->whereNotNull('pemohon_file_path')
+            ->exists();
+
+        if (!$hasPemohonUpload) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Belum ada upload revisi dari pemohon.',
+            ], 422);
+        }
+
+        // ✅ update status_verifikasi => approve
+        $old = DB::table('status_verifikasi')
+            ->where(['ref_type' => $type, 'ref_id' => $id])
+            ->select('created_at')
+            ->first();
+
+        DB::table('status_verifikasi')->updateOrInsert(
+            ['ref_type' => $type, 'ref_id' => $id],
+            [
+                'status' => 'approve',
+                'updated_at' => now(),
+                'created_at' => $old?->created_at ?? now(),
+            ]
+        );
+
+        // ✅ tandai revisi pemohon sudah dibaca admin
+        DB::table('revisions')
+            ->where('type', $type)
+            ->where('ref_id', $id)
+            ->where('state', 'submitted')
+            ->whereNotNull('pemohon_file_path')
+            ->update([
+                'is_read_admin' => 1,
+                'updated_at' => now(),
+            ]);
+
+        // ambil data pemohon
+            $meta = $this->getRowByType($type, $id);
+            $row  = $meta['row'];
+
+            $kategori = $meta['kategori'];
+            $judul    = $meta['judul'];
+            $no       = $meta['no'];
+
+            // build WA message (pakai helper yang SUDAH KAMU PUNYA)
+            $waMsg = $this->buildWaStatusMessage(
+                $kategori,
+                $judul,
+                $no,
+                'approve'
+            );
+
+            $phone  = $this->getPemohonPhone($row);
+            $waLink = $this->makeWaLink($phone, $waMsg);
+
+            return response()->json([
+                'ok' => true,
+                'status' => 'approve',
+                'message' => 'Status berhasil diubah.',
+                'wa_link' => $waLink,
+                'wa_label' => 'Kirim WhatsApp',
+            ]);
+    }
 }
 

@@ -1,3 +1,4 @@
+
 // resources/js/admin/detail-accordion.js
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ detail-accordion loaded");
@@ -128,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // SweetAlert sukses + opsi WA (mirip Simpan & Kirim)
-        const waLink = data?.wa_link;     // backend kirim ini kalau perlu WA
+         const waLink = data?.wa_link;
         const waLabel = data?.wa_label || "Kirim WhatsApp";
 
         if (waLink) {
@@ -146,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
           await Swal.fire({
             icon: "success",
             title: "Approved",
-            text: "Status berhasil diubah.",
+            text: data?.message || "Status berhasil diubah.",
           });
         }
       } catch (err) {
