@@ -1371,11 +1371,11 @@ class AdminDashboardController extends Controller
         throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
     }
 
-    // ✅ convert ke folder TEMP yang pasti bisa ditulis
+    // convert ke folder TEMP yang pasti bisa ditulis
     $convertOut = storage_path('app/lo_out');
     if (!is_dir($convertOut)) mkdir($convertOut, 0777, true);
 
-    // ✅ profile khusus
+    // profile khusus
     $loProfile = storage_path('app/lo_profile');
     if (!is_dir($loProfile)) mkdir($loProfile, 0777, true);
 
@@ -1399,7 +1399,7 @@ class AdminDashboardController extends Controller
         $tmpDocxArg,
     ]);
 
-    // ✅ ini sering ngaruh kalau jalan di Apache/Nginx service user
+    // ini sering ngaruh kalau jalan di Apache/Nginx service user
     $process->setEnv([
         'USERPROFILE' => $loProfile,
         'APPDATA'     => $loProfile,
@@ -1443,7 +1443,7 @@ class AdminDashboardController extends Controller
         );
     }
 
-    // ✅ pindah ke public storage (biar bisa diakses)
+    // pindah ke public storage (biar bisa diakses)
     $finalDir = storage_path('app/public/tanda_terima');
     if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
 
@@ -1524,7 +1524,7 @@ class AdminDashboardController extends Controller
             ];
         });
 
-        // ✅ karena file view kamu ada di resources/views/export/paten_inventor_pdf.blade.php
+        // karena file view kamu ada di resources/views/export/paten_inventor_pdf.blade.php
         $pdf = Pdf::loadView('export.pateninventorpdf', [
             'items' => $items
         ])->setPaper('a4', 'landscape');

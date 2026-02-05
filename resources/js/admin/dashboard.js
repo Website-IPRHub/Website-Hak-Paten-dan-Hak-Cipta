@@ -72,12 +72,15 @@ async function setupChartsIfAny() {
   }
 
   const THEME = {
-    paten: '#0D416E', // biru
-    cipta: '#7697A0', // hijau
-    gold:  '#B2D7F6', // aksen
-    navy:  '#0b2c5f',
-    grid:  'rgba(11,44,95,0.10)',
-  };
+  paten: '#3361AC', // blue utama
+  cipta: '#E8AF30', // orange/gold buat series 2
+  gold:  '#E8C766', // soft accent
+  navy:  '#0F2043', // dark untuk axis/text
+  grid:  'rgba(15,32,67,0.10)',
+};
+
+
+
 
 const countTooltip = {
   filter(ctx) {
