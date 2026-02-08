@@ -71,7 +71,7 @@
         <div class="footer__title">Lokasi</div>
 
         <div class="footer__location">
-          Direktorat Inovasi dan Kerjasama, Innovation Hub, Gedung Widyapuraya Lantai 5
+          Direktorat Inovasi dan Kerjasama, Innovation Hub, Gedung Perpustakaan Lantai 5
         </div>
 
         <div class="footer__map">

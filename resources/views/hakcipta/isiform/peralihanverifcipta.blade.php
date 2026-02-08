@@ -16,6 +16,7 @@
             4. Scan KTP<br>
             5. Hasil Ciptaan<br>
         </p>
+        <h1>Catatan: Mohon rapikan kembali dokumen sebelum dikirimkan ke proses verifikasi.</h1>
       </div>
         <a href="{{ route('datadiricipta')}}" class="btn-verif">
   Lanjut ke Proses Verifikasi Dokumen

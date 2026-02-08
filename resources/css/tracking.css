@@ -122,8 +122,7 @@
 .legend .doing{ border-color:#f59e0b; }
 .legend .todo{ border-color:#ef4444; }
 
-<<<<<<< HEAD
-=======
+
 .tracking-form.horizontal {
   display: flex;
   align-items: center;
@@ -137,4 +136,35 @@
 .tracking-btn {
   white-space: nowrap;
 }
->>>>>>> c7784b815c4dad854a0d4f33f7fa2a9cc165b295
+.swal-popup{
+  border-radius: 18px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18) !important;
+  font-family: "Poppins", sans-serif !important;
+}
+
+.btn-back{
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .08s ease, background .15s ease;
+}
+
+.btn-back i{
+  font-size: 16px;
+  color: #2563eb; /* biru tema */
+}
+
+.btn-back:hover{
+  background: rgba(37,99,235,.08);
+}
+
+.btn-back:active{
+  transform: translateY(1px);
+}

@@ -13,18 +13,20 @@
   <div class="navbar">
     <div class="navbar-inner container">
 
-      <a href="https://dirinovki.undip.ac.id" class="brand">
-        <span class="brand-logo-wrap">
+      <div class="brand-group">
+        <a href="https://dirinovki.undip.ac.id" class="brand">
           <img src="{{ asset('images/Logo Dirinovki 2026.jpg') }}" class="brand-logo" alt="Logo">
-        </span>
-      </a>
-      <a href="https://dirinovki.undip.ac.id" class="brand brand-impact">
-        <span class="brand-logo-wrap brand-logo-wrap--impact">
+        </a>
+
+        <span class="brand-sep"></span>
+
+        <a href="https://dirinovki.undip.ac.id" class="brand brand-impact">
           <img src="{{ asset('images/Dikti-Berdampak-Undip Bermartabat Bermanfaat.png') }}"
               class="brand-logo brand-logo--impact"
               alt="Logo Undip Berdampak">
-        </span>
-      </a>
+        </a>
+      </div>
+
 
       <div class="nav-right">
         <nav class="nav-menu">

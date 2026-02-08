@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  height: 72px;
+  height: 100px;
   justify-content: flex-start;
 }
 
@@ -143,4 +143,53 @@
 .brand-logo--impact{
   transform: scale(1);      /* override dari transform 1.05 */
   object-fit: contain;
+}
+/* wrapper putih yang nyambung */
+.brand-group{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  padding: 6px 12px;
+}
+
+/* link brand jangan punya background lagi */
+.brand{
+  display: flex;
+  align-items: center;
+}
+
+/* pembatas tipis biar keliatan 2 logo tapi tetap nyambung */
+.brand-sep{
+  width: 1px;
+  height: 44px;
+  background: rgba(0,0,0,.12);
+}
+
+/* size logo kiri */
+.brand-group .brand:first-child .brand-logo{
+  height: 54px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* size logo kanan (yang panjang) */
+.brand-logo--impact{
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  transform: none; /* biar gak ke-zoom */
+}
+
+/* HAPUS/override pill lama */
+.brand-logo-wrap,
+.brand-logo-wrap--impact{
+  background: transparent;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  overflow: visible;
 }
