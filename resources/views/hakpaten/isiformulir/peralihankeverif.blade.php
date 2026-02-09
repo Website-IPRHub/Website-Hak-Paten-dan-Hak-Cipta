@@ -18,6 +18,7 @@
             6. Gambar Prototipe<br>
             7. Surat Pernyataan (Jika memilih skema penelitian pengembangan (TKT 7-9))
         </p>
+        <h1>Catatan: Mohon rapikan kembali dokumen sebelum dikirimkan ke proses verifikasi.</h1>
       </div>
       <a href="{{ route('patenverif.datadiri') }}" class="btn-verif">Lanjut ke Proses Verifikasi Dokumen</a>
     </div>

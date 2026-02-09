@@ -30,7 +30,7 @@
         {{-- LEFT --}}
         <div class="col-left">
           <div class="field">
-            <label class="label">Jumlah inventor <span class="req">*</span></label>
+            <label class="label">Jumlah Pencipta <span class="req">*</span></label>
             <input
               type="number"
               class="input"
@@ -161,20 +161,20 @@
 
       {{-- DATA INVENTOR --}}
       <div class="field field-full">
-        <label class="label">Data Inventor <span class="req">*</span></label>
+        <label class="label">Data Pencipta <span class="req">*</span></label>
 
         <div id="inventor-container"></div>
 
         <template id="inventor-template">
           <div class="inventor-card">
             <p class="inventor-head">
-              Inventor <span class="inv-no"></span>
+              Pencipta <span class="inv-no"></span>
             </p>
 
             <div class="inventor-grid">
               <div class="inventor-col">
                 <div class="field">
-                  <label class="label">Nama Inventor <span class="req">*</span></label>
+                  <label class="label">Nama Pencipta <span class="req">*</span></label>
                   <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
                 </div>
 

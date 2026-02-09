@@ -42,6 +42,12 @@
     <span class="icon"><i class="fa-solid fa-user-secret"></i></span>
     <span class="label">Daftar Rahasia Dagang</span>
   </a>
+
+  <a href="{{ route('daftar') }}" class="icon-btn merek">
+    <span class="icon"><i class="fa-solid fa-tag"></i></span>
+    <span class="label">Daftar Merek</span>
+  </a>
+
 </div>
 
     <!-- CARD PUTIH DI TENGAH GAMBAR -->

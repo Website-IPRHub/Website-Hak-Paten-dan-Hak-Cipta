@@ -10,8 +10,12 @@ class TrackingController extends Controller
     public function index(Request $request)
     {
         if (!$request->filled('q')) {
-            return view('tracking');
+            return view('tracking', [
+                'status' => 'terkirim',
+                'updatedAt' => null,
+            ]);
         }
+
 
         $request->validate([
             'q' => ['required', 'string', 'max:50'],
@@ -37,16 +41,18 @@ class TrackingController extends Controller
             return view('tracking', [
                 'q' => $q,
                 'found' => false,
+                'swal_error' => 'Kode pengajuan tidak ditemukan, lakukan verifikasi berkas terlebih dahulu.',
             ]);
         }
 
+
         // Samain ref_type dengan admin
         if ($cipta) {
-            $type  = 'cipta';          // ✅ sama dengan admin
+            $type  = 'cipta';          
             $data  = $cipta;
             $jenis = 'Hak Cipta';
         } else {
-            $type  = 'paten';          // ✅ sama dengan admin
+            $type  = 'paten';          
             $data  = $paten;
             $jenis = 'Paten';
         }

@@ -119,10 +119,27 @@ html, body{
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(3, 6, 31, 0.35); /* naikin biar KELIATAN, nanti turunin lagi */
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,19,73,.75) 0%,
+      rgba(0,19,73,.55) 35%,
+      rgba(0,19,73,.25) 60%,
+      rgba(0,19,73,.05) 100%
+    );
   z-index: 1;
-  pointer-events: none;
 }
+
+.hero-text h2::after{
+  content:"";
+  display:block;
+  width:90px;
+  height:6px;
+  background:#FACC15; 
+  margin-top: 18px;
+  border-radius:6px;
+}
+
 
 /* === ICON MENU BULAT === */
 .hero-buttons-center.icon-menu{
@@ -176,7 +193,7 @@ html, body{
 /* hover */
 .icon-btn:hover .icon{
   transform: translateY(-3px);
-  box-shadow: 0 16px 28px rgba(0,0,0,.14);
+  box-shadow: 0 16px 28px rgba(180, 201, 242, 0.14);
   filter: brightness(1.02);
 }
 .icon-btn:active .icon{
@@ -214,6 +231,16 @@ html, body{
 }
 .icon-btn.rahasia .icon i{ color:#E11D48; }
 
+/* === MEREK (rapi & konsisten) === */
+.icon-btn.merek .icon{
+  background: rgba(31, 122, 140, .14);
+  border-color: rgba(31, 122, 140, .45);
+}
+.icon-btn.merek .icon i{
+  color: #1f7a8c;
+}
+
+
 .icon-btn .icon{
   width: 104px;
   aspect-ratio: 1 / 1;
@@ -244,13 +271,13 @@ html, body{
     text-align: left;
     color: #fff;
     z-index: 2;
-    margin-left: 90px;
-    font-family: "Playfair Display", serif !important;
+    margin-left: 20px;
+    font-family: "inter", sans-serif !important;
     font-weight: 800;
 }
 
 .hero-text h1{
-    font-size: 70px;
+    font-size: 80px;
     font-family: "inter", sans-serif !important;
     font-weight: 650;
 }
@@ -281,7 +308,6 @@ html, body{
   border-top: 1px solid #C7D7F2;
   border-bottom: 1px solid #C7D7F2;
   box-shadow: 0 14px 26px rgba(28, 94, 189, 0.10);
-  border-radius: 15px;
   margin-top: 35px;
 }
 
