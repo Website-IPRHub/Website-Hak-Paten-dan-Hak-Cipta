@@ -1,5 +1,5 @@
 {{-- resources/views/admin/paten/detail.blade.php --}}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 @php
   $tab = 'paten';
@@ -16,6 +16,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>Detail Paten</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   @vite(['resources/css/admin.css', 'resources/js/app.js'])
 
   @vite([
@@ -67,11 +68,6 @@
       cursor:pointer;
       min-width:180px;
       margin-left:10px;
-    }
-    .btn-approve-right:disabled,
-    .btn-send-right:disabled{
-      opacity:.55;
-      cursor:not-allowed;
     }
 
     .docs-footer-actions{
@@ -158,7 +154,6 @@
         'surat_kepemilikan' => 'Surat Kepemilikan',
         'surat_pengalihan'  => 'Surat Pengalihan',
         'scan_ktp'          => 'Scan KTP',
-        'tanda_terima'      => 'Tanda Terima',
         'gambar_prototipe'  => 'Gambar Prototipe',
       ];
       $docKeys = array_keys($docLabels);
@@ -180,12 +175,24 @@
       });
     @endphp
 
-    <div class="paten-wrap" data-cipta-detail>
+    <div class="paten-wrap" data-paten-detail>
 
       <div class="page-head page-head-left">
-        <a href="{{ route('admin.dashboard',['tab'=>'paten']) }}" class="btn-ghost back-btn">
-          ← Kembali
-        </a>
+       <button type="button" class="btn-back-modern" onclick="history.back()">
+          <span class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 18l-6-6 6-6"
+                stroke="white"
+                stroke-width="2.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span>Kembali</span>
+        </button>
+
       </div>
 
       <div class="card card-paten">
@@ -291,7 +298,7 @@
                   $dotClass = $hasPemohonUpload ? 'green' : 'red';
                 @endphp
 
-                <div class="doc-item" data-doc-wrap>
+               <div class="doc-item" data-doc-wrap data-doc-key="{{ $k }}">
                   <div class="doc-top">
                     <div>
                       <div class="doc-name">
@@ -358,70 +365,95 @@
                   </div>
 
                   {{-- REVISI box hanya muncul kalau admin revisi atau pemohon sudah upload --}}
-                  @if($hasAdminRevisi || $hasPemohonUpload)
-                    <div class="incoming-wrap">
-                      <div class="incoming-title">Revisi</div>
+                  <div class="incoming-wrap" data-incoming-wrap {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
+                    <div class="incoming-title">Revisi</div>
 
-                      @if(!empty($note))
-                        <div class="rev-admin-box">
-                          <div class="ttl">Catatan revisi dari admin</div>
-                          <div class="note-admin">{{ $note }}</div>
-                          <div class="meta">
-                            Update (Admin):
-                            {{ optional($doc)->updated_at ? \Carbon\Carbon::parse(optional($doc)->updated_at)->format('d M Y') : '-' }}
+                    {{-- Catatan admin (hidden kalau kosong) --}}
+                    <div class="rev-admin-box" data-admin-note-wrap {{ !empty($note) ? '' : 'hidden' }}>
+                      <div class="meta">
+                        Update (Admin):
+                        <span data-admin-note-date>
+                          {{ optional($doc)->updated_at ? \Carbon\Carbon::parse(optional($doc)->updated_at)->format('d M Y') : '-' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    {{-- Status pemohon --}}
+                    <div class="muted" data-pemohon-empty {{ $hasPemohonUpload ? 'hidden' : '' }} style="font-size:12px; margin-top:10px;">
+                      Belum ada upload revisi dari pemohon.
+                    </div>
+
+                    {{-- NOTE: bagian list pemohon yang pakai <details> biarin seperti punyamu sekarang.
+                        Kalau ada upload pemohon, blade tetap render. Kalau tidak ada, ya kosong. --}}
+                    @php
+                    $pemohonList = $incomingSorted->filter(fn($x) => !empty($x->pemohon_file_path))->values();
+
+                    $adminNote = trim((string) ($note ?? ''));
+                    $adminTimeRaw = optional($doc)->updated_at;
+                    $adminTime = $adminTimeRaw ? \Carbon\Carbon::parse($adminTimeRaw)->format('d M Y H:i') : '-';
+
+                    // admin row muncul kalau admin pernah revisi (status revisi) ATAU ada note
+                    $showAdminRow = ($statusDoc === 'revisi') || ($adminNote !== '');
+                  @endphp
+
+                  <details class="incoming-details" style="margin-top:10px;" {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
+                    <summary class="incoming-summary">
+                      Detail Revisi ({{ $pemohonList->count() }})
+                    </summary>
+
+                    <div class="incoming-table">
+                      <div class="incoming-row incoming-head">
+                        <div>Catatan</div>
+                        <div>File Pemohon</div>
+                        <div>Update</div>
+                      </div>
+
+                      {{-- ROW ADMIN --}}
+                      @if($showAdminRow)
+                        <div class="incoming-row">
+                          <div class="incoming-cell">
+                            <div class="truncate-1" title="{{ $adminNote !== '' ? $adminNote : '-' }}">
+                              {{ $adminNote !== '' ? $adminNote : '-' }}
+                            </div>
+                          </div>
+
+                          <div class="incoming-cell muted">
+                            {{ $pemohonList->count() === 0 ? 'Pemohon belum upload file revisi.' : '-' }}
+                          </div>
+
+                          {{-- ✅ Update khusus pemohon, jadi kalau belum upload: kosong --}}
+                          <div class="incoming-cell muted">
+                            {{ $pemohonList->count() === 0 ? '-' : '' }}
                           </div>
                         </div>
                       @endif
 
-                      @if(!$hasPemohonUpload)
-                        <div class="muted" style="font-size:12px; margin-top:10px;">
-                          Belum ada upload revisi dari pemohon.
-                        </div>
-                      @else
+                      {{-- ROW PEMOHON (muncul kalau ada upload) --}}
+                      @foreach($pemohonList as $rv)
                         @php
-                          $pemohonList = $incomingSorted->filter(fn($x) => !empty($x->pemohon_file_path))->values();
+                          $pemohonTime = $rv->pemohon_uploaded_at ?? $rv->updated_at ?? $rv->created_at;
+                          $noteText = $rv->note ?? '-';
                         @endphp
 
-                        <details class="incoming-details" style="margin-top:10px;">
-                          <summary class="incoming-summary">
-                            Detail Revisi ({{ $pemohonList->count() }})
-                          </summary>
-
-                          <div class="incoming-table">
-                            <div class="incoming-row incoming-head">
-                              <div>Catatan</div>
-                              <div>File Pemohon</div>
-                              <div>Update</div>
-                            </div>
-
-                            @foreach($pemohonList as $rv)
-                              @php
-                                $pemohonTime = $rv->pemohon_uploaded_at ?? $rv->updated_at ?? $rv->created_at;
-                                $noteText = $rv->note ?? '-';
-                              @endphp
-
-                              <div class="incoming-row">
-                                <div class="incoming-cell">
-                                  <div class="truncate-1" title="{{ $noteText }}">{{ $noteText }}</div>
-                                </div>
-
-                                <div class="incoming-cell">
-                                  <a target="_blank" href="{{ asset('storage/'.$rv->pemohon_file_path) }}">
-                                    {{ $rv->pemohon_file_name ?? basename($rv->pemohon_file_path) }}
-                                  </a>
-                                </div>
-
-                                <div class="incoming-cell muted">
-                                  {{ $pemohonTime ? \Carbon\Carbon::parse($pemohonTime)->format('d M Y H:i') : '-' }}
-                                </div>
-                              </div>
-                            @endforeach
+                        <div class="incoming-row">
+                          <div class="incoming-cell">
+                            <div class="truncate-1" title="{{ $noteText }}">{{ $noteText }}</div>
                           </div>
-                        </details>
-                      @endif
-                    </div>
-                  @endif
 
+                          <div class="incoming-cell">
+                            <a target="_blank" href="{{ asset('storage/'.$rv->pemohon_file_path) }}">
+                              {{ $rv->pemohon_file_name ?? basename($rv->pemohon_file_path) }}
+                            </a>
+                          </div>
+
+                          <div class="incoming-cell muted">
+                            {{ $pemohonTime ? \Carbon\Carbon::parse($pemohonTime)->format('d M Y H:i') : '-' }}
+                          </div>
+                        </div>
+                      @endforeach
+                    </div>
+                  </details>
+                  </div>
                 </div>
               @endforeach
             </div>
@@ -450,7 +482,6 @@
                 id="btnApprove"
                 class="btn-approve-right"
                 data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'paten','id'=>$row->id]) }}"
-                {{ $canApprove ? '' : 'disabled' }}
               >
                 Approve
               </button>
@@ -551,13 +582,12 @@
   </main>
 </div>
 
-@if(session('wa_link'))
+@if(session('wa_links'))
   <div id="waPayload"
-       data-wa="{{ session('wa_link') }}"
+       data-was='@json(session("wa_links"))'
        data-label="{{ session('wa_label') ?? 'Kirim WhatsApp' }}"
        hidden></div>
 @endif
-
 
 </body>
 </html>
