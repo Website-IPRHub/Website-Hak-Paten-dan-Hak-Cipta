@@ -1146,3 +1146,429 @@ body.paten-detail-page .doc-actions form{
 body.paten-detail-page .doc-actions form button{
   width: auto;
 }
+
+
+/* === FIX: tombol bawah sejajar & satu baris === */
+.docs-footer-actions{
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:14px !important;
+}
+
+/* kalau salah satu tombol dibungkus form */
+.docs-footer-actions form{
+  margin:0 !important;
+}
+
+/* samain tinggi + style dasar kedua tombol */
+.docs-footer-actions .btn-send-right,
+.docs-footer-actions .btn-approve-right,
+.docs-footer-actions .btn-submit{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  height:44px !important;
+  line-height:1 !important;
+  padding:0 22px !important;
+  border-radius:12px !important;
+  box-sizing:border-box !important;
+}
+
+
+/* FIX: overlay header jangan nangkap klik */
+.dash-hero-overlay{
+  pointer-events: none !important;
+}
+
+/* 1) HEADER/HERO JANGAN NANGKEP KLIK (yang sering nutup area bawah) */
+body.paten-detail-page .dash-hero,
+body.paten-detail-page .dash-hero-overlay{
+  pointer-events: none !important;
+}
+
+/* 2) BALIKIN POINTER UNTUK ELEMEN YANG EMANG BUTUH KLIK DI HERO (kalau ada) */
+/* kalau hero lu ga ada tombol, bagian ini boleh dihapus */
+body.paten-detail-page .dash-hero a,
+body.paten-detail-page .dash-hero button{
+  pointer-events: auto !important;
+}
+
+/* 3) STICKY FOOTER + DIATAS SEMUA LAYER */
+body.paten-detail-page .docs-footer-actions{
+  position: sticky !important;
+  bottom: 12px !important;
+  z-index: 2147483647 !important; /* paling atas */
+}
+
+/* 4) PASTIIN WRAPPER KONTEN IKUT DIATAS (BIAR STICKY KEHITUNG) */
+body.paten-detail-page .dash-content{
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* 5) KASIH RUANG BAWAH BIAR KONTEN GA KETUTUP FOOTER */
+body.paten-detail-page .acc-body{
+  padding-bottom: 120px !important;
+}
+
+/* ===== BUTTON BACK MODERN ===== */
+.btn-back-modern{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+
+  padding:12px 22px;
+  border-radius:999px;
+
+  font-size:16px;
+  font-weight:900;
+  text-decoration:none;
+
+  background: linear-gradient(90deg,#f59e0b,#fbbf24);
+  color:#fff;
+
+  box-shadow:0 8px 20px rgba(245,158,11,.35);
+  transition: all .2s ease;
+}
+
+/* icon bulat kiri */
+.btn-back-modern .icon{
+  width:36px;
+  height:36px;
+  border-radius:999px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background: rgba(255,255,255,.20);
+}
+
+/* hover premium */
+.btn-back-modern:hover{
+  transform: translateY(-2px);
+  box-shadow:0 12px 28px rgba(245,158,11,.45);
+}
+
+.btn-back-modern{
+  border: none !important;        /* 🔥 hilangin border */
+  outline: none !important;       /* 🔥 hilangin garis fokus */
+  box-shadow: 0 8px 20px rgba(245,158,11,.35) !important; /* glow cantik */
+}
+
+/* =========================================================
+   ALIAS: Samain tampilan CIPTA pake CSS PATEN
+   (tanpa ubah isi aturan paten yang sudah ada)
+========================================================= */
+
+/* 1) Semua rule yang targetnya body.paten-detail-page
+      kita duplikasi untuk body.cipta-detail-page lewat :is()
+*/
+body.cipta-detail-page{
+  /* opsional: kalau ada variable theme di paten */
+  --navy: #0b2c5f;
+  --navy2:#08306f;
+  --ink:  #0f172a;
+  --muted: rgba(15,23,42,.65);
+
+  --line: rgba(11,44,95,.14);
+  --soft: rgba(11,44,95,.06);
+
+  --ok-bg: rgba(34,197,94,.18);
+  --ok-tx: #137a2c;
+
+  --rev-bg: rgba(245,158,11,.18);
+  --rev-tx: #8a5a00;
+
+  --pend-bg: rgba(148,163,184,.22);
+  --pend-tx: #334155;
+}
+
+/* 2) DUPLIKASI selector paten -> cipta (tanpa edit 500 baris)
+      Ini trik: kita override dengan selector gabungan.
+      Tinggal copy beberapa rule “kunci” yang bikin beda.
+*/
+
+body.cipta-detail-page .dash-layout{ gap:0 !important; }
+
+body.cipta-detail-page .page-head-left{ margin-bottom:14px; }
+body.cipta-detail-page .back-btn{ font-size:14px; }
+
+/* card header & layout */
+body.cipta-detail-page .card-paten{
+  background:#fff;
+  border:1px solid rgba(11,44,95,.10);
+  border-radius:18px;
+  padding:26px 20px;
+  box-shadow:0 12px 28px rgba(0,0,0,.06);
+  margin-bottom:16px;
+  overflow:hidden;
+}
+
+/* header area */
+body.cipta-detail-page .card-paten .paten-head{
+  background: linear-gradient(90deg,#0b2c5f,#123b7a);
+  padding:22px 26px;
+  margin:-26px -20px 20px;
+}
+body.cipta-detail-page .paten-title{
+  color:#fff;
+  font-size:26px;
+  font-weight:900;
+  margin:0;
+}
+body.cipta-detail-page .paten-sub{
+  color: rgba(255,255,255,.85);
+  font-size:15px;
+  margin-top:6px;
+}
+
+/* grid info */
+body.cipta-detail-page .paten-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 28px;
+}
+body.cipta-detail-page .paten-info{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+body.cipta-detail-page .paten-row{
+  display:grid;
+  grid-template-columns:170px 18px 1fr;
+  align-items:start;
+  column-gap:8px;
+}
+body.cipta-detail-page .p-label{ font-weight:700; color:#0b2c5f; }
+body.cipta-detail-page .p-colon{ text-align:center; color:rgba(0,0,0,.55); font-weight:700; }
+body.cipta-detail-page .p-value{ font-weight:500; color:#111; line-height:1.5; word-break:break-word; }
+
+/* accordion */
+body.cipta-detail-page .acc-wrap{ display:flex; flex-direction:column; gap:14px; }
+body.cipta-detail-page .acc-card{
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(11,44,95,.12);
+  box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+body.cipta-detail-page .acc-head,
+body.cipta-detail-page .acc-card.open .acc-head,
+body.cipta-detail-page .acc-head:hover,
+body.cipta-detail-page .acc-head:active,
+body.cipta-detail-page .acc-head:focus{
+  background: linear-gradient(90deg,#0b2c5f,#123b7a) !important;
+  padding:20px 22px;
+  cursor:pointer;
+  user-select:none;
+  border:0;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+body.cipta-detail-page .acc-title{
+  color:#fff !important;
+  font-size:22px;
+  font-weight:900;
+}
+body.cipta-detail-page .acc-sub{
+  color:rgba(255,255,255,.85) !important;
+  font-size:14px;
+}
+body.cipta-detail-page .acc-head svg,
+body.cipta-detail-page .acc-head i{
+  color:#fff !important;
+  opacity:.9 !important;
+}
+body.cipta-detail-page .acc-body{
+  background:#fbfcff;
+  border-top:1px solid rgba(11,44,95,.12);
+  padding:18px 20px 120px; /* include space sticky footer */
+}
+
+/* doc item */
+body.cipta-detail-page .doc-item{
+  background:#fff;
+  border:1px solid rgba(11,44,95,.10);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 8px 18px rgba(0,0,0,.04);
+}
+body.cipta-detail-page .doc-item .badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  border:1px solid transparent;
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+}
+body.cipta-detail-page .doc-item .badge::before{
+  content:"";
+  width:8px;height:8px;border-radius:50%;
+  background: currentColor;
+  opacity:.55;
+}
+body.cipta-detail-page .doc-item .badge.badge-ok{
+  background: var(--ok-bg);
+  color: var(--ok-tx);
+  border-color: rgba(34,197,94,.28);
+}
+body.cipta-detail-page .doc-item .badge.badge-revisi{
+  background: var(--rev-bg);
+  color: var(--rev-tx);
+  border-color: rgba(245,158,11,.32);
+}
+body.cipta-detail-page .doc-item .badge.badge-pending{
+  background: var(--pend-bg);
+  color: var(--pend-tx);
+  border-color: rgba(148,163,184,.35);
+}
+
+/* revisi masuk */
+body.cipta-detail-page .incoming-wrap{
+  background: linear-gradient(180deg, rgba(11,44,95,.05), rgba(11,44,95,.02));
+  border: 1px solid rgba(11,44,95,.14);
+  border-left: 6px solid rgba(245,158,11,.75);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  margin-top: 14px;
+}
+body.cipta-detail-page .incoming-title{
+  color:#0b2c5f;
+  font-size:15px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+body.cipta-detail-page .incoming-summary{
+  background: rgba(255,255,255,.85);
+  border: 1px solid rgba(11,44,95,.14);
+  color:#0b2c5f;
+  font-size:13px;
+  font-weight:900;
+  border-radius:12px;
+  padding:10px 12px;
+  list-style:none;
+  cursor:pointer;
+}
+body.cipta-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
+
+/* table revisi */
+body.cipta-detail-page .incoming-table{
+  border: 1px solid rgba(11,44,95,.14);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  margin-top:10px;
+}
+body.cipta-detail-page .incoming-row{
+  display:grid;
+  grid-template-columns: 1.4fr 1fr 140px 1fr;
+  gap:12px;
+  padding:12px 12px;
+  align-items:start;
+  border-top: 1px solid rgba(11,44,95,.10);
+}
+body.cipta-detail-page .incoming-head{
+  background: rgba(11,44,95,.08);
+  color:#0b2c5f;
+  font-weight:900;
+  font-size:13px;
+  border-top:0;
+}
+body.cipta-detail-page .incoming-cell{
+  font-size:12.5px;
+  line-height:1.45;
+  color: rgba(0,0,0,.82);
+  word-break:break-word;
+}
+@media (max-width: 900px){
+  body.cipta-detail-page .incoming-row{ grid-template-columns:1fr; }
+  body.cipta-detail-page .incoming-head{ display:none; }
+  body.cipta-detail-page .incoming-cell{
+    padding:10px;
+    border:1px solid rgba(11,44,95,.08);
+    border-radius:12px;
+    background:#fff;
+  }
+}
+
+/* inventor */
+body.cipta-detail-page .inv-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap:14px;
+  align-items:start;
+  margin-top:10px;
+}
+body.cipta-detail-page .inv-card{
+  background:#fff;
+  border:1px solid rgba(11,44,95,.14);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 10px 22px rgba(0,0,0,.05);
+}
+body.cipta-detail-page .inv-row{
+  display:grid;
+  grid-template-columns: 120px 14px 1fr;
+  gap:8px;
+  margin-bottom:8px;
+  font-size:14px;
+  line-height:1.45;
+}
+body.cipta-detail-page .inv-row b{
+  position:relative;
+}
+body.cipta-detail-page .inv-row b::after{
+  content:":";
+  position:absolute;
+  right:-10px;
+  color:rgba(0,0,0,.55);
+  font-weight:800;
+}
+
+/* sticky footer actions */
+body.cipta-detail-page .docs-footer-actions{
+  position: sticky !important;
+  bottom: 12px !important;
+  z-index: 2147483647 !important;
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:14px !important;
+}
+
+/* hero overlay jangan nangkep klik */
+body.cipta-detail-page .dash-hero,
+body.cipta-detail-page .dash-hero-overlay{
+  pointer-events:none !important;
+}
+body.cipta-detail-page .dash-hero a,
+body.cipta-detail-page .dash-hero button{
+  pointer-events:auto !important;
+}
+body.cipta-detail-page .dash-content{
+  position:relative !important;
+  z-index:10 !important;
+}
+
+/* FIX: Header accordion cipta jadi full (background biru gak setengah) */
+body.cipta-detail-page .acc-card{
+  padding: 0 !important; /* kalau ada padding bawaan yg bikin header mengecil */
+}
+
+body.cipta-detail-page .acc-head{
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+
+  /* kalau button kadang shrink */
+  box-sizing: border-box !important;
+}
+.rev-admin-box .ttl{font-weight:700;margin-bottom:6px}

@@ -75,11 +75,11 @@ class PemohonDashboardController extends Controller
                 ->where('ref_id', $refId)
                 ->first();
 
-           // ✅ status_verifikasi: cukup BACA (jangan update database tiap buka dashboard)
+           // ✅ status_verifikasi: ambil row TERBARU (paling penting untuk approve)
             $sv = DB::table('status_verifikasi')
                 ->where('ref_type', $type)
                 ->where('ref_id', $refId)
-                ->orderByDesc('id') // ambil row status terbaru
+                ->orderByDesc('id')
                 ->first();
 
             $status = strtolower($sv->status ?? 'terkirim');
@@ -91,18 +91,6 @@ class PemohonDashboardController extends Controller
 
             $updatedStr = $updatedAt->format('d M Y');
 
-            // refresh
-            $sv = DB::table('status_verifikasi')
-                ->where('ref_type', $type)
-                ->where('ref_id', $refId)
-                ->first();
-
-
-        $status = strtolower($sv->status ?? 'terkirim');
-        $activeStatus = $status;
-
-        $updatedAt  = $sv?->updated_at ? Carbon::parse($sv->updated_at) : Carbon::now();
-        $updatedStr = $updatedAt->format('d M Y');
 
         $rank = ['terkirim'=>1, 'proses'=>2, 'revisi'=>3, 'approve'=>4];
         $currentRank = $rank[$status] ?? 1;
@@ -344,11 +332,11 @@ class PemohonDashboardController extends Controller
         $source = $paten ?: $cipta;
 
         $sv = DB::table('status_verifikasi')
-        ->where('ref_type', $type)
-        ->where('ref_id', $refId)
-        ->where('created_at', '>=', $source->created_at)
-        ->orderByDesc('id')
-        ->first();
+            ->where('ref_type', $type)
+            ->where('ref_id', $refId)
+            ->orderByDesc('id')
+            ->first();
+
 
         $status = strtolower($sv->status ?? 'terkirim');
         if ($status !== 'approve') {

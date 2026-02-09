@@ -105,7 +105,6 @@
                             'surat_kepemilikan'=>'Surat Kepemilikan',
                             'surat_pengalihan'=>'Surat Pengalihan',
                             'scan_ktp'=>'Scan KTP',
-                            'tanda_terima'=>'Tanda Terima',
                             'gambar_prototipe'=>'Gambar Prototipe',
                             'surat_permohonan'=>'Surat Permohonan',
                             'surat_pernyataan'=>'Surat Pernyataan',
@@ -167,21 +166,21 @@
               @if($s['key'] === 'approve')
                 @php
                   $isApprove = ($status === 'approve');
+                  $tt = $sv->tanda_terima_pdf ?? null; // ✅ ambil dari status_verifikasi
+                @endphp
+
+                @php
+                  $isApprove = ($status === 'approve');
                   $tt = $sv->tanda_terima_pdf ?? null;
                 @endphp
 
                 <div class="pd-approve-actions" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-                  {{-- TANDA TERIMA --}}
                   @if($isApprove && $tt)
-                    <a class="pd-mini-btn primary"
-                       target="_blank"
-                       href="{{ asset('storage/'.$tt) }}">
+                    <a class="pd-mini-btn primary" target="_blank" href="{{ route('pemohon.tanda_terima.download') }}">
                       Download Tanda Terima
                     </a>
                   @else
-                    <button class="pd-mini-btn" disabled>
-                      Download Tanda Terima
-                    </button>
+                    <button class="pd-mini-btn" disabled>Download Tanda Terima</button>
                   @endif
 
                   {{-- PENDAFTARAN --}}
@@ -290,3 +289,4 @@
   </div>
 </div>
 @endsection
+

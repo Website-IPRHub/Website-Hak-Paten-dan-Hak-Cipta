@@ -53,12 +53,18 @@ Route::prefix('admin')->group(function () {
     Route::post('/verifikasi-dokumen/{type}/{id}/set', [AdminDashboardController::class, 'setVerifikasiDokumen'])->name('admin.verifikasi_dokumen.set');
     Route::post('/verifikasi-dokumen/{type}/{id}/send-revisi', [AdminDashboardController::class, 'sendRevisiEmail'])->name('admin.verifikasi_dokumen.sendRevisi');
 
-    Route::get('/admin/paten/{id}/detail', [AdminDashboardController::class, 'detailPaten'])
+    Route::get('/paten/{id}/detail', [AdminDashboardController::class, 'detailPaten'])
     ->name('admin.paten.detail');
 
-    Route::get('/admin/cipta/{id}/detail', [AdminDashboardController::class, 'detailCipta'])
+    Route::get('/cipta/{id}/detail', [AdminDashboardController::class, 'detailCipta'])
         ->name('admin.cipta.detail');
 });
+
+Route::post(
+  '/admin/verifikasi-dokumen/{type}/{id}/approve',
+  [AdminDashboardController::class, 'approveAjax']
+)->name('admin.verifikasi_dokumen.approve');
+
 
 Route::get('/debug-mail', function () {
     return [
@@ -118,7 +124,6 @@ Route::post('/revisi/{type}/{id}', [AdminDashboardController::class, 'setRevisi'
 Route::post('/admin/revisi/read/{id}', [AdminDashboardController::class, 'markRevisionRead'])
     ->name('admin.revisi.read');
 
-use App\Http\Controllers\PemohonRevisiController;
 
 Route::get('/paten/pendaftaran', function () {
     return view('hakpaten.hakpaten');

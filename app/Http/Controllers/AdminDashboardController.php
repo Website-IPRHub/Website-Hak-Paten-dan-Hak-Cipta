@@ -62,23 +62,27 @@ class AdminDashboardController extends Controller
        // =========================
         // STATISTIK (PAKAI TABEL PENDAFTARAN)
         // =========================
-        $totalPaten = DB::table('paten')->count();       // ✅ pendaftaran paten
-        $totalCipta = DB::table('hak_cipta')->count();   // ✅ pendaftaran cipta
+      // =========================
+        // STATISTIK (PAKAI DATA PENGAJUAN)
+        // =========================
+        $totalPaten = DB::table('paten_verifs')->count();       // ✅ pengajuan paten
+        $totalCipta = DB::table('hak_cipta_verifs')->count();   // ✅ pengajuan cipta
         $totalAll   = $totalPaten + $totalCipta;
 
-        $patenJenis = DB::table('paten')
+        $patenJenis = DB::table('paten_verifs')
             ->select('jenis_paten', DB::raw('count(*) as total'))
             ->groupBy('jenis_paten')
             ->pluck('total', 'jenis_paten')
             ->map(fn ($v) => (int)$v)
             ->toArray();
 
-        $ciptaJenis = DB::table('hak_cipta')
+        $ciptaJenis = DB::table('hak_cipta_verifs')
             ->select('jenis_cipta', DB::raw('count(*) as total'))
             ->groupBy('jenis_cipta')
             ->pluck('total', 'jenis_cipta')
             ->map(fn ($v) => (int)$v)
             ->toArray();
+
 
        // =========================
         // =========================
@@ -86,7 +90,7 @@ class AdminDashboardController extends Controller
         // =========================
 
         // ===== PATEN
-        $patenRows = DB::table('paten')->select('inventors')->get();
+        $patenRows = DB::table('paten_verifs')->select('inventors')->get();
 
         $patenMahasiswa = 0;
         $patenDosen = 0;
@@ -121,7 +125,7 @@ class AdminDashboardController extends Controller
         // kalau kamu belum punya pembagian mahasiswa/dosen di tabel hak_cipta,
         // minimal fakultasnya dulu yang bener:
         // ===== CIPTA (PAKAI inventors JSON)
-        $ciptaRows = DB::table('hak_cipta')->select('inventors', 'fakultas')->get();
+        $ciptaRows = DB::table('hak_cipta_verifs')->select('inventors', 'fakultas')->get();
 
         $ciptaMahasiswa = 0;
         $ciptaDosen = 0;
@@ -727,12 +731,13 @@ class AdminDashboardController extends Controller
 
         $waLink = null;
         if (in_array($newStatus, $waStatuses, true)) {
-            $phone = $this->getPemohonPhone($row);
+            $phones = $this->getPemohonPhones($row);
             $nama  = $this->getPemohonName($row);
 
             $waMsg = $this->buildWaStatusMessage($kategori, $judul, $no, $newStatus, $nama);
 
-            $waLink = $this->makeWaLink($phone, $waMsg);
+            $waLinks = $this->makeWaLinks($phones, $waMsg);
+            $waLink = $waLinks[0] ?? null;
         }
 
         $msg = 'Status berhasil diupdate.'
@@ -752,6 +757,7 @@ class AdminDashboardController extends Controller
                     'no' => $no,
                 ],
                 'wa_link' => $waLink,
+                'wa_links' => $waLinks,
             ]);
         }
         if (in_array($newStatus, ['proses','approve'])) {
@@ -910,312 +916,254 @@ class AdminDashboardController extends Controller
 
     // ========= verifikasi dokumen per-file (OK / REVISI) =========
     public function setVerifikasiDokumen(Request $request, string $type, int $id)
-    {
-        if (!$request->session()->get('admin_logged_in')) {
-                return $request->expectsJson()
-                ? response()->json(['ok'=>false,'message'=>'Unauthorized'], 401)
-                : redirect()->route('admin.login.form');
-        }
-        if (!in_array($type, ['paten', 'cipta'])) abort(404);
+{
+    if (!$request->session()->get('admin_logged_in')) {
+        return $request->expectsJson()
+            ? response()->json(['ok'=>false,'message'=>'Unauthorized'], 401)
+            : redirect()->route('admin.login.form');
+    }
+    if (!in_array($type, ['paten', 'cipta'], true)) abort(404);
 
-        $request->validate([
-            'doc_key' => 'required|string|max:100',
-            'action'  => 'required|in:ok,revisi',
-            'note'    => 'nullable|string',
-            'admin_attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-        ]);
+    $request->validate([
+        'doc_key' => 'required|string|max:100',
+        'action'  => 'required|in:ok,revisi',
+        'note'    => 'nullable|string',
+        'admin_attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+    ]);
 
-        $docKey = $request->input('doc_key');
-        $action = $request->input('action');
+    $docKey = $request->input('doc_key');
+    $action = $request->input('action');
 
-        $data = [
-            'status' => $action === 'ok' ? 'ok' : 'revisi',
-            'updated_at' => now(),
-        ];
+    $data = [
+        'status' => $action === 'ok' ? 'ok' : 'revisi',
+        'updated_at' => now(),
+    ];
 
-        if ($action === 'revisi') {
-            if (!trim((string)$request->input('note'))) {
-                // ✅ FIX: balik ke halaman asal (tab paten/cipta/status)
-                if ($request->expectsJson()) {
-                    return response()->json(['ok'=>false,'message'=>'Catatan revisi wajib diisi.'], 422);
-                }
-                return redirect()->back()->with('success', 'Catatan revisi wajib diisi.');
+    if ($action === 'revisi') {
+        if (!trim((string)$request->input('note'))) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok'=>false,'message'=>'Catatan revisi wajib diisi.'], 422);
             }
-            $data['note'] = $request->input('note');
-            $data['requested_at'] = now();
-        } else {
-            $data['note'] = null;
-            $data['requested_at'] = null;
-            $data['admin_attachment_path'] = null;
+            return redirect()->back()->with('success', 'Catatan revisi wajib diisi.');
         }
+        $data['note'] = $request->input('note');
+        $data['requested_at'] = now();
+    } else {
+        $data['note'] = null;
+        $data['requested_at'] = null;
+        $data['admin_attachment_path'] = null;
+    }
 
-       if ($request->hasFile('admin_attachment')) {
-            $file = $request->file('admin_attachment');
-            $path = $file->store('admin_revisi', 'public');
+    if ($request->hasFile('admin_attachment')) {
+        $file = $request->file('admin_attachment');
+        $path = $file->store('admin_revisi', 'public');
 
-            $data['admin_attachment_path'] = $path;
-            $data['admin_attachment_name'] = $file->getClientOriginalName(); // ✅ tambah ini
-        }
+        $data['admin_attachment_path'] = $path;
+        $data['admin_attachment_name'] = $file->getClientOriginalName();
+    }
 
-        VerifikasiDokumen::updateOrCreate(
-            ['ref_type' => $type, 'ref_id' => $id, 'doc_key' => $docKey],
-            $data + ['created_at' => now()]
-        );
+    VerifikasiDokumen::updateOrCreate(
+        ['ref_type' => $type, 'ref_id' => $id, 'doc_key' => $docKey],
+        $data + ['created_at' => now()]
+    );
 
-        if ($action === 'revisi') {
-        // simpan juga ke revisions supaya langsung muncul di tabel detail revisi
-        DB::table('revisions')->updateOrInsert(
-            [
-            'type'   => $type,
-            'ref_id' => $id,
-            'doc_key'=> $docKey,
+    // ✅ PENTING: DI SINI JANGAN UPDATE status_verifikasi & jangan insert revisions
+    // status global baru berubah saat admin klik "Simpan & Kirim"
+
+    if ($request->expectsJson()) {
+        $doc = VerifikasiDokumen::where([
+            'ref_type' => $type,
+            'ref_id'   => $id,
+            'doc_key'  => $docKey,
+        ])->first();
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Status dokumen berhasil disimpan.',
+            'doc'     => [
+                'doc_key'               => $docKey,
+                'status'                => $doc->status ?? 'pending',
+                'note'                  => $doc->note,
+                'admin_attachment_path' => $doc->admin_attachment_path,
+                'admin_attachment_url'  => $doc->admin_attachment_path
+                    ? asset('storage/' . $doc->admin_attachment_path)
+                    : null,
             ],
-            [
-            'from_role'          => 'admin',
-            'state'              => 'requested',
-            'note'               => $data['note'],
-            'file_path'          => $data['admin_attachment_path'] ?? null, // lampiran admin
-            'pemohon_file_path'  => null,                                   // belum ada
-            'is_read_admin'      => 1,
-            'is_read_pemohon'    => 0,
-            'updated_at'         => now(),
-            'created_at'         => now(),
-            ]
-        );
-        }
-
-
-        // kalau ada minimal 1 dokumen revisi => status_verifikasi jadi revisi
-        $hasRevisi = VerifikasiDokumen::where(['ref_type'=>$type,'ref_id'=>$id])
-            ->where('status','revisi')->exists();
-
-        if ($hasRevisi) {
-            $old = DB::table('status_verifikasi')->where(['ref_type'=>$type,'ref_id'=>$id])->first();
-
-            DB::table('status_verifikasi')->updateOrInsert(
-                ['ref_type'=>$type,'ref_id'=>$id],
-                [
-                    'status' => 'revisi',
-                    'updated_at' => now(),
-                    'created_at' => $old ? $old->created_at : now(),
-                ]
-            );
-        }
-
-        if ($request->expectsJson()) {
-            // ambil doc yang baru diupdate biar UI bisa update
-            $doc = VerifikasiDokumen::where([
-                'ref_type' => $type,
-                'ref_id' => $id,
-                'doc_key' => $docKey,
-            ])->first();
-
-            // cek apakah masih ada revisi di pengajuan ini (buat toggle tombol kirim revisi)
-            $hasRevisi = VerifikasiDokumen::where(['ref_type'=>$type,'ref_id'=>$id])
-                ->where('status','revisi')->exists();
-
-            return response()->json([
-                'ok' => true,
-                'message' => 'Verifikasi dokumen berhasil disimpan.',
-                'doc' => [
-                    'doc_key' => $docKey,
-                    'status' => $doc->status ?? 'pending',
-                    'note' => $doc->note,
-                    'admin_attachment_path' => $doc->admin_attachment_path,
-                    'admin_attachment_url' => $doc->admin_attachment_path ? asset('storage/'.$doc->admin_attachment_path) : null,
-                ],
-                'has_revisi' => $hasRevisi,
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Verifikasi dokumen berhasil disimpan.');
+        ]);
     }
 
-    public function sendRevisiPaten(Request $request, $id)
-    {
-        $request->validate([
-        'note' => 'required|string',
-        'file' => 'nullable|mimes:pdf,doc,docx|max:5120'
-        ]);
+    return redirect()->back()->with('success', 'Status dokumen berhasil disimpan.');
+}
 
-        $paten = DB::table('paten_verifs')->where('id',$id)->first();
-        if(!$paten) abort(404);
-
-        $path = null;
-        if($request->hasFile('file')){
-        $path = $request->file('file')->store('revisi/paten/admin','public');
-        }
-
-        DB::table('paten_verifs')->where('id',$id)->update(['status_verif'=>'revisi']);
-
-        DB::table('revisions')->insert([
-        'type'=>'paten',
-        'ref_id'=>$id,
-        'from_role'=>'admin',
-        'note'=>$request->note,
-        'file_path'=>$path,
-        'is_read_admin'=>true,
-        'is_read_pemohon'=>false,
-        'created_at'=>now(),
-        'updated_at'=>now(),
-        ]);
-
-        // optional: tetap kirim email
-        // Mail::to(...)->send(...)
-
-        return back()->with('success','Revisi berhasil dikirim.');
-    }
 
     // ========= kirim email revisi (sekali kirim list dokumen revisi) =========
    public function sendRevisiEmail(Request $request, string $type, int $id)
-    {
-        if (!$request->session()->get('admin_logged_in')) {
-            return redirect()->route('admin.login.form');
+{
+    if (!$request->session()->get('admin_logged_in')) {
+        return redirect()->route('admin.login.form');
+    }
+    if (!in_array($type, ['paten', 'cipta'], true)) abort(404);
+
+    // ambil meta pengajuan
+    $meta = $this->getRowByType($type, $id);
+    $row = $meta['row'];
+    $kategori = $meta['kategori']; // biasanya PATEN / HAK CIPTA (atau format kamu)
+    $judul = $meta['judul'];
+    $no = $meta['no'];
+
+    $emails = $this->parseEmails($meta['email']);
+    if (count($emails) === 0) {
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'message'=>'Gagal kirim revisi: email pemohon kosong/tidak valid.'], 422);
         }
-        if (!in_array($type, ['paten', 'cipta'], true)) abort(404);
+        return redirect()->back()->with('success', 'Gagal kirim revisi: email pemohon kosong/tidak valid.');
+    }
 
-        // ambil meta pengajuan
-        $meta = $this->getRowByType($type, $id);
-        $row = $meta['row'];
-        $kategori = $meta['kategori'];
-        $judul = $meta['judul'];
-        $no = $meta['no'];
+    // ambil dokumen yang statusnya revisi
+    $docs = VerifikasiDokumen::where(['ref_type'=>$type,'ref_id'=>$id])
+        ->where('status','revisi')
+        ->orderBy('doc_key')
+        ->get();
 
-        $emails = $this->parseEmails($meta['email']);
-        if (count($emails) === 0) {
-            if ($request->expectsJson()) {
-                return response()->json(['ok'=>false,'message'=>'Gagal kirim revisi: email pemohon kosong/tidak valid.'], 422);
-            }
-            return redirect()->back()->with('success', 'Gagal kirim revisi: email pemohon kosong/tidak valid.');
+    if ($docs->count() === 0) {
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'message'=>'Tidak ada dokumen revisi untuk dikirim.'], 422);
+        }
+        return redirect()->back()->with('success', 'Tidak ada dokumen revisi untuk dikirim.');
+    }
+
+    // label dokumen
+    $labels = [
+        // paten
+        'draft_paten' => 'Draft Paten',
+        'form_permohonan' => 'Form Permohonan',
+        'surat_kepemilikan' => 'Surat Kepemilikan',
+        'surat_pengalihan' => 'Surat Pengalihan',
+        'scan_ktp' => 'Scan KTP',
+        'tanda_terima' => 'Tanda Terima',
+        'gambar_prototipe' => 'Gambar Prototipe',
+
+        // cipta
+        'surat_permohonan' => 'Surat Permohonan',
+        'surat_pernyataan' => 'Surat Pernyataan',
+        'surat_pengalihan' => 'Surat Pengalihan',
+        'tanda_terima' => 'Tanda Terima',
+        'scan_ktp' => 'Scan KTP',
+        'hasil_ciptaan' => 'Hasil Ciptaan',
+    ];
+
+    // build item email (dengan file admin)
+    $items = [];
+    foreach ($docs as $d) {
+        $adminFull = null;
+        if ($d->admin_attachment_path) {
+            $adminFull = storage_path('app/public/' . $d->admin_attachment_path);
         }
 
-        // ambil dokumen yang statusnya revisi
-        $docs = VerifikasiDokumen::where(['ref_type'=>$type,'ref_id'=>$id])
-            ->where('status','revisi')
-            ->orderBy('doc_key')
-            ->get();
-
-        if ($docs->count() === 0) {
-            if ($request->expectsJson()) {
-                return response()->json(['ok'=>false,'message'=>'Tidak ada dokumen revisi untuk dikirim.'], 422);
-            }
-            return redirect()->back()->with('success', 'Tidak ada dokumen revisi untuk dikirim.');
-        }
-
-        // label dokumen
-        $labels = [
-            // paten
-            'draft_paten' => 'Draft Paten',
-            'form_permohonan' => 'Form Permohonan',
-            'surat_kepemilikan' => 'Surat Kepemilikan',
-            'surat_pengalihan' => 'Surat Pengalihan',
-            'scan_ktp' => 'Scan KTP',
-            'tanda_terima' => 'Tanda Terima',
-            'gambar_prototipe' => 'Gambar Prototipe',
-
-            // cipta
-            'surat_permohonan' => 'Surat Permohonan',
-            'surat_pernyataan' => 'Surat Pernyataan',
-            'surat_pengalihan' => 'Surat Pengalihan',
-            'tanda_terima' => 'Tanda Terima',
-            'scan_ktp' => 'Scan KTP',
-            'hasil_ciptaan' => 'Hasil Ciptaan',
+        $items[] = [
+            'label' => $labels[$d->doc_key] ?? $d->doc_key,
+            'note' => $d->note,
+            'has_attachment' => !empty($d->admin_attachment_path),
+            'admin_attachment_fullpath' => $adminFull,
+            'admin_attachment_name' => $d->admin_attachment_path ? basename($d->admin_attachment_path) : null,
         ];
+    }
 
-        // build item email (dengan file admin)
-        $items = [];
-        foreach ($docs as $d) {
-            $adminFull = null;
-            if ($d->admin_attachment_path) {
-                $adminFull = storage_path('app/public/' . $d->admin_attachment_path);
-            }
+    // ✅ 1) set status_verifikasi = revisi
+    $oldSv = DB::table('status_verifikasi')->where(['ref_type'=>$type,'ref_id'=>$id])->first();
+    DB::table('status_verifikasi')->updateOrInsert(
+        ['ref_type'=>$type,'ref_id'=>$id],
+        [
+            'status' => 'revisi',
+            'updated_at' => now(),
+            'created_at' => $oldSv?->created_at ?? now(),
+        ]
+    );
 
-            $items[] = [
-                'label' => $labels[$d->doc_key] ?? $d->doc_key,
-                'note' => $d->note,
-                'has_attachment' => !empty($d->admin_attachment_path),
-                'admin_attachment_fullpath' => $adminFull,
-                'admin_attachment_name' => $d->admin_attachment_path ? basename($d->admin_attachment_path) : null,
-            ];
-        }
-
-        // ✅ 1) set status_verifikasi = revisi
-        $oldSv = DB::table('status_verifikasi')->where(['ref_type'=>$type,'ref_id'=>$id])->first();
-        DB::table('status_verifikasi')->updateOrInsert(
-            ['ref_type'=>$type,'ref_id'=>$id],
+    // ✅ 2) UPSERT ke revisions per dokumen (doc_key)
+    foreach ($docs as $d) {
+        DB::table('revisions')->updateOrInsert(
             [
-                'status' => 'revisi',
+                'type' => $type,
+                'ref_id' => $id,
+                'doc_key' => $d->doc_key,
+                'from_role' => 'admin',
+                'state' => 'requested',
+            ],
+            [
+                'note' => $d->note,
+                'file_path' => $d->admin_attachment_path,
+                'is_read_admin' => true,
+                'is_read_pemohon' => false,
                 'updated_at' => now(),
-                'created_at' => $oldSv?->created_at ?? now(),
+                'created_at' => now(),
             ]
         );
-
-        // ✅ 2) UPSERT ke revisions per dokumen (doc_key)
-        // agar pemohon bisa upload revisi per dokumen + admin dapat notif
-        foreach ($docs as $d) {
-            DB::table('revisions')->updateOrInsert(
-                [
-                    'type' => $type,
-                    'ref_id' => $id,
-                    'doc_key' => $d->doc_key,      // ⚠️ butuh kolom doc_key di table revisions
-                    'from_role' => 'admin',
-                    'state' => 'requested',
-                ],
-                [
-                    'note' => $d->note,
-                    'file_path' => $d->admin_attachment_path,
-                    'is_read_admin' => true,
-                    'is_read_pemohon' => false,
-                    'updated_at' => now(),
-                    'created_at' => now(),
-                ]
-            );
-        }
-
-        // kirim email revisi
-        try {
-            foreach ($emails as $to) {
-                Mail::to($to)->send(new RevisiMail($kategori, $judul, $no, $items));
-            }
-
-            // optional WA
-            $phone = $this->getPemohonPhone($row);
-            $waMsg =
-                "Halo,\n".
-                "Pengajuan {$kategori} Anda membutuhkan REVISI.\n".
-                "No Pendaftaran: {$no}\n".
-                "Judul: {$judul}\n\n".
-                "Detail revisi sudah kami kirim melalui EMAIL.\n".
-                "Silakan cek email Anda dan unggah ulang dokumen sesuai catatan.\n\n".
-                "Terima kasih.";
-            $waLink = $this->makeWaLink($phone, $waMsg);
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'ok' => true,
-                    'message' => 'Kirim WhatsApp sekarang.',
-                    'emails' => $emails,
-                    'wa_link' => $waLink,
-                ]);
-            }
-
-            return redirect()->back()
-                ->with('success', 'Email revisi terkirim ke: '.implode(', ', $emails))
-                ->with('wa_link', $waLink)
-                ->with('wa_label', 'Kirim WA (Announce Revisi)');
-
-        } catch (\Throwable $e) {
-            Log::error('Gagal kirim email revisi', [
-                'ref_type'=>$type,'ref_id'=>$id,'emails'=>$emails,'err'=>$e->getMessage()
-            ]);
-
-            if ($request->expectsJson()) {
-                return response()->json(['ok'=>false,'message'=>'Gagal kirim email revisi.'], 500);
-            }
-
-            return redirect()->back()->with('success', 'Gagal kirim email revisi. Cek storage/logs/laravel.log');
-        }
     }
+
+    // kirim email revisi
+    try {
+        foreach ($emails as $to) {
+            Mail::to($to)->send(new RevisiMail($kategori, $judul, $no, $items));
+        }
+
+        // =====================================================
+        // ✅ WA: MULTI NOMOR + PESAN LEBIH SOPAN + LINK LOGIN
+        // =====================================================
+        $kategoriUpper = strtoupper($type === 'paten' ? 'PATEN' : 'HAK CIPTA');
+        $loginUrl = url('/pemohon/login');
+
+        $waMsg =
+            "Yth. Bapak/Ibu Pemohon,\n\n"
+        . "Dengan hormat,\n\n"
+        . "Bersama ini kami sampaikan bahwa pengajuan {$kategoriUpper} membutuhkan *REVISI*.\n"
+        . "Mohon melakukan perbaikan sesuai catatan revisi dan mengunggah kembali dokumen melalui sistem.\n\n"
+        . "Rincian Pengajuan:\n"
+        . "• Kategori : {$kategoriUpper}\n"
+        . "• No. Pendaftaran : {$no}\n"
+        . "• Judul : {$judul}\n\n"
+        . "Silakan login melalui tautan berikut untuk melihat detail revisi:\n"
+        . "{$loginUrl}\n\n"
+        . "Terima kasih atas perhatian dan kerja samanya.\n\n"
+        . "Hormat kami,\n"
+        . "Admin KIHub";
+
+        // ✅ ambil semua nomor (row + inventors) lalu generate link satu-satu
+        $phones  = $this->getPemohonPhones($row);        // array nomor (sudah dinormalize & unique)
+        $waLinks = $this->makeWaLinks($phones, $waMsg);  // array link
+
+        // (opsional) backward compatible kalau ada kode lama masih baca "wa_link"
+        $waLink = $waLinks[0] ?? null;
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'Revisi berhasil dikirim.',
+                'emails' => $emails,
+                'wa_links' => $waLinks,  // ✅ utama
+                'wa_link'  => $waLink,   // ✅ cadangan
+                'wa_label' => 'Kirim WA (Announce Revisi)',
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Email revisi terkirim ke: '.implode(', ', $emails))
+            ->with('wa_links', $waLinks) // ✅ tetap array
+            ->with('wa_label', 'Kirim WA (Announce Revisi)');
+
+
+    } catch (\Throwable $e) {
+        Log::error('Gagal kirim email revisi', [
+            'ref_type'=>$type,'ref_id'=>$id,'emails'=>$emails,'err'=>$e->getMessage()
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'message'=>'Gagal kirim email revisi.'], 500);
+        }
+
+        return redirect()->back()->with('success', 'Gagal kirim email revisi. Cek storage/logs/laravel.log');
+    }
+}
 
     public function destroyPaten($id)
     {
@@ -1396,7 +1344,7 @@ class AdminDashboardController extends Controller
     $doc->saveAs($tmpDocx);
 
     // LibreOffice path
-    $soffice = 'D:\\Program Files\\LibreOffice\\program\\soffice.exe';;
+    $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';;
     if (!file_exists($soffice)) {
         @unlink($tmpDocx);
         throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
@@ -1665,6 +1613,16 @@ class AdminDashboardController extends Controller
         return redirect()->route('admin.login.form');
     }
 
+    $this->markAsProsesWhenViewed('paten', $id);
+
+    // ✅ notifCount (samain kayak cipta)
+    $notifCount = DB::table('revisions')
+        ->whereIn('type', ['paten', 'cipta'])
+        ->where('state', 'submitted')
+        ->whereNotNull('pemohon_file_path')
+        ->where('is_read_admin', 0)
+        ->count();
+
     $row = DB::table('paten_verifs as p')
         ->leftJoin('status_verifikasi as sv', function ($join) {
             $join->on('sv.ref_id', '=', 'p.id')
@@ -1715,7 +1673,8 @@ class AdminDashboardController extends Controller
     $incoming = DB::table('revisions')
         ->where('type','paten')
         ->where('ref_id',$id)
-        ->whereIn('state',['requested','submitted']) // ✅ tampilkan request admin juga
+        ->where('state', 'submitted')
+        ->whereNotNull('pemohon_file_path') // ✅ tampilkan request admin juga
         ->orderByDesc('updated_at')
         ->get()
         ->groupBy('doc_key');
@@ -1730,53 +1689,314 @@ class AdminDashboardController extends Controller
 }
 
     public function detailCipta(Request $request, int $id)
-    {
-        if (!$request->session()->get('admin_logged_in')) {
-            return redirect()->route('admin.login.form');
+{
+    if (!$request->session()->get('admin_logged_in')) {
+        return redirect()->route('admin.login.form');
+    }
+
+    $this->markAsProsesWhenViewed('cipta', $id);
+
+    // ✅ notifCount (biar sama kayak paten)
+    $notifCount = DB::table('revisions')
+        ->whereIn('type', ['paten', 'cipta'])
+        ->where('state', 'submitted')
+        ->whereNotNull('pemohon_file_path')
+        ->where('is_read_admin', 0)
+        ->count();
+
+    $row = DB::table('hak_cipta_verifs as c')
+        ->leftJoin('status_verifikasi as sv', function ($join) {
+            $join->on('sv.ref_id', '=', 'c.id')
+                ->where('sv.ref_type', '=', 'cipta');
+        })
+        ->select([
+            'c.*',
+            DB::raw("COALESCE(sv.status,'terkirim') as status"),
+        ])
+        ->where('c.id', $id)
+        ->first();
+
+    if (!$row) abort(404);
+
+    // ✅ SAMAIN kayak paten: inventors_arr dibentuk dulu
+    $invArr = [];
+    if (!empty($row->inventors)) {
+        $decoded = json_decode($row->inventors, true);
+        $invArr = is_array($decoded) ? $decoded : [];
+    }
+
+    $row->inventors_arr = collect($invArr)->map(function ($i) {
+        return [
+            'nama'     => $i['nama'] ?? '-',
+            'status'   => $i['status'] ?? '-',
+            'email'    => $i['email'] ?? '-',
+            'no_hp'    => $i['no_hp'] ?? ($i['no hp'] ?? ($i['hp'] ?? '-')),
+            'nip_nim'  => $i['nip_nim'] ?? ($i['nipnim'] ?? ($i['nip'] ?? '-')),
+            'fakultas' => $i['fakultas'] ?? '-',
+        ];
+    })->values()->all();
+
+    // ✅ attach docs (pakai helper yang udah ada)
+    $docKeys = [
+        'surat_permohonan',
+        'surat_pernyataan',
+        'surat_pengalihan',
+        'tanda_terima',
+        'scan_ktp',
+        'hasil_ciptaan',
+    ];
+
+    $rowCol = collect([$row]);
+    $rowCol = $this->attachDocsToRows($rowCol, 'cipta', $docKeys);
+    $row = $rowCol->first();
+
+    // ✅ revisi masuk dari pemohon (tabel revisions) -> groupBy doc_key (sama kayak paten)
+    $incoming = DB::table('revisions')
+        ->where('type', 'cipta')
+        ->where('ref_id', $id)
+        ->where('state', 'submitted')
+        ->whereNotNull('pemohon_file_path')
+        ->orderByDesc('updated_at')
+        ->get()
+        ->groupBy('doc_key');
+
+    return view('admin.ciptadetail', [
+        'name' => $request->session()->get('admin_name', 'Admin'),
+        'row' => $row,
+        'incomingByDoc' => $incoming,
+        'tab' => 'cipta',
+        'notifCount' => $notifCount ?? 0, // ✅ biar header lonceng aman
+    ]);
+}
+
+    // =========================
+    // APPROVE VIA AJAX (DETAIL)
+    // =========================
+  public function approveAjax(Request $request, $type, $id)
+{
+    DB::beginTransaction();
+
+    try {
+        // 1) Ambil data pengajuan
+        if ($type === 'paten') {
+            $row = PatenVerif::findOrFail($id);
+        } else {
+            $row = DB::table('hak_cipta_verifs')->where('id', $id)->first();
+            if (!$row) abort(404);
         }
 
-        $row = DB::table('hak_cipta_verifs as c')
-            ->leftJoin('status_verifikasi as sv', function ($join) {
-                $join->on('sv.ref_id', '=', 'c.id')
-                    ->where('sv.ref_type', '=', 'cipta');
-            })
-            ->select([
-                'c.*',
-                DB::raw("COALESCE(sv.status,'terkirim') as status"),
-            ])
-            ->where('c.id', $id)
+        // 2) Ambil status_verifikasi terbaru
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', $type)
+            ->where('ref_id', $row->id)
+            ->orderByDesc('id')
             ->first();
 
-        if (!$row) abort(404);
+        if (!$sv) {
+            throw new \Exception('Status verifikasi tidak ditemukan');
+        }
 
-        $docKeys = [
-            'surat_permohonan',
-            'surat_pernyataan',
-            'surat_pengalihan',
-            'tanda_terima',
-            'scan_ktp',
-            'hasil_ciptaan',
-        ];
+        // 3) Update status -> approve
+        DB::table('status_verifikasi')
+            ->where('id', $sv->id)
+            ->update([
+                'status'     => 'approve',
+                'updated_at' => now(),
+            ]);
 
-        $rowCol = collect([$row]);
-        $rowCol = $this->attachDocsToRows($rowCol, 'cipta', $docKeys);
-        $row = $rowCol->first();
+        // 4) ✅ GENERATE TANDA TERIMA PDF kalau belum ada / file-nya hilang
+        $needGenerate = empty($sv->tanda_terima_pdf);
 
-        $incoming = DB::table('revisions')
-            ->where('type', 'cipta')
-            ->where('ref_id', $id)
-            ->where('state', 'submitted')
-            ->whereNotNull('pemohon_file_path')
-            ->orderByDesc('updated_at')
-            ->get()
-            ->groupBy('doc_key');
+        if (!$needGenerate && !Storage::disk('public')->exists($sv->tanda_terima_pdf)) {
+            $needGenerate = true;
+        }
 
-        return view('admin.ciptadetail', [
-            'name' => $request->session()->get('admin_name', 'Admin'),
-            'row' => $row,
-            'incomingByDoc' => $incoming,
-            'tab' => 'cipta',
+        if ($needGenerate) {
+            $path = $this->generateTandaTerimaPdf($type, $id);
+
+            DB::table('status_verifikasi')
+                ->where('id', $sv->id)
+                ->update([
+                    'tanda_terima_pdf' => $path,
+                    'updated_at'       => now(),
+                ]);
+
+            // refresh nilai untuk return
+            $sv->tanda_terima_pdf = $path;
+        }
+
+        // 5) WA message (isi tetap, tidak diubah)
+        $kategori = strtoupper($type === 'paten' ? 'PATEN' : 'HAK CIPTA');
+        $noPendaftaran = $row->no_pendaftaran ?? '-';
+
+        $judul = $type === 'paten'
+            ? ($row->judul_paten ?? '-')
+            : ($row->judul_cipta ?? ($row->judul ?? '-'));
+
+        $loginUrl = url('/pemohon/login');
+
+        $text =
+            "Yth. Bapak/Ibu\n\n"
+            ."Dengan hormat,\n\n"
+            ."Pengajuan {$kategori} telah DISETUJUI (APPROVE).\n"
+            ."Silakan mengunduh Tanda Terima melalui sistem dan melanjutkan proses sesuai ketentuan yang berlaku.\n"
+            ."Saat ini status pengajuan: APPROVE.\n\n"
+            ."Rincian Pengajuan:\n"
+            ."• Kategori : {$kategori}\n"
+            ."• No. Pendaftaran : {$noPendaftaran}\n"
+            ."• Judul : {$judul}\n\n"
+            ."Untuk memantau perkembangan status pengajuan, silakan mengakses halaman berikut secara berkala:\n"
+            ."{$loginUrl}\n\n"
+            ."Hormat kami,\n"
+            ."Admin KIHub";
+
+        // ✅ PERUBAHAN: ambil semua nomor pemohon + inventors, lalu buat banyak link WA
+        $phones  = $this->getPemohonPhones($row);
+        $waLinks = $this->makeWaLinks($phones, $text);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan berhasil di-approve',
+
+            // ✅ biar JS bisa update badge statusPengajuanBadge
+            'status'  => 'approve',
+
+            // ✅ MULTI WA
+            'wa_links' => $waLinks,
+
+            // ✅ optional: biar dashboard pemohon bisa pakai link ini juga
+            'tanda_terima_pdf' => $sv->tanda_terima_pdf,
+            'tanda_terima_url' => !empty($sv->tanda_terima_pdf) ? asset('storage/'.$sv->tanda_terima_pdf) : null,
         ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
+
+
+    private function markAsProsesWhenViewed(string $type, int $id): void
+    {
+        if (!in_array($type, ['paten', 'cipta'], true)) return;
+
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', $type)
+            ->where('ref_id', $id)
+            ->orderByDesc('id')
+            ->first();
+
+        $current = strtolower($sv->status ?? 'terkirim');
+
+        // ✅ hanya naikkan kalau masih terkirim (atau belum ada)
+        if ($current !== 'terkirim') return;
+
+        DB::table('status_verifikasi')->updateOrInsert(
+            ['ref_type' => $type, 'ref_id' => $id],
+            [
+                'status'     => 'proses',
+                'updated_at' => now(),
+                'created_at' => $sv->created_at ?? now(), // jaga created_at kalau sudah ada
+            ]
+        );
+    }
+
+    private function getPemohonPhones($row): array
+{
+    $phones = [];
+
+    // helper split kalau satu field isinya banyak nomor dipisah koma/semicolon/spasi
+    $pushPhones = function ($val) use (&$phones) {
+        if (!$val) return;
+        if (is_array($val)) {
+            foreach ($val as $v) $phones[] = $v;
+            return;
+        }
+        $val = (string)$val;
+
+        // split by comma/semicolon/newline
+        $parts = preg_split('/[,\n;\r]+/', $val, -1, PREG_SPLIT_NO_EMPTY);
+        if (!$parts) $parts = [$val];
+
+        foreach ($parts as $p) {
+            $p = trim($p);
+            if ($p !== '') $phones[] = $p;
+        }
+    };
+
+    // 1) dari kolom row langsung
+    foreach (['nomor_hp', 'no_hp', 'no hp', 'hp', 'phone'] as $col) {
+        if (isset($row->{$col}) && !empty($row->{$col})) {
+            $pushPhones($row->{$col});
+        }
+    }
+
+    // 2) dari inventors_arr (kalau ada)
+    $invArr = $row->inventors_arr ?? null;
+    if (is_array($invArr)) {
+        foreach ($invArr as $inv) {
+            $hp = $inv['no_hp'] ?? $inv['nomor_hp'] ?? $inv['no hp'] ?? $inv['nomor hp'] ?? $inv['hp'] ?? null;
+            $pushPhones($hp);
+        }
+    }
+
+    // 3) fallback dari inventors mentah (json/string)
+    $invRaw = $row->inventors ?? null;
+    if (!empty($invRaw)) {
+        $arr = is_string($invRaw) ? json_decode($invRaw, true) : $invRaw;
+        if (is_array($arr)) {
+            foreach ($arr as $inv) {
+                if (!is_array($inv)) continue;
+                $hp = $inv['no_hp'] ?? $inv['nomor_hp'] ?? $inv['no hp'] ?? $inv['nomor hp'] ?? $inv['hp'] ?? null;
+                $pushPhones($hp);
+            }
+        }
+    }
+
+    // ✅ bikin inventors_arr biar semua nomor inventor kebaca
+    $invArr = [];
+    if (!empty($row->inventors)) {
+        $decoded = is_string($row->inventors) ? json_decode($row->inventors, true) : $row->inventors;
+        $invArr = is_array($decoded) ? $decoded : [];
+    }
+
+    $row->inventors_arr = collect($invArr)->map(function ($i) {
+        return [
+            'no_hp' => $i['no_hp'] ?? ($i['nomor_hp'] ?? ($i['hp'] ?? ($i['no hp'] ?? null))),
+        ];
+    })->values()->all();
+
+
+    // normalize & unique
+    $normalized = [];
+    foreach ($phones as $p) {
+        $n = $this->normalizeWaNumber($p);
+        if ($n) $normalized[] = $n;
+    }
+
+    return array_values(array_unique($normalized));
+}
+
+    private function makeWaLinks(array $phones, string $message): array
+    {
+        $links = [];
+        $text = rawurlencode($message);
+
+        foreach ($phones as $phone) {
+
+            if (!$phone) continue;
+
+            $links[] = "https://wa.me/{$phone}?text={$text}";
+        }
+
+        return $links;
+    }
+
 }
 
