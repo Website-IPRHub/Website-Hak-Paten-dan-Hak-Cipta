@@ -25,6 +25,7 @@ use App\Http\Controllers\FormPendaftaranCiptaanController;
 use App\Http\Controllers\HakCiptaVerifController;
 use App\Http\Controllers\PernyataanCiptaController;
 use App\Http\Controllers\PengalihanHakCiptaController;
+use App\Http\Controllers\FormulirMasterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -207,6 +208,7 @@ Route::post('/isiformpaten', [IsiformController::class, 'store'])->name('isiform
 Route::post('/invensipaten', [InvensiController::class, 'store'])->name('invensi.store');
 Route::post('/pengalihanpaten', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
 
+
 /*
 |--------------------------------------------------------------------------
 | PATEN VERIF FLOW (verifikasi dokumen)
@@ -327,7 +329,10 @@ Route::get('/hak-paten/download-template-surat-terima-berkas', function () {
     return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
 })->name('download.template.tanda_terima_paten');
 
-
+Route::post(
+    '/hak-paten/form-master',
+    [FormulirMasterController::class, 'store']
+)->name('formulir.master.store');
 /*
 |--------------------------------------------------------------------------
 | HAK CIPTA FLOW ISI FORM

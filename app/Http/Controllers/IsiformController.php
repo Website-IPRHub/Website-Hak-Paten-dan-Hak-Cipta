@@ -14,32 +14,44 @@ class IsiformController extends Controller
         $action = $request->input('action', 'download');
 
         $data = $request->validate([
-            'jenis_paten'      => ['required', 'in:Paten,Paten Sederhana'],
-            'nomor_permohonan' => ['required', 'string', 'max:100'],
-            'judul_invensi'    => ['required', 'string', 'max:255'],
-            'pecahan_paten'    => ['required', 'string', 'max:100'],
+            'jenis_paten' => ['required','in:Paten,Paten Sederhana'],
 
-            'konsultanpaten' => ['required', 'in:Melalui,Tidak Melalui'],
-            'nama_badan_hukum' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:150'],
-            'alamat_badan_hukum' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:255'],
-            'nama_konsultan_paten' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:150'],
-            'alamat_konsultan_paten' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:255'],
-            'nomor_konsultan_paten' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:50'],
-            'telepon_fax' => ['required_if:konsultanpaten,Melalui', 'nullable', 'string', 'max:50'],
+            'is_pct' => ['required','in:Ya,Tidak'],
+            'nomor_permohonan' => ['required_if:is_pct,Ya','nullable','string','max:100'],
 
-            'jumlah_inventor' => ['required', 'integer', 'min:1', 'max:20'],
-            'inventor'        => ['required', 'array'],
-            'inventor.*'      => ['required', 'string', 'max:200'],
+            'judul_invensi' => ['required','string','max:255'],
 
-            'hak_prioritas'   => ['required', 'in:Ya,Tidak'],
-            'negara'          => ['required_if:hak_prioritas,Ya', 'nullable', 'string', 'max:120'],
-            'tgl_penerimaan'  => ['required_if:hak_prioritas,Ya', 'nullable', 'string', 'max:60'],
-            'nomor_prioritas' => ['required_if:hak_prioritas,Ya', 'nullable', 'string', 'max:120'],
+            'is_pecahan' => ['required','in:Ya,Tidak'],
+            'pecahan_paten' => ['required_if:is_pecahan,Ya','nullable','string','max:100'],
+
+            'konsultanpaten'         => ['required','in:Melalui,Tidak Melalui'],
+
+            'nama_badan_hukum'       => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+            'alamat_badan_hukum'     => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+            'nama_konsultan_paten'   => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+            'alamat_konsultan_paten' => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+            'nomor_konsultan_paten'  => ['required_if:konsultanpaten,Melalui','nullable','string','max:100'],
+            'telepon_fax'            => ['required_if:konsultanpaten,Melalui','nullable','string','max:100'],
+
+
+            'hak_prioritas'   => ['required','in:Ya,Tidak'],
+            'negara'          => ['required_if:hak_prioritas,Ya','nullable','string','max:100'],
+            'nomor_prioritas' => ['required_if:hak_prioritas,Ya','nullable','string','max:100'],
+            'tgl_penerimaan'  => ['required_if:hak_prioritas,Ya','nullable','string','max:20'],
+
+
+            'jumlah_inventor' => ['required','integer','min:1','max:20'],
+            'inventor' => ['required','array'],
 
             'uraian_halaman'  => ['required', 'integer', 'min:1'],
             'klaim_buah'      => ['required', 'integer', 'min:1'],
             'abstrak_buah'    => ['required', 'integer', 'min:1'],
             'gambar_buah'     => ['required', 'integer', 'min:1'],
+
+            'inventor.nama' => ['required','array'],
+            'inventor.nama.*' => ['required','string','max:200'],
+            'inventor.kewarganegaraan' => ['required','array'],
+            'inventor.kewarganegaraan.*' => ['required','string','max:100'],
 
             'gambar_dari'     => ['required', 'integer', 'min:1'],
             'gambar_sampai'   => ['required', 'integer', 'gte:gambar_dari'],
@@ -48,15 +60,14 @@ class IsiformController extends Controller
             'lampiran' => ['nullable', 'array'],
             'lampiran.*' => ['in:surat_kuasa,pengalihan,bukti_pemilikan,do_eo,dok_prioritas,dok_pct,jasad_renik,dok_lain'],
             'lampiran_lainnya' => ['nullable', 'string', 'max:1000'],
+            'download_format' => ['required','in:pdf,docx'],
+            ]);
 
-            'download_format' => ['required', 'in:pdf,docx'],
-
-        ]);
-
-        // validasi jumlah inventor vs inventor[]
-        if (count($data['inventor'] ?? []) !== (int) $data['jumlah_inventor']) {
+            // cek jumlah sesuai
+            if (count($data['inventor']['nama'] ?? []) !== (int)$data['jumlah_inventor']) {
             return back()->withErrors(['inventor' => 'Jumlah inventor tidak sesuai.'])->withInput();
-        }
+            }
+
 
         // kalau bukan download, balik
         if ($action !== 'download') {
@@ -84,19 +95,25 @@ class IsiformController extends Controller
         };
 
         // ===== 1) Jenis paten (coret yang gak dipilih) =====
-        $isPaten = ($data['jenis_paten'] ?? '') === 'Paten';
-        $tp->setValue('paten_dicoret', $isPaten ? 'Paten' : $coret('Paten'));
-        $tp->setValue('paten_sederhana_dicoret', $isPaten ? $coret('Paten Sederhana') : 'Paten Sederhana');
+        $isPaten = $data['jenis_paten'] === 'Paten';
+        $tp->setValue('paten_normal', $isPaten ? 'Paten' : $coret('Paten'));
+        $tp->setValue('paten_strike', $isPaten ? $coret('Paten Sederhana') : 'Paten Sederhana');
+
+        $isMelalui = $data['konsultanpaten'] === 'Melalui';
+        $tp->setValue('konsultan_normal', $isMelalui ? 'melalui' : $coret('melalui'));
+        $tp->setValue('konsultan_strike', $isMelalui ? $coret('tidak melalui') : 'tidak melalui');
+
+        $hak = ($data['hak_prioritas'] ?? 'Tidak') === 'Ya';
+        $tp->setValue('hak_normal', $hak ? 'dengan' : $coret('dengan'));
+        $tp->setValue('hak_strike', $hak ? $coret('tidak dengan') : 'tidak dengan');
+
+        $tp->setValue('negara', $hak ? $val($data['negara'] ?? '') : '-');
+        $tp->setValue('nomor_prioritas', $hak ? $val($data['nomor_prioritas'] ?? '') : '-');
+        $tp->setValue('tgl_penerimaan', $hak ? $val($data['tgl_penerimaan'] ?? '') : '-');
+
 
         // ===== 2) Nomor PCT =====
         $tp->setValue('nomor_permohonan', $val($data['nomor_permohonan']));
-
-        // ===== 3) Melalui / Tidak melalui (yang dipilih tampil, yang tidak dipilih dicoret) =====
-        $isMelalui = ($data['konsultanpaten'] ?? '') === 'Melalui';
-
-        $tp->setValue('melalui', $isMelalui ? 'melalui' : $coret('melalui'));
-        $tp->setValue('tidak_melalui', $isMelalui ? $coret('tidak melalui') : 'tidak melalui');
-
 
         // ===== 4) Data konsultan =====
         $tp->setValue('nama_badan_hukum', $isMelalui ? $val($data['nama_badan_hukum']) : '-');
@@ -111,11 +128,14 @@ class IsiformController extends Controller
         $tp->setValue('pecahan_paten', $val($data['pecahan_paten']));
 
         // ===== 6) Inventor list =====
-        $inventorList = '';
-        foreach (($data['inventor'] ?? []) as $i => $inv) {
-            $inventorList .= ($i + 1) . '. ' . trim($inv) . "\n";
-        }
-        $tp->setValue('inventor_input', trim($inventorList) !== '' ? trim($inventorList) : '-');
+         // build inventor_input: "1. Nama (WN)" per baris
+            $inventorInput = '';
+            for ($i=0; $i < (int)$data['jumlah_inventor']; $i++) {
+            $nama = trim($data['inventor']['nama'][$i] ?? '');
+            $wn   = trim($data['inventor']['kewarganegaraan'][$i] ?? '');
+            $inventorInput .= ($i+1).". {$nama} ({$wn})\n";
+            }
+            $tp->setValue('inventor_input', trim($inventorInput) ?: '-');
 
         // ===== 7) Hak Prioritas =====
         $figsp = "\u{2007}"; 
@@ -183,6 +203,42 @@ class IsiformController extends Controller
         $tp->setValue('lamp_dok_pct',         $isChecked('dok_pct') ? $boxChecked : $boxEmpty);
         $tp->setValue('lamp_jasad_renik',     $isChecked('jasad_renik') ? $boxChecked : $boxEmpty);
         $tp->setValue('lamp_dok_lain',        $boxChecked);
+
+       // ===== dokumen lain (sebutkan) =====
+        $raw = trim((string)($data['lampiran_lainnya'] ?? ''));
+
+        $lampLainList = '-';
+        if ($raw !== '') {
+            $lines = preg_split("/\r\n|\r|\n/", $raw);
+
+            // bersihin: trim + buang nomor manual user
+            $clean = [];
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '') continue;
+
+                // buang "1. xxx", "4.xxx", dll
+                $line = preg_replace('/^\d+\.\s*/', '', $line);
+                $clean[] = $line;
+            }
+
+            if (count($clean) > 0) {
+                $start  = 4;      // lanjutin setelah 1–3
+                $indent = "\t";   // Word lebih rapi pakai tab
+
+                $out = [];
+                foreach ($clean as $i => $text) {
+                    $out[] = $indent . ($start + $i) . '. ' . $text;
+                }
+
+                $lampLainList = implode("\n", $out);
+            }
+        }
+
+        // PENTING: placeholder harus di paragraf BARU
+        $tp->setValue('lampiran_lainnya_list', $lampLainList);
+
+
 
         // ===== OUTPUT =====
         $out = tempnam(sys_get_temp_dir(), 'paten_') . '.docx';

@@ -342,3 +342,26 @@ select.input{
 .actions-bar .actions-right > button.unduh:active{
   transform: translateY(0);
 }
+
+.actions-download{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.unduh{
+  padding:10px 14px;
+  border-radius:10px;
+  border:0;
+  font-weight:600;
+  background:#1a73e8;
+  color:#fff;
+  transition:.2s ease;
+}
+
+.unduh:hover{
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}

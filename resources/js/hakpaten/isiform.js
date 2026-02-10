@@ -1,28 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
-  /**
-   * =========================
-   * 1) Toggle Konsultan Paten
-   * =========================
-   */
-  function toggleKonsultanFollowup() {
-    const select = document.getElementById('konsultanpaten');
-    const followup = document.getElementById('konsultan-followup');
-    if (!select || !followup) return;
 
-    const isYa = select.value === 'Melalui';
-    followup.style.display = isYa ? 'block' : 'none';
+  /* =====================================================
+   * 1) KONSULTAN PATEN (Ya / Tidak)
+   * ===================================================== */
+  const konsultanSelect = document.getElementById('konsultanpaten');
+  const konsultanFollow = document.getElementById('konsultan-followup');
 
-    // Field-field yang ikut aturan Ya/Tidak
-    const ids = [
-      'nama_badan_hukum',
-      'alamat_badan_hukum',
-      'nama_konsultan_paten',
-      'alamat_konsultan_paten',
-      'nomor_konsultan_paten',
-      'telepon/fax', // ganti id html dari telepon/fax -> telepon_fax
-    ];
+  const konsultanFields = [
+    'nama_badan_hukum',
+    'alamat_badan_hukum',
+    'nama_konsultan_paten',
+    'alamat_konsultan_paten',
+    'nomor_konsultan_paten',
+    'telepon_fax', // FIX id (tanpa slash)
+  ];
 
-    ids.forEach((id) => {
+  function toggleKonsultan() {
+    if (!konsultanSelect || !konsultanFollow) return;
+
+    const isYa = konsultanSelect.value === 'Melalui';
+    konsultanFollow.style.display = isYa ? 'block' : 'none';
+
+    konsultanFields.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
 
@@ -30,19 +29,96 @@ document.addEventListener('DOMContentLoaded', () => {
         el.setAttribute('required', 'required');
       } else {
         el.removeAttribute('required');
-        // bersihin isi biar gak ke-submit
-        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        else el.value = '';
+        el.value = '';
       }
     });
   }
 
-  const konsultanSelect = document.getElementById('konsultanpaten');
-  if (konsultanSelect) {
-    konsultanSelect.addEventListener('change', toggleKonsultanFollowup);
-    toggleKonsultanFollowup(); // biar kondisi awal/old() sinkron
+  konsultanSelect?.addEventListener('change', toggleKonsultan);
+  toggleKonsultan(); // init old()
+
+
+  /* =====================================================
+   * 2) PCT (Ya / Tidak)
+   * ===================================================== */
+  const pctSelect = document.getElementById('is_pct');
+  const pctBox = document.getElementById('pct-followup');
+  const pctInput = pctBox?.querySelector('input[name="nomor_permohonan"]');
+
+  function togglePCT() {
+    if (!pctSelect || !pctBox || !pctInput) return;
+
+    const isYa = pctSelect.value === 'Ya';
+    pctBox.style.display = isYa ? 'block' : 'none';
+
+    if (isYa) pctInput.setAttribute('required', 'required');
+    else {
+      pctInput.removeAttribute('required');
+      pctInput.value = '';
+    }
   }
 
+  pctSelect?.addEventListener('change', togglePCT);
+  togglePCT();
+
+
+  /* =====================================================
+   * 3) PECAHAN PATEN (Ya / Tidak)
+   * ===================================================== */
+  const pecahanSelect = document.getElementById('is_pecahan');
+  const pecahanBox = document.getElementById('pecahan-followup');
+  const pecahanInput = pecahanBox?.querySelector('input[name="pecahan_paten"]');
+
+  function togglePecahan() {
+    if (!pecahanSelect || !pecahanBox || !pecahanInput) return;
+
+    const isYa = pecahanSelect.value === 'Ya';
+    pecahanBox.style.display = isYa ? 'block' : 'none';
+
+    if (isYa) pecahanInput.setAttribute('required', 'required');
+    else {
+      pecahanInput.removeAttribute('required');
+      pecahanInput.value = '';
+    }
+  }
+
+  pecahanSelect?.addEventListener('change', togglePecahan);
+  togglePecahan();
+
+
+  /* =====================================================
+   * 4) HAK PRIORITAS (Ya / Tidak)
+   * ===================================================== */
+  const hakSelect = document.getElementById('hak_prioritas');
+  const hakBox = document.getElementById('hak-prioritas-followup');
+
+  const hakFields = ['negara', 'nomor_prioritas', 'tgl_penerimaan'];
+
+  function toggleHakPrioritas() {
+    if (!hakSelect || !hakBox) return;
+
+    const isYa = hakSelect.value === 'Ya';
+    hakBox.style.display = isYa ? 'block' : 'none';
+
+    hakFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      if (isYa) el.setAttribute('required', 'required');
+      else {
+        el.removeAttribute('required');
+        el.value = '';
+      }
+    });
+  }
+
+  hakSelect?.addEventListener('change', toggleHakPrioritas);
+  toggleHakPrioritas();
+
+
+  /* =====================================================
+   * 5) JUMLAH INVENTOR + GENERATE FIELD
+   * ===================================================== */
   /**
    * =========================
    * 2) Generate Inventor Fields
@@ -215,45 +291,23 @@ if (jumlahEl && container && tpl) {
 
   }
 
-  /**
-   * =========================
-   * 3) Toggle hak prioritas
-   * =========================
-   */
-  function toggleHakPrioritas() {
-    const select = document.getElementById('hak_prioritas');
-    const followup = document.getElementById('hak-prioritas-followup');
-    if (!select || !followup) return;
+  const form = document.querySelector("form.form");
+  const docType = document.getElementById("doc_type");
+  const btnDownload = document.getElementById("btnDownload");
 
-    const isYa = select.value === 'Ya';
-    followup.style.display = isYa ? 'block' : 'none';
+  const setFormAction = () => {
+    const url = docType?.value || "";
+    if (form && url) form.setAttribute("action", url);
 
-    // Field-field yang ikut aturan Ya/Tidak
-    const ids = [
-      'negara',
-      'tgl_penerimaan',
-      'nomor_prioritas',
-    ];
+    // disable tombol kalau belum pilih dokumen
+    if (btnDownload) btnDownload.disabled = !url;
+    if (btnDownload) btnDownload.style.opacity = url ? "1" : ".6";
+    if (btnDownload) btnDownload.style.cursor = url ? "pointer" : "not-allowed";
+  };
 
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      if (isYa) {
-        el.setAttribute('required', 'required');
-      } else {
-        el.removeAttribute('required');
-        // bersihin isi biar gak ke-submit
-        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        else el.value = '';
-      }
-    });
-  }
-
-  const hakPrioritasSelect = document.getElementById('hak_prioritas');
-  if (hakPrioritasSelect) {
-    hakPrioritasSelect.addEventListener('change', toggleHakPrioritas);
-    toggleHakPrioritas(); // biar kondisi awal/old() sinkron
+  if (docType) {
+    docType.addEventListener("change", setFormAction);
+    setFormAction(); // init
   }
 
 });

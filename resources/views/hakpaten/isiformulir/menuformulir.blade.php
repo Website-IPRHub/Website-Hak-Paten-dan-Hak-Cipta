@@ -15,7 +15,7 @@
 
     <div class="judul-right">
       <div class="profile-badge">
-        <span>Kelengkapan Formulir: {{ $percent }}%</span>
+        <span>Kelengkapan Proses: {{ $percent }}%</span>
         <i class="bi bi-info-circle-fill"></i>
       </div>
 
@@ -32,20 +32,20 @@
   <div class="section-inner">
     <ul class="menu-steps">
       <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
-        <a href="{{ route('hakcipta') }}">Draft Paten</a>
+        <a href="{{ route('hakcipta') }}">Dokumen yang Diperlukan</a>
       </li>
 
       <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
-        <a href="{{ route('draftpaten') }}">Formulir Permohonan</a>
+        <a href="{{ route('draftpaten') }}">Isi Formulir</a>
       </li>
 
       <li class="step {{ $activeStep == 3 ? 'active' : 'disabled' }}">
-        <a href="{{ route('formulirpermohonan') }}">Kepemilikan Invensi</a>
+        <a href="{{ route('formulirpermohonan') }}">Verifikasi Berkas</a>
       </li>
 
-      <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
+      <!-- <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
         <a href="{{ route('kepemilikaninvensi') }}">Pengalihan Hak</a>
-      </li>
+      </li> -->
     </ul>
   </div>
 </section>
