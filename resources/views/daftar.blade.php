@@ -33,7 +33,7 @@
 
       <div class="button-daftar-ptn">
         <h3>Siap Daftarkan Karya Anda?</h3>
-        <a href="#" class="btn-dftr">Daftar Karya</a>
+        <a href="#" class="btn-dftr">Daftar Kekayaan Intelektual</a>
       </div>
     </div>
 

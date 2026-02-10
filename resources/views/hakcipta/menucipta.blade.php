@@ -42,7 +42,7 @@
 
       <div class="button-daftar-ptn">
         <h3>Siap Daftarkan Ciptaan Anda?</h3>
-        <a href="{{ route('hakcipta.isiform.formpendaftaran') }}" class="btn-dftr">Daftar Paten</a>
+        <a href="{{ route('hakcipta.isiform.formpendaftaran') }}" class="btn-dftr">Daftar Cipta</a>
       </div>
     </div>
   </div>
