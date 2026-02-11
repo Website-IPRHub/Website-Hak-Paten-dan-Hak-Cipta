@@ -216,6 +216,14 @@ Route::post('/pengalihanpaten', [PengalihanHakController::class, 'store'])->name
 */
 Route::view('/hak-paten/data-diri', 'hakpaten.verifikasidokumen.datadiri')->name('patenverif.datadiri');
 
+Route::get('/patenverif/{verif}/all', 
+    [PatenVerifController::class, 'all'])
+    ->name('patenverif.all');
+
+Route::get('/patenverif/{verif}/upload-semua', [PatenVerifController::class, 'uploadSemua'])
+  ->name('patenverif.upload.semua');
+
+
 // Step 1 submit -> create verif record
 Route::post('/paten-verif', [PatenVerifController::class, 'start'])->name('patenverif.start');
 

@@ -266,6 +266,7 @@ if (jumlahEl && container && tpl) {
     renderInventorsFrom(jumlah);
   }
 
+
   // first render
   renderInventors();
 

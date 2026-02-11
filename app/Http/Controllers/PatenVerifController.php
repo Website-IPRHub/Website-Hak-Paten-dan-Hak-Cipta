@@ -149,13 +149,26 @@ class PatenVerifController extends Controller
         session(['verif_id' => $verif->id]);
 
         // tentukan next step (redirect, bukan json)
-        $nextRoute = 'patenverif.draft';
         if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
             $nextRoute = 'patenverif.skema.form';
         }
 
-        return redirect()->route($nextRoute, $verif->id);
+    // kalau request AJAX, balikin JSON berisi URL all-in-one (atau URL mana yg kamu mau)
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'ok' => true,
+            'id' => $verif->id,
+            // arahkan ke halaman all-in-one kamu
+            'redirect' => route('patenverif.all', $verif->id),
+            // kalau kamu tetap butuh next step default juga bisa kirim:
+            'default_next' => route($nextRoute, $verif->id),
+        ]);
     }
+
+    return redirect()->route('patenverif.all', $verif->id);
+    }
+
+    
 
     // =========================
     // API FLOW (JSON) - kalau kamu butuh versi API
@@ -296,6 +309,19 @@ class PatenVerifController extends Controller
             'no_pendaftaran'=> $verif->no_pendaftaran,
         ]);
     }
+
+    public function uploadSemua(PatenVerif $verif)
+{
+    return view('hakpaten.verifikasidokumen.semuaverif', compact('verif'));
+}
+
+
+    public function all($id)
+    {
+        $verif = PatenVerif::findOrFail($id);
+        return view('hakpaten.verifikasidokumen.semuaverif', compact('verif'));
+    }
+
 
     private function storeUploadedOriginalName(Request $request, string $dir): string
     {

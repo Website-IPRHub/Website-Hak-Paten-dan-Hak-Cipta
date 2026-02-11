@@ -1,11 +1,3 @@
-@extends('layouts.app')
-
-@section('title','Hak Paten')
-
-@section('content')
-
-@php $activeStep = 4; @endphp
-@include('hakpaten.verifikasidokumen.menuverif')
 
 <section class="section-full section-content">
   <div class="section-inner">
@@ -74,5 +66,3 @@
 
   </div>
 </section>
-
-@endsection

@@ -7,6 +7,19 @@
 @php $activeStep = 2; @endphp
 @include('hakpaten.isiformulir.menuformulir')
 
+@php
+  $prefill = session('hakpaten.isiform', []);
+@endphp
+
+<script type="application/json" id="prefill-inventor-data">
+{!! json_encode($prefill['inventor'] ?? []) !!}
+</script>
+
+<script type="application/json" id="prefill-count">
+{!! json_encode($prefill['jumlah_inventor'] ?? 1) !!}
+</script>
+
+
 <div class="paten-form-page">
   <div class="judul">
     <h2>Formulir Pendaftaran Paten</h2>
@@ -25,8 +38,9 @@
           <label class="label">Jenis Pengajuan Paten <span class="req">*</span></label>
           <select class="input" name="jenis_paten" required>
             <option value="" disabled {{ old('jenis_paten') ? '' : 'selected' }}>-- Jenis Pengajuan Paten --</option>
-            <option value="Paten" {{ old('jenis_paten')=='Paten'?'selected':'' }}>Paten</option>
-            <option value="Paten Sederhana" {{ old('jenis_paten')=='Paten Sederhana'?'selected':'' }}>Paten Sederhana</option>
+            <option value="Paten" {{ old('jenis_paten', $prefill['jenis_paten'] ?? '')=='Paten' ? 'selected' : '' }}>Paten</option>
+            <option value="Paten Sederhana" {{ old('jenis_paten', $prefill['jenis_paten'] ?? '')=='Paten Sederhana' ? 'selected' : '' }}>Paten Sederhana</option>
+
           </select>
           @error('jenis_paten') <small style="color:red">{{ $message }}</small> @enderror
         </div>
@@ -62,7 +76,7 @@
         <div class="field">
           <label class="label">Judul Invensi <span class="req">*</span></label>
           <input type="text" class="input" name="judul_invensi" placeholder="Masukkan judul draft paten"
-                 value="{{ old('judul_invensi') }}" required>
+                 value="{{ old('judul_invensi', $prefill['judul_invensi'] ?? '') }}" required>
           @error('judul_invensi') <small style="color:red">{{ $message }}</small> @enderror
         </div>
       </div>
@@ -349,14 +363,16 @@ Fotocopy KTP Para Inventor
             <button type="button" id="invMinus" class="btn-minus" aria-label="Kurangi inventor">-</button>
 
             <input
-              id="jumlah_inventor"
-              name="jumlah_inventor"
+              type="number"
               class="input"
-              value="{{ old('jumlah_inventor', 1) }}"
-              readonly
-              style="text-align:center; width:90px;"
+              id="jumlah_inventor_verif"
+              name="jumlah_inventor"
+              min="1"
+              max="20"
+              value="{{ old('jumlah_inventor', $prefill['jumlah_inventor'] ?? 1) }}"
               required
             >
+
 
             <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
           </div>
@@ -570,9 +586,60 @@ Fotocopy KTP Para Inventor
           &laquo; Sebelumnya
         </button>
 
-        <a class="btn-next" href="{{ route('hakpaten.invensiformulir') }}">
+        <a
+          id="nextLinkIsiform"
+          href="#"
+          class="btn-next"
+          data-save-url="{{ route('isiform.store') }}"
+          data-next-url="{{ route('patenverif.datadiri') }}"
+        >
           Selanjutnya &raquo;
         </a>
+        <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const nextBtn = document.getElementById('nextLinkIsiform');
+  if (!nextBtn) return;
+
+  nextBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const form = nextBtn.closest('form');
+    if (!form) { console.error('Form tidak ketemu'); return; }
+
+    // optional: validasi HTML5
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const saveUrl = nextBtn.dataset.saveUrl;
+    const nextUrl = nextBtn.dataset.nextUrl;
+
+    const fd = new FormData(form);
+    fd.set('action', 'next'); // biar controller tahu ini "save & lanjut"
+
+    try {
+      const res = await fetch(saveUrl, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd
+      });
+
+      if (!res.ok) {
+        console.error('Save gagal', res.status);
+        return;
+      }
+
+      window.location.href = nextUrl;
+    } catch (err) {
+      console.error(err);
+    }
+  });
+});
+</script>
+
+
+
       </div>
 
       <div class="actions-download">
@@ -598,12 +665,14 @@ Fotocopy KTP Para Inventor
   </form>
 
   <script type="application/json" id="old-inventor-data">
-    {!! json_encode(old('inventor', [])) !!}
-  </script>
+  {!! json_encode(old('inventor', $prefill['inventor'] ?? [])) !!}
+</script>
+
+
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const jumlahInput = document.getElementById("jumlah_inventor");
+      const jumlahInput = document.getElementById("jumlah_inventor_verif");
       const btnMinus = document.getElementById("invMinus");
       const btnPlus  = document.getElementById("invPlus");
 
@@ -717,8 +786,11 @@ Fotocopy KTP Para Inventor
         renderInventors(v);
       };
 
-      // init
-      setCount(getCount());
+      const countEl = document.getElementById("prefill-count");
+      let prefillCount = 1;
+      try { prefillCount = parseInt(JSON.parse(countEl?.textContent || "1"), 10) || 1; } catch(e) {}
+      setCount(prefillCount);
+
 
       if (btnMinus) btnMinus.addEventListener("click", () => setCount(getCount() - 1));
       if (btnPlus)  btnPlus.addEventListener("click", () => setCount(getCount() + 1));
@@ -780,7 +852,7 @@ Fotocopy KTP Para Inventor
       document.querySelector("form").addEventListener("submit", () => {
         // hitung dari jumlah kartu inventor yang dirender
         const cards = document.querySelectorAll("#inventor-container-verif .inventor-card");
-        document.getElementById("jumlah_inventor").value = cards.length || 1;
+        document.getElementById("jumlah_inventor_verif").value = cards.length || 1;
       });
 
     });

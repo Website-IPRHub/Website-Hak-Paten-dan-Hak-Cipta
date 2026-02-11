@@ -48,11 +48,19 @@ class IsiformController extends Controller
             'abstrak_buah'    => ['required', 'integer', 'min:1'],
             'gambar_buah'     => ['required', 'integer', 'min:1'],
 
-            'inventor.nama' => ['required','array'],
-            'inventor.nama.*' => ['required','string','max:200'],
-            'inventor.kewarganegaraan' => ['required','array'],
-            'inventor.kewarganegaraan.*' => ['required','string','max:100'],
-
+            'inventor' => [
+                    'nama' => $inventor['nama'] ?? [],
+                    'kewarganegaraan' => $inventor['kewarganegaraan'] ?? [],
+                    'nip_nim' => $inventor['nip_nim'] ?? [],
+                    'alamat' => $inventor['alamat'] ?? [],
+                    'fakultas' => $inventor['fakultas'] ?? [],
+                    'no_hp' => $inventor['no_hp'] ?? [],
+                    'email' => $inventor['email'] ?? [],
+                    'nidn' => $inventor['nidn'] ?? [],
+                    'status' => $inventor['status'] ?? [],
+                    'kode_pos' => $inventor['kode_pos'] ?? [],
+                    'pekerjaan' => $inventor['pekerjaan'] ?? [],
+                ],
             'gambar_dari'     => ['required', 'integer', 'min:1'],
             'gambar_sampai'   => ['required', 'integer', 'gte:gambar_dari'],
 
@@ -68,12 +76,15 @@ class IsiformController extends Controller
             return back()->withErrors(['inventor' => 'Jumlah inventor tidak sesuai.'])->withInput();
             }
 
+           session()->put('hakpaten.isiform', $data);
 
-        // kalau bukan download, balik
-        if ($action !== 'download') {
-            return back()->with('success', 'OK')->withInput();
-        }
+            if ($action === 'next') {
+                return response()->json(['ok' => true]);
+            }
 
+            if ($action !== 'download') {
+                return back()->with('success', 'OK')->withInput();
+            }
 
         // ===== TEMPLATE PATH =====
         $templatePath = public_path('templates/Form Daftar Paten (2025).docx');
@@ -280,6 +291,7 @@ class IsiformController extends Controller
             ->download($pdfPath, 'Form Daftar Paten (2025).pdf')
             ->deleteFileAfterSend(true);
 
+        return redirect()->route('patenverif.datadiri'); // halaman yang kamu kirim ini
 
     }
 }

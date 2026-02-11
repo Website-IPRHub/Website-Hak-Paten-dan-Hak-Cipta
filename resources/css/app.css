@@ -28,7 +28,7 @@
 @import "./menuverif.css";
 @import "./hasilsubmit.css";
 @import './login.css';
-
+@import "./patenverif.css";
 
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

@@ -12,8 +12,8 @@ class InvensiController extends Controller
     {
         // Ganti nama file sesuai punyamu
         if ($jumlah >= 1 && $jumlah <= 4)  return public_path('templates/1-4 invensi.docx');
-        if ($jumlah >= 5 && $jumlah <= 8)  return public_path('templates/5-8 invensi.docx');
-        if ($jumlah >= 9 && $jumlah <= 14) return public_path('templates/9-14 invensi.docx');
+        if ($jumlah >= 5 && $jumlah <= 14)  return public_path('templates/5-8 invensi.docx');
+        // if ($jumlah >= 9 && $jumlah <= 14) return public_path('templates/9-14 invensi.docx');
 
         abort(422, 'Jumlah inventor tidak didukung template.');
     }
@@ -79,6 +79,8 @@ class InvensiController extends Controller
     $tp->setValue('tanggal_pengisian', $tgl->translatedFormat('d F Y'));
 
     $tp->cloneRow('nama_lengkap', $jumlah);
+    $tp->setValue('br', '</w:t><w:br/><w:t>');
+
 
     for ($i = 1; $i <= $jumlah; $i++) {
         $idx = $i - 1;
@@ -138,6 +140,8 @@ class InvensiController extends Controller
         return response()
             ->download($pdfPath, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.pdf')
             ->deleteFileAfterSend(true);
+
+        session()->put('hakpaten.invensi', $validated); // atau payload invensi
 
     }
     
