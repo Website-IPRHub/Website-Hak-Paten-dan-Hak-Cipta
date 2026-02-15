@@ -34,18 +34,22 @@
   <div class="section-inner">
     <ul class="section-steps">
       <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
+        <span class="step-number">1</span>
         <a href="{{ route('hakcipta') }}">Dokumen yang Diperlukan</a>
       </li>
 
       <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
+        <span class="step-number">2</span>
         <a href="{{ route('draftpaten') }}">Isi Formulir</a>
       </li>
 
       <li class="step {{ $activeStep == 3 ? 'active' : 'disabled' }}">
+        <span class="step-number">3</span>
         <a href="{{ route('patenverif.datadiri') }}">Verifikasi Berkas</a>
       </li>
 
       <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
+        <span class="step-number">4</span>
         <a href="{{ $verifId ? route('patenverif.all', ['verif' => $verifId]) : 'javascript:void(0)' }}">Upload Berkas</a>
       </li>
     </ul>

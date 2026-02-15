@@ -7,6 +7,16 @@
   align-items: start;
 }
 
+.section-smw{
+  width:100%;
+}
+
+.section-dalam{
+  max-width:1200px;      /* biar ga kepanjangan */
+  margin:0 auto;         /* tengah */
+  padding:0 24px;        /* kasih napas kiri kanan */
+}
+
 /* sisi kiri */
 .bg{
   display: flex;
@@ -31,7 +41,9 @@
 }
 
 /* ====== MENU ====== */
-.menu-hak-paten{ margin: 0; }
+.menu-hak-paten{ 
+  margin: 0; 
+}
 
 .menu-hak-paten h2{
   font-size: 26px;
@@ -39,6 +51,7 @@
   font-weight: 800;
   color: #344c7b;
   margin: 0 0 12px;
+  margin-bottom: 20px;
 }
 
 /* ====== FLOW (MENYAMPING) ====== */
@@ -100,17 +113,17 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-  margin-top: 18px;
-  justify-items: center;   /* default: rata kiri */
+  margin-top: 38px;
+  justify-items: center; 
 }
 
 /* panduan */
 .panduan-hki h2{
   margin: 0;
-  font-size: 0; /* matiin pengaruh font-size h2 */
+  font-size: 0; 
 }
 .panduan-hki{
-  margin: 0; /* reset */
+  margin: 0; 
   margin-bottom: 5px;
 }
 
@@ -148,7 +161,7 @@
 }
 
 .button-daftar-ptn{
-  width: 100%;              /* ini yang bikin bisa lebar */
+  width: 100%;              
   max-width: 420px;         /* batas lebar maksimal */
   justify-self: center;     /* posisinya tengah di grid */
   margin: 0;                

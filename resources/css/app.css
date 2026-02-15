@@ -272,20 +272,20 @@ html, body{
     color: #fff;
     z-index: 2;
     margin-left: 20px;
-    font-family: "inter", sans-serif !important;
+    font-family: 'inter', sans-serif !important;
     font-weight: 800;
 }
 
 .hero-text h1{
     font-size: 80px;
-    font-family: "inter", sans-serif !important;
+    font-family: 'inter', sans-serif !important;
     font-weight: 650;
 }
 
 
 .hero-text h2{
     font-size: 32px;
-    font-family: "inter", sans-serif !important;
+    font-family: 'inter', sans-serif !important;
     font-weight: 600;
 }
 

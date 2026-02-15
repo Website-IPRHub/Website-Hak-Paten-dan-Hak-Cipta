@@ -148,24 +148,25 @@ class PatenVerifController extends Controller
         // SIMPAN SESSION (sama persis seperti PatenController)
         session(['verif_id' => $verif->id]);
 
-        // tentukan next step (redirect, bukan json)
+        // tentukan next route berdasarkan skema
         if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
-            $nextRoute = 'patenverif.skema.form';
+            $nextRoute = route('patenverif.skema.form', $verif->id);
+        } else {
+            $nextRoute = route('patenverif.all', $verif->id);
         }
 
-    // kalau request AJAX, balikin JSON berisi URL all-in-one (atau URL mana yg kamu mau)
-    if ($request->ajax() || $request->wantsJson()) {
-        return response()->json([
-            'ok' => true,
-            'id' => $verif->id,
-            // arahkan ke halaman all-in-one kamu
-            'redirect' => route('patenverif.all', $verif->id),
-            // kalau kamu tetap butuh next step default juga bisa kirim:
-            'default_next' => route($nextRoute, $verif->id),
-        ]);
-    }
+        // kalau AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'id' => $verif->id,
+                'redirect' => $nextRoute,
+            ]);
+        }
 
-    return redirect()->route('patenverif.all', $verif->id);
+        // kalau normal form submit
+        return redirect($nextRoute);
+
     }
 
     

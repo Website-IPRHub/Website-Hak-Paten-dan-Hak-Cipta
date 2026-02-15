@@ -36,15 +36,18 @@
 
       {{-- 1: Data diri (ga butuh verifId) --}}
       <li class="step-tab {{ $activeStep == 1 ? 'active' : '' }}">
+        <span class="step-number">1</span>
         <a href="{{ route('patenverif.datadiri') }}">Data Pemohon</a>
       </li>
 
       {{-- 2-8: butuh verifId --}}
       <li class="step-tab {{ $activeStep == 2 ? 'active' : ($verifId ? '' : 'disabled') }}">
+        <span class="step-number">2</span>
         <a href="{{ $verifId ? route('patenverif.draft', ['verif' => $verifId]) : 'javascript:void(0)' }}">Draft Paten</a>
       </li>
 
       <li class="step-tab {{ $activeStep == 3 ? 'active' : ($verifId ? '' : 'disabled') }}">
+        <span class="step-number">3</span>
         <a href="{{ $verifId ? route('patenverif.formpermohonan', ['verif' => $verifId]) : 'javascript:void(0)' }}">Form Permohonan</a>
       </li>
 
