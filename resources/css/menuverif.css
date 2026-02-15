@@ -1,4 +1,4 @@
-.section-full{ width: 100%; }
+/* .section-full{ width: 100%; }
 
 .section-inner{
   max-width: 1200px;
@@ -100,7 +100,7 @@
 }
 
 /* ===== Steps Menu (8 tabs) ===== */
-.section-steps{
+/*.section-steps{
   background: #F0F6FD;
   padding: 12px 0;
 }
@@ -144,4 +144,4 @@
   pointer-events: none;
   cursor: not-allowed;
   opacity: 0.55;
-}
+} */

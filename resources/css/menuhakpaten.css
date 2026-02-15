@@ -1,110 +1,199 @@
+/* ====== LAYOUT ====== */
 .hero-layout{
   display: grid;
-  grid-template-columns: max-content 1fr; 
-  column-gap: 40px;
-  margin: 170px 0;
+  grid-template-columns: max-content 1fr;
+  gap: 40px;
+  margin: 120px 0;
   align-items: start;
 }
 
-/* ini sisi kiri*/
+.section-smw{
+  width:100%;
+}
+
+.section-dalam{
+  max-width:1200px;      /* biar ga kepanjangan */
+  margin:0 auto;         /* tengah */
+  padding:0 24px;        /* kasih napas kiri kanan */
+}
+
+/* sisi kiri */
 .bg{
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: center;
+  gap: 18px;
 
   padding-right: 28px;
-  border-right: 2px solid #d1d5db;
+  border-right: 2px solid #e5e7eb;
   margin-left: 40px;
 }
 
-.img-undip{ width: 280px; height: auto; display: block; }
-.hero-img2{ width: 350px; height: auto; display: block; }
+.img-undip{ width: 260px; height: auto; display: block; }
+.hero-img2{ width: 320px; height: auto; display: block; }
 
 /* sisi kanan */
 .right{
   display: flex;
   flex-direction: column;
-  gap: 40px;                
-  max-width: 420px;
+  gap: 26px;
+  max-width: 720px;
   margin-right: 50px;
 }
 
-/* bagian menu */
-.menu-hak-paten{ margin: 0; }
+/* ====== MENU ====== */
+.menu-hak-paten{ 
+  margin: 0; 
+}
 
 .menu-hak-paten h2{
-  font-size: 25px;
+  font-size: 26px;
   font-family: "Inter", sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   color: #344c7b;
-  margin-bottom: 10px;
+  margin: 0 0 12px;
+  margin-bottom: 20px;
 }
 
-/* flow */
+/* ====== FLOW (MENYAMPING) ====== */
 .flow{
-  display: flex;
-  flex-direction: column;
-  gap: 18px;                
+  display:flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
+/* step card */
 .step{
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 10px 22px rgba(3,6,31,0.06);
 }
 
-/* buat garis step*/
+/* connector horizontal (kecuali terakhir) */
 .step:not(:last-child)::after{
   content:"";
   position:absolute;
-  left: 6px;
-  top: 22px;
-  width: 2px;
-  height: calc(100% + 14px); 
-  background: #d1d5db;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 2px;
+  background: #cbd5e1;
 }
 
+/* dot */
 .step .dot{
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
-  background: #344c7b;
-  border: 3px solid #fff;
-  flex: 0 0 14px;
-  position: relative;
-  z-index: 2;
+  background: #4FA9DE;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(79,169,222,0.18);
+  flex: 0 0 12px;
 }
 
 .step p{
   margin: 0;
-  font-size: 20px;
+  font-size: 15px;
   font-family: "Inter", sans-serif;
-  font-weight: 600;
-  color: #344c7b;
+  font-weight: 800;
+  color: #0f172a;
   line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ====== CTA ROW (Panduan + Card Daftar) ====== */
+.cta-row{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 38px;
+  justify-items: center; 
+}
+
+/* panduan */
+.panduan-hki h2{
+  margin: 0;
+  font-size: 0; 
+}
+.panduan-hki{
+  margin: 0; 
+  margin-bottom: 5px;
+}
+
+.panduan-hki a{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 15px;
+  background: #4FA9DE;
+  border: 2px solid #d1d5db;
+  color: #fff;
+  text-decoration: none;
+  font: 800 18px "Inter", sans-serif;
+  white-space: nowrap;
+}
+
+
+.panduan-hki a:hover{
+  transform: translateY(-2px);
+  opacity: .95;
+}
+
+.panduan-hki a:active{
+  transform: translateY(0);
+}
+
+
+.button-daftar-ptn h3{
+  margin: 0;
+  font-size: 18px;
+  font-family: "Inter", sans-serif;
+  font-weight: 800;
+  color: #fff;
 }
 
 .button-daftar-ptn{
-  padding: 22px 20px;
+  width: 100%;              
+  max-width: 420px;         /* batas lebar maksimal */
+  justify-self: center;     /* posisinya tengah di grid */
+  margin: 0;                
+  padding: 18px 20px;
+
   border-radius: 18px;
   background: #03061F;
-  border: 2px solid #d1d5db;
+  border: 1px solid #e5e7eb;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 15px;
+  gap: 12px;
+
+  box-shadow: 0 16px 30px rgba(3,6,31,0.16);
 }
 
+.button-daftar-ptn:hover{
+  background: #204c65;
+}
+
+/* opsional: biar teks ga melebar panjang */
 .button-daftar-ptn h3{
+  max-width: 420px;
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-family: "Inter", sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff;
 }
+
 
 .btn-dftr{
   display: inline-flex;
@@ -119,18 +208,18 @@
   font-family: "Inter", sans-serif;
   font-weight: 700;
   transition: 0.2s ease;
+  justify-self: center;
+  max-width: 720px;
 }
 
 .btn-dftr:hover{ transform: translateY(-2px); opacity: 0.95; }
 .btn-dftr:active{ transform: translateY(0); }
 
-
-
-/* ni buat responsive */
+/* ====== RESPONSIVE ====== */
 @media (max-width: 900px){
   .hero-layout{
     grid-template-columns: 1fr;
-    row-gap: 18px;
+    gap: 18px;
     margin: 80px 0;
     justify-items: center;
   }
@@ -140,50 +229,20 @@
     padding-right: 0;
     border-right: 0;
     padding-bottom: 18px;
-    border-bottom: 2px solid #d1d5db;
+    border-bottom: 2px solid #e5e7eb;
     justify-content: center;
     flex-wrap: wrap;
   }
 
   .right{
-    max-width: 520px;
+    max-width: 720px;
     width: 100%;
     margin-right: 0;
-    gap: 10px;
+    gap: 18px;
   }
-}
 
-/* Biar panduan gak ikut style h2 gede */
-.panduan-hki h2{
-  margin: 0;
-  font-size: 0; /* matiin pengaruh font-size h2 */
-}
-.panduan-hki{
-  margin: 0; /* reset */
-  margin-bottom: 20px;
-  margin-left: 50px;
-}
+  /* kalau layar kecil, connector mending dimatiin biar ga aneh pas wrap */
+  .step:not(:last-child)::after{ display: none; }
 
-.panduan-hki a{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border-radius: 15px;
-  background: #6883ac;
-  border: 2px solid #d1d5db;
-  color: #fff;
-  text-decoration: none;
-  font: 700 18px "Inter", sans-serif;
-  white-space: nowrap;
-}
-
-
-.panduan-hki a:hover{
-  transform: translateY(-2px);
-  opacity: .95;
-}
-
-.panduan-hki a:active{
-  transform: translateY(0);
+  .step p{ white-space: normal; }
 }

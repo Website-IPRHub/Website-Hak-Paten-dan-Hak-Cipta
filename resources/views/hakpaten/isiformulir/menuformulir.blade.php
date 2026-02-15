@@ -1,6 +1,8 @@
 @php
   $totalSteps = 4;
   $percent = (int) round(($activeStep / $totalSteps) * 100);
+
+  $verifId = $verif->id ?? null;
 @endphp
 
 
@@ -15,7 +17,7 @@
 
     <div class="judul-right">
       <div class="profile-badge">
-        <span>Kelengkapan Formulir: {{ $percent }}%</span>
+        <span>Kelengkapan Proses: {{ $percent }}%</span>
         <i class="bi bi-info-circle-fill"></i>
       </div>
 
@@ -30,21 +32,25 @@
 
 <section class="section-full section-steps">
   <div class="section-inner">
-    <ul class="menu-steps">
+    <ul class="section-steps">
       <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
-        <a href="{{ route('hakcipta') }}">Draft Paten</a>
+        <span class="step-number">1</span>
+        <a href="{{ route('hakcipta') }}">Dokumen yang Diperlukan</a>
       </li>
 
       <li class="step {{ $activeStep == 2 ? 'active' : 'disabled' }}">
-        <a href="{{ route('draftpaten') }}">Formulir Permohonan</a>
+        <span class="step-number">2</span>
+        <a href="{{ route('draftpaten') }}">Isi Formulir</a>
       </li>
 
       <li class="step {{ $activeStep == 3 ? 'active' : 'disabled' }}">
-        <a href="{{ route('formulirpermohonan') }}">Kepemilikan Invensi</a>
+        <span class="step-number">3</span>
+        <a href="{{ route('patenverif.datadiri') }}">Verifikasi Berkas</a>
       </li>
 
       <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
-        <a href="{{ route('kepemilikaninvensi') }}">Pengalihan Hak</a>
+        <span class="step-number">4</span>
+        <a href="{{ $verifId ? route('patenverif.all', ['verif' => $verifId]) : 'javascript:void(0)' }}">Upload Berkas</a>
       </li>
     </ul>
   </div>

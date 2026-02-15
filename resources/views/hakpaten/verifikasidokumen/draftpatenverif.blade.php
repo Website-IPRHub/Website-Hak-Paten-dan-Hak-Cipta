@@ -1,14 +1,5 @@
-@extends('layouts.app')
-
-@section('title','Hak Paten')
-
-@section('content')
-
-@php $activeStep = 2; @endphp
-@include('hakpaten.verifikasidokumen.menuverif')
-
-<section class="section-full section-content">
-  <div class="section-inner">
+<section class="section-full section-content section-upload-full">
+  <div class="section-inner section-upload-full__inner">
     <div class="content-isi">
       <div class="draft-paten">
         <h2>Draft Paten <span class="req">*</span></h2>
@@ -24,14 +15,7 @@
           >
             @csrf
 
-            <input
-              id="draftFile"
-              type="file"
-              name="file"
-              hidden
-              required
-              accept=".doc,.docx,.pdf"
-            >
+            <input id="draftFile" type="file" name="file" hidden required accept=".doc,.docx,.pdf">
 
             <button id="uploadButton" type="button" class="btn-upload">
               Upload
@@ -45,27 +29,10 @@
               @endif
             </span>
 
-
-            {{-- submit beneran (disembunyikan, dipencet via JS setelah pilih file) --}}
             <button id="submitUpload" type="submit" style="display:none;">Kirim</button>
           </form>
         </div>
       </div>
     </div>
-
-    <div class="actions-bar">
-      <button type="button" class="btn-prev"
-        data-fallback="{{ route('patenverif.datadiri',['verif' => $verif->id]) }}"
-        onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
-        &laquo; Sebelumnya
-      </button>
-
-      <a
-        class="btn-next"
-        href="{{ route('patenverif.formpermohonan', ['verif' => $verif->id]) }}">
-        Selanjutnya »
-      </a>
-    </div>
   </div>
 </section>
-@endsection
