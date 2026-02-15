@@ -4,7 +4,7 @@
 
 @section('content')
 
-@php $activeStep = 1; @endphp
+@php $activeStep = 2; @endphp
 @include('hakcipta.isiform.menuformcipta')
 
 <div class="paten-form-page">
@@ -34,6 +34,55 @@
       </div>
 
       <div class="field">
+    @php
+        $jenisOld        = old('jenis_cipta');
+        $jenisLainnyaOld = old('jenis_cipta_lainnya');
+    @endphp
+
+    <label class="label">Jenis Hak Cipta <span class="req">*</span></label>
+
+    <div class="jenis-radio">
+        <label class="radio-item">
+            <input type="radio" name="jenis_cipta" value="Buku"
+                {{ $jenisOld === 'Buku' ? 'checked' : '' }} required>
+            Buku
+        </label>
+
+        <label class="radio-item">
+            <input type="radio" name="jenis_cipta" value="Program Komputer"
+                {{ $jenisOld === 'Program Komputer' ? 'checked' : '' }} required>
+            Program Komputer
+        </label>
+
+        <label class="radio-item">
+            <input type="radio" name="jenis_cipta" value="Karya Rekaman Video"
+                {{ $jenisOld === 'Karya Rekaman Video' ? 'checked' : '' }} required>
+            Karya Rekaman Video
+        </label>
+
+        <label class="radio-item">
+            <input type="radio" name="jenis_cipta" value="Lainnya"
+                {{ $jenisOld === 'Lainnya' ? 'checked' : '' }} required>
+            Lainnya
+        </label>
+    </div>
+
+    <div id="jenis-lainnya-wrap" class="mt-8" style="display:none;">
+        <input
+            type="text"
+            class="input"
+            name="jenis_cipta_lainnya"
+            value="{{ $jenisLainnyaOld }}"
+            placeholder="Sebutkan jenis ciptaan lainnya"
+        >
+        <small class="hint">Isi jika memilih “Lainnya”.</small>
+    </div>
+
+    @error('jenis_cipta') <small class="err">{{ $message }}</small> @enderror
+    @error('jenis_cipta_lainnya') <small class="err">{{ $message }}</small> @enderror
+</div>
+
+      <div class="field">
         <label class="label">Link Ciptaan <span class="req">*</span></label>
         <input
           type="url"
@@ -57,6 +106,18 @@
           required
         >
         @error('judul_ciptaan') <small class="err">{{ $message }}</small> @enderror
+      </div>
+      <div class="field span-2">
+        <label class="label">Produk Ciptaan Berupa? <span class="req">*</span></label>
+        <input
+          type="text"
+          class="input"
+          name="berupa"
+          placeholder="Produk ciptaan berupa..."
+          value="{{ old('berupa') }}"
+          required
+        >
+        @error('berupa') <small class="err">{{ $message }}</small> @enderror
       </div>
 
       <div class="field">
@@ -86,8 +147,6 @@
         @error('tempat') <small class="err">{{ $message }}</small> @enderror
       </div>
     </div>
-
-    {{-- KUASA (MUNCUL KALAU "MELALUI") --}}
 
     {{-- DATA PENCIPTA --}}
     <div class="nama mt-16">
@@ -121,7 +180,7 @@
         <button
           type="button"
           class="btn-prev"
-          data-fallback="{{ route('menucipta') }}"
+          data-fallback="{{ route('hakcipta.isiform.peralihanverifcipta') }}"
           onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
         >
           &laquo; Sebelumnya
@@ -158,12 +217,17 @@
         </div>
 
         <div class="field">
+            <label class="label">NIK <span class="req">*</span></label>
+            <input type="text" class="input" name="inventor[NIK][]" placeholder="Masukkan NIK Anda" required>
+        </div>
+
+        <div class="field">
           <label class="label">No. HP <span class="req">*</span></label>
           <input type="text" class="input" name="inventor[no_hp][]" placeholder="Contoh: 08xxxxxxxxxx" required>
         </div>
 
         <div class="field">
-          <label class="label">Telp Rumah</label>
+          <label class="label">Telp Rumah <span class="req">*</span></label>
           <input type="text" class="input" name="inventor[tlp_rumah][]" placeholder="Contoh: 021-1234567">
         </div>
 
@@ -175,6 +239,11 @@
         <div class="field span-2">
           <label class="label">Alamat Lengkap (sesuai KTP) <span class="req">*</span></label>
           <textarea class="input" name="inventor[alamat][]" rows="3" placeholder="Alamat lengkap" required></textarea>
+        </div>
+
+        <div class="field">
+            <label class="label">Kode Pos <span class="req">*</span></label>
+            <input type="text" class="input" name="inventor[kode_pos][]" placeholder="Contoh: XXXXX" required>
         </div>
       </div>
     </div>
