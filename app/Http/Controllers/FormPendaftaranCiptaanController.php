@@ -41,13 +41,12 @@ class FormPendaftaranCiptaanController extends Controller
         }
 
         // simpan session kalau kamu masih butuh flow "Next"
-        session(['hakcipta.form' => $data]);
+        $existing = session('hakcipta.form', []);
+        session()->put('hakcipta.form', array_merge($existing, $request->all()));
 
         // kalau klik tombol Next (sesuaikan route kamu)
         if ($request->input('action') === 'next') {
-            return redirect()
-                ->route('hakcipta.suratpernyataan') // contoh: sesuaikan step berikutnya
-                ->with('success', 'Data tersimpan.');
+            return response()->json(['ok' => true]);
         }
 
         $templatePath = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.docx');

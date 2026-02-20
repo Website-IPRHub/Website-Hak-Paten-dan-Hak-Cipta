@@ -17,8 +17,8 @@ class PernyataanCiptaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'berupa'   => ['required', 'string', 'max:255'],
-            'berjudul'     => ['required', 'string', 'max:255'],
+            'judul_ciptaan'   => ['required', 'string', 'max:255'],
+            'berupa'     => ['required', 'string', 'max:255'],
             'tanggal_pengisian' => ['required', 'date'],
 
             'download_format' => ['required', 'in:pdf,docx'],
@@ -42,7 +42,7 @@ class PernyataanCiptaController extends Controller
         $tp = new TemplateProcessor($templatePath);
 
 
-        $tp->setValue('berjudul', $this->val($data['berjudul']));
+        $tp->setValue('judul_ciptaan', $this->val($data['judul_ciptaan']));
         $tp->setValue('berupa', $this->val($data['berupa']));
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id');
         $tp->setValue('tanggal_pengisian', $tgl->translatedFormat('d F Y'));

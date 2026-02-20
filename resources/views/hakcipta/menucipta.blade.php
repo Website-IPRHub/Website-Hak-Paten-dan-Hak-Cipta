@@ -12,7 +12,7 @@
 
   <div class="right">
     <div class="menu-hak-paten">
-        <h2>Alur Pendaftaran Paten</h2>
+        <h2>Alur Pendaftaran Hak Cipta</h2>
         <div class="flow">
             <div class="step">
             <span class="dot"></span>

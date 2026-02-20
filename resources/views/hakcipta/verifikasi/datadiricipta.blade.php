@@ -4,8 +4,54 @@
 
 @section('content')
 
+
 @php $activeStep = 1; @endphp
 @include('hakcipta.verifikasi.menuciptaverif')
+
+
+@php
+    $data = session('hakcipta.form');
+@endphp
+
+@php
+  $inventorData = [];
+
+  // gunakan old('inventor') dulu kalau ada, fallback ke session
+  $oldInventor = old('inventor', data_get($data, 'inventor', []));
+
+  // pastikan formatnya array of object dengan key: nama, nip_nim, ...
+  if (!empty($oldInventor)) {
+      if (array_key_exists('nama', $oldInventor)) {
+          // masih format key=>array, konversi jadi array of objects
+          $count = count($oldInventor['nama']);
+          for ($i = 0; $i < $count; $i++) {
+              $inventorData[$i] = [
+                  'nama' => $oldInventor['nama'][$i] ?? '',
+                  'nip_nim' => $oldInventor['nip_nim'][$i] ?? '',
+                  'nidn' => $oldInventor['nidn'][$i] ?? '',
+                  'fakultas' => $oldInventor['fakultas'][$i] ?? '',
+                  'no_hp' => $oldInventor['no_hp'][$i] ?? '',
+                  'email' => $oldInventor['email'][$i] ?? '',
+                  'status' => $oldInventor['status'][$i] ?? '',
+              ];
+          }
+      } else {
+          $inventorData = $oldInventor; // sudah array of objects
+      }
+  }
+@endphp
+
+<script type="application/json" id="prefill-inventor-data">
+{!! json_encode($inventorData) !!}
+</script>
+
+<script type="application/json" id="prefill-count">
+{!! json_encode(old('jumlah_inventor', data_get($data, 'jumlah_inventor', 1))) !!}
+</script>
+
+@php
+  $prefillCount = (int) old('jumlah_inventor', data_get($data, 'jumlah_inventor', 1));
+@endphp
 
 <section class="section-full section-content">
   <div class="section-inner">
@@ -38,7 +84,7 @@
               name="jumlah_inventor"
               min="1"
               max="20"
-              value="{{ old('jumlah_inventor', 1) }}"
+              value="{{ old('jumlah_inventor', $prefillCount) }}"
               required
             >
           </div>
@@ -46,8 +92,8 @@
           {{-- Jenis Hak Cipta (radio) --}}
           {{-- Jenis Cipta (radio) --}}
         @php
-        $jenisOld        = old('jenis_cipta');
-        $jenisLainnyaOld = old('jenis_cipta_lainnya');
+          $jenisOld = old('jenis_cipta', data_get($data,'jenis_cipta'));
+          $jenisLainnyaOld = old('jenis_cipta_lainnya', data_get($data,'jenis_cipta_lainnya'));
         @endphp
 
         <div class="field">
@@ -110,12 +156,12 @@
             <input
               type="text"
               class="input"
-              name="judul_cipta"
+              name="judul_ciptaan"
               placeholder="Masukkan judul cipta"
-              value="{{ old('judul_cipta') }}"
+              value="{{ old('judul_ciptaan', data_get($data,'judul_ciptaan')) }}"
               required
             >
-            @error('judul_cipta')
+            @error('judul_ciptaan')
               <small style="color:red">{{ $message }}</small>
             @enderror
           </div>
