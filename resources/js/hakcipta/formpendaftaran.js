@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
 console.log("container:", document.getElementById("inventor-container"));
 console.log("template:", document.getElementById("inventor-template"));
 console.log("jumlah:", document.getElementById("jumlah_inventor"));
+const btnMinus = document.getElementById("invMinus");
+const btnPlus  = document.getElementById("invPlus");
   /* =====================================================
      1️⃣ TOGGLE KUASA
   ===================================================== */
@@ -144,6 +146,10 @@ console.log("OLD INVENTOR:", oldInventor);
     const val = oldInventor?.[k]?.[idx];
     if (val !== undefined) {
       el.value = val;
+
+      if (k === "status") {
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      }
     }
   });
 };
@@ -151,64 +157,65 @@ console.log("OLD INVENTOR:", oldInventor);
 console.log("OLD INVENTOR:", oldInventor);
 
   const applyStatusLogic = (card) => {
-    const statusSelect = card.querySelector('[name="inventor[status][]"]');
-    const nidnWrap  = card.querySelector(".nidn-wrap");
-    const nidnInput = card.querySelector('[name="inventor[nidn][]"]');
+  const statusSelect = card.querySelector('[name="inventor[status][]"]');
+  const nidnField = card.querySelector(".nidn-wrap");
+  const nidnInput = card.querySelector('[name="inventor[nidn][]"]');
 
-    const update = () => {
-      const isDosen = statusSelect?.value === "Dosen";
-      if (nidnWrap) nidnWrap.style.display = isDosen ? "" : "none";
-
-      if (nidnInput) {
-        if (isDosen) nidnInput.setAttribute("required", "required");
-        else {
-          nidnInput.removeAttribute("required");
-          nidnInput.value = "";
-        }
+  const update = () => {
+    const isDosen = statusSelect?.value === "Dosen";
+    if (nidnField) nidnField.style.display = isDosen ? "" : "none";
+    if (nidnInput) {
+      if (isDosen) nidnInput.setAttribute("required", "required");
+      else {
+        nidnInput.removeAttribute("required");
+        nidnInput.value = "";
       }
-    };
-
-    if (statusSelect) {
-      statusSelect.addEventListener("change", update);
-      update();
     }
   };
+
+  if (statusSelect) {
+    statusSelect.addEventListener("change", update);
+    update(); 
+  }
+};
 
   /* =====================================================
      RENDER
   ===================================================== */
   function renderInventors(count) {
-    if (!container || !tpl) return;
+  if (!container || !tpl) return;
 
-    const snap = snapshotCurrent();
-    container.innerHTML = "";
+  const snap = snapshotCurrent();
+  container.innerHTML = "";
 
-    for (let i = 0; i < count; i++) {
-      const node = tpl.content.cloneNode(true);
-      const card = node.querySelector(".inventor-card");
+  for (let i = 0; i < count; i++) {
+    const node = tpl.content.cloneNode(true);
+    const card = node.querySelector(".inventor-card");
 
-      const no = node.querySelector(".inv-no");
-      if (no) no.textContent = (i + 1);
+    const no = node.querySelector(".inv-no");
+    if (no) no.textContent = (i + 1);
 
-      node.querySelectorAll("[name^='inventor[']").forEach(el => {
-        const name = el.getAttribute("name");
-        const arr = snap[name] || [];
-        const v = arr[i] ?? "";
-        if (v) el.value = v;
-      });
+    if (card) applyStatusLogic(card);
 
-      fillFromOld(node, i);
-      if (card) applyStatusLogic(card);
+    node.querySelectorAll("[name^='inventor[']").forEach(el => {
+      const name = el.getAttribute("name");
+      const arr = snap[name] || [];
+      if (arr[i] !== undefined) el.value = arr[i];
+    });
 
-      container.appendChild(node);
-    }
+    fillFromOld(node, i);
+
+    container.appendChild(node);
   }
+}
 
   const setCount = (n) => {
     const v = clamp(n, 1, 20);
     if (jumlahInput) jumlahInput.value = v;
     renderInventors(v);
   };
+
+  
 
   /* =====================================================
      INIT (PREFILL)
@@ -220,6 +227,9 @@ console.log("OLD INVENTOR:", oldInventor);
   } catch (e) {}
   setCount(prefillCount);
 
+  
+      if (btnMinus) btnMinus.addEventListener("click", () => setCount(getCount() - 1));
+      if (btnPlus)  btnPlus.addEventListener("click", () => setCount(getCount() + 1));
 
   /* =====================================================
      EVENTS
@@ -244,6 +254,8 @@ console.log("OLD INVENTOR:", oldInventor);
       jumlahInput.value = cards.length || 1;
     });
   }
+
+  
 
 
 });

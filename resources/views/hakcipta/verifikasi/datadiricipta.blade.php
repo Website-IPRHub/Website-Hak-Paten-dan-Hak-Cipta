@@ -4,9 +4,8 @@
 
 @section('content')
 
-
-@php $activeStep = 1; @endphp
-@include('hakcipta.verifikasi.menuciptaverif')
+@php $activeStep = 3; @endphp
+@include('hakcipta.isiform.menuformcipta')
 
 
 @php
@@ -77,6 +76,8 @@
         <div class="col-left">
           <div class="field">
             <label class="label">Jumlah Pencipta <span class="req">*</span></label>
+            <div class="jumlah-inventor-wrap" style="display:flex; gap:10px; align-items:center;">
+            <button type="button" id="invMinus" class="btn-minus" aria-label="Kurangi inventor">-</button>
             <input
               type="number"
               class="input"
@@ -87,6 +88,11 @@
               value="{{ old('jumlah_inventor', $prefillCount) }}"
               required
             >
+            <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
+          </div>
+          @error('jumlah_inventor')
+              <small class="err">{{ $message }}</small>
+          @enderror
           </div>
 
           {{-- Jenis Hak Cipta (radio) --}}
@@ -161,9 +167,6 @@
               value="{{ old('judul_ciptaan', data_get($data,'judul_ciptaan')) }}"
               required
             >
-            @error('judul_ciptaan')
-              <small style="color:red">{{ $message }}</small>
-            @enderror
           </div>
 
           <div class="field">

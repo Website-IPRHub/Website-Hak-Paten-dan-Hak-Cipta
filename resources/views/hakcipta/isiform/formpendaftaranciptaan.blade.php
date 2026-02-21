@@ -37,6 +37,9 @@
 
       <div class="field">
           <label class="label">Jumlah pencipta <span class="req">*</span></label>
+          <div class="jumlah-inventor-wrap" style="display:flex; gap:10px; align-items:center;">
+            <button type="button" id="invMinus" class="btn-minus" aria-label="Kurangi inventor">-</button>
+
           <input
               type="number"
               class="input"
@@ -47,6 +50,8 @@
               value="{{ $jumlahInventor }}"
               required
           >
+           <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
+          </div>
           @error('jumlah_inventor')
               <small class="err">{{ $message }}</small>
           @enderror
@@ -373,7 +378,7 @@
         {{-- Status --}}
         <div class="field">
           <label class="label">Status <span class="req">*</span></label>
-          <select class="input"
+          <select class="input status-select"
                   name="inventor[status][]"
                   required>
             <option value="" disabled selected>-- Pilih Status --</option>

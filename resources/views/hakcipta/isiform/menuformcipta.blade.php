@@ -1,6 +1,7 @@
 @php
   $totalSteps = 4;
   $percent = (int) round(($activeStep / $totalSteps) * 100);
+  $verifId = $verif->id ?? null;
 @endphp
 
 
@@ -48,7 +49,7 @@
 
       <li class="step {{ $activeStep == 4 ? 'active' : 'disabled' }}">
         <span class="step-number">4</span>
-        <a href="#">Upload Berkas</a>
+        <a href="{{ $verifId ? route('ciptaverif.all', ['verif' => $verifId]) : 'javascript:void(0)' }}">Upload Berkas</a>
       </li>
     </ul>
   </div>
