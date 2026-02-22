@@ -7,14 +7,12 @@
 @php $activeStep = 4; @endphp
 @include('hakcipta.isiform.menuformcipta')
 
-{{ dd($verif) }}
-
-<div class="upload-halaman" style="background:yellow; padding:50px">
-  <div class="upload-pembungkus">
+<div class="upload-page">
+  <div class="upload-wrap">
 
     <div class="upload-head">
       <div>
-        <h1 class="upload-judul">Upload Berkas Verifikasi Hak Cipta</h1>
+        <h1 class="upload-title">Upload Berkas Verifikasi Hak Cipta</h1>
         <p class="upload-sub">Upload satu per satu dan terakhir baru klik <b>Submit Verifikasi</b>.</p>
       </div>
     </div>
