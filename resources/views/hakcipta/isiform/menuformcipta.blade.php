@@ -31,7 +31,7 @@
 
 <section class="section-full section-steps">
   <div class="section-inner">
-    <ul class="section-steps">
+    <ul class="menu-steps">
       <li class="step {{ $activeStep == 1 ? 'active' : 'disabled' }}">
         <span class="step-number">1</span>
         <a href="{{ route('hakcipta.isiform.peralihanverifcipta') }}">Dokumen yang Diperlukan</a>
