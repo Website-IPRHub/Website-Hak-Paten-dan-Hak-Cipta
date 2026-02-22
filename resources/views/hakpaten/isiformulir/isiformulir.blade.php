@@ -665,8 +665,8 @@ document.addEventListener('DOMContentLoaded', () => {
   </form>
 
   <script type="application/json" id="old-inventor-data">
-  {!! json_encode(old('inventor', $prefill['inventor'] ?? [])) !!}
-</script>
+    {!! json_encode(old('inventor', $prefill['inventor'] ?? [])) !!}
+  </script>
 
 
 

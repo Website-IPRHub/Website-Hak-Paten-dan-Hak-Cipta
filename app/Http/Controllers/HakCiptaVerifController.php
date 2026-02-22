@@ -25,7 +25,7 @@ class HakCiptaVerifController extends Controller
         $validated = $request->validate([
             'jumlah_inventor' => ['required', 'integer', 'min:1', 'max:20'],
             'jenis_cipta'     => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-            'judul_cipta'     => ['required', 'string', 'max:255'],
+            'judul_ciptaan'   => ['required', 'string', 'max:255'],
             'jenis_cipta_lainnya' => ['nullable', 'string', 'max:255', 'required_if:jenis_cipta,Lainnya'],
 
             'inventor'               => ['required', 'array'],
@@ -90,7 +90,7 @@ class HakCiptaVerifController extends Controller
         $payload = [
             'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
             'jenis_cipta'      => $jenisCipta,
-            'judul_cipta'      => $validated['judul_cipta'],
+            'judul_cipta' => $validated['judul_ciptaan'],
 
             'inventors'        => $inventors,
 
@@ -128,7 +128,7 @@ class HakCiptaVerifController extends Controller
         // optional: kalau masih mau simpan session (tidak dipakai untuk upload)
         session(['cipta_id' => $verif->id]);
 
-        return redirect()->route('ciptaverif.formulirpermohonan', ['verif' => $verif->id]);
+        return redirect()->route('ciptaverif.all', ['verif' => $verif->id]);
 }
 
     /**
@@ -145,7 +145,7 @@ class HakCiptaVerifController extends Controller
         $validated = $request->validate([
             'jumlah_inventor' => ['required', 'integer', 'min:1', 'max:20'],
             'jenis_cipta'     => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-            'judul_cipta'     => ['required', 'string', 'max:255'],
+            'judul_ciptaan'     => ['required', 'string', 'max:255'],
 
             'inventor'               => ['required', 'array'],
             'inventor.nama'          => ['required', 'array', "size:$jumlah"],
@@ -279,6 +279,18 @@ class HakCiptaVerifController extends Controller
      * route name: ciptaverif.upload.form (blade kamu pakai ini)
      * kolom DB: surat_permohonan
      */
+
+    public function uploadSemua(HakCiptaVerif $verif)
+    {
+        return view('hakcipta.verifikasi.semuaverif', compact('verif'));
+    }
+
+
+    public function all(HakCiptaVerif $verif)
+{
+    return view('hakcipta.verifikasi.semuaverif', compact('verif'));
+}
+
     public function uploadForm(Request $request, HakCiptaVerif $verif)
     {
         return $this->uploadSuratPermohonan($request, $verif);
@@ -293,7 +305,9 @@ class HakCiptaVerifController extends Controller
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_permohonan');
         $verif->update(['surat_permohonan' => $path]);
 
-        return back()->with('success', 'Surat Permohonan berhasil diupload');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Surat Permohonan berhasil diupload');
     }
 
     public function uploadSuratPernyataan(Request $request, HakCiptaVerif $verif)
@@ -305,7 +319,9 @@ class HakCiptaVerifController extends Controller
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_pernyataan');
         $verif->update(['surat_pernyataan' => $path]);
 
-        return back()->with('success', 'Surat Pernyataan berhasil diupload');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Surat Pernyataan berhasil diupload');
     }
 
     public function uploadSuratPengalihan(Request $request, HakCiptaVerif $verif)
@@ -317,7 +333,9 @@ class HakCiptaVerifController extends Controller
         $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
         $verif->update(['surat_pengalihan' => $path]);
 
-        return back()->with('success', 'Surat Pengalihan berhasil diupload');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Surat Pengalihan berhasil diupload');
     }
 
     public function uploadTandaTerima(Request $request, HakCiptaVerif $verif)
@@ -329,7 +347,9 @@ class HakCiptaVerifController extends Controller
         $path = $this->storeUploadedOriginalName($request, 'verif/tanda_terima');
         $verif->update(['tanda_terima' => $path]);
 
-        return back()->with('success', 'Tanda Terima berhasil diupload');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Tanda terima berhasil diupload');
     }
 
     public function uploadKTP(Request $request, HakCiptaVerif $verif)
@@ -341,7 +361,9 @@ class HakCiptaVerifController extends Controller
         $path = $this->storeUploadedOriginalName($request, 'verif/scan_ktp');
         $verif->update(['scan_ktp' => $path]);
 
-        return back()->with('success', 'Scan KTP berhasil diupload');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Scan KTP berhasil diupload');
     }
 
     public function uploadHasilCiptaan(Request $request, HakCiptaVerif $verif)
@@ -353,7 +375,9 @@ class HakCiptaVerifController extends Controller
         $path = $this->storeUploadedOriginalName($request, 'verif/hasil_ciptaan');
         $verif->update(['hasil_ciptaan' => $path]);
 
-        return back()->with('success', 'Hasil Ciptaan berhasil diupload');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Hasil ciptaan berhasil diupload');
     }
 
     public function saveLinkCiptaan(Request $request, HakCiptaVerif $verif)
@@ -364,7 +388,9 @@ class HakCiptaVerifController extends Controller
 
         $verif->update(['link_ciptaan' => $request->link_ciptaan]);
 
-        return back()->with('success', 'Link ciptaan tersimpan');
+        return redirect()
+    ->route('ciptaverif.all', ['verif' => $verif->id])
+    ->with('success', 'Link ciptaan berhasil diupload');
     }
 
     // =========================

@@ -86,6 +86,9 @@
 
           <div class="field">
             <label class="label">Jumlah inventor <span class="req">*</span></label>
+            <div class="jumlah-inventor-wrap" style="display:flex; gap:10px; align-items:center;">
+            <button type="button" id="invMinus" class="btn-minus" aria-label="Kurangi inventor">-</button>
+
             <input
               type="number"
               class="input"
@@ -96,6 +99,8 @@
               value="{{ old('jumlah_inventor', $prefillCount) }}"
               required
             >
+           <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
+          </div>
           </div>
 
           <div class="field">

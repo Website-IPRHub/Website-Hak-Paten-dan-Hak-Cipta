@@ -345,7 +345,9 @@ class PatenVerifController extends Controller
 
     $verif->update(['draft_paten' => $path]);
 
-    return redirect()->back()->with('success', 'Draft berhasil diupload');
+    return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Draft Paten berhasil diupload');
 }
 
 
@@ -359,8 +361,9 @@ class PatenVerifController extends Controller
             'deskripsi_singkat_prototipe' => $request->filled('deskripsi') ? $request->deskripsi : null,
         ]);
 
-        return redirect()->route('patenverif.deskripsi', $verif->id)
-            ->with('success', 'Tersimpan');
+        return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Deskripsi Paten berhasil diupload');
     }
 
     private function generateNoPendaftaranVerif(): string
@@ -440,7 +443,9 @@ public function deskripsiprodukverif(PatenVerif $verif){
 
     $verif->update(['form_permohonan' => $path]);
 
-    return redirect()->back()->with('success', 'Form Permohonan berhasil diupload');
+    return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Form Permohonan Paten berhasil diupload');
 }
 
 
@@ -454,7 +459,9 @@ public function deskripsiprodukverif(PatenVerif $verif){
 
     $verif->update(['surat_kepemilikan' => $path]);
 
-    return redirect()->back()->with('success', 'Surat Invensi berhasil diupload');
+    return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Surat Invensi Paten berhasil diupload');
 }
 
     public function uploadPengalihan(Request $request, PatenVerif $verif)
@@ -467,7 +474,9 @@ public function deskripsiprodukverif(PatenVerif $verif){
 
     $verif->update(['surat_pengalihan' => $path]);
 
-    return redirect()->back()->with('success', 'Surat Pengalihan Hak berhasil diupload');
+    return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Surat Pengalihan Hak Paten berhasil diupload');
 }
 
 
@@ -485,7 +494,9 @@ public function deskripsiprodukverif(PatenVerif $verif){
 
     $verif->update(['scan_ktp' => $path]);
 
-    return redirect()->back()->with('success', 'Scan KTP berhasil diupload');
+    return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Scan KTP berhasil diupload');
 }
 
 
@@ -505,7 +516,9 @@ public function deskripsiprodukverif(PatenVerif $verif){
         $verif->update(['gambar_prototipe' => $path]);
     }
 
-    return redirect()->back()->with('success', 'Gambar berhasil diupload');
+    return redirect()
+    ->route('patenverif.all', ['verif' => $verif->id])
+    ->with('success', 'Gambar Prototipe Paten berhasil diupload');
 }
 
 

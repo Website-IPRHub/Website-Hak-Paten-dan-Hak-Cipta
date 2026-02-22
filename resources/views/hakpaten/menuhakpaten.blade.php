@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Test Header')
+@section('title','Daftar Paten')
 
 @section('content')
 

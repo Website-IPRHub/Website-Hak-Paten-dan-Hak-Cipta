@@ -26,10 +26,10 @@ class PengalihanHakCiptaController extends Controller
 
         $data = $request->validate([
             'jumlah_inventor' => ['required', 'integer', 'min:1', 'max:14'],
-            'judul_hak_cipta' => ['required', 'string', 'max:255'],
+            'judul_ciptaan' => ['required', 'string', 'max:255'],
             'tanggal_pengisian' => ['required', 'date'],
-            'jenis_hak_cipta' => ['required', 'string', 'max:100'],
-            'jenis_hak_cipta_lainnya' => ['nullable', 'string', 'max:100'],
+            'jenis_cipta' => ['required', 'string', 'max:100'],
+            'jenis_cipta_lainnya' => ['nullable', 'string', 'max:100'],
 
             'inventor' => ['required', 'array'],
             'inventor.nama' => ['required', 'array'],
@@ -62,10 +62,12 @@ class PengalihanHakCiptaController extends Controller
 
 
         // Set field utama
-        $tp->setValue('judul_hak_cipta', $this->val($data['judul_hak_cipta']));
-        $jenis = $data['jenis_hak_cipta'] === 'Lainnya'
-            ? $this->val($data['jenis_hak_cipta_lainnya'] ?? 'Lainnya')
-            : $this->val($data['jenis_hak_cipta']);
+        $tp->setValue('judul_hak_cipta', $this->val($data['judul_ciptaan']));
+
+        $jenis = $data['jenis_cipta'] === 'Lainnya'
+            ? $this->val($data['jenis_cipta_lainnya'] ?? 'Lainnya')
+            : $this->val($data['jenis_cipta']);
+
         $tp->setValue('jenis', $jenis);
 
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id');
