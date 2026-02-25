@@ -1538,6 +1538,12 @@ class AdminDashboardController extends Controller
 
             $original = $file->getClientOriginalName();
             $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
+    // LibreOffice path
+    $soffice = 'D:\\Program Files\\LibreOffice\\program\\soffice.exe';;
+    if (!file_exists($soffice)) {
+        @unlink($tmpDocx);
+        throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
+    }
 
             $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
 

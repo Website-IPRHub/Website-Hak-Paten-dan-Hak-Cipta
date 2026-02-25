@@ -1,90 +1,188 @@
-/* wrapper */
+/* =========================
+   STEP SECTION (PRO)
+========================= */
 .section-steps{
-  background:#F0F6FD;
-  padding:12px 0;
+  background:#f0f6fd; /* soft blue-white */
+  padding:28px 0;
+  margin-top:24px;
 }
 
-/* ul */
-.section-steps .section-inner > .menu-steps{
+/* container step */
+.section-steps .menu-steps{
   list-style:none;
   padding:0;
   margin:0;
-
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important; /* ✅ nyebar */
-  gap:12px;
-
-  flex-wrap:nowrap;
-  overflow:hidden;
-}
-
-/* li direct child */
-.section-steps .section-inner > .menu-steps > li.step{
-  flex:1 1 0 !important; /* ✅ bagi rata 4 */
-  min-width:0;
-  position:static !important; /* biar gak ketarik absolute/relative aneh */
-}
-
-/* anchor */
-.section-steps .section-inner > .menu-steps > li.step > a{
-  width:100% !important;
-  display:flex !important;
+  display:flex;
   align-items:center;
-  justify-content:center;        /* ✅ teks di tengah pill */
-  /* kalau mau teks kiri tapi tetap nyebar: ganti ke flex-start */
+  justify-content:center;
+  gap:48px;
+}
 
-  padding:10px 14px;
-  border-radius:18px;
+/* step item */
+.section-steps .menu-steps > li.step{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  transition:.25s ease;
+}
 
-  text-decoration:none;
+/* bullet */
+.step-number{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-size:14px;
   font-weight:600;
-  color:#1E1E1E;
+  font-family:'Inter', sans-serif;
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  background:#E2E8F0;
+  border:1px solid #CBD5E1;
+  color:#475569;
+
+  transition:.25s ease;
+}
+
+/* text */
+.section-steps .menu-steps > li.step > a{
+  text-decoration:none;
+  font-size:15px;
+  font-weight:600;
+  font-family:'Inter', sans-serif;
+  color:#475569;
+  transition:.25s ease;
+  border-radius: 30px;
+}
+
+/* hover */
+.section-steps .menu-steps > li.step:hover .step-number{
+  border-color:#2563EB;
+  color:#2563EB;
+  background:#EFF6FF;
+}
+
+.section-steps .menu-steps > li.step:hover a{
+  color:#2563EB;
 }
 
 /* active */
-.section-steps .section-inner > .menu-steps > li.step.active > a{
-  background:#fff;
+.section-steps .menu-steps > li.step.active .step-number{
+  background:#2563EB;
+  border-color:#2563EB;
+  color:#ffffff;
+  box-shadow:0 6px 20px rgba(37,99,235,0.25);
+}
+
+.section-steps .menu-steps > li.step.active a{
+  color:#1E3A8A;
 }
 
 /* disabled */
-.section-steps .section-inner > .menu-steps > li.step.disabled > a{
+.section-steps .menu-steps > li.step.disabled{
+  opacity:.45;
   pointer-events:none;
-  cursor:not-allowed;
-  opacity:.55;
 }
 
-/* buang garis/pseudo dari css lain */
-.section-steps .section-inner > .menu-steps > li.step::before,
-.section-steps .section-inner > .menu-steps > li.step::after,
-.section-steps .section-inner > .menu-steps > li.step:not(:last-child)::after{
-  content:none !important;
-  display:none !important;
+.section-judul{
+  padding: 22px 0;
+  background: #fff;
+  margin-top: 20px;
 }
 
-/* responsive */
-@media (max-width:900px){
-  .section-steps .section-inner > .menu-steps{
-    flex-wrap:wrap;
-    justify-content:flex-start !important;
-    overflow:visible;
-    gap:10px;
+.judul-inner{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.judul-left{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.judul-title{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1C5EBD;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.judul-desc{
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+  color: #000;
+  font-family: 'inter', sans-serif;
+  line-height: 1.5;
+}
+
+.judul-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start; 
+  gap:10px;
+  min-width:unset; 
+}
+
+.profile-badge{
+  background: #C0C8E2;
+  padding: 8px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: #1E1E1E;
+}
+
+.profile-progress{
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0;
+  max-width: 260px;
+}
+
+.profile-progress__bar{
+  height: 100%;
+  background: #22c55e;
+  width: var(--w, 0%);
+  transition: width .25s ease;
+}
+
+@media (max-width: 768px){
+  .judul-inner{
+    flex-direction: column;
   }
-  .section-steps .section-inner > .menu-steps > li.step{
-    flex:1 1 calc(50% - 10px) !important;
+  .judul-right{
+    align-items: flex-start;
+    min-width: unset;
+    width: 100%;
   }
-  .section-steps .section-inner > .menu-steps > li.step > a{
-    justify-content:flex-start; /* biar enak pas 2 kolom */
+  .profile-progress{
+    width: 100%;
   }
 }
 
-@media (max-width:520px){
-  .section-steps .section-inner > .menu-steps > li.step{
-    flex:1 1 100% !important;
-  }
+.section-steps .menu-steps::before,
+.section-steps .menu-steps::after,
+.section-steps .menu-steps > li::before,
+.section-steps .menu-steps > li::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
 }

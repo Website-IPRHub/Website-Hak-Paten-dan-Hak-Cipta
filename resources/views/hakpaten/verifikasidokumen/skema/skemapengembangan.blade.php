@@ -104,7 +104,7 @@
     </button>
 
     <a class="btn-next"
-      href="{{ route('patenverif.draft', ['verif' => $verif->id]) }}">
+      href="{{ route('patenverif.all', $verif->id) }}">
       Selanjutnya &raquo;
     </a>
   </div>

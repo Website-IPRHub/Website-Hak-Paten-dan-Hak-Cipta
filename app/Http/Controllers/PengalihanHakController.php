@@ -28,7 +28,7 @@ class PengalihanHakController extends Controller
     {
         $data = $request->validate([
             'jumlah_inventor'   => ['required', 'integer', 'min:1', 'max:20'],
-            'judul_paten'     => ['required', 'string', 'max:255'],
+            'judul_invensi' => ['required','string','max:255'],
             'tanggal_pengisian' => ['required', 'date'],
 
             'inventor'                    => ['required', 'array'],
@@ -40,6 +40,8 @@ class PengalihanHakController extends Controller
 
             'download_format' => ['required', 'in:pdf,docx'],
         ]);
+
+        
 
         $jumlah = (int) $data['jumlah_inventor'];
         $actual = count($data['inventor']['nama'] ?? []);
@@ -54,8 +56,7 @@ class PengalihanHakController extends Controller
 
         $tp = new TemplateProcessor($templatePath);
 
-        // Field umum
-        $tp->setValue('judul_paten', $this->val($data['judul_paten']));
+        $tp->setValue('judul_paten', $this->val($data['judul_invensi']));
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id');
         $tp->setValue('tanggal_pengisian', $tgl->translatedFormat('d F Y'));
 

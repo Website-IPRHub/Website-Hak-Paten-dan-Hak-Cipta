@@ -25,6 +25,7 @@ use App\Http\Controllers\FormPendaftaranCiptaanController;
 use App\Http\Controllers\HakCiptaVerifController;
 use App\Http\Controllers\PernyataanCiptaController;
 use App\Http\Controllers\PengalihanHakCiptaController;
+use App\Http\Controllers\FormulirMasterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -218,12 +219,21 @@ Route::post('/isiformpaten', [IsiformController::class, 'store'])->name('isiform
 Route::post('/invensipaten', [InvensiController::class, 'store'])->name('invensi.store');
 Route::post('/pengalihanpaten', [PengalihanHakController::class, 'store'])->name('pengalihanhak.store');
 
+
 /*
 |--------------------------------------------------------------------------
 | PATEN VERIF FLOW (verifikasi dokumen)
 |--------------------------------------------------------------------------
 */
 Route::view('/hak-paten/data-diri', 'hakpaten.verifikasidokumen.datadiri')->name('patenverif.datadiri');
+
+Route::get('/patenverif/{verif}/all', 
+    [PatenVerifController::class, 'all'])
+    ->name('patenverif.all');
+
+Route::get('/patenverif/{verif}/upload-semua', [PatenVerifController::class, 'uploadSemua'])
+  ->name('patenverif.upload.semua');
+
 
 // Step 1 submit -> create verif record
 Route::post('/paten-verif', [PatenVerifController::class, 'start'])->name('patenverif.start');
@@ -338,7 +348,10 @@ Route::get('/hak-paten/download-template-surat-terima-berkas', function () {
     return response()->download($path, 'TANDA_TERIMA_BERKAS_HAKI.pdf');
 })->name('download.template.tanda_terima_paten');
 
-
+Route::post(
+    '/hak-paten/form-master',
+    [FormulirMasterController::class, 'store']
+)->name('formulir.master.store');
 /*
 |--------------------------------------------------------------------------
 | HAK CIPTA FLOW ISI FORM
@@ -421,20 +434,48 @@ Route::get('/cipta-verif/{verif}/hasil',
     [HakCiptaVerifController::class, 'hasilSubmit']
 )->name('ciptaverif.hasil');
 
-
+Route::get('/cipta-verif/{verif}/upload-semua', [HakCiptaVerifController::class, 'uploadSemua'])
+  ->name('cipta-verif.upload.semua');
 // Submit actions
+// ==============================
+// HALAMAN SEMUA UPLOAD
+// ==============================
+Route::get('/cipta-verif/{verif}/all',
+    [HakCiptaVerifController::class, 'all']
+)->name('ciptaverif.all');
 
-Route::post('/cipta-verif/{verif}/upload-form', [HakCiptaVerifController::class, 'uploadSuratPermohonan'])->name('ciptaverif.upload.form');
-Route::post('/cipta-verif/{verif}/upload-invensi', [HakCiptaVerifController::class, 'uploadSuratPernyataan'])
-  ->name('ciptaverif.upload.invensi');
-Route::post('/cipta-verif/{verif}/upload-surat', [HakCiptaVerifController::class, 'uploadSuratPengalihan'])
-  ->name('ciptaverif.upload.pengalihan');
-Route::post('/cipta-verif/{verif}/upload-scan-ktp', [HakCiptaVerifController::class, 'uploadKTP'])
-  ->name('ciptaverif.upload.scanktp');
-Route::post('/cipta-verif/{verif}/upload-hasil-ciptaan', [HakCiptaVerifController::class, 'uploadHasilCiptaan'])
-  ->name('ciptaverif.upload.hasilciptaan');
-Route::post('/cipta-verif/{verif}/upload-link-ciptaan', [HakCiptaVerifController::class, 'saveLinkCiptaan'])
-  ->name('ciptaverif.upload.linkciptaan');
+
+// ==============================
+// UPLOAD (POST)
+// ==============================
+
+Route::post('/cipta-verif/{verif}/upload-form',
+    [HakCiptaVerifController::class, 'uploadForm']
+)->name('ciptaverif.upload.form');
+
+Route::post('/cipta-verif/{verif}/upload-pernyataan',
+    [HakCiptaVerifController::class, 'uploadSuratPernyataan']
+)->name('ciptaverif.upload.invensi'); // ← sesuai blade lo
+
+Route::post('/cipta-verif/{verif}/upload-pengalihan',
+    [HakCiptaVerifController::class, 'uploadSuratPengalihan']
+)->name('ciptaverif.upload.pengalihan');
+
+Route::post('/cipta-verif/{verif}/upload-ktp',
+    [HakCiptaVerifController::class, 'uploadKTP']
+)->name('ciptaverif.upload.scanktp');
+
+Route::post('/cipta-verif/{verif}/upload-hasilciptaan',
+    [HakCiptaVerifController::class, 'uploadHasilCiptaan']
+)->name('ciptaverif.upload.hasilciptaan');
+
+Route::post('/cipta-verif/{verif}/submit-final',
+    [HakCiptaVerifController::class, 'submitFinal']
+)->name('ciptaverif.submit.final');
+
+Route::get('/cipta-verif/{verif}/hasil',
+    [HakCiptaVerifController::class, 'hasilSubmit']
+)->name('ciptaverif.hasil');
 
   // INI PENDAFTARAN CIPTA
 Route::view('/hak-cipta/data-diri-pendaftaran', 'hakcipta.hakcipta')->name('hakciptapendaftaran');

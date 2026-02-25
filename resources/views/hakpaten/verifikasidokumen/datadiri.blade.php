@@ -5,8 +5,62 @@
 
 @section('content')
 
-@php $activeStep = 1; @endphp
-@include('hakpaten.verifikasidokumen.menuverif')
+@php $activeStep = 3; @endphp
+@include('hakpaten.isiformulir.menuformulir')
+
+@php
+  $isiform = session('hakpaten.isiform', []);
+  $invensi = session('hakpaten.invensi', []);
+@endphp
+
+@php
+  $raw = old('inventor', data_get($isiform,'inventor', []));
+  // kalau raw itu array of object -> ubah
+  if (isset($raw[0]) && is_array($raw[0])) {
+    $norm = [
+      'nama'=>[], 'nip_nim'=>[], 'nidn'=>[], 'fakultas'=>[],
+      'no_hp'=>[], 'email'=>[], 'status'=>[]
+    ];
+    foreach ($raw as $row) {
+      $norm['nama'][] = $row['nama'] ?? '';
+      $norm['nip_nim'][] = $row['nip_nim'] ?? '';
+      $norm['nidn'][] = $row['nidn'] ?? '';
+      $norm['fakultas'][] = $row['fakultas'] ?? '';
+      $norm['no_hp'][] = $row['no_hp'] ?? '';
+      $norm['email'][] = $row['email'] ?? '';
+      $norm['status'][] = $row['status'] ?? '';
+    }
+  } else {
+    $norm = $raw; // sudah per-field
+  }
+@endphp
+
+
+@php
+  $prefill = [
+    'nama'     => data_get($isiform, 'inventor.nama', []),  // ini yang udah pasti ada dari isiform
+    'nip_nim'  => data_get($isiform, 'inventor.nip_nim', []), // kalau belum ada di isiform ya jadi []
+    'nidn'     => data_get($isiform, 'inventor.nidn', []),
+    'fakultas' => data_get($isiform, 'inventor.fakultas', []),
+    'no_hp'    => data_get($isiform, 'inventor.no_hp', []),
+    'email'    => data_get($isiform, 'inventor.email', []),
+    'status'   => data_get($isiform, 'inventor.status', []),
+  ];
+@endphp
+
+<script type="application/json" id="prefill-inventor-data">
+{!! json_encode(old('inventor', $prefill)) !!}
+</script>
+
+<script type="application/json" id="prefill-count">
+{!! json_encode(old('jumlah_inventor', data_get($isiform, 'jumlah_inventor', 1))) !!}
+</script>
+
+@php
+  $prefillCount = (int) old('jumlah_inventor', data_get($isiform, 'jumlah_inventor', 1));
+@endphp
+
+
 
 <section class="section-full section-isi">
   <div class="section-inner">
@@ -32,6 +86,9 @@
 
           <div class="field">
             <label class="label">Jumlah inventor <span class="req">*</span></label>
+            <div class="jumlah-inventor-wrap" style="display:flex; gap:10px; align-items:center;">
+            <button type="button" id="invMinus" class="btn-minus" aria-label="Kurangi inventor">-</button>
+
             <input
               type="number"
               class="input"
@@ -39,18 +96,31 @@
               name="jumlah_inventor"
               min="1"
               max="20"
-              value="{{ old('jumlah_inventor', 1) }}"
+              value="{{ old('jumlah_inventor', $prefillCount) }}"
               required
             >
+           <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
+          </div>
           </div>
 
           <div class="field">
             <label class="label">Jenis Pengajuan Paten <span class="req">*</span></label>
             <select class="input" name="jenis_paten" required>
-              <option value="" selected disabled>-- Jenis Pengajuan Paten --</option>
-              <option value="Paten" {{ old('jenis_paten')=='Paten' ? 'selected' : '' }}>Paten</option>
-              <option value="Paten Sederhana" {{ old('jenis_paten')=='Paten Sederhana' ? 'selected' : '' }}>Paten Sederhana</option>
+              <option value="" disabled {{ old('jenis_paten', data_get($isiform,'jenis_paten')) ? '' : 'selected' }}>
+                -- Jenis Pengajuan Paten --
+              </option>
+
+              <option value="Paten"
+                {{ old('jenis_paten', data_get($isiform,'jenis_paten','')) == 'Paten' ? 'selected' : '' }}>
+                Paten
+              </option>
+
+              <option value="Paten Sederhana"
+                {{ old('jenis_paten', data_get($isiform,'jenis_paten','')) == 'Paten Sederhana' ? 'selected' : '' }}>
+                Paten Sederhana
+              </option>
             </select>
+
           </div>
 
           <div class="field">
@@ -59,10 +129,10 @@
               type="text"
               class="input"
               name="judul_paten"
-              placeholder="Masukkan judul paten"
-              value="{{ old('judul_paten') }}"
+              value="{{ old('judul_paten', data_get($isiform,'judul_invensi','')) }}"
               required
             >
+
           </div>
         </div>
 
@@ -297,14 +367,65 @@
 
           <a id="nextLink"
             href="javascript:void(0)"
-            class="btn-selanjutnya is-disabled"
-            data-create-url="{{ route('patenverif.start') }}">
+            class="btn-selanjutnya"
+            data-save-url="{{ route('patenverif.start') }}">
             Selanjutnya &raquo;
           </a>
         </div>
       </div>
 
     </form>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const nextBtn = document.getElementById('nextLink');
+  if (!nextBtn) return;
+
+  nextBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const form = document.getElementById('draftForm');
+    if (!form) return;
+
+    // validasi HTML5
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const saveUrl = nextBtn.dataset.saveUrl;
+
+    const fd = new FormData(form);
+
+    try {
+      const res = await fetch(saveUrl, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        body: fd
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.ok) {
+        console.error('Save gagal', data);
+        // kalau mau, tampilkan error dari laravel validate:
+        // console.log(data?.errors);
+        return;
+      }
+
+      // ✅ langsung ke all-in-one
+      window.location.href = data.redirect;
+
+    } catch (err) {
+      console.error(err);
+    }
+  });
+});
+</script>
+
+
   </div>
 </section>
 @endsection

@@ -12,8 +12,8 @@ class InvensiController extends Controller
     {
         // Ganti nama file sesuai punyamu
         if ($jumlah >= 1 && $jumlah <= 4)  return public_path('templates/1-4 invensi.docx');
-        if ($jumlah >= 5 && $jumlah <= 8)  return public_path('templates/5-8 invensi.docx');
-        if ($jumlah >= 9 && $jumlah <= 14) return public_path('templates/9-14 invensi.docx');
+        if ($jumlah >= 5 && $jumlah <= 14)  return public_path('templates/5-8 invensi.docx');
+        // if ($jumlah >= 9 && $jumlah <= 14) return public_path('templates/9-14 invensi.docx');
 
         abort(422, 'Jumlah inventor tidak didukung template.');
     }
@@ -23,6 +23,14 @@ class InvensiController extends Controller
         $s = trim((string)($v ?? ''));
         return $s === '' ? '' : $s; // kosongin aja kalau kosong
     }
+
+    private function softWrap($text): string
+{
+    $text = (string) $text;
+    // sisip ZWSP tiap 30 char untuk kata panjang tanpa spasi
+    return preg_replace('/(\S{30})(?=\S)/u', "$1\u{200B}", $text);
+}
+
 
     public function store(Request $request)
 {
@@ -71,16 +79,19 @@ class InvensiController extends Controller
     $tp->setValue('tanggal_pengisian', $tgl->translatedFormat('d F Y'));
 
     $tp->cloneRow('nama_lengkap', $jumlah);
+    $tp->setValue('br', '</w:t><w:br/><w:t>');
+
 
     for ($i = 1; $i <= $jumlah; $i++) {
         $idx = $i - 1;
         $tp->setValue("no#{$i}", $i);
         $tp->setValue("nama_lengkap#{$i}", $data['inventor']['nama'][$idx] ?? '');
-        $tp->setValue("alamat#{$i}", $data['inventor']['alamat'][$idx] ?? '');
-        $tp->setValue("kode_pos#{$i}", $data['inventor']['kode_pos'][$idx] ?? '');
-        $tp->setValue("email#{$i}", $data['inventor']['email'][$idx] ?? '');
-        $tp->setValue("no_hp#{$i}", $data['inventor']['no_hp'][$idx] ?? '');
-        $tp->setValue("kewarganegaraan#{$i}", $data['inventor']['kewarganegaraan'][$idx] ?? '');
+        $tp->setValue("alamat#{$i}", $this->softWrap($data['inventor']['alamat'][$idx] ?? ''));
+        $tp->setValue("kode_pos#{$i}", $this->softWrap($data['inventor']['kode_pos'][$idx] ?? ''));
+        $tp->setValue("email#{$i}", $this->softWrap($data['inventor']['email'][$idx] ?? ''));
+        $tp->setValue("no_hp#{$i}", $this->softWrap($data['inventor']['no_hp'][$idx] ?? ''));
+        $tp->setValue("kewarganegaraan#{$i}", $this->softWrap($data['inventor']['kewarganegaraan'][$idx] ?? ''));
+        
     }
 
     $tp->cloneBlock('list_inventor', $jumlah, true, true);
@@ -94,6 +105,7 @@ class InvensiController extends Controller
     $tp->saveAs($out);
 
     $format = $data['download_format'];
+    
 
     if ($format === 'docx') {
        return response()
@@ -129,6 +141,8 @@ class InvensiController extends Controller
             ->download($pdfPath, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.pdf')
             ->deleteFileAfterSend(true);
 
-}
+        session()->put('hakpaten.invensi', $validated); // atau payload invensi
 
+    }
+    
 }

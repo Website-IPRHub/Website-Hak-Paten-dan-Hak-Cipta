@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const tplFirst = document.getElementById('inventor-template-first-verif');
   const tplNormal = document.getElementById('inventor-template-verif');
 
+  const prefillEl = document.getElementById('prefill-inventor-data');
+  const prefillCountEl = document.getElementById('prefill-count');
+
+  let prefillInventor = {};
+  let prefillCount = 1;
+
+  try { prefillInventor = JSON.parse(prefillEl?.textContent || "{}"); } catch(e) { prefillInventor = {}; }
+  try { prefillCount = parseInt(JSON.parse(prefillCountEl?.textContent || "1"), 10) || 1; } catch(e) { prefillCount = 1; }
+
+
   if (!jumlahInput || !container || !tplFirst || !tplNormal) {
     console.error('Inventor elements not found:', { jumlahInput, container, tplFirst, tplNormal });
     return;
@@ -20,18 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function snapshotValues() {
     const getVals = (sel) => Array.from(document.querySelectorAll(sel)).map(el => el.value);
 
-    // ambil status dari semua inventor, termasuk inventor 1 (hidden)
     const statusEls = Array.from(document.querySelectorAll('[name="inventor[status][]"]'));
-    const status = statusEls.map(el => el.value);
 
     return {
-      nama: getVals('input[name="inventor[nama][]"]'),
-      nip: getVals('input[name="inventor[nip_nim][]"]'),
-      nidn: getVals('input[name="inventor[nidn][]"]'),
-      fakultas: getVals('select[name="inventor[fakultas][]"]'),
-      hp: getVals('input[name="inventor[no_hp][]"]'),
-      email: getVals('input[name="inventor[email][]"]'),
-      status, 
+      nama: getVals('[name="inventor[nama][]"]'),
+      nip_nim: getVals('[name="inventor[nip_nim][]"]'),
+      nidn: getVals('[name="inventor[nidn][]"]'),
+      fakultas: getVals('[name="inventor[fakultas][]"]'),
+      no_hp: getVals('[name="inventor[no_hp][]"]'),
+      email: getVals('[name="inventor[email][]"]'),
+      status: statusEls.map(el => el.value),
     };
   }
 
@@ -51,11 +59,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+    function getSourceData() {
+    const snap = snapshotValues();
+
+    // kalau snap kosong (baru pertama kali), pakai prefill session
+    const hasAny =
+      (snap.nama?.some(v => v && v.trim() !== "")) ||
+      (snap.nip_nim?.some(v => v && v.trim() !== "")) ||
+      (snap.email?.some(v => v && v.trim() !== ""));
+
+    if (hasAny) return snap;
+    return {
+      nama: prefillInventor.nama || [],
+      nip_nim: prefillInventor.nip_nim || [],
+      nidn: prefillInventor.nidn || [],
+      fakultas: prefillInventor.fakultas || [],
+      no_hp: prefillInventor.no_hp || [],
+      email: prefillInventor.email || [],
+      status: prefillInventor.status || [],
+    };
+
+  }
+
+  if (prefillCount && prefillCount > 0) {
+    jumlahInput.value = clamp(prefillCount, 1, 20);
+  }
+
+
   function renderInventors() {
     const jumlah = clamp(parseInt(jumlahInput.value || '1', 10) || 1, 1, 20);
     jumlahInput.value = jumlah;
 
-    const old = snapshotValues();
+    const old = getSourceData();
     container.innerHTML = '';
 
     for (let i = 0; i < jumlah; i++) {
@@ -74,11 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const em   = frag.querySelector('input[name="inventor[email][]"]');
 
       if (nama) nama.value = old.nama[i] ?? '';
-      if (nip)  nip.value  = old.nip[i] ?? '';
+      if (nip)  nip.value  = old.nip_nim[i] ?? '';
       if (nidn) nidn.value = old.nidn[i] ?? '';
       if (fak)  fak.value  = old.fakultas[i] ?? '';
-      if (hp)   hp.value   = old.hp[i] ?? '';
+      if (hp)   hp.value   = old.no_hp[i] ?? '';
       if (em)   em.value   = old.email[i] ?? '';
+
 
       // template normal: status + toggle NIDN
       if (i > 0 && card) {
