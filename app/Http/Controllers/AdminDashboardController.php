@@ -1538,12 +1538,6 @@ class AdminDashboardController extends Controller
 
             $original = $file->getClientOriginalName();
             $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
-    // LibreOffice path
-    $soffice = 'D:\\Program Files\\LibreOffice\\program\\soffice.exe';;
-    if (!file_exists($soffice)) {
-        @unlink($tmpDocx);
-        throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
-    }
 
             $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
 
@@ -1948,12 +1942,14 @@ class AdminDashboardController extends Controller
         $this->markAsProsesWhenViewed('paten', $id);
 
         // ✅ notifCount (samain kayak cipta)
-        $notifCount = DB::table('revisions')
-            ->whereIn('type', ['paten', 'cipta'])
-            ->where('state', 'submitted')
-            ->whereNotNull('pemohon_file_path')
-            ->where('is_read_admin', 0)
-            ->count();
+        $notifCount = DB::table('revisions as r')
+        ->whereIn('r.type', ['paten', 'cipta'])
+        ->where('r.from_role', 'pemohon')
+        ->where('r.state', 'submitted')
+        ->whereNotNull('r.pemohon_file_path')
+        ->where('r.is_read_admin', 0)
+        ->distinct()
+        ->count(DB::raw("CONCAT(r.type,'#',r.ref_id,'#',r.doc_key)"));
 
         $row = DB::table('paten_verifs as p')
             ->leftJoin('status_verifikasi as sv', function ($join) {
@@ -2060,13 +2056,15 @@ class AdminDashboardController extends Controller
         $this->markAsProsesWhenViewed('cipta', $id);
 
         // ✅ notifCount (biar sama kayak paten)
-        $notifCount = DB::table('revisions')
-            ->whereIn('type', ['paten', 'cipta'])
-            ->where('state', 'submitted')
-            ->whereNotNull('pemohon_file_path')
-            ->where('is_read_admin', 0)
-            ->count();
-
+        $notifCount = DB::table('revisions as r')
+        ->whereIn('r.type', ['paten', 'cipta'])
+        ->where('r.from_role', 'pemohon')
+        ->where('r.state', 'submitted')
+        ->whereNotNull('r.pemohon_file_path')
+        ->where('r.is_read_admin', 0)
+        ->distinct()
+        ->count(DB::raw("CONCAT(r.type,'#',r.ref_id,'#',r.doc_key)"));
+        
         $row = DB::table('hak_cipta_verifs as c')
             ->leftJoin('status_verifikasi as sv', function ($join) {
                 $join->on('sv.ref_id', '=', 'c.id')
