@@ -404,22 +404,6 @@
   margin-bottom: 8px;
 }
 
-.pd-revisi-table{
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.pd-revisi-table th, .pd-revisi-table td{
-  border-top: 1px solid rgba(11,44,95,.08);
-  padding: 8px 6px;
-  vertical-align: top;
-}
-.pd-revisi-table th{
-  font-size: 12px;
-  text-align: left;
-  color: rgba(11,44,95,.75);
-}
-
 .pd-pill{
   display:inline-flex;
   padding: 4px 8px;
@@ -738,3 +722,498 @@
   background: #fff !important;
 }
 
+/* =========================
+   DETAIL DOKUMEN TABLE (GRID)
+   ========================= */
+.pd-table-shell .pd-dok-table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  border: 0;
+  background: transparent;
+}
+
+.pd-table-shell .pd-dok-table th,
+.pd-table-shell .pd-dok-table td{
+  border: 1px solid #cfd8e3;
+  padding: 10px 12px;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.pd-table-shell .pd-dok-table thead th{
+  background: #eef2f7;
+  color: #0b2c5f;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+/* rapihin biar wrapper nutup pinggir (ga double border) */
+.pd-table-shell .pd-dok-table thead tr:first-child th{ border-top: 0; }
+.pd-table-shell .pd-dok-table tbody tr:last-child td{ border-bottom: 0; }
+.pd-table-shell .pd-dok-table tr th:first-child,
+.pd-table-shell .pd-dok-table tr td:first-child{ border-left: 0; }
+.pd-table-shell .pd-dok-table tr th:last-child,
+.pd-table-shell .pd-dok-table tr td:last-child{ border-right: 0; }
+
+/* zebra */
+.pd-table-shell .pd-dok-table tbody tr:nth-child(even){
+  background: #fafcff;
+}
+
+
+/* Link file */
+.pd-file-link {
+  color: #1e5eff;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pd-file-link:hover {
+  text-decoration: underline;
+  color: #003ecb;
+}
+
+/* Box biar lebih clean */
+.boxDetailDok {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid #e6ecf5;
+}
+
+
+
+/* ===== WRAPPER BIAR TABLE GA BOLOS KE KANAN ===== */
+.pd-table-wrap{
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pd-table-wrap .pd-revisi-table{
+  min-width: 900px;          /* bikin tabel stabil */
+}
+
+/* ===== UPLOAD FORM RAPII ===== */
+.pd-upload-form{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.pd-upload-form input[type="file"]{
+  width: 100%;
+  max-width: 240px;
+}
+
+/* biar tulisan Upload ga pecah per huruf */
+.pd-upload-form .pd-mini-btn{
+  white-space: nowrap;
+}
+
+/* ====== WIDTH KOLOM (REVISI AKTIF) ====== */
+.pd-revisi-table.revisi th:nth-child(1),
+.pd-revisi-table.revisi td:nth-child(1){ width: 22%; }
+
+.pd-revisi-table.revisi th:nth-child(2),
+.pd-revisi-table.revisi td:nth-child(2){ width: 28%; }
+
+.pd-revisi-table.revisi th:nth-child(3),
+.pd-revisi-table.revisi td:nth-child(3){ width: 22%; }
+
+.pd-revisi-table.revisi th:nth-child(4),
+.pd-revisi-table.revisi td:nth-child(4){ width: 20%; }
+
+.pd-revisi-table.revisi th:nth-child(5),
+.pd-revisi-table.revisi td:nth-child(5){ width: 28%; }
+
+/* ===== Clamp Catatan ===== */
+
+.pd-note-clamp{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  white-space:normal;
+  line-height:1.35;
+}
+
+.pd-note-toggle:hover{ text-decoration:underline; }
+
+/* ===== Upload form rapi ===== */
+.pd-upload-form{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  max-width:100%;
+}
+.pd-upload-form input[type="file"]{
+  width:100%;
+  max-width:240px;
+}
+.pd-upload-form .pd-mini-btn{ white-space:nowrap; }
+
+
+
+/* revisi aktif: belum upload */
+.pd-pill.todo{
+  background: #fff1f2;      /* soft merah */
+  border-color: #fecdd3;
+  color: #9f1239;
+}
+
+.pd-pill.done{
+  background: #f0fdf4;
+  border-color: #a7f3d0;
+  color: #166534;
+}
+
+/* ===== UPLOAD BUTTON (BIRU) ===== */
+.pd-upload-form .pd-mini-btn{
+  background: #0b2c5f;
+  color: #fff;
+  border: 1px solid #0b2c5f;
+}
+.pd-upload-form .pd-mini-btn:hover{
+  background: #08306b;
+}
+
+/* ===== LINK ACTION CLEAN (DOWNLOAD / LIHAT UPLOAD) ===== */
+.pd-action-link{
+  font-weight: 800;
+  font-size: 13px;
+  color: #1d4ed8;          /* biru jelas */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.pd-action-link:hover{
+  color: #0b2c5f;          /* lebih gelap pas hover */
+  text-decoration-thickness: 2px;
+}
+
+/* =========================
+   TABLE WRAPPER (BIAR KETUTUP BAWAH)
+   ========================= */
+.pd-table-shell{
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* table jadi polos, gridnya dari border cell */
+.pd-table-shell .pd-revisi-table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  border: 0;
+  background: transparent;
+}
+
+/* garis grid tiap cell */
+.pd-table-shell .pd-revisi-table th,
+.pd-table-shell .pd-revisi-table td{
+  border: 1px solid #cfd8e3;
+  padding: 10px 12px;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+/* header */
+.pd-table-shell .pd-revisi-table thead th{
+  background: #eef2f7;
+  color: #0b2c5f;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+/* biar pinggir ga double (rapi ketutup) */
+.pd-table-shell .pd-revisi-table thead tr:first-child th{ border-top: 0; }
+.pd-table-shell .pd-revisi-table tbody tr:last-child td{ border-bottom: 0; }
+.pd-table-shell .pd-revisi-table tr th:first-child,
+.pd-table-shell .pd-revisi-table tr td:first-child{ border-left: 0; }
+.pd-table-shell .pd-revisi-table tr th:last-child,
+.pd-table-shell .pd-revisi-table tr td:last-child{ border-right: 0; }
+
+/* zebra */
+.pd-table-shell .pd-revisi-table tbody tr:nth-child(even){
+  background: #fafcff;
+}
+
+/* =========================
+   WIDTH KOLOM (KEEP INI AJA)
+   ========================= */
+.pd-revisi-table.revisi th:nth-child(1),
+.pd-revisi-table.revisi td:nth-child(1){ width: 22%; }
+
+.pd-revisi-table.revisi th:nth-child(2),
+.pd-revisi-table.revisi td:nth-child(2){ width: 28%; }
+
+.pd-revisi-table.revisi th:nth-child(3),
+.pd-revisi-table.revisi td:nth-child(3){ width: 22%; }
+
+.pd-revisi-table.revisi th:nth-child(4),
+.pd-revisi-table.revisi td:nth-child(4){ width: 20%; }
+
+.pd-revisi-table.revisi th:nth-child(5),
+.pd-revisi-table.revisi td:nth-child(5){ width: 28%; }
+
+.pd-revisi-table.riwayat th:nth-child(1),
+.pd-revisi-table.riwayat td:nth-child(1){ width: 22%; }
+
+.pd-revisi-table.riwayat th:nth-child(2),
+.pd-revisi-table.riwayat td:nth-child(2){ width: 28%; }
+
+.pd-revisi-table.riwayat th:nth-child(3),
+.pd-revisi-table.riwayat td:nth-child(3){ width: 22%; }
+
+.pd-revisi-table.riwayat th:nth-child(4),
+.pd-revisi-table.riwayat td:nth-child(4){ width: 20%; }
+
+.pd-revisi-table.riwayat th:nth-child(5),
+.pd-revisi-table.riwayat td:nth-child(5){ width: 28%; }
+
+/* =========================
+   STATUS BADGE (SINGLE)
+   ========================= */
+.pd-pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.pd-pill.todo{
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #9f1239;
+}
+
+.pd-pill.done{
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+}
+
+/* =========================
+   UPLOAD BUTTON BIRU (OK)
+   ========================= */
+.pd-upload-form .pd-mini-btn{
+  background: #0b2c5f;
+  color: #fff;
+  border: 1px solid #0b2c5f;
+}
+.pd-upload-form .pd-mini-btn:hover{
+  background: #08306b;
+}
+
+/* =========================
+   LINK ACTION (NO BOX)
+   ========================= */
+.pd-action-link{
+  font-weight: 900;
+  font-size: 13px;
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.pd-action-link:hover{
+  color: #0b2c5f;
+  text-decoration-thickness: 2px;
+}
+
+/* center helper */
+.pd-td-center{
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* biar tanda '-' keliatan rapih */
+.pd-dash{
+  display: inline-block;
+  font-weight: 800;
+  color: rgba(11,44,95,.55);
+}
+
+/* status badge biar bener2 center */
+.pd-td-center .pd-pill{
+  margin: 0 auto;
+}
+
+/* catatan clamp + tombol */
+
+.pd-note-clamp{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  white-space:normal;
+  line-height:1.35;
+}
+
+/* =========================
+   CATATAN (FINAL - INLINE EXPAND)
+   ========================= */
+
+/* pastiin td nempel atas */
+.pd-revisi-table tbody td{
+  vertical-align: top;
+}
+
+/* wrapper jangan flex, jangan gap */
+.pd-note-cell{
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* preview & full: no spacing aneh */
+.pd-note-clamp,
+.pd-note-full{
+  display: block;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* preview 2 baris */
+.pd-note-clamp{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* full: enter kebaca */
+.pd-note-full{
+  white-space: pre-line;
+}
+
+/* hidden harus bener2 ngilang biar gak dobel */
+.pd-note-full[hidden],
+.pd-note-clamp[hidden]{
+  display: none !important;
+}
+
+/* tombol nempel, no gap */
+.pd-note-toggle{
+  display: inline-block;
+  margin-top: 2px !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.pd-note-toggle:hover{ text-decoration: underline; }
+
+/* ===== STYLE INPUT FILE (BIAR ADA KOTAK ABU) ===== */
+.pd-upload-form input[type="file"]{
+  font-size: 13px;
+  color: #0b2c5f;
+}
+
+/* tombol "Choose File" */
+.pd-upload-form input[type="file"]::file-selector-button{
+  background: #f1f5f9;         /* abu soft */
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin-right: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+/* hover */
+.pd-upload-form input[type="file"]::file-selector-button:hover{
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+/* ===== NOTE TOGGLE PEMOHON (ACTIVE + RIWAYAT) ===== */
+.pd-note-cell{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+
+/* preview 2 baris + ... */
+.pd-note-clamp{
+  display:-webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;   /* 2 baris */
+  overflow:hidden;
+
+  white-space: normal !important;
+  overflow-wrap:anywhere;
+  word-break: break-word;
+}
+
+/* full: enter kebaca */
+.pd-note-full{
+  white-space: pre-wrap;
+  overflow-wrap:anywhere;
+  word-break: break-word;
+  margin:0;
+}
+
+/* anti bentrok: hidden harus menang */
+.pd-note-clamp[hidden],
+.pd-note-full[hidden],
+.pd-note-toggle[hidden]{
+  display:none !important;
+}
+
+/* ✅ FIX FINAL: catatan panjang gak boleh bikin tabel geser */
+.pd-table-shell .pd-revisi-table td,
+.pd-table-shell .pd-revisi-table th{
+  white-space: normal !important;
+}
+
+.pd-note-clamp,
+.pd-note-full{
+  max-width: 100%;
+  overflow-wrap: anywhere !important;
+  word-break: break-all !important; /* <-- KUNCI buat teks tanpa spasi */
+}
+/* khusus tabel revisi aktif */
+.pd-revisi-table.revisi td { 
+  vertical-align: top !important; 
+}
+
+/* note full jangan bikin layout aneh */
+.pd-revisi-table.revisi .pd-note-full{
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;   /* jangan break-all */
+  max-width: 100%;
+}

@@ -14,6 +14,14 @@
 
     {{-- CSS + JS lewat Vite --}}
     @vite(['resources/css/admin.css', 'resources/js/app.js', 'resources/js/admin/dashboard.js'])
+
+    {{-- daterangepicker --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1/daterangepicker.min.js"></script>
+
+
 </head>
  <body class="admin-page">
     <header class="admin-header">
@@ -191,29 +199,91 @@
 
         {{-- ================= TAB: DATA HAK CIPTA (STYLE = PATEN) ================= --}}
 @if($tab === 'cipta')
-  <div class="page-head">
+  <div class="page-head page-head--cipta">
     <h2 class="page-title">Data Hak Cipta</h2>
 
-    <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
+    <div class="page-actions page-actions--cipta">
+
+      {{-- ===== FILTER BAR (sama kayak PATEN) ===== --}}
+      <form method="GET" action="{{ url()->current() }}" class="filters-bar" id="ciptaFilters">
+        <input type="hidden" name="tab" value="{{ request('tab','cipta') }}">
+        <input type="hidden" name="sub" value="{{ request('sub') }}">
+
+        <div class="filters-label">FILTERS</div>
+
+        {{-- STATUS --}}
+        <div class="filter-item">
+          <label>Status</label>
+          <select name="status" class="input">
+            <option value="">Semua</option>
+            @foreach(['terkirim','proses','revisi','approve'] as $st)
+              <option value="{{ $st }}" {{ request('status')===$st ? 'selected' : '' }}>
+                {{ strtoupper($st) }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+
+        {{-- JENIS (ambil dari $jenisCiptaList kalau ada, kalau belum ada -> aku kasih fallback kosong) --}}
+        <div class="filter-item">
+          <label>Jenis</label>
+          <select name="jenis" class="input">
+            <option value="">Semua</option>
+            @foreach(($jenisList ?? []) as $j)
+              <option value="{{ $j }}" {{ request('jenis')===$j ? 'selected' : '' }}>
+                {{ $j }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+
+        {{-- DATE RANGE --}}
+        <div class="filter-item">
+          <label>Tanggal</label>
+
+          <div class="date-range-wrap">
+            <span class="date-ic">📅</span>
+            <input type="text"
+              id="dateRangeCipta"
+              class="input date-range-input"
+              placeholder="YYYY-MM-DD - YYYY-MM-DD"
+              value="{{ request('from') && request('to') ? request('from').' - '.request('to') : '' }}"
+              autocomplete="off"
+            >
+            <button type="button" class="date-clear" id="clearDateRangeCipta" title="Clear">×</button>
+          </div>
+
+          <input type="hidden" name="from" id="fromDateCipta" value="{{ request('from') }}">
+          <input type="hidden" name="to" id="toDateCipta" value="{{ request('to') }}">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn-apply">Apply</button>
+          <a href="{{ route('admin.dashboard',['tab'=>'cipta']) }}" class="btn-remove">Remove</a>
+        </div>
+      </form>
+
+      {{-- ===== EXPORT BUTTONS ===== --}}
       <a class="btn-mini" href="{{ route('admin.cipta.export_excel') }}" title="Download Excel">
-        <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:35px;height:35px;vertical-align:middle;">
+        <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:32px;height:32px;vertical-align:middle;">
         Excel
       </a>
 
       <a class="btn-mini" href="{{ route('admin.cipta.export_pdf') }}" title="Download PDF">
-        <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:35px;height:35px;">
+        <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:32px;height:32px;">
         PDF
       </a>
 
       <a class="btn-mini" href="{{ route('admin.cipta.export_csv') }}" title="Download CSV">
-        <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:35px;height:35px;">
+        <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:32px;height:32px;">
         CSV
       </a>
 
-      <input id="searchCipta" class="search-input" type="text" placeholder="Cari..." />
+      <input id="searchCipta" class="search-input search-input--cipta" type="text" placeholder="Cari..." />
     </div>
   </div>
 
+  {{-- SUCCESS ALERT --}}
   @if(session('success'))
     <div class="alert-success">
       <div>{{ session('success') }}</div>
@@ -228,59 +298,73 @@
     </div>
   @endif
 
+  {{-- TABLE --}}
   <div class="table-card table-scroll">
     <table class="data-table table-wide" id="ciptaTable">
       <thead>
         <tr>
-          <th style="width:70px;">No</th>
-          <th style="min-width:140px;">No Pendaftaran</th>
-          <th style="min-width:320px;">Judul Cipta</th>
-          <th style="width:160px;">Jenis</th>
-          <th style="width:140px;">Status</th>
-          <th style="width:160px;">Aksi</th>
-        </tr>
-      </thead>
+          <th style="width:60px;">No</th>
+            <th style="width:110px;">Tanggal</th>
+            <th style="width:160px;">No Pendaftaran</th>
+            <th>Judul</th>
+            <th style="width:170px;">Jenis</th>
+            <th style="width:130px;">Status</th>
+            <th style="width:140px;">Aksi</th>
+          </tr>
+        </thead>
 
       <tbody>
-        @forelse($dataCipta as $i => $row)
-          @php
-            $ciptaKey = strtolower(implode(' ', array_filter([
-              $row->no_pendaftaran ?? '',
-              $row->judul_cipta ?? '',
-              $row->jenis_cipta ?? '',
-              $row->status ?? '',
-            ])));
-          @endphp
+  @forelse($dataCipta as $i => $row)
+    @php
+      $ciptaKey = strtolower(implode(' ', array_filter([
+        $row->no_pendaftaran ?? '',
+        $row->judul_cipta ?? '',
+        $row->jenis_cipta ?? '',
+        $row->status ?? '',
+      ])));
+    @endphp
 
-          <tr data-key="{{ $ciptaKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
-            <td>{{ $i+1 }}</td>
-            <td>{{ $row->no_pendaftaran ?? '-' }}</td>
-            <td><div class="title-main">{{ $row->judul_cipta ?? '-' }}</div></td>
+    <tr data-key="{{ $ciptaKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
+      <td>{{ $i+1 }}</td>
 
-            <td>
-              @php
-                $jenis = $row->jenis_cipta ?? '-';
-                if (strtolower($jenis) === 'lainnya') $jenis = $row->jenis_lainnya ?? 'Lainnya';
-              @endphp
-              {{ $jenis }}
-            </td>
+      {{-- TANGGAL --}}
+      <td style="white-space:nowrap;">
+        {{ \Carbon\Carbon::parse($row->created_at)->format('d M Y') }}
+      </td>
 
-            <td>
-              <span class="status-pill s-{{ strtolower($row->status) }}">
-                {{ strtoupper($row->status) }}
-              </span>
-            </td>
+      <td>{{ $row->no_pendaftaran ?? '-' }}</td>
 
-            <td class="cell-actions">
-              <a class="btn-mini" href="{{ route('admin.cipta.detail', $row->id) }}">
-                Lihat Detail
-              </a>
-            </td>
-          </tr>
-        @empty
-          <tr><td colspan="6" class="center muted">Belum ada data cipta</td></tr>
-        @endforelse
-      </tbody>
+      {{-- JUDUL --}}
+      <td>
+        <div class="title-main">{{ $row->judul_cipta ?? '-' }}</div>
+      </td>
+
+      {{-- JENIS --}}
+      <td>
+        @php
+          $jenis = $row->jenis_cipta ?? '-';
+          if (strtolower($jenis) === 'lainnya') $jenis = $row->jenis_lainnya ?? 'Lainnya';
+        @endphp
+        {{ $jenis }}
+      </td>
+
+      {{-- STATUS --}}
+      <td>
+        <span class="status-pill s-{{ strtolower($row->status) }}">
+          {{ strtoupper($row->status) }}
+        </span>
+      </td>
+
+      {{-- AKSI --}}
+      <td class="cell-actions">
+        <a class="btn-mini" href="{{ route('admin.cipta.detail', $row->id) }}">Lihat Detail</a>
+      </td>
+    </tr>
+  @empty
+    <tr><td colspan="7" class="center muted">Belum ada data cipta</td></tr>
+  @endforelse
+</tbody>
+
     </table>
   </div>
 
@@ -307,31 +391,93 @@
 @endif
 
 
+
        {{-- ================= TAB: DATA PATEN ================= --}}
         @if($tab === 'paten')
-        <div class="page-head">
-            <h2 class="page-title">Data Paten</h2>
+       <div class="page-head page-head--paten">
+        <h2 class="page-title">Data Paten</h2>
 
-            <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
-              <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
-                <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:35px;height:35px;vertical-align:middle;">
-                Excel
-              </a>
+        <div class="page-actions page-actions--paten">
 
-               <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
-                  <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:35px;height:35px;">
-                  PDF
-              </a>
+          {{-- ===== FILTER BAR (rapi seperti contoh) ===== --}}
+        <form method="GET" action="{{ url()->current() }}" class="filters-bar" id="patenFilters">
+        <input type="hidden" name="tab" value="{{ request('tab','paten') }}">
+        <input type="hidden" name="sub" value="{{ request('sub') }}">
 
-              <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
-                  <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:35px;height:35px;">
-                  CSV
-              </a>
+        <div class="filters-label">FILTERS</div>
 
-
-              <input id="searchPaten" class="search-input" type="text" placeholder="Cari..." />
-            </div>
+        {{-- STATUS --}}
+        <div class="filter-item">
+          <label>Status</label>
+          <select name="status" class="input">
+            <option value="">Semua</option>
+            @foreach(['terkirim','proses','revisi','approve'] as $st)
+              <option value="{{ $st }}" {{ request('status')===$st ? 'selected' : '' }}>
+                {{ strtoupper($st) }}
+              </option>
+            @endforeach
+          </select>
         </div>
+
+        {{-- JENIS --}}
+        <div class="filter-item">
+          <label>Jenis</label>
+          <select name="jenis" class="input">
+            <option value="">Semua</option>
+            @foreach(($jenisList ?? []) as $j)
+              <option value="{{ $j }}" {{ request('jenis')===$j ? 'selected' : '' }}>
+                {{ $j }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+
+        {{-- DATE RANGE --}}
+        <div class="filter-item">
+          <label>Tanggal</label>
+
+          <div class="date-range-wrap">
+            <span class="date-ic">📅</span>
+            <input type="text"
+              id="dateRangePaten"
+              class="input date-range-input"
+              placeholder="YYYY-MM-DD - YYYY-MM-DD"
+              value="{{ request('from') && request('to') ? request('from').' - '.request('to') : '' }}"
+              autocomplete="off"
+            >
+            <button type="button" class="date-clear" id="clearDateRange" title="Clear">×</button>
+          </div>
+
+          <input type="hidden" name="from" id="fromDate" value="{{ request('from') }}">
+          <input type="hidden" name="to" id="toDate" value="{{ request('to') }}">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn-apply">Apply</button>
+          <a href="{{ route('admin.dashboard',['tab'=>'paten']) }}" class="btn-remove">Remove</a>
+        </div>
+      </form>  {{-- ✅ WAJIB DI SINI, JANGAN LUPA --}}
+
+    {{-- ===== EXPORT BUTTONS (tetep pakai gambar) ===== --}}
+    <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
+      <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:32px;height:32px;vertical-align:middle;">
+      Excel
+    </a>
+
+    <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
+      <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:32px;height:32px;">
+      PDF
+    </a>
+
+    <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
+      <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:32px;height:32px;">
+      CSV
+    </a>
+
+    <input id="searchPaten" class="search-input search-input--paten" type="text" placeholder="Cari..." />
+  </div>
+</div>
+
 
         @if(session('success'))
             <div class="alert-success">
@@ -351,12 +497,13 @@
             <table class="data-table table-wide" id="patenTable">
             <thead>
               <tr>
-                <th style="width:70px;">No</th>
-                <th style="min-width:140px;">No Pendaftaran</th>
-                <th style="min-width:320px;">Judul</th>
-                <th style="width:160px;">Jenis</th>
-                <th style="width:140px;">Status</th>
-                <th style="width:160px;">Aksi</th>
+                <th style="width:60px;">No</th>
+                <th style="width:110px;">Tanggal</th>
+                <th style="width:160px;">No Pendaftaran</th>
+                <th>Judul</th>
+                <th style="width:170px;">Jenis</th>
+                <th style="width:130px;">Status</th>
+                <th style="width:140px;">Aksi</th>
               </tr>
             </thead>
 
@@ -370,23 +517,36 @@
                   $row->status ?? '',
                 ])));
               @endphp
+
               <tr data-key="{{ $patenKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
                 <td>{{ $i+1 }}</td>
-                <td>{{ $row->no_pendaftaran ?? '-' }}</td>
-                <td><div class="title-main">{{ $row->judul_paten ?? '-' }}</div></td>
-                <td>{{ $row->jenis_paten ?? '-' }}</td>
-                <td>
-                  <span class="status-pill s-{{ strtolower($row->status) }}">{{ strtoupper($row->status) }}</span>
+
+                {{-- TANGGAL --}}
+                <td style="white-space:nowrap;">
+                  {{ \Carbon\Carbon::parse($row->created_at)->format('d M Y') }}
                 </td>
+
+                <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+
+                {{-- JUDUL --}}
+                <td>
+                  <div class="title-main">{{ $row->judul_paten ?? '-' }}</div>
+                </td>
+
+                <td>{{ $row->jenis_paten ?? '-' }}</td>
+
+                <td>
+                  <span class="status-pill s-{{ strtolower($row->status) }}">
+                    {{ strtoupper($row->status) }}
+                  </span>
+                </td>
+
                 <td class="cell-actions">
-                  <a class="btn-mini"
-                    href="{{ route('admin.paten.detail', $row->id) }}">
-                    Lihat Detail
-                  </a>
+                  <a class="btn-mini" href="{{ route('admin.paten.detail', $row->id) }}">Lihat Detail</a>
                 </td>
               </tr>
             @empty
-              <tr><td colspan="6" class="center muted">Belum ada data paten</td></tr>
+              <tr><td colspan="7" class="center muted">Belum ada data paten</td></tr>
             @endforelse
             </tbody>
 
@@ -418,26 +578,27 @@
   <div class="page-head">
     <h2 class="page-title">Status Verifikasi</h2>
 
-    <div class="page-actions">
-      <div class="dd" data-dd>
-        <button type="button" class="dd-btn" data-dd-btn>
-          <span data-dd-label id="filterTypeLabel">Semua</span>
-          <span class="dd-caret"></span>
-        </button>
+   <div class="page-actions">
 
-        <div class="dd-menu" data-dd-menu hidden>
-          <button type="button" class="dd-item active" data-value="all">Semua</button>
-          <button type="button" class="dd-item" data-value="paten">Paten</button>
-          <button type="button" class="dd-item" data-value="cipta">Hak Cipta</button>
-        </div>
+  <div class="dd" data-dd>
+    <button type="button" class="dd-btn" data-dd-btn>
+      <span data-dd-label id="filterTypeLabel">Semua</span>
+      <span class="dd-caret"></span>
+    </button>
 
-        <input type="hidden" id="filterType" value="all" data-dd-input>
-      </div>
-
-      <input id="searchStatus" class="search-input" type="text"
-             placeholder="Cari..." />
+    <div class="dd-menu" data-dd-menu hidden>
+      <button type="button" class="dd-item active" data-value="all">Semua</button>
+      <button type="button" class="dd-item" data-value="paten">Paten</button>
+      <button type="button" class="dd-item" data-value="cipta">Hak Cipta</button>
     </div>
+
+    <input type="hidden" id="filterType" value="all" data-dd-input>
   </div>
+
+  <input id="searchStatus" class="search-input" type="text" placeholder="Cari..." />
+
+</div>
+
 
   <div class="table-card">
     <table class="data-table" id="statusTable">
@@ -535,21 +696,77 @@
   </div>
 @endif
 
-    {{-- ================= SUB: REVISI (UPLOAD PEMOHON) ================= --}}
-    @if($tab === 'status' && $sub === 'revisi')
-      <div class="page-head" style="align-items:flex-start;">
-        <div>
-          <h2 class="page-title" style="margin-bottom:4px;">Revisi Masuk (Upload Pemohon)</h2>
-          <p class="muted" style="font-size:13px;margin:0;">
-            Daftar dokumen revisi yang sudah diupload pemohon (siap dicek admin).
-          </p>
+   {{-- ================= SUB: REVISI (UPLOAD PEMOHON) ================= --}}
+@if($tab === 'status' && $sub === 'revisi')
+  <div class="revisi-head">
+
+    {{-- ROW 1: TITLE --}}
+    <div class="revisi-head__row1">
+      <div class="revisi-head__title">
+        <h2 class="page-title">Revisi Masuk (Upload Pemohon)</h2>
+        <p class="muted page-desc">
+          Daftar dokumen revisi yang sudah diupload pemohon (siap dicek admin).
+        </p>
+      </div> {{-- ✅ tutup title --}}
+    </div>
+
+    {{-- ROW 2: FILTER + SEARCH --}}
+    <div class="revisi-head__row2">
+      <form method="GET" action="{{ url()->current() }}"
+            class="filters-bar filters-bar--revisi" id="revisiFilters">
+        <input type="hidden" name="tab" value="status">
+        <input type="hidden" name="sub" value="revisi">
+
+        <div class="filters-label">FILTERS</div>
+
+        <div class="filter-item">
+          <label>Kategori</label>
+          <select name="rev_type" class="input">
+            <option value="">Semua</option>
+            <option value="paten" {{ request('rev_type')==='paten' ? 'selected' : '' }}>PATEN</option>
+            <option value="cipta" {{ request('rev_type')==='cipta' ? 'selected' : '' }}>HAK CIPTA</option>
+          </select>
         </div>
 
-        <div class="page-actions">
-          <input id="searchRevisi" class="search-input" type="text"
-                placeholder="Cari..." />
+        <div class="filter-item">
+          <label>Dokumen</label>
+          <select name="rev_doc" class="input">
+            <option value="">Semua</option>
+            @foreach(($revDocKeys ?? []) as $k)
+              <option value="{{ $k }}" {{ request('rev_doc')===$k ? 'selected' : '' }}>
+                {{ $docLabels[$k] ?? $k }}
+              </option>
+            @endforeach
+          </select>
         </div>
-      </div>
+
+        <div class="filter-item">
+          <label>Tanggal</label>
+          <div class="date-range-wrap">
+            <span class="date-ic">📅</span>
+            <input type="text" id="dateRangeRevisi" class="input date-range-input"
+                   placeholder="YYYY-MM-DD - YYYY-MM-DD"
+                   value="{{ request('from') && request('to') ? request('from').' - '.request('to') : '' }}"
+                   autocomplete="off">
+            <button type="button" class="date-clear" id="clearDateRangeRevisi" title="Clear">×</button>
+          </div>
+          <input type="hidden" name="from" id="fromDateRevisi" value="{{ request('from') }}">
+          <input type="hidden" name="to" id="toDateRevisi" value="{{ request('to') }}">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn-apply">Apply</button>
+          <a href="{{ route('admin.dashboard',['tab'=>'status','sub'=>'revisi']) }}"
+             class="btn-remove btn-remove--danger">Remove</a>
+        </div>
+      </form>
+
+      {{-- ✅ SEARCH: taruh di luar form biar ga ikut submit filter --}}
+      <input id="searchRevisi" class="search-input search-input--revisi"
+             type="text" placeholder="Cari..." />
+    </div>
+
+  </div>
 
       <div class="table-card">
         <table class="data-table" id="revisiTable">
