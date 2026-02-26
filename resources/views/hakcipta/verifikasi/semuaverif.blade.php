@@ -7,6 +7,12 @@
 @php $activeStep = 4; @endphp
 @include('hakcipta.isiform.menuformcipta')
 
+@if(session('submit_error'))
+<script>
+  alert(`Berkas belum lengkap:\n\n{{ implode("\n", (array) session('submit_error')) }}`);
+</script>
+@endif
+
 <div class="upload-page">
   <div class="upload-wrap">
 

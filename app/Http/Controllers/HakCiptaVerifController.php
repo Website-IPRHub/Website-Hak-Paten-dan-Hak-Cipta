@@ -402,11 +402,30 @@ class HakCiptaVerifController extends Controller
         'link_ciptaan' => ['nullable', 'url', 'max:500'],
     ]);
 
+    $wajib = [
+        'surat_permohonan' => 'Surat Permohonan Ciptaan',
+        'surat_pengalihan' => 'Surat Pengalihan Hak',
+        'surat_pernyataan' => 'Surat Pernyataan',
+        'scan_ktp'         => 'Scan KTP',
+        'hasil_ciptaan' => 'Hasil Ciptaan',
+    ];
+
+    $kurang = [];
+
+    foreach ($wajib as $field => $label) {
+        if (!$verif->$field) {
+            $kurang[] = $label;
+        }
+    }
+
+    if (!empty($kurang)) {
+        return back()->with('submit_error', $kurang);
+    }
+
     $verif->update([
         'link_ciptaan' => $request->filled('link_ciptaan')
             ? $request->link_ciptaan
             : $verif->link_ciptaan,
-
         'status'       => 'Terkirim',
         'submitted_at' => now(),
     ]);
