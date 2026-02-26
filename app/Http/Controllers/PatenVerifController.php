@@ -528,18 +528,40 @@ public function deskripsiprodukverif(PatenVerif $verif){
     public function submitFinal(Request $request, PatenVerif $verif)
 {
     $request->validate([
-        'deskripsi' => ['nullable', 'string', 'max:255'],
+       'deskripsi' => ['nullable', 'string', 'max:255'],
+       'file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,pdf', 'max:10240'],
     ]);
 
+    $wajib = [
+        'draft_paten' => 'Draft Paten',
+        'form_permohonan' => 'Formulir Permohonan Paten',
+        'surat_kepemilikan' => 'Surat Kepemilikan Invensi',
+        'surat_pengalihan' => 'Surat Pengalihan Hak',
+        'scan_ktp'         => 'Scan KTP',
+    ];
+
+    $kurang = [];
+
+    foreach ($wajib as $field => $label) {
+        if (!$verif->$field) {
+            $kurang[] = $label;
+        }
+    }
+
+    if (!empty($kurang)) {
+        return back()->with('submit_error', $kurang);
+    }
+
     $verif->update([
-        'deskripsi_singkat_prototipe' => $request->filled('deskripsi') ? $request->deskripsi : null,
-        'status_verif' => 'Terkirim',
+        'deskripsi' => $request->filled('deskripsi')
+            ? $request->deskripsi
+            : $verif->deskripsi,
+        'status'       => 'Terkirim',
         'submitted_at' => now(),
     ]);
 
     return redirect()->route('patenverif.hasil', ['verif' => $verif->id]);
 }
-
 
     // =========================
     // HALAMAN HASIL SUBMIT
