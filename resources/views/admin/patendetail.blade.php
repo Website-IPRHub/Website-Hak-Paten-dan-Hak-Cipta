@@ -20,7 +20,7 @@
   @vite(['resources/css/admin.css', 'resources/js/app.js'])
 
   @vite([
-    'resources/css/patendetail.css',
+    'resources/css/lihatdetail.css',
     'resources/js/admin/lihatdetail.js'
   ])
 
@@ -146,6 +146,22 @@
   </aside>
 
   <main class="dash-content">
+@php
+  use Illuminate\Support\Str;
+
+  $notePreview = function($text, $limit = 80){
+    $t = (string) $text;
+    // preview 1 baris: newline dijadiin spasi
+    $oneLine = preg_replace("/\r\n|\r|\n/", " ", $t);
+    return Str::limit($oneLine, $limit);
+  };
+
+  $hasMore = function($text, $limit = 80){
+    $t = (string) $text;
+    $oneLine = preg_replace("/\r\n|\r|\n/", " ", $t);
+    return mb_strlen($oneLine) > $limit;
+  };
+@endphp
 
     @php
       $docLabels = [
@@ -155,24 +171,42 @@
         'surat_pengalihan'  => 'Surat Pengalihan',
         'scan_ktp'          => 'Scan KTP',
         'gambar_prototipe'  => 'Gambar Prototipe',
+        'deskripsi_singkat_prototipe' => 'Deskripsi Singkat Prototipe',
       ];
       $docKeys = array_keys($docLabels);
 
       $inventors = $row->inventors_arr ?? [];
-      $incomingByDoc = $incomingByDoc ?? collect();
+      $incomingByDoc = collect($incomingByDoc ?? []);
+
+// kalau dari controller ternyata masih flat list (bukan keyed by doc_key),
+// kita group di sini biar aman.
+$isKeyedByDoc = $incomingByDoc->keys()->contains(fn($kk) => in_array($kk, $docKeys, true));
+
+if (!$isKeyedByDoc) {
+  $incomingByDoc = $incomingByDoc->groupBy(function ($x) {
+    return data_get($x, 'doc_key');
+  });
+}
 
       /**
        * RULE tombol:
        * - canSend: admin boleh klik "Simpan & Kirim" kalau minimal ada 1 dokumen statusnya ok/revisi (kamu bisa ubah jadi "semua dokumen harus diproses" kalau mau)
        * - canApprove: boleh approve kalau ada minimal 1 upload revisi dari pemohon (di dokumen mana pun)
        */
-      $allDocStatuses = collect($docKeys)->map(fn($k) => optional($row->docs[$k] ?? null)->status ?? 'pending');
+      $allDocStatuses = collect($docKeys)->map(fn($k) => data_get(data_get($row,'docs'), "$k.status", 'pending'));
       $canSend = $allDocStatuses->contains(fn($st) => in_array($st, ['ok','revisi']));
 
-      $canApprove = collect($docKeys)->contains(function($k) use ($incomingByDoc){
-        $incoming = $incomingByDoc->get($k) ?? collect();
-        return $incoming->contains(fn($x) => !empty($x->pemohon_file_path));
+     $canApprove = collect($docKeys)->contains(function($k) use ($incomingByDoc){
+      $incoming = collect($incomingByDoc->get($k) ?? []);
+      return $incoming->contains(function($x) use ($k){
+        if($k === 'deskripsi_singkat_prototipe'){
+          $t = data_get($x,'pemohon_text') ?? data_get($x,'text') ?? data_get($x,'deskripsi') ?? data_get($x,'value');
+          return trim((string)$t) !== '';
+        }
+        return !empty(data_get($x,'pemohon_file_path'));
       });
+    });
+
     @endphp
 
     <div class="paten-wrap" data-paten-detail>
@@ -269,194 +303,402 @@
               <div class="acc-title">Detail Dokumen</div>
               <div class="acc-sub">Klik untuk melihat & verifikasi dokumen</div>
             </div>
-            <span class="acc-caret" aria-hidden="true">˅</span>
+            <span class="acc-toggle" aria-hidden="true">
+              <span class="acc-chevron"></span>
+            </span>
+
           </button>
 
-          <div class="acc-body" data-acc-body="docs" hidden>
-            <div class="docs-list">
+         <div class="acc-body" data-acc-body="docs" hidden>
+  <div class="docs-list">
 
-              @foreach($docKeys as $k)
-                @php
-                  $filePath  = $row->$k ?? null;
-                  $doc       = $row->docs[$k] ?? null;
-                  $statusDoc = optional($doc)->status ?? 'pending';
-                  $note      = optional($doc)->note;
+  @php
+  $prettyName = function($path, $fallbackLabel){
+    if(!$path) return null;
+    $base = basename($path);
 
-                  $incomingRaw = $incomingByDoc->get($k) ?? collect();
+    // Detect nama random khas Laravel store(): 40 hex chars + .ext
+    if (preg_match('/^[0-9a-f]{40}\.[A-Za-z0-9]+$/', $base)) {
+      $ext = pathinfo($base, PATHINFO_EXTENSION);
+      return $fallbackLabel . ($ext ? '.'.$ext : '');
+    }
 
-                  $incomingSorted = $incomingRaw->sortByDesc(function($x){
-                    return $x->pemohon_uploaded_at ?? $x->updated_at ?? $x->created_at;
-                  })->values();
+    // Detect UUID-ish (kadang)
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[A-Za-z0-9]+$/i', $base)) {
+      $ext = pathinfo($base, PATHINFO_EXTENSION);
+      return $fallbackLabel . ($ext ? '.'.$ext : '');
+    }
 
-                  $hasPemohonUpload = $incomingSorted->contains(fn($x) => !empty($x->pemohon_file_path));
+    return $base;
+  };
+@endphp
 
-                  // admin dianggap "ngirim revisi" kalau ada note ATAU statusDoc revisi
-                  $hasAdminRevisi = (!empty($note)) || ($statusDoc === 'revisi');
+   @foreach($docKeys as $k)
+  @php
+  // ✅ tandai apakah ini field TEKS
+  $isText = ($k === 'deskripsi_singkat_prototipe');
 
-                  // dot hanya muncul kalau ada revisi admin ATAU ada upload pemohon
-                  $showDot  = $hasAdminRevisi || $hasPemohonUpload;
-                  $dotClass = $hasPemohonUpload ? 'green' : 'red';
-                @endphp
+  // ✅ ambil data docs status/note
+  $doc       = data_get($row->docs, $k);
+  $statusDoc = data_get($doc, 'status', 'pending');
+  $note      = data_get($doc, 'note');
 
-               <div class="doc-item" data-doc-wrap data-doc-key="{{ $k }}">
-                  <div class="doc-top">
-                    <div>
-                      <div class="doc-name">
-                        @if($showDot)
-                          <span class="doc-dot {{ $dotClass }}"
-                            title="{{ $hasPemohonUpload ? 'Ada upload revisi dari pemohon' : 'Menunggu upload revisi dari pemohon' }}"></span>
-                        @endif
-                        {{ $docLabels[$k] }}
-                      </div>
+  // ✅ tampil utama: TEKS vs FILE
+  if($isText){
+    $textValue = trim((string) data_get($row, $k, ''));
+    $filePath  = null;
+    $shownName = null;
+  }else{
+    $filePath  = data_get($row, $k);
+    $nameField = $k.'_name';
+    $labelForName = $docLabels[$k] ?? $k;
+    $shownName = data_get($row, $nameField)
+      ?: ($filePath ? $prettyName($filePath, $labelForName) : null);
 
-                      @if($filePath)
-                        <a class="doc-link" href="{{ asset('storage/'.$filePath) }}" target="_blank">
-                          {{ basename($filePath) }}
-                        </a>
-                      @else
-                        <div class="muted">-</div>
-                      @endif
-                    </div>
+    $textValue = '';
+  }
 
-                    <span class="badge badge-{{ $statusDoc }}" data-doc-badge data-doc-key="{{ $k }}">
-                      {{ strtoupper($statusDoc) }}
-                    </span>
-                  </div>
+  // ==========================
+  // ✅ CIPTA STYLE: build cycles per doc_key
+  // ==========================
+  $bucket = null;
 
-                  <div class="doc-actions">
-                    <form class="js-doc-form" method="POST"
-                          action="{{ route('admin.verifikasi_dokumen.set',['type'=>'paten','id'=>$row->id]) }}">
-                      @csrf
-                      <input type="hidden" name="doc_key" value="{{ $k }}">
-                      <input type="hidden" name="action" value="ok">
-                      <button class="btn-mini" type="submit">OK</button>
-                    </form>
+  if ($incomingByDoc instanceof \Illuminate\Support\Collection && $incomingByDoc->has($k)) {
+      $bucket = $incomingByDoc->get($k);
+  } elseif (is_array($incomingByDoc) && array_key_exists($k, $incomingByDoc)) {
+      $bucket = $incomingByDoc[$k];
+  }
 
-                    <div class="rev-dd" data-rev>
-                      <button type="button" class="btn-mini rev-btn" data-rev-btn>Revisi</button>
+  $cycles = $bucket !== null
+      ? collect($bucket)
+      : collect($incomingByDoc ?? [])->flatten(1)->filter(fn($x) => data_get($x, 'doc_key') === $k);
 
-                      <div class="rev-pop" data-rev-pop hidden>
-                        <form class="js-doc-form" method="POST" enctype="multipart/form-data"
-                              action="{{ route('admin.verifikasi_dokumen.set',['type'=>'paten','id'=>$row->id]) }}">
-                          @csrf
-                          <input type="hidden" name="doc_key" value="{{ $k }}">
-                          <input type="hidden" name="action" value="revisi">
+  $cycles = $cycles->map(fn($x) => is_array($x) ? (object)$x : $x)
+                   ->sortByDesc(fn($x) => data_get($x,'id') ?? 0)
+                   ->values();
 
-                          <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)">{{ $note }}</textarea>
+  $cyclesSorted = $cycles;
 
-                          <div style="margin-top:6px;">
-                            <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
-                            <input type="file" name="admin_attachment">
-                          </div>
+  // flag untuk show/hide revisi box
+  $hasPemohonUpload = $cyclesSorted->contains(function($x) use ($isText){
+    if($isText){
+      $t = data_get($x,'pemohon_text')
+        ?? data_get($x,'text')
+        ?? data_get($x,'deskripsi')
+        ?? data_get($x,'value');
+      return trim((string)$t) !== '';
+    }
 
-                          <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
-                        </form>
+    return data_get($x,'from_role') === 'pemohon'
+      && in_array(data_get($x,'state'), ['submitted','uploaded'], true)
+      && !empty(data_get($x,'pemohon_file_path'));
+  });
 
-                        @if(!empty(optional($doc)->admin_attachment_path))
-                          <div style="margin-top:6px; font-size:12px;">
-                            Lampiran admin:
-                            <a href="{{ asset('storage/'.optional($doc)->admin_attachment_path) }}" target="_blank">
-                              {{ basename(optional($doc)->admin_attachment_path) }}
-                            </a>
-                          </div>
-                        @endif
-                      </div>
-                    </div>
-                  </div>
+  // admin revisi = status dokumen revisi ATAU note admin ada
+  $hasAdminRevisi = ($statusDoc === 'revisi') || (trim((string)$note) !== '');
 
-                  {{-- REVISI box hanya muncul kalau admin revisi atau pemohon sudah upload --}}
-                  <div class="incoming-wrap" data-incoming-wrap {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
-                    <div class="incoming-title">Revisi</div>
+  // =======================
+  // ✅ DOT STATUS = LAST ACTION WINS (CIPTA STYLE)
+  // =======================
+  $lastSignal = $cyclesSorted->first(function($x) use ($isText){
+    $role  = data_get($x,'from_role');
+    $state = data_get($x,'state');
 
-                    {{-- Catatan admin (hidden kalau kosong) --}}
-                    <div class="rev-admin-box" data-admin-note-wrap {{ !empty($note) ? '' : 'hidden' }}>
-                      <div class="meta">
-                        Update (Admin):
-                        <span data-admin-note-date>
-                          {{ optional($doc)->updated_at ? \Carbon\Carbon::parse(optional($doc)->updated_at)->format('d M Y') : '-' }}
-                        </span>
-                      </div>
-                    </div>
+    if ($role === 'admin' && in_array($state, ['requested','closed'], true)) return true;
 
-                    {{-- Status pemohon --}}
-                    <div class="muted" data-pemohon-empty {{ $hasPemohonUpload ? 'hidden' : '' }} style="font-size:12px; margin-top:10px;">
-                      Belum ada upload revisi dari pemohon.
-                    </div>
+    if ($role === 'pemohon'
+        && in_array($state, ['submitted','uploaded'], true)) {
 
-                    {{-- NOTE: bagian list pemohon yang pakai <details> biarin seperti punyamu sekarang.
-                        Kalau ada upload pemohon, blade tetap render. Kalau tidak ada, ya kosong. --}}
-                    @php
-                    $pemohonList = $incomingSorted->filter(fn($x) => !empty($x->pemohon_file_path))->values();
+      if ($isText) {
+        $t = data_get($x,'pemohon_text')
+          ?? data_get($x,'text')
+          ?? data_get($x,'deskripsi')
+          ?? data_get($x,'value');
+        return trim((string)$t) !== '';
+      }
 
-                    $adminNote = trim((string) ($note ?? ''));
-                    $adminTimeRaw = optional($doc)->updated_at;
-                    $adminTime = $adminTimeRaw ? \Carbon\Carbon::parse($adminTimeRaw)->format('d M Y H:i') : '-';
+      return !empty(data_get($x,'pemohon_file_path'));
+    }
 
-                    // admin row muncul kalau admin pernah revisi (status revisi) ATAU ada note
-                    $showAdminRow = ($statusDoc === 'revisi') || ($adminNote !== '');
-                  @endphp
+    return false;
+  });
 
-                  <details class="incoming-details" style="margin-top:10px;" {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
-                    <summary class="incoming-summary">
-                      Detail Revisi ({{ $pemohonList->count() }})
-                    </summary>
+  $showDot  = false;
+  $dotClass = null;
 
-                    <div class="incoming-table">
-                      <div class="incoming-row incoming-head">
-                        <div>Catatan</div>
-                        <div>File Pemohon</div>
-                        <div>Update</div>
-                      </div>
+  if ($lastSignal) {
+    $showDot = true;
+    $dotClass = (data_get($lastSignal,'from_role') === 'pemohon') ? 'green' : 'red';
+  }
 
-                      {{-- ROW ADMIN --}}
-                      @if($showAdminRow)
-                        <div class="incoming-row">
-                          <div class="incoming-cell">
-                            <div class="truncate-1" title="{{ $adminNote !== '' ? $adminNote : '-' }}">
-                              {{ $adminNote !== '' ? $adminNote : '-' }}
-                            </div>
-                          </div>
+  $dotTitle = ($dotClass === 'green')
+    ? 'Pemohon sudah upload revisi'
+    : 'Menunggu upload revisi pemohon';
+@endphp
 
-                          <div class="incoming-cell muted">
-                            {{ $pemohonList->count() === 0 ? 'Pemohon belum upload file revisi.' : '-' }}
-                          </div>
-
-                          {{-- ✅ Update khusus pemohon, jadi kalau belum upload: kosong --}}
-                          <div class="incoming-cell muted">
-                            {{ $pemohonList->count() === 0 ? '-' : '' }}
-                          </div>
-                        </div>
-                      @endif
-
-                      {{-- ROW PEMOHON (muncul kalau ada upload) --}}
-                      @foreach($pemohonList as $rv)
-                        @php
-                          $pemohonTime = $rv->pemohon_uploaded_at ?? $rv->updated_at ?? $rv->created_at;
-                          $noteText = $rv->note ?? '-';
-                        @endphp
-
-                        <div class="incoming-row">
-                          <div class="incoming-cell">
-                            <div class="truncate-1" title="{{ $noteText }}">{{ $noteText }}</div>
-                          </div>
-
-                          <div class="incoming-cell">
-                            <a target="_blank" href="{{ asset('storage/'.$rv->pemohon_file_path) }}">
-                              {{ $rv->pemohon_file_name ?? basename($rv->pemohon_file_path) }}
-                            </a>
-                          </div>
-
-                          <div class="incoming-cell muted">
-                            {{ $pemohonTime ? \Carbon\Carbon::parse($pemohonTime)->format('d M Y H:i') : '-' }}
-                          </div>
-                        </div>
-                      @endforeach
-                    </div>
-                  </details>
-                  </div>
-                </div>
-              @endforeach
+      <div class="doc-item" data-doc-wrap data-doc-key="{{ $k }}">
+        <div class="doc-top">
+          <div>
+            <div class="doc-name">
+              @if($showDot)
+  <span class="doc-dot {{ $dotClass }}" title="{{ $dotTitle }}"></span>
+@endif
+              {{ $docLabels[$k] ?? $k }}
             </div>
+
+            {{-- ✅ OUTPUT UTAMA --}}
+            @if($isText)
+              @if($textValue !== '')
+                <div class="doc-text-block">
+                  {{ $textValue }}
+                </div>
+              @else
+                <div class="muted doc-text-block">-</div>
+              @endif
+            @else
+              @if($filePath)
+                <a class="doc-link"
+                  href="{{ route('admin.paten.doc.download', ['id'=>$row->id, 'doc_key'=>$k]) }}">
+                  {{ $shownName }}
+                </a>
+              @else
+                <div class="muted">-</div>
+              @endif
+            @endif
+
+          </div>
+          <span class="badge badge-{{ $statusDoc }}" data-doc-badge data-doc-key="{{ $k }}">
+            {{ strtoupper($statusDoc) }}
+          </span>
+        </div>
+
+        <div class="doc-actions">
+          <form class="js-doc-form" method="POST"
+                action="{{ route('admin.verifikasi_dokumen.set',['type'=>'paten','id'=>$row->id]) }}">
+            @csrf
+            <input type="hidden" name="doc_key" value="{{ $k }}">
+            <input type="hidden" name="action" value="ok">
+            <button class="btn-mini" type="submit">OK</button>
+          </form>
+
+          <div class="rev-dd" data-rev>
+            <button type="button" class="btn-mini rev-btn" data-rev-btn>Revisi</button>
+
+            <div class="rev-pop" data-rev-pop hidden>
+              <form class="js-doc-form" method="POST" enctype="multipart/form-data"
+                    action="{{ route('admin.verifikasi_dokumen.set',['type'=>'paten','id'=>$row->id]) }}">
+                @csrf
+                <input type="hidden" name="doc_key" value="{{ $k }}">
+                <input type="hidden" name="action" value="revisi">
+
+                <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)" required>{{ $note }}</textarea>
+
+                {{-- ✅ upload lampiran admin cuma untuk dokumen FILE --}}
+                @if(!$isText)
+                  <div style="margin-top:6px;">
+                    <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
+                    <input type="file" name="admin_attachment">
+                  </div>
+                @endif
+
+                <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
+              </form>
+
+              @if(!$isText && !empty(data_get($doc,'admin_attachment_path')))
+                <div style="margin-top:6px; font-size:12px;">
+                  Lampiran admin:
+                  <a href="{{ asset('storage/'.data_get($doc,'admin_attachment_path')) }}" target="_blank">
+                    {{ basename(data_get($doc,'admin_attachment_path')) }}
+                  </a>
+                </div>
+              @endif
+            </div>
+          </div>
+        </div>
+
+        {{-- REVISI box --}}
+        <div class="incoming-wrap" data-incoming-wrap {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
+          <div class="incoming-title">Revisi</div>
+
+          <div class="rev-admin-box" data-admin-note-wrap {{ !empty($note) ? '' : 'hidden' }}>
+            <div class="meta">
+              Update (Admin):
+              <span data-admin-note-date>
+                {{ data_get($doc,'updated_at') ? \Carbon\Carbon::parse(data_get($doc,'updated_at'))->format('d M Y') : '-' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="muted" data-pemohon-empty {{ $hasPemohonUpload ? 'hidden' : '' }} style="font-size:12px; margin-top:10px;">
+            Belum ada upload revisi dari pemohon.
+          </div>
+@php
+  $adminNote = trim((string)($note ?? ''));
+
+  // ✅ jumlah row yang tampil di "Detail Revisi" (CIPTA STYLE)
+  $displayCount = $cycles->count();
+  if ($displayCount === 0 && $adminNote !== '') {
+    $displayCount = 1;
+  }
+@endphp
+
+          <details class="incoming-details" style="margin-top:10px;" {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
+  <summary class="incoming-summary">
+    Detail Revisi ({{ $displayCount }})
+  </summary>
+
+  <div class="incoming-table">
+    <div class="incoming-row incoming-head">
+      <div>Catatan</div>
+      <div>{{ $isText ? 'Teks Pemohon' : 'File Pemohon' }}</div>
+      <div>Update Pemohon</div>
+    </div>
+
+    {{-- fallback: kalau belum ada cycle tapi ada note admin --}}
+    @if($cycles->count() === 0 && $adminNote !== '')
+      @php
+        $raw = trim((string) $adminNote);
+        $full = $raw !== '' ? $raw : '-';
+        $preview = \Illuminate\Support\Str::limit(
+          preg_replace("/\r\n|\r|\n/", " ", $full),
+          80
+        );
+        $more = mb_strlen(preg_replace("/\r\n|\r|\n/", " ", $full)) > 80
+              || preg_match("/\r\n|\r|\n/", $full);
+      @endphp
+
+      <div class="incoming-row" data-empty-cycle-row="1">
+        {{-- CATATAN --}}
+        <div class="incoming-cell">
+          @if($more && $full !== '-')
+            <details class="note-detail">
+              <summary class="note-sum" title="{{ $preview }}">
+                <span class="note-short">{{ $preview }}</span>
+                <span class="note-action">Selengkapnya</span>
+              </summary>
+              <div class="note-long">{{ $full }}</div>
+              <button type="button" class="note-close">Tutup</button>
+            </details>
+          @else
+            <div class="note-plain" title="{{ $preview }}">{{ $preview }}</div>
+          @endif
+        </div>
+
+        <div class="incoming-cell muted">
+          Pemohon belum upload {{ $isText ? 'teks revisi' : 'file revisi' }}.
+        </div>
+        <div class="incoming-cell muted">-</div>
+      </div>
+    @endif
+
+    {{-- LIST CYCLES --}}
+    @foreach($cycles as $cy)
+      @php
+        // ---- pemohon value (file / text) ----
+        $pemohonText = null;
+        $pemohonFilePath = null;
+
+        if ($isText) {
+          $pemohonText = data_get($cy,'pemohon_text')
+            ?? data_get($cy,'text')
+            ?? data_get($cy,'deskripsi')
+            ?? data_get($cy,'value');
+          $pemohonText = trim((string)$pemohonText);
+        } else {
+          $pemohonFilePath = data_get($cy,'pemohon_file_path');
+        }
+
+        $hasPemohonValue = $isText
+          ? ($pemohonText !== '')
+          : (!empty($pemohonFilePath));
+
+        // ---- note pairing (CIPTA STYLE, tapi aman utk text/file) ----
+        $noteTextRaw = trim((string) data_get($cy, 'note', ''));
+
+        if ($noteTextRaw === '' && $hasPemohonValue) {
+          $pairedAdmin = $cycles->first(function($x) use ($cy) {
+            return data_get($x,'from_role') === 'admin'
+              && in_array(data_get($x,'state'), ['requested','closed'], true)
+              && (data_get($x,'id') < data_get($cy,'id'));
+          });
+
+          $noteTextRaw = trim((string) data_get($pairedAdmin, 'note', ''));
+
+          if ($noteTextRaw === '') {
+            $noteTextRaw = '-';
+          }
+        }
+
+        $noteText = ($noteTextRaw !== '') ? $noteTextRaw : '-';
+
+        // ---- waktu update pemohon ----
+        $timeRaw = $hasPemohonValue
+          ? (data_get($cy,'pemohon_uploaded_at') ?? data_get($cy,'created_at') ?? null)
+          : null;
+
+        // preview note
+        $full = trim((string) $noteText);
+        $preview = \Illuminate\Support\Str::limit(
+          preg_replace("/\r\n|\r|\n/", " ", $full),
+          80
+        );
+        $more = mb_strlen(preg_replace("/\r\n|\r|\n/", " ", $full)) > 80
+              || preg_match("/\r\n|\r|\n/", $full);
+      @endphp
+
+      <div class="incoming-row">
+        {{-- CATATAN --}}
+        <div class="incoming-cell">
+          @if($more && $full !== '-')
+            <details class="note-detail">
+              <summary class="note-sum" title="{{ $preview }}">
+                <span class="note-short">{{ $preview }}</span>
+                <span class="note-action">Selengkapnya</span>
+              </summary>
+              <div class="note-long">{{ $full }}</div>
+              <button type="button" class="note-close">Tutup</button>
+            </details>
+          @else
+            <div class="note-plain" title="{{ $preview }}">{{ $preview }}</div>
+          @endif
+        </div>
+
+        {{-- FILE/TEXT PEMOHON --}}
+        <div class="incoming-cell">
+          @if($isText)
+            @if($pemohonText !== '')
+              <div class="truncate-1" title="{{ $pemohonText }}">{{ $pemohonText }}</div>
+            @else
+              <span class="muted">Pemohon belum upload teks revisi.</span>
+            @endif
+          @else
+            @if(!empty($pemohonFilePath))
+              <a target="_blank" href="{{ route('revisi.download', $cy->id) }}">
+                {{ data_get($cy,'pemohon_file_name') ?: (data_get($cy,'pemohon_file_name_display') ?: basename($pemohonFilePath)) }}
+              </a>
+            @else
+              <span class="muted">Pemohon belum upload file revisi.</span>
+            @endif
+          @endif
+        </div>
+
+        {{-- UPDATE PEMOHON --}}
+        <div class="incoming-cell">
+          @if(!empty($timeRaw))
+            {{ \Carbon\Carbon::parse($timeRaw)->timezone('Asia/Jakarta')->format('d M Y H:i') }}
+          @else
+            -
+          @endif
+        </div>
+      </div>
+    @endforeach
+  </div>
+</details>
+        </div>
+      </div>
+    @endforeach
+</div>
+
 
             {{-- FOOTER BUTTONS --}}
             <div class="docs-footer-actions">
@@ -478,16 +720,18 @@
               {{-- ✅ Approve: disable kalau pemohon belum upload revisi sama sekali --}}
               {{-- ✅ Approve: AJAX, tidak reload halaman --}}
              <button
-                type="button"
-                id="btnApprove"
-                class="btn-approve-right"
-                data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'paten','id'=>$row->id]) }}"
-              >
-                Approve
-              </button>
+  type="button"
+  id="btnApprove"
+  class="btn-approve-right"
+  data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'paten','id'=>$row->id]) }}"
+  {{ $canApprove ? '' : 'disabled' }}
+>
+  Approve
+</button>
             </div>
           </div>
         </div>
+
 
         {{-- INVENTOR --}}
         <div class="acc-card" data-acc-card="inv">
@@ -496,7 +740,9 @@
               <div class="acc-title">Detail Inventor</div>
               <div class="acc-sub">Klik untuk melihat data inventor</div>
             </div>
-            <span class="acc-caret" aria-hidden="true">˅</span>
+            <span class="acc-toggle" aria-hidden="true">
+              <span class="acc-chevron"></span>
+            </span>
           </button>
 
           <div class="acc-body" data-acc-body="inv" hidden>

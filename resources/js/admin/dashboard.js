@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupRevisiPopup();
   
   setupDetailDrawer();
+
+  setupPatenDateRangeFilter();
+  setupCiptaDateRangeFilter();
+  setupRevisiDateRangeFilter();
+
 });
 
 /* =========================
@@ -1160,4 +1165,228 @@ function setupRevisiPopup() {
   btn.addEventListener('click', () => {
     window.location.href = '/admin/dashboard?tab=status';
   });
+}
+
+function setupPatenDateRangeFilter() {
+  const input = document.getElementById('dateRangePaten');
+  if (!input) return;
+
+  // pastikan jquery + plugin ke-load
+  if (!window.jQuery || !jQuery.fn.daterangepicker || !window.moment) {
+    console.warn('daterangepicker belum loaded');
+    return;
+  }
+
+  const $input = jQuery(input);
+
+  const fromEl = document.getElementById('fromDate');
+  const toEl = document.getElementById('toDate');
+  const clearBtn = document.getElementById('clearDateRange');
+
+  const setHidden = (start, end) => {
+    if (fromEl) fromEl.value = start.format('YYYY-MM-DD');
+    if (toEl) toEl.value = end.format('YYYY-MM-DD');
+  };
+
+  $input.daterangepicker({
+    autoUpdateInput: false,
+    opens: 'left',
+    showDropdowns: true,
+    linkedCalendars: false,
+    alwaysShowCalendars: true,
+    locale: {
+      format: 'YYYY-MM-DD',
+      applyLabel: 'Apply',
+      cancelLabel: 'Cancel'
+    },
+    ranges: {
+      'Today': [moment(), moment()],
+      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+      'This Month': [moment().startOf('month'), moment().endOf('month')],
+      'Last Month': [
+        moment().subtract(1, 'month').startOf('month'),
+        moment().subtract(1, 'month').endOf('month')
+      ],
+    }
+  });
+
+  // kalau ada value dari server
+  const fromVal = fromEl?.value;
+  const toVal = toEl?.value;
+  if (fromVal && toVal) {
+    const s = moment(fromVal, 'YYYY-MM-DD');
+    const e = moment(toVal, 'YYYY-MM-DD');
+    $input.data('daterangepicker').setStartDate(s);
+    $input.data('daterangepicker').setEndDate(e);
+    $input.val(`${fromVal} - ${toVal}`);
+  }
+
+  $input.on('apply.daterangepicker', function (ev, picker) {
+    const s = picker.startDate;
+    const e = picker.endDate;
+    $input.val(`${s.format('YYYY-MM-DD')} - ${e.format('YYYY-MM-DD')}`);
+    setHidden(s, e);
+  });
+
+  $input.on('cancel.daterangepicker', function () {
+    $input.val('');
+    if (fromEl) fromEl.value = '';
+    if (toEl) toEl.value = '';
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      $input.val('');
+      if (fromEl) fromEl.value = '';
+      if (toEl) toEl.value = '';
+    });
+  }
+}
+
+function setupCiptaDateRangeFilter() {
+  const input = document.getElementById('dateRangeCipta');
+  if (!input) return;
+
+  if (!window.jQuery || !jQuery.fn.daterangepicker || !window.moment) {
+    console.warn('daterangepicker belum loaded');
+    return;
+  }
+
+  const $input = jQuery(input);
+
+  const fromEl = document.getElementById('fromDateCipta');
+  const toEl   = document.getElementById('toDateCipta');
+  const clearBtn = document.getElementById('clearDateRangeCipta');
+
+  const setHidden = (start, end) => {
+    if (fromEl) fromEl.value = start.format('YYYY-MM-DD');
+    if (toEl)   toEl.value   = end.format('YYYY-MM-DD');
+  };
+
+  $input.daterangepicker({
+    autoUpdateInput: false,
+    opens: 'left',
+    showDropdowns: true,
+    linkedCalendars: false,
+    alwaysShowCalendars: true,
+    locale: {
+      format: 'YYYY-MM-DD',
+      applyLabel: 'Apply',
+      cancelLabel: 'Cancel'
+    },
+    ranges: {
+      'Today': [moment(), moment()],
+      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+      'This Month': [moment().startOf('month'), moment().endOf('month')],
+      'Last Month': [
+        moment().subtract(1, 'month').startOf('month'),
+        moment().subtract(1, 'month').endOf('month')
+      ],
+    }
+  });
+
+  // kalau ada value dari server
+  const fromVal = fromEl?.value;
+  const toVal = toEl?.value;
+  if (fromVal && toVal) {
+    const s = moment(fromVal, 'YYYY-MM-DD');
+    const e = moment(toVal, 'YYYY-MM-DD');
+    $input.data('daterangepicker').setStartDate(s);
+    $input.data('daterangepicker').setEndDate(e);
+    $input.val(`${fromVal} - ${toVal}`);
+  }
+
+  $input.on('apply.daterangepicker', function (ev, picker) {
+    const s = picker.startDate;
+    const e = picker.endDate;
+    $input.val(`${s.format('YYYY-MM-DD')} - ${e.format('YYYY-MM-DD')}`);
+    setHidden(s, e);
+  });
+
+  $input.on('cancel.daterangepicker', function () {
+    $input.val('');
+    if (fromEl) fromEl.value = '';
+    if (toEl) toEl.value = '';
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      $input.val('');
+      if (fromEl) fromEl.value = '';
+      if (toEl) toEl.value = '';
+    });
+  }
+}
+
+function setupRevisiDateRangeFilter() {
+  const input = document.getElementById('dateRangeRevisi');
+  if (!input) return;
+
+  if (!window.jQuery || !jQuery.fn.daterangepicker || !window.moment) {
+    console.warn('daterangepicker belum loaded');
+    return;
+  }
+
+  const $input = jQuery(input);
+
+  const fromEl = document.getElementById('fromDateRevisi');
+  const toEl   = document.getElementById('toDateRevisi');
+  const clearBtn = document.getElementById('clearDateRangeRevisi');
+
+  const setHidden = (start, end) => {
+    if (fromEl) fromEl.value = start.format('YYYY-MM-DD');
+    if (toEl)   toEl.value   = end.format('YYYY-MM-DD');
+  };
+
+  $input.daterangepicker({
+    autoUpdateInput: false,
+    opens: 'left',
+    showDropdowns: true,
+    linkedCalendars: false,
+    alwaysShowCalendars: true,
+    locale: { format: 'YYYY-MM-DD', applyLabel: 'Apply', cancelLabel: 'Cancel' },
+    ranges: {
+      'Today': [moment(), moment()],
+      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+      'This Month': [moment().startOf('month'), moment().endOf('month')],
+      'Last Month': [moment().subtract(1,'month').startOf('month'), moment().subtract(1,'month').endOf('month')],
+    }
+  });
+
+  const fromVal = fromEl?.value;
+  const toVal = toEl?.value;
+  if (fromVal && toVal) {
+    const s = moment(fromVal, 'YYYY-MM-DD');
+    const e = moment(toVal, 'YYYY-MM-DD');
+    $input.data('daterangepicker').setStartDate(s);
+    $input.data('daterangepicker').setEndDate(e);
+    $input.val(`${fromVal} - ${toVal}`);
+  }
+
+  $input.on('apply.daterangepicker', function (ev, picker) {
+    const s = picker.startDate;
+    const e = picker.endDate;
+    $input.val(`${s.format('YYYY-MM-DD')} - ${e.format('YYYY-MM-DD')}`);
+    setHidden(s, e);
+  });
+
+  $input.on('cancel.daterangepicker', function () {
+    $input.val('');
+    if (fromEl) fromEl.value = '';
+    if (toEl) toEl.value = '';
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      $input.val('');
+      if (fromEl) fromEl.value = '';
+      if (toEl) toEl.value = '';
+    });
+  }
 }

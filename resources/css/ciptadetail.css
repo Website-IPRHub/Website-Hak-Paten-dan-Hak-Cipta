@@ -204,11 +204,6 @@ body.cipta-detail-page .incoming-summary{
 
 body.cipta-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
 
-body.cipta-detail-page .incoming-row{
-  padding: 10px 12px;
-  border-radius: 12px;
-}
-
 body.cipta-detail-page .cell-note{
   white-space: normal;
   word-break: break-word;
@@ -237,60 +232,6 @@ body.cipta-detail-page .doc-item{
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 8px 18px rgba(0,0,0,.04);
-}
-
-/* =========================
-   TABEL REVISI (DIV GRID)
-========================= */
-body.cipta-detail-page .incoming-table{
-  margin-top:10px;
-  border-radius:12px;
-  overflow:hidden;
-  border:1px solid rgba(11,44,95,.10);
-  background:#fff;
-}
-
-body.cipta-detail-page .incoming-row{
-  display:grid;
-  grid-template-columns: 1.2fr 1fr 140px 1fr;
-  gap:12px;
-  padding:10px 12px;
-  align-items:start;
-  border-top:1px solid rgba(11,44,95,.08);
-}
-
-body.cipta-detail-page .incoming-head{
-  background: rgba(11,44,95,.06);
-  border-top:0;
-  font-weight:900;
-  color:#0b2c5f;
-  font-size:13px;
-}
-
-body.cipta-detail-page .incoming-cell{
-  font-size:13px;
-  line-height:1.45;
-  color:#111;
-  word-break: break-word;
-}
-
-body.cipta-detail-page .incoming-table .incoming-row:not(.incoming-head):nth-child(even){
-  background: rgba(11,44,95,.03);
-}
-
-body.cipta-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
-  background: rgba(11,44,95,.06);
-}
-
-@media (max-width: 900px){
-  body.cipta-detail-page .incoming-row{ grid-template-columns: 1fr; }
-  body.cipta-detail-page .incoming-head{ display:none; }
-  body.cipta-detail-page .incoming-cell{
-    padding:8px 10px;
-    border:1px solid rgba(11,44,95,.08);
-    border-radius:10px;
-    background:#fff;
-  }
 }
 
 /* ===== FIX RATA KIRI-KANAN ===== */
@@ -425,7 +366,7 @@ body.cipta-detail-page .incoming-table{
 
 body.cipta-detail-page .incoming-row{
   display: grid;
-  grid-template-columns: 1.4fr 1fr 140px 1fr;
+  grid-template-columns: 2fr 1fr 0.8fr; /* Catatan lebar */
   gap: 12px;
   padding: 12px 12px;
   align-items: start;
@@ -438,6 +379,11 @@ body.cipta-detail-page .incoming-head{
   font-weight: 900;
   color: #0b2c5f;
   font-size: 12px;
+
+}/* garis vertikal antar kolom */
+body.cipta-detail-page .incoming-row > *:not(:first-child){
+  border-left: 1px solid rgba(11,44,95,.10);
+  padding-left: 12px; /* biar gak mepet garis */
 }
 
 body.cipta-detail-page .incoming-cell{
@@ -518,4 +464,16 @@ body.cipta-detail-page .acc-head i{
 }
 @media (max-width: 1100px){
   body.cipta-detail-page [data-paten-detail]{ margin: 0 !important; }
+}
+
+.rev-pop{
+  width: 520px;
+  max-width: calc(100vw - 40px);
+  max-height: 70vh;
+  overflow: auto;
+  padding: 15px;
+  border-radius: 14px;
+}
+.rev-pop textarea{
+  min-height: 90px;
 }

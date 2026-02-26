@@ -21,7 +21,18 @@
   $inventors = $row->inventors_arr ?? [];
 
   // incoming revisi (wajib ada biar mirip paten)
-  $incomingByDoc = $incomingByDoc ?? collect();
+  $incomingByDoc = collect($incomingByDoc ?? []);
+
+// kalau dari controller ternyata masih flat list (bukan keyed by doc_key),
+// kita group di sini biar aman.
+$isKeyedByDoc = $incomingByDoc->keys()->contains(fn($kk) => in_array($kk, $docKeys, true));
+
+if (!$isKeyedByDoc) {
+  $incomingByDoc = $incomingByDoc->groupBy(function ($x) {
+    return data_get($x, 'doc_key'); // aman buat array/object/collection
+  });
+}
+
 
   /**
    * RULE tombol:
@@ -31,7 +42,11 @@
   $allDocStatuses = collect($docKeys)->map(fn($k) => optional($row->docs[$k] ?? null)->status ?? 'pending');
   $canSend = $allDocStatuses->contains(fn($st) => in_array($st, ['ok','revisi']));
 
-  $canApprove = $allDocStatuses->contains(fn($st) => in_array($st, ['ok','revisi']));
+  $canApprove = collect($docKeys)->contains(function($k) use ($incomingByDoc){
+      $cycles = collect($incomingByDoc->get($k) ?? []);
+      return $cycles->contains(fn($cy) => !empty($cy->pemohon_file_path));
+  });
+
 
 @endphp
 
@@ -50,7 +65,7 @@
 
   {{-- pake css & js yang sama dengan paten --}}
   @vite([
-    'resources/css/patendetail.css',
+    'resources/css/lihatdetail.css',
     'resources/js/admin/lihatdetail.js'
   ])
 
@@ -174,6 +189,21 @@
   </aside>
 
   <main class="dash-content">
+    @php
+      use Illuminate\Support\Str;
+
+      $notePreview = function($text, $limit = 80){
+        $t = (string) $text;
+        $oneLine = preg_replace("/\r\n|\r|\n/", " ", $t);
+        return Str::limit($oneLine, $limit);
+      };
+
+      $hasMore = function($text, $limit = 80){
+        $t = (string) $text;
+        $oneLine = preg_replace("/\r\n|\r|\n/", " ", $t);
+        return mb_strlen($oneLine) > $limit;
+      };
+    @endphp
 
     <div class="cipta-wrap" data-cipta-detail>
 
@@ -257,7 +287,9 @@
                 <div class="p-label">Link Ciptaan</div><div class="p-colon">:</div>
                 <div class="p-value">
                   @if(!empty($row->link_ciptaan))
-                    <a class="doc-link" href="{{ $row->link_ciptaan }}" target="_blank">{{ $row->link_ciptaan }}</a>
+                    <a class="doc-link doc-link-full" href="{{ $row->link_ciptaan }}" target="_blank">
+                      {{ $row->link_ciptaan }}
+                    </a>
                   @else
                     <span class="muted">-</span>
                   @endif
@@ -279,7 +311,9 @@
               <div class="acc-title">Detail Dokumen</div>
               <div class="acc-sub">Klik untuk melihat & verifikasi dokumen</div>
             </div>
-            <span class="acc-caret" aria-hidden="true">˅</span>
+            <span class="acc-toggle" aria-hidden="true">
+              <span class="acc-chevron"></span>
+            </span>
           </button>
 
           <div class="acc-body" data-acc-body="docs" hidden>
@@ -287,38 +321,126 @@
 
               @foreach($docKeys as $k)
                 @php
-                  $filePath  = $row->$k ?? null;
-                  $doc       = $row->docs[$k] ?? null;
-                  $statusDoc = optional($doc)->status ?? 'pending';
-                  $note      = optional($doc)->note;
+                    $filePath  = $row->$k ?? null;
+                    $doc       = $row->docs[$k] ?? null;
+                    $statusDoc = optional($doc)->status ?? 'pending';
+                    $note      = optional($doc)->note;
 
-                  $incomingRaw = $incomingByDoc->get($k) ?? collect();
+                    // ambil bucket cycles untuk doc ini
+                    $bucket = null;
 
-                  $incomingSorted = $incomingRaw->sortByDesc(function($x){
-                    return $x->pemohon_uploaded_at ?? $x->updated_at ?? $x->created_at;
-                  })->values();
+                    if ($incomingByDoc instanceof \Illuminate\Support\Collection && $incomingByDoc->has($k)) {
+                        $bucket = $incomingByDoc->get($k);
+                    } elseif (is_array($incomingByDoc) && array_key_exists($k, $incomingByDoc)) {
+                        $bucket = $incomingByDoc[$k];
+                    }
 
-                  $hasPemohonUpload = $incomingSorted->contains(fn($x) => !empty($x->pemohon_file_path));
-                  $hasAdminRevisi = (!empty($note)) || ($statusDoc === 'revisi');
+                    $cycles = $bucket !== null
+                        ? collect($bucket)
+                        : collect($incomingByDoc ?? [])->flatten(1)->filter(fn($x) => data_get($x, 'doc_key') === $k);
 
-                  $showDot  = $hasAdminRevisi || $hasPemohonUpload;
-                  $dotClass = $hasPemohonUpload ? 'green' : 'red';
-                @endphp
+                    $cycles = $cycles->sortByDesc(fn($x) => data_get($x,'id') ?? 0)->values();
+
+                    $cyclesSorted = $cycles;
+
+                  // flag untuk show/hide revisi box (dipakai di incoming-wrap)
+                    $hasPemohonUpload = $cyclesSorted->contains(function($x){
+                      return data_get($x,'from_role') === 'pemohon'
+                        && in_array(data_get($x,'state'), ['submitted','uploaded'], true)
+                        && !empty(data_get($x,'pemohon_file_path'));
+                    });
+
+                    // admin revisi = status dokumen revisi ATAU note admin ada
+                    $hasAdminRevisi = ($statusDoc === 'revisi') || (trim((string)$note) !== '');
+
+                    // ✅ ambil ADMIN request terakhir (paling baru)
+                    $lastAdminReq = $cycles->first(function($x){
+                      return data_get($x,'from_role') === 'admin'
+                        && in_array(data_get($x,'state'), ['requested','closed'], true);
+                    });
+
+                    // ✅ ambil SUBMITTED pemohon terakhir SETELAH request admin tsb
+                    $lastPemohonSub = null;
+                    if ($lastAdminReq) {
+                      $lastPemohonSub = $cycles->first(function($x) use ($lastAdminReq){
+                        return data_get($x,'from_role') === 'pemohon'
+                          && data_get($x,'state') === 'submitted'
+                          && !empty(data_get($x,'pemohon_file_path'))
+                          && (data_get($x,'id') > data_get($lastAdminReq,'id'));
+                      });
+                    }
+
+                    // ✅ yang dipakai tampilan (1 baris saja)
+                    $displayNote = trim((string) data_get($lastAdminReq,'note','')) ?: '-';
+
+                    $displayFilePath = data_get($lastPemohonSub,'pemohon_file_path');
+                    $displayFileName = data_get($lastPemohonSub,'pemohon_file_name')
+                        ?: ($displayFilePath ? basename($displayFilePath) : '-');
+
+                    $displayTimeRaw = data_get($lastPemohonSub,'pemohon_uploaded_at')
+                        ?: data_get($lastPemohonSub,'created_at');
+                    // =======================
+                    // DOT STATUS = LAST ACTION WINS
+                    // =======================
+
+                    // pastiin urut paling baru dulu (kamu udah ada, ini aman kalau tetap)
+                    $cyclesSorted = $cycles->sortByDesc(fn($x) => data_get($x,'id') ?? 0)->values();
+
+                    // cari event terakhir yang ngaruh indikator:
+                    // - admin minta revisi (requested/closed)
+                    // - pemohon upload revisi (submitted/uploaded + ada file)
+                    $lastSignal = $cyclesSorted->first(function($x){
+                      $role  = data_get($x,'from_role');
+                      $state = data_get($x,'state');
+
+                      if ($role === 'admin' && in_array($state, ['requested','closed'], true)) return true;
+
+                      if ($role === 'pemohon'
+                          && in_array($state, ['submitted','uploaded'], true)
+                          && !empty(data_get($x,'pemohon_file_path'))) return true;
+
+                      return false;
+                    });
+
+                    // default: ga ada dot
+                    $showDot  = false;
+                    $dotClass = null;
+
+                    // kalau ada signal, warnanya ikut siapa yang terakhir
+                    if ($lastSignal) {
+                      $showDot = true;
+                      $dotClass = (data_get($lastSignal,'from_role') === 'pemohon') ? 'green' : 'red';
+                    }
+
+                    // buat tooltip biar pas
+                    $dotTitle = ($dotClass === 'green')
+                      ? 'Pemohon sudah upload revisi'
+                      : 'Menunggu upload revisi pemohon';
+                  @endphp
+
 
                 <div class="doc-item" data-doc-wrap data-doc-key="{{ $k }}">
                   <div class="doc-top">
                     <div>
                       <div class="doc-name">
-                        @if($showDot)
-                          <span class="doc-dot {{ $dotClass }}"
-                            title="{{ $hasPemohonUpload ? 'Ada upload revisi dari pemohon' : 'Menunggu upload revisi dari pemohon' }}"></span>
+                       @if($showDot)
+                          <span class="doc-dot {{ $dotClass }}" title="{{ $dotTitle }}"></span>
                         @endif
                         {{ $docLabels[$k] }}
                       </div>
 
                       @if($filePath)
-                        <a class="doc-link" href="{{ asset('storage/'.$filePath) }}" target="_blank">
-                          {{ basename($filePath) }}
+                        @php
+                          // kalau mau tampil nama aslinya (kalau ada di docs), fallback ke basename
+                          $displayName = optional($doc)->pemohon_file_name
+                            ?: (optional($doc)->pemohon_file_name_display ?: basename($filePath));
+                        @endphp
+
+                        <a class="doc-link doc-link-full"
+                          href="{{ asset('storage/'.$filePath) }}"
+                          target="_blank"
+                          title="{{ $displayName }}">
+                          {{ $displayName }}
                         </a>
                       @else
                         <div class="muted">-</div>
@@ -371,93 +493,194 @@
                     </div>
                   </div>
 
-                  {{-- REVISI box hanya muncul kalau admin revisi atau pemohon sudah upload --}}
-                  <div class="incoming-wrap" data-incoming-wrap {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
-                    <div class="incoming-title">Revisi</div>
+                {{-- REVISI box hanya muncul kalau admin revisi atau pemohon sudah upload --}}
+              <div class="incoming-wrap" data-incoming-wrap {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
+                <div class="incoming-title">Revisi</div>
 
-                    {{-- Catatan admin (hidden kalau kosong) --}}
-                    <div class="rev-admin-box" data-admin-note-wrap {{ !empty($note) ? '' : 'hidden' }}>
-
-                      <div class="meta">
-                        Update (Admin):
-                        <span data-admin-note-date>
-                          {{ optional($doc)->updated_at ? \Carbon\Carbon::parse(optional($doc)->updated_at)->format('d M Y H:i') : '-' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    {{-- Status pemohon --}}
-                    <div class="muted" data-pemohon-empty {{ $hasPemohonUpload ? 'hidden' : '' }} style="font-size:12px; margin-top:10px;">
-                      Belum ada upload revisi dari pemohon.
-                    </div>
-
-                    @php
-                      $pemohonList = $incomingSorted->filter(fn($x) => !empty($x->pemohon_file_path))->values();
-                      $adminNote = trim((string) ($note ?? ''));
-                      $showAdminRow = ($statusDoc === 'revisi') || ($adminNote !== '');
-                    @endphp
-
-                    <details class="incoming-details" style="margin-top:10px;" {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
-                      <summary class="incoming-summary">
-                        Detail Revisi ({{ $pemohonList->count() }})
-                      </summary>
-
-                      <div class="incoming-table">
-                        <div class="incoming-row incoming-head">
-                          <div>Catatan</div>
-                          <div>File Pemohon</div>
-                          <div>Update</div>
-                        </div>
-
-                        {{-- ROW ADMIN --}}
-                        @if($showAdminRow)
-                          <div class="incoming-row">
-                            <div class="incoming-cell">
-                              <div class="truncate-1" title="{{ $adminNote !== '' ? $adminNote : '-' }}">
-                                {{ $adminNote !== '' ? $adminNote : '-' }}
-                              </div>
-                            </div>
-
-                            <div class="incoming-cell muted">
-                              {{ $pemohonList->count() === 0 ? 'Pemohon belum upload file revisi.' : '-' }}
-                            </div>
-
-                            <div class="incoming-cell muted">
-                              {{ $pemohonList->count() === 0 ? '-' : '' }}
-                            </div>
-                          </div>
-                        @endif
-
-                        {{-- ROW PEMOHON --}}
-                        @foreach($pemohonList as $rv)
-                          @php
-                            $pemohonTime = $rv->pemohon_uploaded_at ?? $rv->updated_at ?? $rv->created_at;
-                            $noteText = $rv->note ?? '-';
-                          @endphp
-
-                          <div class="incoming-row">
-                            <div class="incoming-cell">
-                              <div class="truncate-1" title="{{ $noteText }}">{{ $noteText }}</div>
-                            </div>
-
-                            <div class="incoming-cell">
-                              <a target="_blank" href="{{ asset('storage/'.$rv->pemohon_file_path) }}">
-                                {{ $rv->pemohon_file_name ?? basename($rv->pemohon_file_path) }}
-                              </a>
-                            </div>
-
-                            <div class="incoming-cell muted">
-                              {{ $pemohonTime ? \Carbon\Carbon::parse($pemohonTime)->format('d M Y H:i') : '-' }}
-                            </div>
-                          </div>
-                        @endforeach
-                      </div>
-                    </details>
-                  </div>
+              <div class="rev-admin-box" data-admin-note-wrap {{ !empty($note) ? '' : 'hidden' }}>
+                <div class="meta">
+                  Update (Admin):
+                  <span data-admin-note-date>
+                    {{ optional($doc)->requested_at
+                      ? \Carbon\Carbon::parse(optional($doc)->requested_at)->timezone('Asia/Jakarta')->format('d M Y H:i')
+                      : '-' }}
+                  </span>
                 </div>
-              @endforeach
+              </div>
 
+              {{-- Status pemohon --}}
+              <div class="muted" data-pemohon-empty {{ $hasPemohonUpload ? 'hidden' : '' }} style="font-size:12px; margin-top:10px;">
+                Belum ada upload revisi dari pemohon.
+              </div>
+
+                @php
+                  // cycles hasil buildRevisionCycles()
+                  $adminNote = trim((string)($note ?? ''));
+
+                  // ✅ jumlah row yang tampil di "Detail Revisi"
+                  $displayCount = $cycles->count();
+                  if ($displayCount === 0 && $adminNote !== '') {
+                    $displayCount = 1;
+                  }
+                @endphp
+
+                <details class="incoming-details" style="margin-top:10px;" {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
+              <summary class="incoming-summary">
+                Detail Revisi ({{ $displayCount }})
+              </summary>
+
+              <div class="incoming-table">
+                <div class="incoming-row incoming-head">
+                  <div>Catatan</div>
+                  <div>File Pemohon</div>
+                  <div>Update Pemohon</div>
+                </div>
+
+            {{-- fallback: kalau belum ada cycle (admin belum kirim), tapi ada note --}}
+            @if($cycles->count() === 0 && $adminNote !== '')
+              @php
+                // fallback note (pasti ada)
+                $raw = trim((string) $adminNote);
+              @endphp
+
+              <div class="incoming-row" data-empty-cycle-row="1">
+              {{-- CATATAN --}}
+              <div class="incoming-cell">
+            @php
+              $full = trim((string) $raw);
+              $preview = \Illuminate\Support\Str::limit(
+                preg_replace("/\r\n|\r|\n/", " ", $full),
+                80
+              );
+
+              $more = mb_strlen(preg_replace("/\r\n|\r|\n/", " ", $full)) > 80
+                    || preg_match("/\r\n|\r|\n/", $full);
+            @endphp
+
+            @if($more && $full !== '-')
+            <details class="note-detail">
+              <summary class="note-sum" title="{{ $preview }}">
+                <span class="note-short">{{ $preview }}</span>
+                <span class="note-action">Selengkapnya</span>
+              </summary>
+
+              <div class="note-long">{{ $full }}</div>
+
+              {{-- ✅ tombol tutup di bawah isi --}}
+              <button type="button" class="note-close">Tutup</button>
+            </details>
+            @else
+              <div class="note-plain" title="{{ $preview }}">{{ $preview }}</div>
+            @endif
+              </div>
+
+              <div class="incoming-cell muted">Pemohon belum upload file revisi.</div>
+              <div class="incoming-cell muted">-</div>
             </div>
+            @endif
+
+
+            @foreach($cycles as $cy)
+              @php
+                $hasFile = !empty(data_get($cy,'pemohon_file_path'));
+
+                // 1) default dari cycle row (kalau ada)
+                $noteTextRaw = trim((string) data_get($cy, 'note', ''));
+
+              // 2) kalau row ini submitted pemohon (punya file) tapi note kosong,
+            //    ambil note ADMIN yang paling dekat SEBELUM row pemohon ini (biar ga ke-replace)
+            if ($noteTextRaw === '' && $hasFile) {
+
+              // admin request terdekat SEBELUM pemohon upload ini
+              $pairedAdmin = $cycles->first(function($x) use ($cy) {
+                return data_get($x,'from_role') === 'admin'
+                  && in_array(data_get($x,'state'), ['requested','closed'], true)
+                  && (data_get($x,'id') < data_get($cy,'id'));
+              });
+
+              // coba ambil note dari cycle admin (kalau ada)
+              $noteTextRaw = trim((string) data_get($pairedAdmin, 'note', ''));
+
+              // ✅ fallback aman:
+              // pakai lastAdminReq HANYA kalau lastAdminReq itu memang sebelum row pemohon ini
+              if ($noteTextRaw === '' && $lastAdminReq && (data_get($lastAdminReq,'id') < data_get($cy,'id'))) {
+                $noteTextRaw = trim((string) data_get($lastAdminReq, 'note', ''));
+              }
+
+              // terakhir: kalau masih kosong, baru '-'
+              if ($noteTextRaw === '') {
+                $noteTextRaw = '-';
+              }
+            }
+
+                // 3) final
+                $noteText = ($noteTextRaw !== '') ? $noteTextRaw : '-';
+
+                // waktu update pemohon valid hanya kalau ada file pemohon
+                $timeRaw = $hasFile
+                  ? (data_get($cy,'pemohon_uploaded_at') ?? data_get($cy,'created_at') ?? null)
+                  : null;
+              @endphp
+
+                <div class="incoming-row">
+                {{-- CATATAN --}}
+                <div class="incoming-cell">
+                  @php
+              $full = trim((string) $noteText);                 // atau $raw / $adminNote
+              $preview = \Illuminate\Support\Str::limit(
+                preg_replace("/\r\n|\r|\n/", " ", $full),
+                80
+              );
+
+              // tampilkan tombol kalau memang kepotong (server-side) ATAU ada newline banyak
+              $more = mb_strlen(preg_replace("/\r\n|\r|\n/", " ", $full)) > 80
+                    || preg_match("/\r\n|\r|\n/", $full);
+            @endphp
+
+            @if($more && $full !== '-')
+            <details class="note-detail">
+              <summary class="note-sum" title="{{ $preview }}">
+                <span class="note-short">{{ $preview }}</span>
+                <span class="note-action">Selengkapnya</span>
+              </summary>
+
+              <div class="note-long">{{ $full }}</div>
+
+              <button type="button" class="note-close">Tutup</button>
+            </details>
+            @else
+              <div class="note-plain" title="{{ $preview }}">{{ $preview }}</div>
+            @endif
+                </div>
+
+                {{-- FILE PEMOHON --}}
+                <div class="incoming-cell">
+                  @if($hasFile)
+                    <a target="_blank" href="{{ route('revisi.download', $cy->id) }}">
+                      {{ $cy->pemohon_file_name ?: ($cy->pemohon_file_name_display ?: basename($cy->pemohon_file_path)) }}
+                    </a>
+                  @else
+                    <span class="muted">Pemohon belum upload file revisi.</span>
+                  @endif
+                </div>
+
+                {{-- UPDATE PEMOHON --}}
+                <div class="incoming-cell">
+                  @if(!empty($timeRaw))
+                    {{ \Carbon\Carbon::parse($timeRaw)->timezone('Asia/Jakarta')->format('d M Y H:i') }}
+                  @else
+                    -
+                  @endif
+                </div>
+              </div>
+            @endforeach
+              </div>
+            </details>
+            </div> {{-- .incoming-wrap --}}
+            </div> {{-- .doc-item --}}
+            @endforeach
+
+            </div> {{-- .docs-list --}}
 
             {{-- FOOTER BUTTONS (samain paten) --}}
             <div class="docs-footer-actions">
@@ -495,7 +718,9 @@
               <div class="acc-title">Detail Pencipta</div>
               <div class="acc-sub">Klik untuk melihat data pencipta</div>
             </div>
-            <span class="acc-caret" aria-hidden="true">˅</span>
+            <span class="acc-toggle" aria-hidden="true">
+              <span class="acc-chevron"></span>
+            </span>
           </button>
 
           <div class="acc-body" data-acc-body="inv" hidden>
@@ -572,13 +797,11 @@
 
   </main>
 </div>
-
 @if(session('wa_links'))
   <div id="waPayload"
        data-was='@json(session("wa_links"))'
        data-label="{{ session('wa_label') ?? 'Kirim WhatsApp' }}"
        hidden></div>
 @endif
-
 </body>
 </html>

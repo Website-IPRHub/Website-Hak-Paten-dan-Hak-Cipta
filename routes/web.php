@@ -116,14 +116,14 @@ Route::middleware('auth:pemohon')->prefix('pemohon')->name('pemohon.')->group(fu
 Route::get('/pemohon/tanda-terima', [PemohonDashboardController::class, 'downloadTandaTerima'])
     ->name('pemohon.tanda_terima.download');
 
-Route::post('/pemohon/revisi/upload/{id}', [PemohonAuthController::class, 'uploadRevisi'])
-  ->name('pemohon.uploadRevisi');
-
 Route::post('/revisi/{type}/{id}', [AdminDashboardController::class, 'setRevisi'])
   ->name('admin.revisi.set');
 
 Route::post('/admin/revisi/read/{id}', [AdminDashboardController::class, 'markRevisionRead'])
     ->name('admin.revisi.read');
+
+Route::post('/pemohon/revisi/{id}/upload', [PemohonDashboardController::class, 'uploadRevisi'])
+    ->name('pemohon.uploadRevisi');
 
 
 Route::get('/paten/pendaftaran', function () {
@@ -157,8 +157,19 @@ Route::get('/admin/cipta/export-pdf', [AdminDashboardController::class, 'exportC
 Route::get('/admin/cipta/export-csv', [AdminDashboardController::class, 'exportCiptaCsv'])
     ->name('admin.cipta.export_csv');
 
+Route::get('/revisi/download/{id}', [AdminDashboardController::class, 'downloadRevisi'])
+  ->name('revisi.download');
 
-/*
+Route::get('/admin/paten/{id}/doc/{doc_key}/download', [AdminDashboardController::class, 'adminDownloadDocPaten'])
+  ->name('admin.paten.doc.download');
+
+Route::get('/admin/cipta/{id}/doc/{doc_key}/download', [AdminDashboardController::class, 'adminDownloadDocCipta'])
+  ->name('admin.cipta.doc.download');
+
+  Route::get('/pemohon/dokumen/{type}/{ref}/{key}', [PemohonDashboardController::class, 'downloadDokumenAwal'])
+    ->name('pemohon.dokumen.download');
+
+/*s
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------

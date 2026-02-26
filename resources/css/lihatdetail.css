@@ -217,11 +217,6 @@ body.paten-detail-page .incoming-summary{
 /* hilangkan marker default di beberapa browser */
 body.paten-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
 
-body.paten-detail-page .incoming-row{
-  padding: 10px 12px;
-  border-radius: 12px;
-}
-
 /* catatan panjang */
 body.paten-detail-page .cell-note{
   white-space: normal;
@@ -319,6 +314,8 @@ body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
     background:#fff;
   }
 }
+
+
 
 /* ===== FIX RATA KIRI-KANAN (PADDING CUMA DI DASH-CONTENT) ===== */
 
@@ -998,7 +995,9 @@ body.paten-detail-page .acc-card{
 .docs-footer-actions{
   display:flex;
   justify-content:flex-end;
+  gap:10px;
   margin-top:14px;
+  padding-top:10px;
 }
 .btn-send-right{
   background:#16a34a;
@@ -1042,27 +1041,7 @@ body.paten-detail-page .doc-dot.green{
   box-shadow:0 0 0 3px rgba(46,204,113,.12);
 }
 
-/* ===== CATATAN POTONG + LIHAT DETAIL ===== */
-body.paten-detail-page details.note-detail{cursor:pointer;}
-body.paten-detail-page details.note-detail summary{
-  list-style:none;
-  cursor:pointer;
-}
-body.paten-detail-page details.note-detail summary::-webkit-details-marker{display:none;}
 
-body.paten-detail-page .note-short{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width: 420px;
-}
-body.paten-detail-page details.note-detail[open] .note-short{display:none;}
-body.paten-detail-page .note-full{display:none; margin-top:6px;}
-body.paten-detail-page details.note-detail[open] .note-full{display:block;}
-
-@media (max-width: 900px){
-  body.paten-detail-page .note-short{max-width: 70vw;}
-}
 
 .doc-dot{
   display:inline-block;
@@ -1572,3 +1551,461 @@ body.cipta-detail-page .acc-head{
   box-sizing: border-box !important;
 }
 .rev-admin-box .ttl{font-weight:700;margin-bottom:6px}
+
+.rev-pop{
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  max-height: 70vh;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 14px;
+}
+.rev-pop textarea{
+  min-height: 90px;
+}
+
+.acc-head{
+  width:100%;
+  border:0;
+  background: linear-gradient(135deg,#0b2a5f,#123e85);
+  color:#fff;
+  padding:18px 20px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  transition: .25s ease;
+  box-shadow: 0 4px 18px rgba(0,0,0,.08);
+}
+
+.acc-head:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+}
+
+.acc-left .acc-title{
+  font-weight:800;
+  font-size:18px;
+}
+
+.acc-left .acc-sub{
+  margin-top:4px;
+  font-size:12px;
+  opacity:.85;
+}
+
+/* tombol kanan */
+.acc-toggle{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  background: rgba(255,255,255,.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:.25s ease;
+  flex:0 0 auto;
+}
+
+.acc-head:hover .acc-toggle{
+  background: rgba(255,255,255,.22);
+}
+
+.acc-chevron{
+  width:10px;
+  height:10px;
+  border-right:2px solid #fff;
+  border-bottom:2px solid #fff;
+  transform: rotate(45deg);
+  transition:.25s ease;
+}
+
+/* saat accordion dibuka */
+.acc-card.open .acc-chevron{
+  transform: rotate(-135deg);
+}
+
+/* bikin teks deskripsi turun ke bawah, gak nabrak badge */
+.doc-text-block{
+  display:block;
+  width:100%;
+  margin-top:6px;
+  text-align:left;
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+
+.note-cell { display:flex; flex-direction:column; gap:4px; }
+
+.note-full{
+  margin-top:0;          /* ✅ jangan tambah jarak lagi */
+  line-height:1.5;
+  color:#111827;
+}
+
+.btn-note-more{
+  align-self:flex-start;
+  margin-top:0;          /* ✅ jangan dobel jarak */
+  border:none;
+  background:transparent;
+  padding:0;
+  color:#2563eb;
+  cursor:pointer;
+  font-weight:700;
+  font-size:12px;
+}
+.btn-note-more:hover{ text-decoration:underline; }
+[hidden] { display: none !important; }
+
+/* ===== FORCE GRID 3 KOLOM + GARIS PEMISAH (PASTI KENA) ===== */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row{
+  display: grid !important;
+  grid-template-columns: 2fr 1fr 0.8fr !important; /* Catatan | File | Update */
+  gap: 0 !important;                               
+  padding: 0 !important;                            
+  align-items: stretch !important;
+}
+
+/* Pastikan cell-nya yang dikasih padding + garis */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > div,
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > span,
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > a{
+  padding: 12px 12px !important;
+  box-sizing: border-box !important;
+}
+
+/* garis vertikal antar kolom */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > :not(:first-child){
+  border-left: 1px solid rgba(11,44,95,.15) !important;
+}
+
+/* header biar tegas */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-head{
+  border-bottom: 1px solid rgba(11,44,95,.15) !important;
+}
+
+/* mobile: jadi 1 kolom + garis vertikal mati */
+@media (max-width: 900px){
+  body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row{
+    grid-template-columns: 1fr !important;
+  }
+  body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > :not(:first-child){
+    border-left: 0 !important;
+  }
+}
+
+/* teks pendek */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-short{
+  display: -webkit-box;
+  -webkit-line-clamp: 2;          /* atur 2 / 3 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* tombol selengkapnya */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more{
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #2563eb;
+}
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more:hover{
+  text-decoration: underline;
+}
+
+/* full text hidden default */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
+  display: none;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.45;
+}
+
+.note-cell{
+  position: relative;   /* 🔥 penting */
+  display: block;
+}
+
+.note-preview,
+.note-full{
+  margin:0;
+  line-height:1.4;
+}
+
+.btn-note-more{
+  align-self:flex-start;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#2563eb;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.note-full[hidden]{
+  display: none !important;    /* yang bener-bener nyembunyiin */
+}
+
+.note-preview[hidden]{
+  display: none !important;
+}
+
+/* ===== NOTE: SINGLE SOURCE OF TRUTH = [hidden] ===== */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
+  display: none !important; /* default sembunyi */
+}
+
+/* yang tampil hanya kalau JS buka (hidden dicabut) */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full:not([hidden]){
+  display: block !important;
+}
+
+/* ===== NOTE TOGGLE (IN-PLACE, NO DOUBLE) ===== */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-cell{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+/* preview 1 baris ellipsis */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
+  max-width: 420px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px){
+  body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
+    max-width: 220px;
+  }
+}
+
+/* full text default hidden via [hidden] */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
+  margin:0;
+  white-space: pre-wrap;
+  line-height:1.45;
+}
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full[hidden]{
+  display:none !important;
+}
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview[hidden]{
+  display:none !important;
+}
+
+/* tombol */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more{
+  align-self:flex-start;
+  border:0;
+  background:transparent;
+  padding:0;
+  color:#2563eb;
+  font-weight:700;
+  font-size:12px;
+  cursor:pointer;
+}
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more:hover{
+  text-decoration:underline;
+}
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more[hidden]{
+  display:none !important;
+}
+
+/* ===== NOTE: PREVIEW 2 LINES + TOGGLE NO DOUBLE ===== */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-cell{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+/* PREVIEW: 2 baris + "..." */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
+  display:-webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;   /* <-- mau 2 baris */
+  overflow:hidden;
+
+  /* penting biar newline/list gak bikin jadi 3-10 baris */
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap:anywhere;
+}
+
+/* FULL TEXT */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
+  white-space: pre-wrap;
+  line-height:1.45;
+  margin:0;
+  overflow-wrap:anywhere;
+  word-break: break-word;
+}
+
+/* hidden MUST win (anti ada rule display:block !important dari tempat lain) */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview[hidden],
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full[hidden],
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more[hidden]{
+  display:none !important;
+}
+
+.doc-link-full{
+  display:block;          /* biar ambil 1 baris sendiri */
+  white-space:nowrap;     /* jangan turun */
+  overflow-x:auto;        /* kalau kepanjangan -> scroll */
+  overflow-y:hidden;
+  text-overflow:clip;     /* jangan ellipsis */
+  max-width:100%;
+  padding-bottom:2px;     /* biar scroll bar ga “nabrak” */
+}
+.doc-link-full::-webkit-scrollbar{
+  height:6px;
+}
+
+/* =========================================================
+   FIX: "Selengkapnya" Catatan jangan overflow ke kolom sebelah
+   Penyebab: teks panjang tanpa spasi + pre-wrap => meluber nyamping
+   Solusi: paksa wrap untuk unbroken text + min-width:0 pada grid cell
+========================================================= */
+
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-cell{
+  min-width: 0 !important;          /* penting biar grid cell bisa menyusut */
+}
+
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full,
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important; /* KUNCI: string panjang tanpa spasi tetap turun */
+  word-break: break-word !important;  /* fallback untuk browser tertentu */
+}
+
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
+  white-space: pre-wrap !important;   /* tetap hormati newline */
+}
+
+/* =========================================================
+   FIX CONSISTENCY: preview catatan harus 1 baris (sebelum & sesudah refresh sama)
+   Karena sebelumnya ada rule -webkit-line-clamp:2 yg bikin tombol "Selengkapnya" jadi salah deteksi
+========================================================= */
+body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
+  display: block !important;         /* batalin -webkit-box */
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+
+  white-space: nowrap !important;    /* 1 baris */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  max-width: 100% !important;
+}
+
+/* summary selalu tampil, jadi kalau open: sembunyiin preview biar ga double */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] .note-short{
+  display:none !important;
+}
+
+/* ✅ KUNCI: summary jadi layout kolom (teks dulu, tombol selalu di bawah) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:6px !important;
+}
+
+/* note-short pastiin full width biar tombol ga ke samping */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-short{
+  display:block !important;
+  width:100% !important;
+}
+
+/* tombolnya JADI DI BAWAH teks (baik Selengkapnya maupun Tutup) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action{
+  display:block !important;
+  margin:0 !important;
+  font-size:12px;
+  font-weight:800;
+  color:#2563eb;
+}
+
+/* ganti label Selengkapnya <-> Tutup (posisi tetap, ga gerak) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action{
+  font-size:0 !important; /* matiin teks aslinya */
+}
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action::after{
+  content:"Selengkapnya";
+  font-size:12px;
+}
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-action::after{
+  content:"Tutup";
+  font-size:12px;
+}
+
+/* full text rapi */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long{
+  margin-top:8px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  line-height:1.45;
+}
+
+/* OPEN: sembunyiin preview yang ada di summary (anti double) */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail[open] summary.note-sum .note-short{
+  display:none !important;
+}
+
+/* pas open, sembunyiin tombol "Selengkapnya" di atas */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail[open] summary.note-sum .note-action{
+  display:none !important;
+}
+
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
+  margin-top: 6px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #2563eb;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+}
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close:hover{
+  text-decoration: underline;
+}
+
+/* default: tombol tutup cuma muncul pas open */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
+  display:none;
+}
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] .note-close{
+  display:inline-block;
+}
+
+/* === STOP TRUNCATE / ELLIPSIS untuk nama file & link ciptaan === */
+body.cipta-detail-page a.doc-link,
+body.cipta-detail-page a.doc-link-full{
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;   /* boleh turun baris kalau kepanjangan */
+  word-break: break-word !important; /* biar URL panjang ga nabrak */
+}
+
+body.cipta-detail-page .paten-row .p-value a{
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}

@@ -584,13 +584,23 @@ body{
 .status-pill.s-approve{ background: rgba(40,167,69,0.18); color:#1f7a1f; }
 
 .btn-mini{
+  display: inline-flex;          /* penting biar sejajar icon + teks */
+  align-items: center;
+  gap: 6px;                      /* jarak icon dan teks */
+
   border: 1px solid rgba(11,44,95,0.18);
   background: #fff;
-  padding: 4px 9px;
+
+  padding: 7px 11px;             /* kecilin biar gak kotak gede */
   border-radius: 10px;
+
   cursor:pointer;
-  font-weight: 650;
+  font-weight: 650;              /* jangan terlalu tebel */
+  font-size: 13px;               /* kecilin dikit */
+
   color:#0b2c5f;
+  text-decoration: none;         /* hilangin underline */
+  white-space: nowrap;           /* biar gak turun */
 }
 .btn-mini:hover{ background: rgba(11,44,95,0.06); }
 
@@ -1633,4 +1643,287 @@ body.admin-page .dash-content{
   font-weight:900 !important;
   line-height:20px !important;
   border-radius:999px !important;
+}
+
+.data-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.data-table th,
+.data-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-table td .title-main {
+  white-space: normal;      /* boleh turun baris */
+  overflow: visible;        /* jangan dipotong */
+  text-overflow: unset;     /* hilangkan ... */
+  word-break: break-word;   /* kalau panjang banget tetap rapi */
+  line-height: 1.4;
+}
+
+.filters-bar{
+  display:flex;
+  align-items:flex-end;
+  gap:12px;
+  padding:10px 12px;
+  border:1px solid #e6ebf5;
+  border-radius:14px;
+  background:#fff;
+  flex-wrap:wrap;
+}
+
+.filters-label{
+  font-weight:800;
+  color:#6b7280;
+  font-size:12px;
+  letter-spacing:.6px;
+  padding:0 6px 4px 2px;
+}
+
+.filter-item{ display:flex; flex-direction:column; gap:6px; }
+.filter-item label{ font-size:12px; color:#6b7280; }
+
+.date-range-wrap{ position:relative; display:flex; align-items:center; }
+.date-ic{ position:absolute; left:10px; font-size:14px; opacity:.7; }
+
+.date-range-input{ padding-left:34px; min-width: 240px; padding-right:34px; }
+
+.date-clear{
+  position:absolute;
+  right:8px;
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  border:1px solid #e6ebf5;
+  background:#fff;
+  cursor:pointer;
+  font-size:16px;
+  line-height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:.65;
+}
+.date-clear:hover{ opacity:1; }
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px; /* biar sejajar input */
+}
+
+/* tombol Apply lebih dominan */
+.btn-apply {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-apply:hover {
+  background: #1e40af;
+}
+
+/* tombol Remove lebih soft */
+.btn-remove {
+  padding: 9px 14px;
+  border-radius: 10px;
+  border:1px solid #ef4444;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef4444;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.btn-remove:hover {
+  background: #fee2e2;
+  border-color: #bbb;
+}
+
+.page-actions--paten{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:nowrap;     /* ✅ jangan wrap */
+  min-width:0;
+}
+
+.filters-bar{ flex:0 0 auto; }
+
+.export-actions{ flex:0 0 auto; display:flex; gap:10px; }
+
+.search-right{
+  margin-left:auto;     /* ✅ dorong ke ujung kanan */
+  width:340px;
+  max-width:40vw;
+}
+
+.page-head-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.page-title{ margin:0; white-space:nowrap; }
+
+/* biar actions ga bikin judul turun */
+.page-actions--paten{ flex:1; display:flex; justify-content:flex-end; gap:12px; }
+
+/* ===== REVISI HEADER LAYOUT ===== */
+.page-head--revisi{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  flex-wrap:wrap;           /* biar responsif */
+}
+
+.page-head--revisi .page-head__left{
+  min-width:260px;
+}
+
+.page-head--revisi .page-title{
+  margin:0 0 4px 0;
+}
+
+.page-head--revisi .page-desc{
+  margin:0;
+  font-size:13px;
+}
+
+.page-head--revisi .page-head__right{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:flex-end;
+  width:min(980px, 100%);
+}
+
+/* filter bar revisi lebih kompak */
+.filters-bar--revisi{
+  width:100%;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  gap:10px;
+}
+
+/* tiap item jangan memaksa lebar aneh */
+.filters-bar--revisi .filter-item{
+  min-width:160px;
+}
+
+.search-input--revisi{
+  width:min(320px, 100%);
+}
+
+/* ===== HEADER REVISI: 2 ROW ===== */
+.revisi-head{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* row 1: title kiri, search kanan */
+.revisi-head__row1{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+
+.revisi-head__title{
+  min-width:260px;
+}
+
+.search-input--revisi{
+  width:min(340px, 100%);
+}
+
+/* row 2: filters full width */
+.revisi-head__row2{
+  width:100%;
+}
+
+.filters-bar--revisi{
+  display:flex;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:14px;
+}
+
+.filters-bar--revisi .filter-item{
+  min-width:160px;
+}
+
+/* actions selalu di ujung kanan */
+.filters-bar--revisi .filter-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+/* ===== REMOVE BUTTON: biar keliatan ===== */
+.btn-remove--danger{
+  border:1px solid #ef4444;
+  color:#ef4444;
+  background:#fff;
+}
+
+.btn-remove--danger:hover{
+  background:#fee2e2;
+}
+
+.revisi-search-wrap{
+  margin:14px 0 10px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.search-input--revisi{
+  width:320px;
+}
+
+.revisi-head__row2{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+}
+
+.revisi-head__row2 .filters-bar{
+  flex:1;
+}
+
+.search-input--revisi{
+  width: 380px;
+  flex: 0 0 380px;
+  margin-top: 6px; /* biar sejajar sama bar */
+}
+
+/* Container row filter + search */
+.revisi-head__row2{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Filter bar jangan full 100% */
+.filters-bar--revisi{
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  padding: 8px 8x;
 }
