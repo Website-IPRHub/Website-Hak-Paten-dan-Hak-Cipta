@@ -13,7 +13,28 @@
 
 @if(session('submit_error'))
 <script>
-  alert(`Berkas belum lengkap:\n\n{{ implode("\n", (array) session('submit_error')) }}`);
+document.addEventListener('DOMContentLoaded', function () {
+
+    let berkasList = `{!! implode('</li><li>', (array) session('submit_error')) !!}`;
+
+    Swal.fire({
+        icon: 'error',
+        title: 'Berkas Belum Lengkap',
+        html: `
+            <div style="text-align:left">
+                <small style="color:#6c757d;">
+                    Silakan upload berkas di bawah ini terlebih dahulu:
+                </small>
+                <ul style="margin-top:10px;padding-left:18px;">
+                    <li>${berkasList}</li>
+                </ul>
+            </div>
+        `,
+        confirmButtonText: 'Mengerti',
+        confirmButtonColor: '#d33'
+    });
+
+});
 </script>
 @endif
 
@@ -249,8 +270,7 @@
       <button
           type="button"
           class="btn-prev"
-          data-fallback="{{ route('patenverif.datadiri') }}"
-          onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+          onclick="window.location.href='{{ route('patenverif.datadiri', $verif->id) }}'"
         >
           &laquo; Sebelumnya
         </button>

@@ -107,9 +107,11 @@ class PatenVerifController extends Controller
         $fakultas = $inventors[0]['fakultas'] ?? null;
         
 
+        $verifId = session('verif_id');
+        $existing = $verifId ? PatenVerif::find($verifId) : null;
 
         $payload = [
-            'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
+            'no_pendaftaran' => $existing?->no_pendaftaran ?? $this->generateNoPendaftaranVerif(),
             'jenis_paten'      => $validated['jenis_paten'],
             'judul_paten'      => $validated['judul_paten'],
 
@@ -143,7 +145,21 @@ class PatenVerifController extends Controller
             $payload[$field] = $payload[$field] ?? '';
         }
 
-        $verif = PatenVerif::create($payload);
+        $verifId = session('verif_id');
+
+        if ($verifId) {
+            $verif = PatenVerif::find($verifId);
+
+            if ($verif) {
+                $verif->update($payload);
+            } else {
+                $verif = PatenVerif::create($payload);
+            }
+        } else {
+            $verif = PatenVerif::create($payload);
+        }
+
+        session(['verif_id' => $verif->id]);
 
         // SIMPAN SESSION (sama persis seperti PatenController)
         session(['verif_id' => $verif->id]);
@@ -553,7 +569,7 @@ public function deskripsiprodukverif(PatenVerif $verif){
     }
 
     $verif->update([
-        'deskripsi' => $request->filled('deskripsi')
+        'deskripsi_singkat_prototipe' => $request->filled('deskripsi')
             ? $request->deskripsi
             : $verif->deskripsi,
         'status'       => 'Terkirim',

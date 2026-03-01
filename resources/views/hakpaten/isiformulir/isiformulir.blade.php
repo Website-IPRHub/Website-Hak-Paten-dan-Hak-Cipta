@@ -604,19 +604,41 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
 
     const form = nextBtn.closest('form');
-    if (!form) { console.error('Form tidak ketemu'); return; }
+    if (!form) return;
 
-    // optional: validasi HTML5
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
 
+    // 🔥 SWEET ALERT MUNCUL DI SINI
+    const result = await Swal.fire({
+      title: 'Konfirmasi Download',
+      html: `
+        <p>Apakah Anda sudah mendownload 3 file berikut?</p>
+        <ul style="text-align:left; margin-top:10px;">
+          <li>• Form Paten</li>
+          <li>• Surat Pengalihan Hak</li>
+          <li>• Kepemilikan Invensi</li>
+        </ul>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sudah',
+      cancelButtonText: 'Belum',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) {
+      return; // kalau klik "Belum" tetap di halaman
+    }
+
+    // Kalau klik SUDAH → lanjut save & redirect
     const saveUrl = nextBtn.dataset.saveUrl;
     const nextUrl = nextBtn.dataset.nextUrl;
 
     const fd = new FormData(form);
-    fd.set('action', 'next'); // biar controller tahu ini "save & lanjut"
+    fd.set('action', 'next');
 
     try {
       const res = await fetch(saveUrl, {
@@ -631,6 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       window.location.href = nextUrl;
+
     } catch (err) {
       console.error(err);
     }
