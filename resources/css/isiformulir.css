@@ -52,7 +52,7 @@ html, body{
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 5px;
 }
 
 .label{
@@ -364,4 +364,28 @@ select.input{
 .unduh:hover{
   filter: brightness(0.95);
   transform: translateY(-1px);
+}
+
+
+/* kecilin jarak antar field dalam card */
+.inventor-card .field{
+  margin-bottom: 3px; 
+  gap: 4px;
+}
+
+/* kecilin jarak grid kiri-kanan */
+.inventor-card .inventor-grid{
+  gap: 12px;
+}
+
+/* kecilin jarak vertikal antar field dalam kolom */
+.inventor-card .inventor-col{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* kecilin jarak judul inventor */
+.inventor-card .inventor-head{
+  margin-bottom: 3px;
 }
