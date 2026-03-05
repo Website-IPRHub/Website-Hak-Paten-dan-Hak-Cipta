@@ -107,11 +107,11 @@ class PatenVerifController extends Controller
         $fakultas = $inventors[0]['fakultas'] ?? null;
         
 
-        $verifId = session('verif_id');
-        $existing = $verifId ? PatenVerif::find($verifId) : null;
+        session()->forget('verif_id');
+
 
         $payload = [
-            'no_pendaftaran' => $existing?->no_pendaftaran ?? $this->generateNoPendaftaranVerif(),
+            'no_pendaftaran' => $this->generateNoPendaftaranVerif(),
             'jenis_paten'      => $validated['jenis_paten'],
             'judul_paten'      => $validated['judul_paten'],
 
@@ -145,23 +145,19 @@ class PatenVerifController extends Controller
             $payload[$field] = $payload[$field] ?? '';
         }
 
-        $verifId = session('verif_id');
+        
 
-        if ($verifId) {
-            $verif = PatenVerif::find($verifId);
-
-            if ($verif) {
-                $verif->update($payload);
-            } else {
-                $verif = PatenVerif::create($payload);
+        // CEK kalau sudah pernah buat di session
+        if (session()->has('verif_id')) {
+            $existing = PatenVerif::find(session('verif_id'));
+            if ($existing) {
+                return redirect()->route('patenverif.all', $existing->id);
             }
-        } else {
-            $verif = PatenVerif::create($payload);
         }
 
-        session(['verif_id' => $verif->id]);
+        // baru create kalau belum ada
+        $verif = PatenVerif::create($payload);
 
-        // SIMPAN SESSION (sama persis seperti PatenController)
         session(['verif_id' => $verif->id]);
 
         // tentukan next route berdasarkan skema
@@ -192,6 +188,7 @@ class PatenVerifController extends Controller
     // =========================
     public function store(Request $request)
     {
+        dd('store terpanggil');
         $enumFakultas   = $this->getEnumValues('paten_verifs', 'fakultas');
         $enumSumberDana = $this->getEnumValues('paten_verifs', 'sumber_dana');
 
@@ -319,6 +316,7 @@ class PatenVerifController extends Controller
         unset($payload['tanda_terima']);
 
         $verif = PatenVerif::create($payload);
+        session()->forget('hakpaten.isiform');
 
         return response()->json([
             'message'       => 'Pengajuan verifikasi paten berhasil',
@@ -567,16 +565,20 @@ public function deskripsiprodukverif(PatenVerif $verif){
     if (!empty($kurang)) {
         return back()->with('submit_error', $kurang);
     }
-
     $verif->update([
         'deskripsi_singkat_prototipe' => $request->filled('deskripsi')
             ? $request->deskripsi
-            : $verif->deskripsi,
-        'status'       => 'Terkirim',
+            : $verif->deskripsi_singkat_prototipe,
+        'status_verif' => 'Terkirim',
         'submitted_at' => now(),
     ]);
 
-    return redirect()->route('patenverif.hasil', ['verif' => $verif->id]);
+    // HAPUS SESSION BIAR GA BISA RESUBMIT
+    session()->forget('verif_id');
+
+    return redirect()
+        ->route('patenverif.hasil', ['verif' => $verif->id])
+        ->with('success','Verifikasi berhasil dikirim');
 }
 
     // =========================

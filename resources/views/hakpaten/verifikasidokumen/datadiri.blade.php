@@ -144,14 +144,13 @@
             <option value="" disabled>-- Prototipe --</option>
 
             <option value="Sudah"
-              {{ old('prototipe', data_get($isiform,'prototipe')) == 'Sudah' ? 'selected' : '' }}>
-              Sudah
-            </option>
+                {{ old('prototipe') == 'Sudah' ? 'selected' : '' }}>
+Sudah
+</option>
 
-            <option value="Belum"
-              {{ old('prototipe', data_get($isiform,'prototipe')) == 'Belum' ? 'selected' : '' }}>
-              Belum
-            </option>
+            <option value="Belum"{{ old('prototipe') == 'Belum' ? 'selected' : '' }}>
+Belum
+</option>
           </select>
           </div>
 
@@ -163,8 +162,7 @@
               class="input"
               placeholder="Masukkan nilai perolehan"
               name="nilai_perolehan"
-              value="{{ old('nilai_perolehan', data_get($isiform,'nilai_perolehan')) }}"
-              required
+              value="{{ old('nilai_perolehan') }}"
             >
           </div>
 
@@ -174,19 +172,19 @@
               <option value="" disabled>-- Sumber Dana --</option>
 
               <option value="Universitas Diponegoro"
-                {{ old('sumber_dana', data_get($isiform,'sumber_dana')) == 'Universitas Diponegoro' ? 'selected' : '' }}>
-                Universitas Diponegoro
-              </option>
+{{ old('sumber_dana') == 'Universitas Diponegoro' ? 'selected' : '' }}>
+Universitas Diponegoro
+</option>
 
               <option value="APBN/APBD/Swasta"
-                {{ old('sumber_dana', data_get($isiform,'sumber_dana')) == 'APBN/APBD/Swasta' ? 'selected' : '' }}>
-                APBN/APBD/Swasta
-              </option>
+{{ old('sumber_dana') == 'APBN/APBD/Swasta' ? 'selected' : '' }}>
+APBN/APBD/Swasta
+</option>
 
               <option value="Mandiri"
-                {{ old('sumber_dana', data_get($isiform,'sumber_dana')) == 'Mandiri' ? 'selected' : '' }}>
-                Mandiri
-              </option>
+{{ old('sumber_dana') == 'Mandiri' ? 'selected' : '' }}>
+Mandiri
+</option>
             </select>
           </div>
         </div>
@@ -365,28 +363,30 @@
         <img src="/images/Skema%20Penelitian.jpg" class="skema-img" alt="Skema">
 
         <select class="input input-full" name="skema_penelitian" required>
-        <option value="" disabled>-- Pilih Skema --</option>
+    <option value="" disabled {{ old('skema_penelitian') ? '' : 'selected' }}>
+        -- Pilih Skema --
+    </option>
 
-        <option value="Penelitian Dasar (TKT 1 - 3)"
-          {{ old('skema_penelitian', data_get($isiform,'skema_penelitian')) == 'Penelitian Dasar (TKT 1 - 3)' ? 'selected' : '' }}>
-          Penelitian Dasar (TKT 1 - 3)
-        </option>
+    <option value="Penelitian Dasar (TKT 1 - 3)"
+        {{ old('skema_penelitian') == 'Penelitian Dasar (TKT 1 - 3)' ? 'selected' : '' }}>
+        Penelitian Dasar (TKT 1 - 3)
+    </option>
 
-        <option value="Penelitian Terapan (TKT 4 - 6)"
-          {{ old('skema_penelitian', data_get($isiform,'skema_penelitian')) == 'Penelitian Terapan (TKT 4 - 6)' ? 'selected' : '' }}>
-          Penelitian Terapan (TKT 4 - 6)
-        </option>
+    <option value="Penelitian Terapan (TKT 4 - 6)"
+        {{ old('skema_penelitian') == 'Penelitian Terapan (TKT 4 - 6)' ? 'selected' : '' }}>
+        Penelitian Terapan (TKT 4 - 6)
+    </option>
 
-        <option value="Penelitian Pengembangan (TKT 7 - 9)"
-          {{ old('skema_penelitian', data_get($isiform,'skema_penelitian')) == 'Penelitian Pengembangan (TKT 7 - 9)' ? 'selected' : '' }}>
-          Penelitian Pengembangan (TKT 7 - 9)
-        </option>
+    <option value="Penelitian Pengembangan (TKT 7 - 9)"
+        {{ old('skema_penelitian') == 'Penelitian Pengembangan (TKT 7 - 9)' ? 'selected' : '' }}>
+        Penelitian Pengembangan (TKT 7 - 9)
+    </option>
 
-        <option value="Bukan dihasilkan dari Skema Penelitian"
-          {{ old('skema_penelitian', data_get($isiform,'skema_penelitian')) == 'Bukan dihasilkan dari Skema Penelitian' ? 'selected' : '' }}>
-          Bukan dihasilkan dari Skema Penelitian
-        </option>
-      </select>
+    <option value="Bukan dihasilkan dari Skema Penelitian"
+        {{ old('skema_penelitian') == 'Bukan dihasilkan dari Skema Penelitian' ? 'selected' : '' }}>
+        Bukan dihasilkan dari Skema Penelitian
+    </option>
+</select>
       </div>
 
       {{-- ACTIONS --}}
@@ -400,12 +400,9 @@
             &laquo; Sebelumnya
           </button>
 
-          <a id="nextLink"
-            href="javascript:void(0)"
-            class="btn-selanjutnya"
-            data-save-url="{{ route('patenverif.start') }}">
-            Selanjutnya &raquo;
-          </a>
+          <button type="submit" class="btn-next">
+              Selanjutnya »
+          </button>
         </div>
       </div>
 

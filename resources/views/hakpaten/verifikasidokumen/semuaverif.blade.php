@@ -69,8 +69,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->draft_paten ? basename($verif->draft_paten) : 'Belum pilih file' }}
-                </div>
+                    @if($verif->draft_paten)
+                        {{ basename($verif->draft_paten) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
+
+                  @if($verif->draft_paten)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->draft_paten) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -101,8 +113,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->form_permohonan ? basename($verif->form_permohonan) : 'Belum pilih file' }}
+                  @if($verif->form_permohonan)
+                      {{ basename($verif->form_permohonan) }}
+                  @else
+                      Belum pilih file
+                  @endif
                 </div>
+
+                @if($verif->form_permohonan)
+                    <div style="margin-top:6px;">
+                        <a href="{{ Storage::url($verif->form_permohonan) }}" target="_blank" class="lihat-file-link">
+                            Lihat File
+                        </a>
+                    </div>
+                @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -133,8 +157,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->surat_kepemilikan ? basename($verif->surat_kepemilikan) : 'Belum pilih file' }}
+                  @if($verif->surat_kepemilikan)
+                      {{ basename($verif->surat_kepemilikan) }}
+                  @else
+                      Belum pilih file
+                  @endif
                 </div>
+
+                @if($verif->surat_kepemilikan)
+                    <div style="margin-top:6px;">
+                        <a href="{{ Storage::url($verif->surat_kepemilikan) }}" target="_blank" class="lihat-file-link">
+                            Lihat File
+                        </a>
+                    </div>
+                @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -165,8 +201,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->surat_pengalihan ? basename($verif->surat_pengalihan) : 'Belum pilih file' }}
+                  @if($verif->surat_pengalihan)
+                      {{ basename($verif->surat_pengalihan) }}
+                  @else
+                      Belum pilih file
+                  @endif
                 </div>
+
+                @if($verif->surat_pengalihan)
+                    <div style="margin-top:6px;">
+                        <a href="{{ Storage::url($verif->surat_pengalihan) }}" target="_blank" class="lihat-file-link">
+                            Lihat File
+                        </a>
+                    </div>
+                @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -197,8 +245,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->scan_ktp ? basename($verif->scan_ktp) : 'Belum pilih file' }}
+                  @if($verif->scan_ktp)
+                      {{ basename($verif->scan_ktp) }}
+                  @else
+                      Belum pilih file
+                  @endif
                 </div>
+
+                @if($verif->scan_ktp)
+                    <div style="margin-top:6px;">
+                        <a href="{{ Storage::url($verif->scan_ktp) }}" target="_blank" class="lihat-file-link">
+                            Lihat File
+                        </a>
+                    </div>
+                @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -229,8 +289,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->gambar_prototipe ? basename($verif->gambar_prototipe) : 'Belum pilih file' }}
+                  @if($verif->gambar_prototipe)
+                      {{ basename($verif->gambar_prototipe) }}
+                  @else
+                      Belum pilih file
+                  @endif
                 </div>
+
+                @if($verif->gambar_prototipe)
+                    <div style="margin-top:6px;">
+                        <a href="{{ Storage::url($verif->gambar_prototipe) }}" target="_blank" class="lihat-file-link">
+                            Lihat File
+                        </a>
+                    </div>
+                @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">

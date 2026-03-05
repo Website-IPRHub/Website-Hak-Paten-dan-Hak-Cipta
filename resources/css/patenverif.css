@@ -205,3 +205,17 @@
 }
 
 .btn-final:hover{filter:brightness(.97)}
+
+.lihat-file-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    color: #344c7b;
+    transition: 0.2s ease;
+}
+
+.lihat-file-link:hover {
+    text-decoration: underline;
+    color: #1d4ed8;
+}
