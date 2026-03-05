@@ -107,7 +107,7 @@ class PatenVerifController extends Controller
         $fakultas = $inventors[0]['fakultas'] ?? null;
         
 
-        session()->forget('verif_id');
+
 
 
         $payload = [
@@ -145,20 +145,13 @@ class PatenVerifController extends Controller
             $payload[$field] = $payload[$field] ?? '';
         }
 
-        
-
-        // CEK kalau sudah pernah buat di session
-        if (session()->has('verif_id')) {
-            $existing = PatenVerif::find(session('verif_id'));
-            if ($existing) {
-                return redirect()->route('patenverif.all', $existing->id);
-            }
+        if (!session()->has('verif_id')) {
+            $verif = PatenVerif::create($payload);
+            session(['verif_id' => $verif->id]);
+        } else {
+            $verif = PatenVerif::find(session('verif_id'));
+            $verif->update($payload); // ⬅️ INI YANG KURANG
         }
-
-        // baru create kalau belum ada
-        $verif = PatenVerif::create($payload);
-
-        session(['verif_id' => $verif->id]);
 
         // tentukan next route berdasarkan skema
         if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
@@ -333,7 +326,9 @@ class PatenVerifController extends Controller
 
     public function all($id)
     {
+
         $verif = PatenVerif::findOrFail($id);
+        
         return view('hakpaten.verifikasidokumen.semuaverif', compact('verif'));
     }
 
@@ -360,8 +355,8 @@ class PatenVerifController extends Controller
     $verif->update(['draft_paten' => $path]);
 
     return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Draft Paten berhasil diupload');
+->route('patenverif.all', $verif->id)
+->with('success', 'Draft Paten berhasil diupload');
 }
 
 
@@ -376,8 +371,8 @@ class PatenVerifController extends Controller
         ]);
 
         return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Deskripsi Paten berhasil diupload');
+->route('patenverif.all', $verif->id)
+->with('success', 'Deskripsi Paten berhasil diupload');
     }
 
     private function generateNoPendaftaranVerif(): string
@@ -457,9 +452,9 @@ public function deskripsiprodukverif(PatenVerif $verif){
 
     $verif->update(['form_permohonan' => $path]);
 
-    return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Form Permohonan Paten berhasil diupload');
+   return redirect()
+->route('patenverif.all', $verif->id)
+->with('success', 'Form Permohonan Paten berhasil diupload');
 }
 
 
@@ -474,8 +469,8 @@ public function deskripsiprodukverif(PatenVerif $verif){
     $verif->update(['surat_kepemilikan' => $path]);
 
     return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Surat Invensi Paten berhasil diupload');
+->route('patenverif.all', $verif->id)
+->with('success', 'Surat Kepemilikan Invensi Paten berhasil diupload');
 }
 
     public function uploadPengalihan(Request $request, PatenVerif $verif)
@@ -489,8 +484,8 @@ public function deskripsiprodukverif(PatenVerif $verif){
     $verif->update(['surat_pengalihan' => $path]);
 
     return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Surat Pengalihan Hak Paten berhasil diupload');
+->route('patenverif.all', $verif->id)
+->with('success', 'Surat Pengalihan Hak Paten berhasil diupload');
 }
 
 
@@ -509,8 +504,8 @@ public function deskripsiprodukverif(PatenVerif $verif){
     $verif->update(['scan_ktp' => $path]);
 
     return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Scan KTP berhasil diupload');
+->route('patenverif.all', $verif->id)
+->with('success', 'Scan KTP berhasil diupload');
 }
 
 
@@ -531,8 +526,8 @@ public function deskripsiprodukverif(PatenVerif $verif){
     }
 
     return redirect()
-    ->route('patenverif.all', ['verif' => $verif->id])
-    ->with('success', 'Gambar Prototipe Paten berhasil diupload');
+->route('patenverif.all', $verif->id)
+->with('success', 'Gambar Prototipe Paten berhasil diupload');
 }
 
 
