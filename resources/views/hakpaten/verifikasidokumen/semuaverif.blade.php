@@ -381,6 +381,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+document.addEventListener("DOMContentLoaded", function () {
+
+    const textarea = document.querySelector("textarea[name='deskripsi']");
+    const key = "deskripsi_prototipe";
+
+    if(!textarea) return;
+
+    // load saat halaman dibuka
+    if(localStorage.getItem(key) && textarea.value === ""){
+        textarea.value = localStorage.getItem(key);
+    }
+
+    // simpan saat user mengetik
+    textarea.addEventListener("input", function(){
+        localStorage.setItem(key, textarea.value);
+    });
+
+});
 </script>
 
 @endsection
