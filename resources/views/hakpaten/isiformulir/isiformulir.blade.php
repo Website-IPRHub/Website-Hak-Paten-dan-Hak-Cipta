@@ -50,19 +50,19 @@
         <div class="field">
           <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
           <select class="input" id="is_pct" name="is_pct" required>
-            <option value="" disabled {{ old('is_pct') ? '' : 'selected' }}>-- Apakah menggunakan Nomor PCT --</option>
-            <option value="Ya" {{ old('is_pct')=='Ya'?'selected':'' }}>Ya</option>
-            <option value="Tidak" {{ old('is_pct')=='Tidak'?'selected':'' }}>Tidak</option>
+           <option value="" disabled {{ old('is_pct', $prefill['is_pct'] ?? '') ? '' : 'selected' }}>-- Apakah menggunakan Nomor PCT --</option>
+            <option value="Ya" {{ old('is_pct', $prefill['is_pct'] ?? '')=='Ya'?'selected':'' }}>Ya</option>
+<option value="Tidak" {{ old('is_pct', $prefill['is_pct'] ?? '')=='Tidak'?'selected':'' }}>Tidak</option>
           </select>
           @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
         </div>
 
-        <div class="field" id="pct-followup" @if(old('is_pct')!=='Ya') style="display:none;" @endif>
+        <div class="field" id="pct-followup" @if(old('is_pct', $prefill['is_pct'] ?? '')!=='Ya') style="display:none;" @endif>
           <label class="label">Nomor Permohonan Paten Internasional (PCT) <span class="req">*</span></label>
           <input type="text" class="input" name="nomor_permohonan"
                  placeholder="Masukkan nomor permohonan paten internasional"
-                 value="{{ old('nomor_permohonan') }}"
-                 @if(old('is_pct')==='Ya') required @endif>
+                 value="{{ old('nomor_permohonan', $prefill['nomor_permohonan'] ?? '') }}"
+                 @if(old('is_pct', $prefill['is_pct'] ?? '')==='Ya') required @endif>
           @error('nomor_permohonan') <small style="color:red">{{ $message }}</small> @enderror
         </div>
       </div>
@@ -83,22 +83,55 @@
 
       <div class="col">
         <div class="field">
-          <label class="label">Apakah merupakan pecahan paten? <span class="req">*</span></label>
+          <label class="label">
+            Apakah merupakan pecahan paten? <span class="req">*</span>
+          </label>
+
           <select class="input" id="is_pecahan" name="is_pecahan" required>
-            <option value="" disabled {{ old('is_pecahan') ? '' : 'selected' }}>-- Apakah merupakan pecahan paten --</option>
-            <option value="Ya" {{ old('is_pecahan')=='Ya'?'selected':'' }}>Ya</option>
-            <option value="Tidak" {{ old('is_pecahan')=='Tidak'?'selected':'' }}>Tidak</option>
+
+            <option value="" disabled
+              {{ old('is_pecahan', $prefill['is_pecahan'] ?? '') ? '' : 'selected' }}>
+              -- Apakah merupakan pecahan paten --
+            </option>
+
+            <option value="Ya"
+              {{ old('is_pecahan', $prefill['is_pecahan'] ?? '')=='Ya'?'selected':'' }}>
+              Ya
+            </option>
+
+            <option value="Tidak"
+              {{ old('is_pecahan', $prefill['is_pecahan'] ?? '')=='Tidak'?'selected':'' }}>
+              Tidak
+            </option>
+
           </select>
-          @error('is_pecahan') <small style="color:red">{{ $message }}</small> @enderror
+
+          @error('is_pecahan')
+            <small style="color:red">{{ $message }}</small>
+          @enderror
         </div>
 
-        <div class="field" id="pecahan-followup" @if(old('is_pecahan')!=='Ya') style="display:none;" @endif>
-          <label class="label">Nomor Permohonan Paten Induk <span class="req">*</span></label>
-          <input type="text" class="input" name="pecahan_paten"
-                 placeholder="Masukkan nomor permohonan paten induk"
-                 value="{{ old('pecahan_paten') }}"
-                 @if(old('is_pecahan')==='Ya') required @endif>
-          @error('pecahan_paten') <small style="color:red">{{ $message }}</small> @enderror
+        <div class="field" id="pecahan-followup"
+          @if(old('is_pecahan', $prefill['is_pecahan'] ?? '')!=='Ya')
+            style="display:none;"
+          @endif>
+
+          <label class="label">
+            Nomor Permohonan Paten Induk <span class="req">*</span>
+          </label>
+
+          <input type="text"
+            class="input"
+            name="pecahan_paten"
+            placeholder="Masukkan nomor permohonan paten induk"
+            value="{{ old('pecahan_paten', $prefill['pecahan_paten'] ?? '') }}"
+            @if(old('is_pecahan', $prefill['is_pecahan'] ?? '')==='Ya')
+              required
+            @endif>
+
+          @error('pecahan_paten')
+            <small style="color:red">{{ $message }}</small>
+          @enderror
         </div>
       </div>
     </div>
@@ -111,39 +144,39 @@
         <div class="field">
           <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
           <select class="input" id="konsultanpaten" name="konsultanpaten" required>
-            <option value="" disabled {{ old('konsultanpaten') ? '' : 'selected' }}>-- Apakah Melalui Konsultan Paten --</option>
-            <option value="Melalui" {{ old('konsultanpaten')=='Melalui'?'selected':'' }}>Melalui</option>
-            <option value="Tidak Melalui" {{ old('konsultanpaten')=='Tidak Melalui'?'selected':'' }}>Tidak Melalui</option>
+            <option value="" disabled {{ old('konsultanpaten', $prefill['konsultanpaten'] ?? '') ? '' : 'selected' }}>-- Apakah Melalui Konsultan Paten --</option>
+            <option value="Melalui" {{ old('konsultanpaten', $prefill['konsultanpaten'] ?? '')=='Melalui'?'selected':'' }}>Melalui</option>
+            <option value="Tidak Melalui" {{ old('konsultanpaten', $prefill['konsultanpaten'] ?? '')=='Tidak Melalui'?'selected':'' }}>Tidak Melalui</option>
           </select>
           @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
         </div>
       </div>
     </div>
 
-    <div class="field" id="konsultan-followup" @if(old('konsultanpaten')!=='Melalui') style="display:none;" @endif>
+    <div class="field" id="konsultan-followup" @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')!=='Melalui') style="display:none;" @endif>
       <div class="row-2">
         <div class="col">
           <div class="field">
             <label class="label">Nama Badan Hukum <span class="req">*</span></label>
             <input type="text" class="input" id="nama_badan_hukum" name="nama_badan_hukum"
-                   value="{{ old('nama_badan_hukum') }}" placeholder="Masukkan nama badan hukum"
-                   @if(old('konsultanpaten')==='Melalui') required @endif>
+                   value="{{ old('nama_badan_hukum', $prefill['nama_badan_hukum'] ?? '') }}" placeholder="Masukkan nama badan hukum"
+                   @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')==='Melalui') required @endif>
             @error('nama_badan_hukum') <small style="color:red">{{ $message }}</small> @enderror
           </div>
 
           <div class="field">
             <label class="label">Nama Konsultan Paten <span class="req">*</span></label>
             <input type="text" class="input" id="nama_konsultan_paten" name="nama_konsultan_paten"
-                   value="{{ old('nama_konsultan_paten') }}" placeholder="Masukkan nama konsultan paten"
-                   @if(old('konsultanpaten')==='Melalui') required @endif>
+                   value="{{ old('nama_konsultan_paten', $prefill['nama_konsultan_paten'] ?? '') }}" placeholder="Masukkan nama konsultan paten"
+                   @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')==='Melalui') required @endif>
             @error('nama_konsultan_paten') <small style="color:red">{{ $message }}</small> @enderror
           </div>
 
           <div class="field">
             <label class="label">Nomor Konsultan Paten <span class="req">*</span></label>
             <input type="text" class="input" id="nomor_konsultan_paten" name="nomor_konsultan_paten"
-                   value="{{ old('nomor_konsultan_paten') }}" placeholder="Masukkan nomor konsultan paten"
-                   @if(old('konsultanpaten')==='Melalui') required @endif>
+                  value="{{ old('nomor_konsultan_paten', $prefill['nomor_konsultan_paten'] ?? '') }}" placeholder="Masukkan nomor konsultan paten"
+                   @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')==='Melalui') required @endif>
             @error('nomor_konsultan_paten') <small style="color:red">{{ $message }}</small> @enderror
           </div>
         </div>
@@ -152,91 +185,101 @@
           <div class="field">
             <label class="label">Alamat Badan Hukum <span class="req">*</span></label>
             <input type="text" class="input" id="alamat_badan_hukum" name="alamat_badan_hukum"
-                   value="{{ old('alamat_badan_hukum') }}" placeholder="Masukkan alamat badan hukum"
-                   @if(old('konsultanpaten')==='Melalui') required @endif>
+                   value="{{ old('alamat_badan_hukum', $prefill['alamat_badan_hukum'] ?? '') }}" placeholder="Masukkan alamat badan hukum"
+                   @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')==='Melalui') required @endif>
             @error('alamat_badan_hukum') <small style="color:red">{{ $message }}</small> @enderror
           </div>
 
           <div class="field">
             <label class="label">Alamat Konsultan Paten <span class="req">*</span></label>
             <input type="text" class="input" id="alamat_konsultan_paten" name="alamat_konsultan_paten"
-                   value="{{ old('alamat_konsultan_paten') }}" placeholder="Masukkan alamat konsultan paten"
-                   @if(old('konsultanpaten')==='Melalui') required @endif>
+                   value="{{ old('alamat_konsultan_paten', $prefill['alamat_konsultan_paten'] ?? '') }}" placeholder="Masukkan alamat konsultan paten"
+                   @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')==='Melalui') required @endif>
             @error('alamat_konsultan_paten') <small style="color:red">{{ $message }}</small> @enderror
           </div>
 
           <div class="field">
             <label class="label">Telepon/Fax <span class="req">*</span></label>
             <input type="text" class="input" id="telepon_fax" name="telepon_fax"
-                   value="{{ old('telepon_fax') }}" placeholder="Masukkan telepon/fax"
-                   @if(old('konsultanpaten')==='Melalui') required @endif>
+                   value="{{ old('telepon_fax', $prefill['telepon_fax'] ?? '') }}" placeholder="Masukkan telepon/fax"
+                   @if(old('konsultanpaten', $prefill['konsultanpaten'] ?? '')==='Melalui') required @endif>
             @error('telepon_fax') <small style="color:red">{{ $message }}</small> @enderror
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col">
-        <div class="field">
-          <label class="label">Lampiran 1 (satu) rangkap</label>
+  @php
+    $lampiranOld = old('lampiran', $prefill['lampiran'] ?? []);
+  @endphp
 
-          <label>
-            <input type="checkbox" name="lampiran[]" value="surat_kuasa"
-              {{ in_array('surat_kuasa', old('lampiran', [])) ? 'checked' : '' }}>
-            surat kuasa
-          </label>
+  <div class="col">
+    <div class="field">
+      <label class="label">Lampiran 1 (satu) rangkap</label>
 
-          <label>
-            <input type="checkbox" checked disabled>
-            surat pengalihan hak atas penemuan
-          </label>
-          <input type="hidden" name="lampiran[]" value="pengalihan">
+      <div class="lampiran-list">
 
-          <label>
-            <input type="checkbox" checked disabled>
-            bukti pemilikan hak atas penemuan
-          </label>
-          <input type="hidden" name="lampiran[]" value="bukti_pemilikan">
+        <label class="checkbox-item">
+          <input type="checkbox" name="lampiran[]" value="surat_kuasa"
+            {{ in_array('surat_kuasa', $lampiranOld) ? 'checked' : '' }}>
+          <span>Surat Kuasa</span>
+        </label>
 
-          <label>
-            <input type="checkbox" name="lampiran[]" value="do_eo"
-              {{ in_array('do_eo', old('lampiran', [])) ? 'checked' : '' }}>
-            bukti penunjukan negara tujuan (DO/EO)
-          </label>
+        <label class="checkbox-item">
+          <input type="checkbox" checked disabled>
+          <span>Surat Pengalihan Hak atas Penemuan</span>
+        </label>
+        <input type="hidden" name="lampiran[]" value="pengalihan">
 
-          <label>
-            <input type="checkbox" name="lampiran[]" value="dok_prioritas"
-              {{ in_array('dok_prioritas', old('lampiran', [])) ? 'checked' : '' }}>
-            dokumen prioritas dan terjemahannya
-          </label>
+        <label class="checkbox-item">
+          <input type="checkbox" checked disabled>
+          <span>Bukti Pemilikan Hak atas Penemuan</span>
+        </label>
+        <input type="hidden" name="lampiran[]" value="bukti_pemilikan">
 
-          <label>
-            <input type="checkbox" name="lampiran[]" value="dok_pct"
-              {{ in_array('dok_pct', old('lampiran', [])) ? 'checked' : '' }}>
-            dokumen permohonan paten internasional/PCT
-          </label>
+        <label class="checkbox-item">
+          <input type="checkbox" name="lampiran[]" value="do_eo"
+            {{ in_array('do_eo', $lampiranOld) ? 'checked' : '' }}>
+          <span>Bukti Penunjukan Negara Tujuan (DO/EO)</span>
+        </label>
 
-          <label>
-            <input type="checkbox" name="lampiran[]" value="jasad_renik"
-              {{ in_array('jasad_renik', old('lampiran', [])) ? 'checked' : '' }}>
-            sertifikat penyimpanan jasad renik dan terjemahannya
-          </label>
+        <label class="checkbox-item">
+          <input type="checkbox" name="lampiran[]" value="dok_prioritas"
+            {{ in_array('dok_prioritas', $lampiranOld) ? 'checked' : '' }}>
+          <span>Dokumen Prioritas dan Terjemahannya</span>
+        </label>
 
-          <label>
-            <input type="checkbox" checked disabled>
-            dokumen lain (sebutkan)
-          </label>
-          <input type="hidden" name="lampiran[]" value="dok_lain">
+        <label class="checkbox-item">
+          <input type="checkbox" name="lampiran[]" value="dok_pct"
+            {{ in_array('dok_pct', $lampiranOld) ? 'checked' : '' }}>
+          <span>Dokumen Permohonan Paten Internasional / PCT</span>
+        </label>
 
-          <textarea class="input" name="lampiran_lainnya"
-             placeholder="Tulis per baris ya. Contoh:
-Fotocopy KTP Pemohon
-Fotocopy KTP Para Inventor
-">{{ old('lampiran_lainnya') }}</textarea>
+        <label class="checkbox-item">
+          <input type="checkbox" name="lampiran[]" value="jasad_renik"
+            {{ in_array('jasad_renik', $lampiranOld) ? 'checked' : '' }}>
+          <span>Sertifikat Penyimpanan Jasad Renik</span>
+        </label>
 
-          @error('lampiran') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
+        <label class="checkbox-item">
+          <input type="checkbox" checked disabled>
+          <span>Dokumen Lain (sebutkan)</span>
+        </label>
+        <input type="hidden" name="lampiran[]" value="dok_lain">
+
       </div>
+
+      <textarea class="input" name="lampiran_lainnya"
+        placeholder="Tulis per baris ya. Contoh:
+  Fotocopy KTP Pemohon
+  Fotocopy KTP Para Inventor
+  ">{{ old('lampiran_lainnya', $prefill['lampiran_lainnya'] ?? '') }}</textarea>
+
+      @error('lampiran')
+        <small style="color:red">{{ $message }}</small>
+      @enderror
+    </div>
+  </div>
 
     {{-- ===============================
     4) HAK PRIORITAS
@@ -246,23 +289,23 @@ Fotocopy KTP Para Inventor
         <div class="field">
           <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
           <select class="input" id="hak_prioritas" name="hak_prioritas" required>
-            <option value="" disabled {{ old('hak_prioritas') ? '' : 'selected' }}>-- Hak Prioritas --</option>
-            <option value="Ya" {{ old('hak_prioritas')=='Ya'?'selected':'' }}>Ya</option>
-            <option value="Tidak" {{ old('hak_prioritas')=='Tidak'?'selected':'' }}>Tidak</option>
+            <option value="" disabled {{old('hak_prioritas', $prefill['hak_prioritas'] ?? '') ? '' : 'selected' }}>-- Hak Prioritas --</option>
+            <option value="Ya" {{old('hak_prioritas', $prefill['hak_prioritas'] ?? '')=='Ya'?'selected':'' }}>Ya</option>
+            <option value="Tidak" {{old('hak_prioritas', $prefill['hak_prioritas'] ?? '')=='Tidak'?'selected':'' }}>Tidak</option>
           </select>
           @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
         </div>
       </div>
     </div>
 
-    <div class="field" id="hak-prioritas-followup" @if(old('hak_prioritas') !== 'Ya') style="display:none;" @endif>
+    <div class="field" id="hak-prioritas-followup" @if(old('hak_prioritas', $prefill['hak_prioritas'] ?? '') !== 'Ya') style="display:none;" @endif>
       <div class="row-2">
         <div class="col">
           <div class="field">
             <label class="label">Negara <span class="req">*</span></label>
             <input type="text" class="input" id="negara" name="negara"
-                   value="{{ old('negara') }}" placeholder="Masukkan negara"
-                   @if(old('hak_prioritas') === 'Ya') required @endif>
+                   value="{{ old('negara', $prefill['negara'] ?? '') }}" placeholder="Masukkan negara"
+                   @if(old('hak_prioritas', $prefill['hak_prioritas'] ?? '') !== 'Ya') required @endif>
             @error('negara') <small style="color:red">{{ $message }}</small> @enderror
           </div>
         </div>
@@ -271,8 +314,8 @@ Fotocopy KTP Para Inventor
           <div class="field">
             <label class="label">Nomor Prioritas <span class="req">*</span></label>
             <input type="text" class="input" id="nomor_prioritas" name="nomor_prioritas"
-                   value="{{ old('nomor_prioritas') }}" placeholder="Masukkan nomor prioritas"
-                   @if(old('hak_prioritas') === 'Ya') required @endif>
+                   value="{{ old('nomor_prioritas', $prefill['nomor_prioritas'] ?? '') }}" placeholder="Masukkan nomor prioritas"
+                   @if(old('hak_prioritas', $prefill['hak_prioritas'] ?? '') !== 'Ya') required @endif>
             @error('nomor_prioritas') <small style="color:red">{{ $message }}</small> @enderror
           </div>
         </div>
@@ -282,8 +325,8 @@ Fotocopy KTP Para Inventor
         <label class="label">Tanggal Penerimaan Permohonan <span class="req">*</span></label>
         <p>Format: Tanggal/Bulan/Tahun<br>Contoh: 13/05/2026</p>
         <input type="text" class="input" id="tgl_penerimaan" name="tgl_penerimaan"
-               value="{{ old('tgl_penerimaan') }}" placeholder="Masukkan Tanggal Penerimaan Permohonan"
-               @if(old('hak_prioritas') === 'Ya') required @endif>
+               value="{{ old('tgl_penerimaan', $prefill['tgl_penerimaan'] ?? '') }}" placeholder="Masukkan Tanggal Penerimaan Permohonan"
+               @if(old('hak_prioritas', $prefill['hak_prioritas'] ?? '') !== 'Ya') required @endif>
         @error('tgl_penerimaan') <small style="color:red">{{ $message }}</small> @enderror
       </div>
     </div>
@@ -297,14 +340,14 @@ Fotocopy KTP Para Inventor
         <div class="field">
           <label class="label">Uraian (jumlah halaman) <span class="req">*</span></label>
           <input type="number" class="input" name="uraian_halaman" min="1"
-                 value="{{ old('uraian_halaman') }}" placeholder="Masukkan jumlah halaman" required>
+                 value="{{ old('uraian_halaman', $prefill['uraian_halaman'] ?? '') }}" placeholder="Masukkan jumlah halaman" required>
           @error('uraian_halaman') <small style="color:red">{{ $message }}</small> @enderror
         </div>
 
         <div class="field">
           <label class="label">Abstrak (jumlah buah) <span class="req">*</span></label>
           <input type="number" class="input" name="abstrak_buah" min="1"
-                 value="{{ old('abstrak_buah') }}" placeholder="Masukkan jumlah buah" required>
+                 value="{{ old('abstrak_buah', $prefill['abstrak_buah'] ?? '') }}" placeholder="Masukkan jumlah buah" required>
           @error('abstrak_buah') <small style="color:red">{{ $message }}</small> @enderror
         </div>
       </div>
@@ -313,14 +356,14 @@ Fotocopy KTP Para Inventor
         <div class="field">
           <label class="label">Klaim (jumlah buah) <span class="req">*</span></label>
           <input type="number" class="input" name="klaim_buah" min="1"
-                 value="{{ old('klaim_buah') }}" placeholder="Masukkan jumlah buah" required>
+                 value="{{ old('klaim_buah', $prefill['klaim_buah'] ?? '') }}" placeholder="Masukkan jumlah buah" required>
           @error('klaim_buah') <small style="color:red">{{ $message }}</small> @enderror
         </div>
 
         <div class="field">
           <label class="label">Gambar (jumlah buah) <span class="req">*</span></label>
           <input type="number" class="input" name="gambar_buah" min="1"
-                 value="{{ old('gambar_buah') }}" placeholder="Masukkan jumlah buah" required>
+                 value="{{ old('gambar_buah', $prefill['gambar_buah'] ?? '') }}" placeholder="Masukkan jumlah buah" required>
           @error('gambar_buah') <small style="color:red">{{ $message }}</small> @enderror
         </div>
       </div>
@@ -332,12 +375,12 @@ Fotocopy KTP Para Inventor
         <div class="row-2 inner-row">
           <div class="col">
             <input type="number" class="input" name="gambar_dari" placeholder="Dari (contoh: 1)"
-                   value="{{ old('gambar_dari') }}" required>
+                   value="{{ old('gambar_dari', $prefill['gambar_dari'] ?? '') }}" required>
             @error('gambar_dari') <small style="color:red">{{ $message }}</small> @enderror
           </div>
           <div class="col">
             <input type="number" class="input" name="gambar_sampai" placeholder="Sampai (contoh: 3)"
-                   value="{{ old('gambar_sampai') }}" required>
+                   value="{{ old('gambar_sampai', $prefill['gambar_sampai'] ?? '') }}" required>
             @error('gambar_sampai') <small style="color:red">{{ $message }}</small> @enderror
           </div>
         </div>
@@ -347,7 +390,7 @@ Fotocopy KTP Para Inventor
     <div class="field">
       <label class="label">Tanggal Pengisian</label>
       <input type="date" class="input" name="tanggal_pengisian"
-             value="{{ old('tanggal_pengisian', now()->format('Y-m-d')) }}">
+             value="{{ old('tanggal_pengisian', $prefill['tanggal_pengisian'] ?? now()->format('Y-m-d')) }}">
       @error('tanggal_pengisian') <small style="color:red">{{ $message }}</small> @enderror
     </div>
 
@@ -604,19 +647,43 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
 
     const form = nextBtn.closest('form');
-    if (!form) { console.error('Form tidak ketemu'); return; }
+    if (!form) return;
 
-    // optional: validasi HTML5
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
 
+    // SWEET ALERT 
+    const result = await Swal.fire({
+      title: 'Konfirmasi Download',
+      html: `
+        <p>Apakah Anda sudah mendownload 3 file berikut?</p>
+        <ul style="text-align:left; margin-top:10px;">
+          <li>• Form Paten</li>
+          <li>• Surat Pengalihan Hak</li>
+          <li>• Kepemilikan Invensi</li>
+        </ul>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sudah',
+      cancelButtonText: 'Belum',
+      confirmButtonColor: '#2F5C9E',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) {
+      return; // kalau klik "Belum" tetap di halaman
+    }
+
+    // Kalau klik SUDAH → lanjut save & redirect
     const saveUrl = nextBtn.dataset.saveUrl;
     const nextUrl = nextBtn.dataset.nextUrl;
 
     const fd = new FormData(form);
-    fd.set('action', 'next'); // biar controller tahu ini "save & lanjut"
+    fd.set('action', 'next');
 
     try {
       const res = await fetch(saveUrl, {
@@ -631,6 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       window.location.href = nextUrl;
+
     } catch (err) {
       console.error(err);
     }
