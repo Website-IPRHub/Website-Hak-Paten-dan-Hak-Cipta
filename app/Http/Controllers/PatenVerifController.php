@@ -52,6 +52,20 @@ class PatenVerifController extends Controller
             'skema_penelitian' => ['required', 'string', 'max:255'],
         ], $messages);
 
+        // SIMPAN DATA PAGE 2 KE SESSION
+        session([
+            'hakpaten.verif' => [
+                'jumlah_inventor'  => $validated['jumlah_inventor'],
+                'jenis_paten'      => $validated['jenis_paten'],
+                'judul_paten'      => $validated['judul_paten'],
+                'inventor'         => $validated['inventor'],
+                'prototipe'        => $validated['prototipe'],
+                'nilai_perolehan'  => $validated['nilai_perolehan'],
+                'sumber_dana'      => $validated['sumber_dana'],
+                'skema_penelitian' => $validated['skema_penelitian'],
+            ]
+        ]);
+
         if (($validated['inventor']['status'][0] ?? null) !== 'Dosen') {
             return back()->withErrors([
                 'inventor.status.0' => 'Inventor pertama wajib berstatus Dosen'
@@ -221,6 +235,7 @@ class PatenVerifController extends Controller
             'sumber_dana'      => empty($enumSumberDana) ? ['required','string'] : ['required', Rule::in($enumSumberDana)],
             'skema_penelitian' => ['required', 'string', 'max:255'],
         ], $messages);
+
 
         // Inventor pertama wajib DOSEN
         if (($validated['inventor']['status'][0] ?? null) !== 'Dosen') {
