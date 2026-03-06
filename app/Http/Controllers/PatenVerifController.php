@@ -156,10 +156,6 @@ class PatenVerifController extends Controller
 
 }
 
-        // baru create kalau belum ada
-        $verif = PatenVerif::create($payload);
-
-
         // tentukan next route berdasarkan skema
         if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
             $nextRoute = route('patenverif.skema.form', $verif->id);
@@ -319,7 +315,8 @@ class PatenVerifController extends Controller
             $verif = PatenVerif::create($payload);
             session(['verif_id' => $verif->id]);
         } else {
-            $verif = PatenVerif::find(session('verif_id'));
+            $verif = PatenVerif::findOrFail(session('verif_id'));
+            $verif->update($payload);
         }
 
         return response()->json([
