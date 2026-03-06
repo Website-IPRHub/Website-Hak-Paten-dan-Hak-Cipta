@@ -30,7 +30,7 @@
         <div class="card-top">
           <div>
             <p class="card-name">Formulir Permohonan Pendaftaran Ciptaan <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF • max 5MB</p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->surat_permohonan ? 'ok' : 'no' }}">
             {{ $verif->surat_permohonan ? 'Sudah' : 'Belum' }}
@@ -44,8 +44,20 @@
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->surat_permohonan ? basename($verif->surat_permohonan) : 'Belum pilih file' }}
-                </div>
+                    @if($verif->surat_permohonan)
+                        {{ basename($verif->surat_permohonan) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
+
+                  @if($verif->surat_permohonan)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->surat_permohonan) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -62,7 +74,7 @@
         <div class="card-top">
           <div>
             <p class="card-name">Surat Pernyataan Hak Cipta <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF</p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->surat_pernyataan ? 'ok' : 'no' }}">
             {{ $verif->surat_pernyataan ? 'Sudah' : 'Belum' }}
@@ -76,8 +88,20 @@
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->surat_pernyataan ? basename($verif->surat_pernyataan) : 'Belum pilih file' }}
-                </div>
+                    @if($verif->surat_pernyataan)
+                        {{ basename($verif->surat_pernyataan) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
+
+                  @if($verif->surat_pernyataan)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->surat_pernyataan) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -94,7 +118,7 @@
         <div class="card-top">
           <div>
             <p class="card-name">Surat Pengalihan Hak <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF</p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->surat_pengalihan ? 'ok' : 'no' }}">
             {{ $verif->surat_pengalihan ? 'Sudah' : 'Belum' }}
@@ -108,8 +132,20 @@
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->surat_pengalihan ? basename($verif->surat_pengalihan) : 'Belum pilih file' }}
-                </div>
+                    @if($verif->surat_pengalihan)
+                        {{ basename($verif->surat_pengalihan) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
+
+                  @if($verif->surat_pengalihan)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->surat_pengalihan) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -140,8 +176,20 @@
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->scan_ktp ? basename($verif->scan_ktp) : 'Belum pilih file' }}
-                </div>
+                    @if($verif->scan_ktp)
+                        {{ basename($verif->scan_ktp) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
+
+                  @if($verif->scan_ktp)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->scan_ktp) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -157,8 +205,8 @@
       <div class="card">
         <div class="card-top">
           <div>
-            <p class="card-name">Hasil Ciptaan</p>
-            <p class="card-hint">PNG/JPG/JPEG/SVG/PDF</p>
+            <p class="card-name">Hasil Ciptaan <span class="req">*</span></p>
+            <p class="card-hint">PNG/JPG/JPEG/SVG/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->hasil_ciptaan ? 'ok' : 'no' }}">
             {{ $verif->hasil_ciptaan ? 'Sudah' : 'Belum' }}
@@ -172,8 +220,20 @@
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  {{ $verif->hasil_ciptaan ? basename($verif->hasil_ciptaan) : 'Belum pilih file' }}
-                </div>
+                    @if($verif->hasil_ciptaan)
+                        {{ basename($verif->hasil_ciptaan) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
+
+                  @if($verif->hasil_ciptaan)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->hasil_ciptaan) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Khusus jenis Karya Rekaman Video mengupload screenshoot video (pdf)<br>Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -189,21 +249,22 @@
       <div class="card card-wide">
         <div class="card-top">
           <div>
-            <p class="card-name">Link CIptaan</p>
+            <p class="card-name">Link Ciptaan</p>
             <p class="card-hint">Link Ciptaan untuk Hak Cipta jenis Karya Rekaman Video.</p>
           </div>
-          <span class="status {{ $verif->link_ciptaan ? 'ok' : 'no' }}">
-            {{ $verif->link_ciptaan ? 'Terisi' : 'Kosong' }}
-          </span>
+          @if($verif->link_ciptaan)
+          <span class="status ok">Terisi</span>
+          @endif
         </div>
         <div class="card-body">
           <textarea
-            class="textarea"
-            name="link_ciptaan"
-            maxlength="255"
-            form="finalSubmitForm"
-            placeholder="Tulis link hasil ciptaan..."
-          >{{ old('link_ciptaan', $verif->link_ciptaan) }}</textarea>
+          id="link_ciptaan_input"
+          class="textarea"
+          name="link_ciptaan"
+          maxlength="255"
+          form="finalSubmitForm"
+          placeholder="Tulis link hasil ciptaan..."
+        >{{ old('link_ciptaan', $verif->link_ciptaan) }}</textarea>
         </div>
       </div>
 
@@ -213,11 +274,10 @@
       <button
           type="button"
           class="btn-prev"
-          data-fallback="{{ route('datadiricipta') }}"
-          onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
-        >
+          onclick="window.location.href='{{ route('datadiricipta') }}'"
+      >
           &laquo; Sebelumnya
-        </button>
+      </button>
 
       <form id="finalSubmitForm" method="POST" action="{{ route('ciptaverif.submit.final',['verif'=>$verif->id]) }}">
         @csrf
@@ -252,6 +312,33 @@ document.addEventListener('DOMContentLoaded', () => {
       else form.submit();
     });
   });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const key = 'hakcipta_link_ciptaan_{{ $verif->id }}';
+  const textarea = document.getElementById('link_ciptaan_input');
+  const finalForm = document.getElementById('finalSubmitForm');
+
+  if (!textarea) return;
+
+  // kalau DB kosong, isi dari sessionStorage
+  if (!textarea.value) {
+    const saved = sessionStorage.getItem(key);
+    if (saved) textarea.value = saved;
+  }
+
+  // simpan tiap user ngetik
+  textarea.addEventListener('input', () => {
+    sessionStorage.setItem(key, textarea.value);
+  });
+
+  // kalau submit final berhasil, hapus cache browser
+  if (finalForm) {
+    finalForm.addEventListener('submit', () => {
+      sessionStorage.removeItem(key);
+    });
+  }
 });
 </script>
 
