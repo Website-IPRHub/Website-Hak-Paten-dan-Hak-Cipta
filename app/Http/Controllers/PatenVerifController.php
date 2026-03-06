@@ -133,25 +133,31 @@ class PatenVerifController extends Controller
         ];
 
         // default dokumen kalau belum ada (biar sama seperti controller sebelumnya)
-        foreach ([
-            'draft_paten',
-            'form_permohonan',
-            'surat_kepemilikan',
-            'surat_pengalihan',
-            'scan_ktp',
-            'gambar_prototipe',
-            'deskripsi_singkat_prototipe',
-        ] as $field) {
-            $payload[$field] = $payload[$field] ?? '';
-        }
-
         if (!session()->has('verif_id')) {
-            $verif = PatenVerif::create($payload);
-            session(['verif_id' => $verif->id]);
-        } else {
-            $verif = PatenVerif::find(session('verif_id'));
-            $verif->update($payload); // ⬅️ INI YANG KURANG
-        }
+
+    foreach ([
+        'draft_paten',
+        'form_permohonan',
+        'surat_kepemilikan',
+        'surat_pengalihan',
+        'scan_ktp',
+        'gambar_prototipe',
+        'deskripsi_singkat_prototipe',
+    ] as $field) {
+        $payload[$field] = '';
+    }
+
+    $verif = PatenVerif::create($payload);
+    session(['verif_id' => $verif->id]);
+
+} else {
+
+    $verif = PatenVerif::findOrFail(session('verif_id'));
+
+    // update hanya data form
+    $verif->update($payload);
+
+}
 
         // tentukan next route berdasarkan skema
         if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
@@ -181,7 +187,6 @@ class PatenVerifController extends Controller
     // =========================
     public function store(Request $request)
     {
-        dd('store terpanggil');
         $enumFakultas   = $this->getEnumValues('paten_verifs', 'fakultas');
         $enumSumberDana = $this->getEnumValues('paten_verifs', 'sumber_dana');
 
