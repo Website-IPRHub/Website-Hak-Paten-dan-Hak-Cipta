@@ -9,7 +9,7 @@
 @include('hakcipta.isiform.menuformcipta')
 
 @php
-    $data = session('hakcipta.form');
+    $data = session('hakcipta.form', []);
 @endphp
 
 <script type="application/json" id="prefill-inventor-data">
@@ -32,7 +32,7 @@
     {{-- GRID UTAMA --}}
     <div class="grid-2">
       @php
-          $jumlahInventor = old('jumlah_inventor', session('hakcipta.form.jumlah_inventor', 1));
+          $jumlahInventor = old('jumlah_inventor', $data['jumlah_inventor'] ?? 1);
       @endphp
 
       <div class="field">
@@ -138,7 +138,7 @@
           class="input"
           name="berupa"
           placeholder="Produk ciptaan berupa..."
-          value="{{ old('berupa') }}"
+          value="{{ old('berupa', $data['berupa'] ?? '') }}"
           required
         >
         @error('berupa') <small class="err">{{ $message }}</small> @enderror
@@ -164,7 +164,7 @@
           class="input"
           name="tempat"
           placeholder="Contoh: Semarang"
-          value="{{ old('tempat') }}"
+          value="{{ old('tempat', $data['tempat'] ?? '') }}"
           required
         >
         @error('tempat') <small class="err">{{ $message }}</small> @enderror
@@ -186,13 +186,13 @@
       <label class="label">Ulasan Ciptaan <span class="req">*</span></label>
       <p class="hint">Tulis singkat (± 2–3 kalimat).</p>
       <textarea
-        class="input input-full"
-        name="uraian"
-        rows="4"
-        maxlength="350"
-        placeholder="Masukkan uraian produk ciptaan"
-        required
-        >{{ old('uraian') }}</textarea>
+    class="input input-full"
+    name="uraian"
+    rows="4"
+    maxlength="350"
+    placeholder="Masukkan uraian produk ciptaan"
+    required
+>{{ old('uraian', $data['uraian'] ?? '') }}</textarea>
 
       @error('uraian') <small class="err">{{ $message }}</small> @enderror
     </div>
@@ -464,8 +464,8 @@
   </template>
 
   <script type="application/json" id="old-inventor-data">
-    {!! json_encode(old('inventor', $prefill['inventor'] ?? [])) !!}
-  </script>
+    {!! json_encode(old('inventor', $data['inventor'] ?? [])) !!}
+</script>
 
   
 </div>

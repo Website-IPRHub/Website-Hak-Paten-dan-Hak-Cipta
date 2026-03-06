@@ -361,8 +361,7 @@
           <button
             type="button"
             class="btn-prev"
-            data-fallback="{{ route('hakcipta.isiform.peralihanverifcipta') }}"
-            onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
+            onclick="window.location.href='{{ route('hakcipta.isiform.formpendaftaran') }}'"
           >
             &laquo; Sebelumnya
           </button>

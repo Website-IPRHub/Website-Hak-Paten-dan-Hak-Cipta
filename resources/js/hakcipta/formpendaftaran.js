@@ -129,12 +129,14 @@ console.log("OLD INVENTOR:", oldInventor);
   const fillFromOld = (root, idx) => {
   const keys = [
     "nama",
+    "NIK",
     "nip_nim",
     "fakultas",
+    "nidn",
     "status",
     "no_hp",
+    "tlp_rumah",
     "email",
-    "nidn",
     "alamat",
     "kode_pos"
   ];
@@ -144,7 +146,7 @@ console.log("OLD INVENTOR:", oldInventor);
     if (!el) return;
 
     const val = oldInventor?.[k]?.[idx];
-    if (val !== undefined) {
+    if (val !== undefined && val !== null) {
       el.value = val;
 
       if (k === "status") {
@@ -195,8 +197,6 @@ console.log("OLD INVENTOR:", oldInventor);
     const no = node.querySelector(".inv-no");
     if (no) no.textContent = (i + 1);
 
-    if (card) applyStatusLogic(card);
-
     node.querySelectorAll("[name^='inventor[']").forEach(el => {
       const name = el.getAttribute("name");
       const arr = snap[name] || [];
@@ -204,6 +204,8 @@ console.log("OLD INVENTOR:", oldInventor);
     });
 
     fillFromOld(node, i);
+
+    if (card) applyStatusLogic(card);
 
     container.appendChild(node);
   }
