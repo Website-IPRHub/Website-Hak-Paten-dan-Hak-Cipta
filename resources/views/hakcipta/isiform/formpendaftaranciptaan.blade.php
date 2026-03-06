@@ -346,7 +346,7 @@
           <label class="label">NIK <span class="req">*</span></label>
           <input type="text"
                 class="input"
-                name="inventor[NIK][]"
+                name="inventor[nik][]"
                 placeholder="Masukkan NIK Anda"
                 required>
         </div>
