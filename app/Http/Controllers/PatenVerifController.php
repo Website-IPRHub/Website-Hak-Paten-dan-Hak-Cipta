@@ -107,9 +107,6 @@ class PatenVerifController extends Controller
         $fakultas = $inventors[0]['fakultas'] ?? null;
         
 
-
-
-
         $payload = [
             'no_pendaftaran' => $this->generateNoPendaftaranVerif(),
             'jenis_paten'      => $validated['jenis_paten'],
@@ -158,6 +155,10 @@ class PatenVerifController extends Controller
     $verif->update($payload);
 
 }
+
+        // baru create kalau belum ada
+        $verif = PatenVerif::create($payload);
+
 
         // tentukan next route berdasarkan skema
         if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
@@ -314,7 +315,12 @@ class PatenVerifController extends Controller
         unset($payload['tanda_terima']);
 
         $verif = PatenVerif::create($payload);
-        session()->forget('hakpaten.isiform');
+        if (!session()->has('verif_id')) {
+            $verif = PatenVerif::create($payload);
+            session(['verif_id' => $verif->id]);
+        } else {
+            $verif = PatenVerif::find(session('verif_id'));
+        }
 
         return response()->json([
             'message'       => 'Pengajuan verifikasi paten berhasil',
@@ -331,9 +337,7 @@ class PatenVerifController extends Controller
 
     public function all($id)
     {
-
         $verif = PatenVerif::findOrFail($id);
-        
         return view('hakpaten.verifikasidokumen.semuaverif', compact('verif'));
     }
 
