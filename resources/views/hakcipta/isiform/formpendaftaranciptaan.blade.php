@@ -236,6 +236,30 @@
                 return;
               }
 
+              // SWEET ALERT 
+              const result = await Swal.fire({
+                title: 'Konfirmasi Download',
+                html: `
+                  <p>Apakah Anda sudah mendownload 3 file berikut?</p>
+                  <ul style="text-align:left; margin-top:10px;">
+                    <li>• Formulir Permohonan Pendaftaran Ciptaan</li>
+                    <li>• Surat Pengalihan Hak Cipta</li>
+                    <li>• Surat Pernyataan</li>
+                  </ul>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sudah',
+                cancelButtonText: 'Belum',
+                confirmButtonColor: '#2F5C9E',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true
+              });
+
+              if (!result.isConfirmed) {
+                return; // kalau klik "Belum" tetap di halaman
+              }
+
               const saveUrl = nextBtn.dataset.saveUrl;
               const nextUrl = nextBtn.dataset.nextUrl;
 
@@ -432,7 +456,7 @@
           <input type="text"
                 class="input"
                 name="inventor[kode_pos][]"
-                placeholder="Contoh: 50275"
+                placeholder="Masukkan Kode Pos"
                 required>
         </div>
       </div>
