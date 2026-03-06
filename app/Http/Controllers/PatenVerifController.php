@@ -130,27 +130,31 @@ class PatenVerifController extends Controller
         ];
 
         // default dokumen kalau belum ada (biar sama seperti controller sebelumnya)
-        foreach ([
-            'draft_paten',
-            'form_permohonan',
-            'surat_kepemilikan',
-            'surat_pengalihan',
-            'scan_ktp',
-            'gambar_prototipe',
-            'deskripsi_singkat_prototipe',
-        ] as $field) {
-            $payload[$field] = $payload[$field] ?? '';
-        }
+        if (!session()->has('verif_id')) {
 
-        
+    foreach ([
+        'draft_paten',
+        'form_permohonan',
+        'surat_kepemilikan',
+        'surat_pengalihan',
+        'scan_ktp',
+        'gambar_prototipe',
+        'deskripsi_singkat_prototipe',
+    ] as $field) {
+        $payload[$field] = '';
+    }
 
-        // CEK kalau sudah pernah buat di session
-        if (session()->has('verif_id')) {
-            $existing = PatenVerif::find(session('verif_id'));
-            if ($existing) {
-                return redirect()->route('patenverif.all', $existing->id);
-            }
-        }
+    $verif = PatenVerif::create($payload);
+    session(['verif_id' => $verif->id]);
+
+} else {
+
+    $verif = PatenVerif::findOrFail(session('verif_id'));
+
+    // update hanya data form
+    $verif->update($payload);
+
+}
 
         // baru create kalau belum ada
         $verif = PatenVerif::create($payload);
@@ -184,7 +188,6 @@ class PatenVerifController extends Controller
     // =========================
     public function store(Request $request)
     {
-        dd('store terpanggil');
         $enumFakultas   = $this->getEnumValues('paten_verifs', 'fakultas');
         $enumSumberDana = $this->getEnumValues('paten_verifs', 'sumber_dana');
 
