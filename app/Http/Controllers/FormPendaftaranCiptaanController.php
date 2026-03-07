@@ -28,22 +28,39 @@ class FormPendaftaranCiptaanController extends Controller
     'uraian'                 => ['required', 'string', 'max:350'],
 
     'inventor'               => ['required', 'array'],
-    'inventor.nama'          => ['required', 'array'],
-    'inventor.nama.*'        => ['required', 'string', 'max:200'],
-    'inventor.nik'           => ['required', 'array'],
-    'inventor.nik.*'         => ['required', 'string', 'max:50'],
-    'inventor.nip_nim.*'     => ['required', 'string', 'max:50'],
-    'inventor.fakultas.*'    => ['required', 'string', 'max:255'],
-    'inventor.nidn.*'        => ['nullable', 'string', 'max:20'],
-    'inventor.status.*'      => ['required', 'string', 'max:50'],
-    'inventor.no_hp.*'       => ['required', 'string', 'max:50'],
-    'inventor.tlp_rumah'     => ['nullable', 'array'],
-    'inventor.tlp_rumah.*'   => ['nullable', 'string', 'max:50'],
-    'inventor.email.*'       => ['required', 'email', 'max:100'],
-    'inventor.alamat'        => ['required', 'array'],
-    'inventor.alamat.*'      => ['required', 'string'],
-    'inventor.kode_pos'      => ['required', 'array'],
-    'inventor.kode_pos.*'    => ['required', 'string', 'max:20'],
+
+'inventor.nama'          => ['required', 'array'],
+'inventor.nama.*'        => ['required', 'string', 'max:200'],
+
+'inventor.nik'           => ['required', 'array'],
+'inventor.nik.*'         => ['required', 'string', 'max:50'],
+
+'inventor.nip_nim'       => ['required', 'array'],
+'inventor.nip_nim.*'     => ['required', 'string', 'max:50'],
+
+'inventor.fakultas'      => ['required', 'array'],
+'inventor.fakultas.*'    => ['required', 'string', 'max:255'],
+
+'inventor.nidn'          => ['nullable', 'array'],
+'inventor.nidn.*'        => ['nullable', 'string', 'max:20'],
+
+'inventor.status'        => ['required', 'array'],
+'inventor.status.*'      => ['required', 'string', 'max:50'],
+
+'inventor.no_hp'         => ['required', 'array'],
+'inventor.no_hp.*'       => ['required', 'string', 'max:50'],
+
+'inventor.tlp_rumah'     => ['nullable', 'array'],
+'inventor.tlp_rumah.*'   => ['nullable', 'string', 'max:50'],
+
+'inventor.email'         => ['required', 'array'],
+'inventor.email.*'       => ['required', 'email', 'max:100'],
+
+'inventor.alamat'        => ['required', 'array'],
+'inventor.alamat.*'      => ['required', 'string'],
+
+'inventor.kode_pos'      => ['required', 'array'],
+'inventor.kode_pos.*'    => ['required', 'string', 'max:20'],
 
     'download_format'        => ['nullable', 'in:pdf,docx'],
 ]);
@@ -55,18 +72,18 @@ class FormPendaftaranCiptaanController extends Controller
         }
 
         // simpan session kalau kamu masih butuh flow "Next"
-        $existing = session('hakcipta.form', []);
+        $existingForm = session('hakcipta.form', []);
 
-session()->put('hakcipta.form', array_merge($existing, [
+session()->put('hakcipta.form', array_merge($existingForm, [
     'jumlah_inventor'      => $request->jumlah_inventor,
     'jenis_cipta'          => $request->jenis_cipta,
     'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
-    'link_ciptaan'         => $request->link_ciptaan,
+    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
     'judul_ciptaan'        => $request->judul_ciptaan,
-    'berupa'               => $request->berupa,
-    'tanggal_pengisian'    => $request->tanggal_pengisian,
-    'tempat'               => $request->tempat,
-    'uraian'               => $request->uraian,
+    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
+    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
+    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
+    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
     'inventor'             => $request->inventor,
 ]));
 

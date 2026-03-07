@@ -129,7 +129,7 @@ console.log("OLD INVENTOR:", oldInventor);
   const fillFromOld = (root, idx) => {
   const keys = [
     "nama",
-    "NIK",
+    "nik",
     "nip_nim",
     "fakultas",
     "nidn",
