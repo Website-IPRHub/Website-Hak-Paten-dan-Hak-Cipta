@@ -73,20 +73,23 @@ session()->put('hakcipta.form', array_merge($existingForm, [
     'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
     'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
     'inventor'             => $request->inventor,
+    'nilai_perolehan'      => $request->nilai_perolehan ?? ($existingForm['nilai_perolehan'] ?? null),
+'sumber_dana'          => $request->sumber_dana ?? ($existingForm['sumber_dana'] ?? null),
+'skema_penelitian'     => $request->skema_penelitian ?? ($existingForm['skema_penelitian'] ?? null),
 ]));
 
     session([
-        'hakcipta.verif' => [
-            'jumlah_inventor'      => $validated['jumlah_inventor'],
-            'jenis_cipta'          => $validated['jenis_cipta'],
-            'jenis_cipta_lainnya'  => $validated['jenis_cipta_lainnya'] ?? null,
-            'judul_ciptaan'        => $validated['judul_ciptaan'],
-            'inventor'             => $validated['inventor'],
-            'nilai_perolehan'      => $validated['nilai_perolehan'],
-            'sumber_dana'          => $validated['sumber_dana'],
-            'skema_penelitian'     => $validated['skema_penelitian'],
-        ]
-    ]);
+    'hakcipta.verif' => array_merge(session('hakcipta.verif', []), [
+        'jumlah_inventor'      => $validated['jumlah_inventor'],
+        'jenis_cipta'          => $validated['jenis_cipta'],
+        'jenis_cipta_lainnya'  => $validated['jenis_cipta_lainnya'] ?? null,
+        'judul_ciptaan'        => $validated['judul_ciptaan'],
+        'inventor'             => $validated['inventor'],
+        'nilai_perolehan'      => $validated['nilai_perolehan'],
+        'sumber_dana'          => $validated['sumber_dana'],
+        'skema_penelitian'     => $validated['skema_penelitian'],
+    ])
+]);
 
     foreach ($validated['inventor']['status'] as $i => $status) {
         $nidn = trim((string) ($validated['inventor']['nidn'][$i] ?? ''));

@@ -26,7 +26,8 @@
     <p>Isi formulir ini untuk mendapatkan dokumen formulir pendaftaran hak cipta</p>
   </div>
 
-  <form class="form" method="POST" action="{{ route('isiformCipta.store') }}">
+  <form class="form" method="POST" action="{{ route('isiformCipta.store') }}" autocomplete="off">
+    
     @csrf
 
     {{-- GRID UTAMA --}}
