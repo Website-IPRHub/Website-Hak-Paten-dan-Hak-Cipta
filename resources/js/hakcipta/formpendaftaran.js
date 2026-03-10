@@ -168,7 +168,7 @@ const fillInventorCard = (card, idx) => {
   setFieldValue(card, 'input[name="inventor[no_hp][]"]', getOldVal("no_hp", idx));
   setFieldValue(card, 'input[name="inventor[tlp_rumah][]"]', getOldVal("tlp_rumah", idx));
   setFieldValue(card, 'input[name="inventor[email][]"]', getOldVal("email", idx));
-  setFieldValue(card, 'textarea[name="inventor[alamat][]"]', getOldVal("alamat", idx));
+  setFieldValue(card, '[name="inventor[alamat][]"]', getOldVal("alamat", idx));
   setFieldValue(card, 'input[name="inventor[kode_pos][]"]', getOldVal("kode_pos", idx));
 
   console.log("POST FILL CHECK", idx, {
