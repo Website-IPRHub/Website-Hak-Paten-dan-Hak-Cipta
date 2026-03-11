@@ -30,7 +30,7 @@
   </p>
 
   @if(($type ?? 'created') !== 'changed')
-    <p>Setelah login, disarankan untuk mengganti password demi keamanan.</p>
+    <p>Setelah login, Anda dapat mengganti password sesuai kebutuhan.</p>
   @else
     <p>Jika Anda tidak merasa melakukan perubahan password, segera hubungi admin.</p>
   @endif

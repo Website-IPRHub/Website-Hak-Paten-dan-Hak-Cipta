@@ -27,44 +27,69 @@ class HakCiptaVerifController extends Controller
     ];
 
     $validated = $request->validate([
-        'jumlah_inventor'      => ['required', 'integer', 'min:1', 'max:20'],
-        'jenis_cipta'          => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-        'judul_ciptaan'        => ['required', 'string', 'max:255'],
-        'jenis_cipta_lainnya'  => ['nullable', 'string', 'max:255', 'required_if:jenis_cipta,Lainnya'],
+    'jumlah_inventor'      => ['required', 'integer', 'min:1', 'max:20'],
+    'jenis_cipta'          => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+    'judul_ciptaan'        => ['required', 'string', 'max:255'],
+    'jenis_cipta_lainnya'  => ['nullable', 'string', 'max:255', 'required_if:jenis_cipta,Lainnya'],
 
-        'inventor'             => ['required', 'array'],
-        'inventor.nama'        => ['required', 'array', "size:$jumlah"],
-        'inventor.nip_nim'     => ['required', 'array', "size:$jumlah"],
-        'inventor.fakultas'    => ['required', 'array', "size:$jumlah"],
-        'inventor.no_hp'       => ['required', 'array', "size:$jumlah"],
-        'inventor.email'       => ['required', 'array', "size:$jumlah"],
-        'inventor.status'      => ['required', 'array', "size:$jumlah"],
-        'inventor.nidn'        => ['nullable', 'array'],
+    'inventor'             => ['required', 'array'],
+    'inventor.nama'        => ['required', 'array', "size:$jumlah"],
+    'inventor.nik'         => ['required', 'array', "size:$jumlah"],
+    'inventor.nip_nim'     => ['required', 'array', "size:$jumlah"],
+    'inventor.fakultas'    => ['required', 'array', "size:$jumlah"],
+    'inventor.no_hp'       => ['required', 'array', "size:$jumlah"],
+    'inventor.tlp_rumah'   => ['nullable', 'array', "size:$jumlah"],
+    'inventor.email'       => ['required', 'array', "size:$jumlah"],
+    'inventor.alamat'      => ['required', 'array', "size:$jumlah"],
+    'inventor.kode_pos'    => ['required', 'array', "size:$jumlah"],
+    'inventor.status'      => ['required', 'array', "size:$jumlah"],
+    'inventor.nidn'        => ['nullable', 'array'],
 
-        'inventor.nama.*'      => ['required', 'string', 'max:255'],
-        'inventor.nip_nim.*'   => ['required', 'regex:/^.{14}$|^.{18}$/'],
-        'inventor.fakultas.*'  => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
-        'inventor.no_hp.*'     => ['required', 'string', 'max:255'],
-        'inventor.email.*'     => ['required', 'email', 'max:255'],
-        'inventor.status.*'    => ['required', 'in:Dosen,Mahasiswa'],
+    'inventor.nama.*'      => ['required', 'string', 'max:255'],
+    'inventor.nik.*'       => ['required', 'string', 'max:50'],
+    'inventor.nip_nim.*'   => ['required', 'regex:/^.{14}$|^.{18}$/'],
+    'inventor.fakultas.*'  => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
+    'inventor.no_hp.*'     => ['required', 'string', 'max:255'],
+    'inventor.tlp_rumah.*' => ['nullable', 'string', 'max:50'],
+    'inventor.email.*'     => ['required', 'email', 'max:255'],
+    'inventor.alamat.*'    => ['required', 'string'],
+    'inventor.kode_pos.*'  => ['required', 'string', 'max:20'],
+    'inventor.status.*'    => ['required', 'in:Dosen,Mahasiswa'],
 
-        'nilai_perolehan'      => ['required', 'string', 'max:255'],
-        'sumber_dana'          => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
-        'skema_penelitian'     => ['required', 'string', 'max:255'],
-    ], $messages);
+    'nilai_perolehan'      => ['required', 'string', 'max:255'],
+    'sumber_dana'          => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
+    'skema_penelitian'     => ['required', 'string', 'max:255'],
+], $messages);
+$existingForm = session('hakcipta.form', []);
+
+session()->put('hakcipta.form', array_merge($existingForm, [
+    'jumlah_inventor'      => $request->jumlah_inventor,
+    'jenis_cipta'          => $request->jenis_cipta,
+    'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
+    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
+    'judul_ciptaan'        => $request->judul_ciptaan,
+    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
+    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
+    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
+    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
+    'inventor'             => $request->inventor,
+    'nilai_perolehan'      => $request->nilai_perolehan ?? ($existingForm['nilai_perolehan'] ?? null),
+'sumber_dana'          => $request->sumber_dana ?? ($existingForm['sumber_dana'] ?? null),
+'skema_penelitian'     => $request->skema_penelitian ?? ($existingForm['skema_penelitian'] ?? null),
+]));
 
     session([
-        'hakcipta.verif' => [
-            'jumlah_inventor'      => $validated['jumlah_inventor'],
-            'jenis_cipta'          => $validated['jenis_cipta'],
-            'jenis_cipta_lainnya'  => $validated['jenis_cipta_lainnya'] ?? null,
-            'judul_ciptaan'        => $validated['judul_ciptaan'],
-            'inventor'             => $validated['inventor'],
-            'nilai_perolehan'      => $validated['nilai_perolehan'],
-            'sumber_dana'          => $validated['sumber_dana'],
-            'skema_penelitian'     => $validated['skema_penelitian'],
-        ]
-    ]);
+    'hakcipta.verif' => array_merge(session('hakcipta.verif', []), [
+        'jumlah_inventor'      => $validated['jumlah_inventor'],
+        'jenis_cipta'          => $validated['jenis_cipta'],
+        'jenis_cipta_lainnya'  => $validated['jenis_cipta_lainnya'] ?? null,
+        'judul_ciptaan'        => $validated['judul_ciptaan'],
+        'inventor'             => $validated['inventor'],
+        'nilai_perolehan'      => $validated['nilai_perolehan'],
+        'sumber_dana'          => $validated['sumber_dana'],
+        'skema_penelitian'     => $validated['skema_penelitian'],
+    ])
+]);
 
     foreach ($validated['inventor']['status'] as $i => $status) {
         $nidn = trim((string) ($validated['inventor']['nidn'][$i] ?? ''));
@@ -82,18 +107,22 @@ class HakCiptaVerifController extends Controller
     }
 
     $inventors = [];
-    for ($i = 0; $i < $jumlah; $i++) {
-        $inventors[] = [
-            'urut'     => $i + 1,
-            'nama'     => trim((string) data_get($validated, "inventor.nama.$i", '')),
-            'nip_nim'  => trim((string) data_get($validated, "inventor.nip_nim.$i", '')),
-            'fakultas' => trim((string) data_get($validated, "inventor.fakultas.$i", '')),
-            'no_hp'    => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
-            'email'    => trim((string) data_get($validated, "inventor.email.$i", '')),
-            'status'   => trim((string) data_get($validated, "inventor.status.$i", '')),
-            'nidn'     => trim((string) data_get($validated, "inventor.nidn.$i", '')),
-        ];
-    }
+for ($i = 0; $i < $jumlah; $i++) {
+    $inventors[] = [
+        'urut'       => $i + 1,
+        'nama'       => trim((string) data_get($validated, "inventor.nama.$i", '')),
+        'nik'        => trim((string) data_get($validated, "inventor.nik.$i", '')),
+        'nip_nim'    => trim((string) data_get($validated, "inventor.nip_nim.$i", '')),
+        'fakultas'   => trim((string) data_get($validated, "inventor.fakultas.$i", '')),
+        'no_hp'      => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
+        'tlp_rumah'  => trim((string) data_get($validated, "inventor.tlp_rumah.$i", '')),
+        'email'      => trim((string) data_get($validated, "inventor.email.$i", '')),
+        'alamat'     => trim((string) data_get($validated, "inventor.alamat.$i", '')),
+        'kode_pos'   => trim((string) data_get($validated, "inventor.kode_pos.$i", '')),
+        'status'     => trim((string) data_get($validated, "inventor.status.$i", '')),
+        'nidn'       => trim((string) data_get($validated, "inventor.nidn.$i", '')),
+    ];
+}
 
     $jenisCipta = $validated['jenis_cipta'] === 'Lainnya'
         ? trim((string) ($validated['jenis_cipta_lainnya'] ?? ''))
@@ -166,31 +195,54 @@ class HakCiptaVerifController extends Controller
     ];
 
     $validated = $request->validate([
-        'jumlah_inventor'      => ['required', 'integer', 'min:1', 'max:20'],
-        'jenis_cipta'          => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-        'judul_ciptaan'        => ['required', 'string', 'max:255'],
-        'jenis_cipta_lainnya'  => ['nullable', 'string', 'max:255', 'required_if:jenis_cipta,Lainnya'],
+    'jumlah_inventor'      => ['required', 'integer', 'min:1', 'max:20'],
+    'jenis_cipta'          => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+    'judul_ciptaan'        => ['required', 'string', 'max:255'],
+    'jenis_cipta_lainnya'  => ['nullable', 'string', 'max:255', 'required_if:jenis_cipta,Lainnya'],
 
-        'inventor'             => ['required', 'array'],
-        'inventor.nama'        => ['required', 'array', "size:$jumlah"],
-        'inventor.nip_nim'     => ['required', 'array', "size:$jumlah"],
-        'inventor.fakultas'    => ['required', 'array', "size:$jumlah"],
-        'inventor.no_hp'       => ['required', 'array', "size:$jumlah"],
-        'inventor.email'       => ['required', 'array', "size:$jumlah"],
-        'inventor.status'      => ['required', 'array', "size:$jumlah"],
-        'inventor.nidn'        => ['nullable', 'array'],
+    'inventor'             => ['required', 'array'],
+    'inventor.nama'        => ['required', 'array', "size:$jumlah"],
+    'inventor.nik'         => ['required', 'array', "size:$jumlah"],
+    'inventor.nip_nim'     => ['required', 'array', "size:$jumlah"],
+    'inventor.fakultas'    => ['required', 'array', "size:$jumlah"],
+    'inventor.no_hp'       => ['required', 'array', "size:$jumlah"],
+    'inventor.tlp_rumah'   => ['nullable', 'array', "size:$jumlah"],
+    'inventor.email'       => ['required', 'array', "size:$jumlah"],
+    'inventor.alamat'      => ['required', 'array', "size:$jumlah"],
+    'inventor.kode_pos'    => ['required', 'array', "size:$jumlah"],
+    'inventor.status'      => ['required', 'array', "size:$jumlah"],
+    'inventor.nidn'        => ['nullable', 'array'],
 
-        'inventor.nama.*'      => ['required', 'string', 'max:255'],
-        'inventor.nip_nim.*'   => ['required', 'regex:/^.{14}$|^.{18}$/'],
-        'inventor.fakultas.*'  => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
-        'inventor.no_hp.*'     => ['required', 'string', 'max:255'],
-        'inventor.email.*'     => ['required', 'email', 'max:255'],
-        'inventor.status.*'    => ['required', 'in:Dosen,Mahasiswa'],
+    'inventor.nama.*'      => ['required', 'string', 'max:255'],
+    'inventor.nik.*'       => ['required', 'string', 'max:50'],
+    'inventor.nip_nim.*'   => ['required', 'regex:/^.{14}$|^.{18}$/'],
+    'inventor.fakultas.*'  => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
+    'inventor.no_hp.*'     => ['required', 'string', 'max:255'],
+    'inventor.tlp_rumah.*' => ['nullable', 'string', 'max:50'],
+    'inventor.email.*'     => ['required', 'email', 'max:255'],
+    'inventor.alamat.*'    => ['required', 'string'],
+    'inventor.kode_pos.*'  => ['required', 'string', 'max:20'],
+    'inventor.status.*'    => ['required', 'in:Dosen,Mahasiswa'],
 
-        'nilai_perolehan'      => ['required', 'string', 'max:255'],
-        'sumber_dana'          => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
-        'skema_penelitian'     => ['required', 'string', 'max:255'],
-    ], $messages);
+    'nilai_perolehan'      => ['required', 'string', 'max:255'],
+    'sumber_dana'          => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
+    'skema_penelitian'     => ['required', 'string', 'max:255'],
+], $messages);
+
+    $existingForm = session('hakcipta.form', []);
+
+session()->put('hakcipta.form', array_merge($existingForm, [
+    'jumlah_inventor'      => $request->jumlah_inventor,
+    'jenis_cipta'          => $request->jenis_cipta,
+    'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
+    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
+    'judul_ciptaan'        => $request->judul_ciptaan,
+    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
+    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
+    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
+    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
+    'inventor'             => $request->inventor,
+]));
 
     foreach ($validated['inventor']['status'] as $i => $status) {
         $nidn = trim((string) ($validated['inventor']['nidn'][$i] ?? ''));
@@ -203,18 +255,22 @@ class HakCiptaVerifController extends Controller
     }
 
     $inventors = [];
-    for ($i = 0; $i < $jumlah; $i++) {
-        $inventors[] = [
-            'urut'     => $i + 1,
-            'nama'     => trim((string) data_get($validated, "inventor.nama.$i", '')),
-            'nip_nim'  => trim((string) data_get($validated, "inventor.nip_nim.$i", '')),
-            'fakultas' => trim((string) data_get($validated, "inventor.fakultas.$i", '')),
-            'no_hp'    => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
-            'email'    => trim((string) data_get($validated, "inventor.email.$i", '')),
-            'status'   => trim((string) data_get($validated, "inventor.status.$i", '')),
-            'nidn'     => trim((string) data_get($validated, "inventor.nidn.$i", '')),
-        ];
-    }
+for ($i = 0; $i < $jumlah; $i++) {
+    $inventors[] = [
+        'urut'       => $i + 1,
+        'nama'       => trim((string) data_get($validated, "inventor.nama.$i", '')),
+        'nik'        => trim((string) data_get($validated, "inventor.nik.$i", '')),
+        'nip_nim'    => trim((string) data_get($validated, "inventor.nip_nim.$i", '')),
+        'fakultas'   => trim((string) data_get($validated, "inventor.fakultas.$i", '')),
+        'no_hp'      => trim((string) data_get($validated, "inventor.no_hp.$i", '')),
+        'tlp_rumah'  => trim((string) data_get($validated, "inventor.tlp_rumah.$i", '')),
+        'email'      => trim((string) data_get($validated, "inventor.email.$i", '')),
+        'alamat'     => trim((string) data_get($validated, "inventor.alamat.$i", '')),
+        'kode_pos'   => trim((string) data_get($validated, "inventor.kode_pos.$i", '')),
+        'status'     => trim((string) data_get($validated, "inventor.status.$i", '')),
+        'nidn'       => trim((string) data_get($validated, "inventor.nidn.$i", '')),
+    ];
+}
 
     $jenisCipta = $validated['jenis_cipta'] === 'Lainnya'
         ? trim((string) ($validated['jenis_cipta_lainnya'] ?? ''))
@@ -250,7 +306,7 @@ class HakCiptaVerifController extends Controller
     }
 
     $verif = HakCiptaVerif::create($payload);
-    session()->forget('hakcipta.form');
+
 
     return response()->json([
         'message'        => 'Pengajuan verifikasi hak cipta berhasil',
