@@ -158,6 +158,7 @@
             <input
               type="text"
               class="input"
+              id="nilai_perolehan"
               name="nilai_perolehan"
               placeholder="Nilai Perolehan"
               value="{{ old('nilai_perolehan', data_get($verifSession, 'nilai_perolehan', data_get($data, 'nilai_perolehan', ''))) }}"
@@ -170,7 +171,7 @@
 
           <div class="field">
             <label class="label">Sumber Dana <span class="req">*</span></label>
-            <select class="input" name="sumber_dana" required>
+            <select class="input" id="sumber_dana" name="sumber_dana" required>
               <option value="" disabled {{ old('sumber_dana', data_get($verifSession, 'sumber_dana', data_get($data, 'sumber_dana'))) ? '' : 'selected' }}>
                 -- Sumber Dana --
               </option>
@@ -310,7 +311,7 @@
         <label class="label">Dihasilkan dari Skema Penelitian? <span class="req">*</span></label>
         <img src="/images/Skema%20Penelitian.jpg" class="skema-img" alt="Skema">
 
-        <select class="input input-full" name="skema_penelitian" required>
+        <select class="input input-full" id="skema_penelitian" name="skema_penelitian" required>
           <option value="" disabled {{ old('skema_penelitian', data_get($verifSession, 'skema_penelitian', data_get($data, 'skema_penelitian'))) ? '' : 'selected' }}>
             -- Pilih Skema --
           </option>
@@ -363,6 +364,48 @@
     </form>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const keyPrefix = 'hakcipta_datadiri_draft';
+
+  const fields = {
+    nilai_perolehan: document.getElementById('nilai_perolehan'),
+    sumber_dana: document.getElementById('sumber_dana'),
+    skema_penelitian: document.getElementById('skema_penelitian'),
+  };
+
+  Object.entries(fields).forEach(([name, el]) => {
+    if (!el) return;
+
+    const key = `${keyPrefix}_${name}`;
+
+    // restore dari sessionStorage kalau value blade kosong
+    if (!el.value) {
+      const saved = sessionStorage.getItem(key);
+      if (saved !== null) {
+        el.value = saved;
+      }
+    }
+
+    // save saat user input/change
+    const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(evt, () => {
+      sessionStorage.setItem(key, el.value);
+    });
+  });
+
+  // kalau form page 2 berhasil submit, hapus draft browser
+  const form = document.getElementById('draftForm');
+  if (form) {
+    form.addEventListener('submit', () => {
+      Object.keys(fields).forEach(name => {
+        sessionStorage.removeItem(`${keyPrefix}_${name}`);
+      });
+    });
+  }
+});
+</script>
 
 
 @endsection
