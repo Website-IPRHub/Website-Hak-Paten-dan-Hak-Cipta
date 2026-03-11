@@ -20,20 +20,31 @@ class SkemaController extends Controller
     }
 
     public function downloadVerif(Request $request, PatenVerif $verif)
-    {
-        return $this->downloadDocx($request);
+{
+    $this->saveSkemaDraft($request, "patenverif.{$verif->id}.skema");
+
+    if ($request->input('action') === 'prev') {
+        return redirect()->route('patenverif.datadiri');
     }
 
-    public function uploadVerif(Request $request, PatenVerif $verif)
-    {
-        return $this->handleUpload(
-            request: $request,
-            noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
-            storeDir: 'paten-verif/skema',
-            updateModel: fn(string $path) => $verif->update(['skema_tkt_template_path' => $path]),
-            fallbackRedirect: route('patenverif.skema.form', ['verif' => $verif->id]),
-        );
+    if ($request->input('action') === 'next') {
+        return redirect()->route('patenverif.all', $verif->id);
     }
+
+    return $this->downloadDocx($request);
+}
+
+    public function uploadVerif(Request $request, PatenVerif $verif)
+{
+    return $this->handleUpload(
+        request: $request,
+        noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
+        storeDir: 'paten-verif/skema',
+        updateModel: fn(string $path) => $verif->update(['skema_tkt_template_path' => $path]),
+        fallbackRedirect: route('patenverif.skema.form', ['verif' => $verif->id]),
+        sessionKey: "patenverif.{$verif->id}.skema",
+    );
+}
 
     // ===== PATEN =====
     public function showPaten(Paten $paten)
@@ -43,30 +54,33 @@ class SkemaController extends Controller
     }
 
     public function downloadPaten(Request $request, Paten $paten)
-    {
-        return $this->downloadDocx($request);
+{
+    $this->saveSkemaDraft($request, "paten.{$paten->id}.skema");
+
+    if ($request->input('action') === 'prev') {
+        return redirect()->route('hakpaten.datadiri');
     }
+
+    if ($request->input('action') === 'next') {
+        return redirect()->route('hakpaten.all', $paten->id);
+    }
+
+    return $this->downloadDocx($request);
+}
 
     public function uploadPaten(Request $request, Paten $paten)
 {
-    $request->validate([
-        'file' => ['required', 'file', 'mimes:doc,docx', 'max:10240'],
-    ]);
-
-    $file = $request->file('file');
-    $no  = $paten->no_pendaftaran ?? ('P_'.$paten->id);
-    $ext = $file->getClientOriginalExtension();
-
-    $filename = $no.'_skema_tkt_'.now()->format('Ymd_His').'.'.$ext;
-    $path = $file->storeAs('hak-paten/skema', $filename, 'public');
-
-    $paten->update([
-        'skema_tkt_template_path' => $path,
-    ]);
-
-      return redirect()->route('draftpaten');
+    return $this->handleUpload(
+        request: $request,
+        noPendaftaran: $paten->no_pendaftaran ?? ('P_'.$paten->id),
+        storeDir: 'hak-paten/skema',
+        updateModel: fn(string $path) => $paten->update([
+            'skema_tkt_template_path' => $path,
+        ]),
+        fallbackRedirect: route('hakpaten.skema.form', ['paten' => $paten->id]),
+        sessionKey: "paten.{$paten->id}.skema",
+    );
 }
-
 
 
     // ===== Shared helpers =====
@@ -108,7 +122,7 @@ class SkemaController extends Controller
         }
 
         // ===== PDF (convert dari DOCX template via LibreOffice) =====
-        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
         if (!file_exists($soffice)) {
             $soffice = 'D:\Program Files (x86)\LibreOffice\program\soffice.exe';
         }
@@ -140,29 +154,96 @@ class SkemaController extends Controller
 
 
     private function handleUpload(
-        Request $request,
-        string $noPendaftaran,
-        string $storeDir,
-        callable $updateModel,
-        string $fallbackRedirect,
-    ) {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
-        ]);
+    Request $request,
+    string $noPendaftaran,
+    string $storeDir,
+    callable $updateModel,
+    string $fallbackRedirect,
+    ?string $sessionKey = null,
+) {
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
+    ]);
 
-        $file = $request->file('file');
-        $ext  = $file->getClientOriginalExtension();
-        $filename = $noPendaftaran.'_skema_tkt_'.now()->format('Ymd_His').'.'.$ext;
+    $file = $request->file('file');
 
-        $path = $file->storeAs($storeDir, $filename, 'public');
+    // guard anti double submit
+    $uploadSignature = md5(
+        $noPendaftaran . '|' .
+        $file->getClientOriginalName() . '|' .
+        $file->getSize()
+    );
 
-        $updateModel($path);
+    $lastSignature = session('skema_upload_signature');
+    $lastTime = (int) session('skema_upload_time', 0);
 
-        $to = $request->input('redirect');
-        $redirectTo = $to ?: $fallbackRedirect;
-
-        return redirect($redirectTo)
-            ->with('success', 'File skema berhasil diupload')
-            ->withInput();
+    if ($lastSignature === $uploadSignature && (time() - $lastTime) <= 3) {
+        return redirect($fallbackRedirect)
+            ->with('success', 'File skema berhasil diupload');
     }
+
+    session([
+        'skema_upload_signature' => $uploadSignature,
+        'skema_upload_time' => time(),
+    ]);
+
+    $ext  = $file->getClientOriginalExtension();
+    $filename = $noPendaftaran . '_skema_tkt_' . uniqid() . '.' . $ext;
+
+    $path = $file->storeAs($storeDir, $filename, 'public');
+
+    $updateModel($path);
+
+    if ($sessionKey) {
+    $textDraft = $request->only([
+        'nama_lengkap',
+        'program_studi',
+        'judul_paten',
+        'nidn_nip',
+        'fakultas',
+        'tanggal_pengisian',
+        'download_format',
+    ]);
+
+    foreach ($textDraft as $k => $v) {
+        if (is_string($v)) {
+            $textDraft[$k] = trim($v);
+        }
+    }
+
+    session()->put($sessionKey, array_merge(session($sessionKey, []), $textDraft, [
+        'file_path' => $path,
+        'file_name' => $file->getClientOriginalName(),
+        'uploaded'  => true,
+    ]));
+}
+
+    $to = $request->input('redirect');
+    $redirectTo = $to ?: $fallbackRedirect;
+
+    return redirect($redirectTo)
+        ->with('success', 'File skema berhasil diupload')
+        ->withInput();
+}
+
+private function saveSkemaDraft(Request $request, string $sessionKey): void
+{
+    $data = $request->only([
+        'nama_lengkap',
+        'program_studi',
+        'judul_paten',
+        'nidn_nip',
+        'fakultas',
+        'tanggal_pengisian',
+        'download_format',
+    ]);
+
+    foreach ($data as $k => $v) {
+        if (is_string($v)) {
+            $data[$k] = trim($v);
+        }
+    }
+
+    session()->put($sessionKey, array_merge(session($sessionKey, []), $data));
+}
 }

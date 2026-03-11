@@ -27,21 +27,21 @@
       <div class="field">
         <label class="label">Nama Lengkap <span class="req">*</span></label>
         <input class="input" name="nama_lengkap" placeholder="Masukkan nama lengkap Dosen (Inventor 1)"
-               value="{{ old('nama_lengkap') }}" required>
+               value="{{ old('nama_lengkap', $draft['nama_lengkap'] ?? '') }}" required>
         @error('nama_lengkap') <small class="error">{{ $message }}</small> @enderror
       </div>
 
       <div class="field">
         <label class="label">Program Studi <span class="req">*</span></label>
         <input class="input" name="program_studi" placeholder="Masukkan program studi"
-               value="{{ old('program_studi') }}" required>
+               value="{{ old('program_studi', $draft['program_studi'] ?? '') }}" required>
         @error('program_studi') <small class="error">{{ $message }}</small> @enderror
       </div>
 
       <div class="field">
         <label class="label">Judul Paten <span class="req">*</span></label>
         <input class="input" name="judul_paten" placeholder="Masukkan judul paten"
-               value="{{ old('judul_paten', $verif->judul_paten ?? '') }}" required>
+               value="{{ old('judul_paten', $draft['judul_paten'] ?? ($verif->judul_paten ?? '')) }}" required>
         @error('judul_paten') <small class="error">{{ $message }}</small> @enderror
       </div>
     </div>
@@ -51,12 +51,13 @@
       <div class="field">
         <label class="label">NIDN/NIP <span class="req">*</span></label>
         <input
-                        type="text"
-                        class="input nidn-nip-input"
-                        name="nidn_nip"
-                        placeholder="Masukkan NIDN/NIP Anda"
-                        required
-                      >
+    type="text"
+    class="input nidn-nip-input"
+    name="nidn_nip"
+    placeholder="Masukkan NIDN/NIP Anda"
+    value="{{ old('nidn_nip', $draft['nidn_nip'] ?? '') }}"
+    required
+>
                       <small class="nip-warning">
                         NIDN/NIP harus terdiri dari 8 atau 18 digit angka
                       </small>
@@ -64,22 +65,25 @@
       </div>
 
       <div class="field">
+        @php
+          $fakultasValue = old('fakultas', $draft['fakultas'] ?? '');
+        @endphp
         <label class="label">Fakultas <span class="req">*</span></label>
         <select class="input" name="fakultas" required>
-          <option value="" disabled @selected(!old('fakultas'))>-- Pilih Fakultas --</option>
-          <option value="Fakultas Teknik" @selected(old('fakultas')=='Fakultas Teknik')>Fakultas Teknik</option>
-          <option value="Fakultas Sains dan Matematika" @selected(old('fakultas')=='Fakultas Sains dan Matematika')>Fakultas Sains dan Matematika</option>
-          <option value="Fakultas Kesehatan Masyarakat" @selected(old('fakultas')=='Fakultas Kesehatan Masyarakat')>Fakultas Kesehatan Masyarakat</option>
-          <option value="Fakultas Kedokteran" @selected(old('fakultas')=='Fakultas Kedokteran')>Fakultas Kedokteran</option>
-          <option value="Fakultas Perikanan dan Ilmu Kelautan" @selected(old('fakultas')=='Fakultas Perikanan dan Ilmu Kelautan')>Fakultas Perikanan dan Ilmu Kelautan</option>
-          <option value="Fakultas Peternakan dan Pertanian" @selected(old('fakultas')=='Fakultas Peternakan dan Pertanian')>Fakultas Peternakan dan Pertanian</option>
-          <option value="Fakultas Psikologi" @selected(old('fakultas')=='Fakultas Psikologi')>Fakultas Psikologi</option>
-          <option value="Fakultas Hukum" @selected(old('fakultas')=='Fakultas Hukum')>Fakultas Hukum</option>
-          <option value="Fakultas Ilmu Sosial dan Ilmu Politik" @selected(old('fakultas')=='Fakultas Ilmu Sosial dan Ilmu Politik')>Fakultas Ilmu Sosial dan Ilmu Politik</option>
-          <option value="Fakultas Ilmu Budaya" @selected(old('fakultas')=='Fakultas Ilmu Budaya')>Fakultas Ilmu Budaya</option>
-          <option value="Fakultas Ekonomi dan Bisnis" @selected(old('fakultas')=='Fakultas Ekonomi dan Bisnis')>Fakultas Ekonomi dan Bisnis</option>
-          <option value="Sekolah Vokasi" @selected(old('fakultas')=='Sekolah Vokasi')>Sekolah Vokasi</option>
-          <option value="Sekolah Pasca Sarjana" @selected(old('fakultas')=='Sekolah Pasca Sarjana')>Sekolah Pasca Sarjana</option>
+          <option value="" disabled @selected(!$fakultasValue)>-- Pilih Fakultas --</option>
+          <option value="Fakultas Teknik" @selected($fakultasValue=='Fakultas Teknik')>Fakultas Teknik</option>
+          <option value="Fakultas Sains dan Matematika" @selected($fakultasValue=='Fakultas Sains dan Matematika')>Fakultas Sains dan Matematika</option>
+          <option value="Fakultas Kesehatan Masyarakat" @selected($fakultasValue=='Fakultas Kesehatan Masyarakat')>Fakultas Kesehatan Masyarakat</option>
+          <option value="Fakultas Kedokteran" @selected($fakultasValue=='Fakultas Kedokteran')>Fakultas Kedokteran</option>
+          <option value="Fakultas Perikanan dan Ilmu Kelautan" @selected($fakultasValue=='Fakultas Perikanan dan Ilmu Kelautan')>Fakultas Perikanan dan Ilmu Kelautan</option>
+          <option value="Fakultas Peternakan dan Pertanian" @selected($fakultasValue=='Fakultas Peternakan dan Pertanian')>Fakultas Peternakan dan Pertanian</option>
+          <option value="Fakultas Psikologi" @selected($fakultasValue=='Fakultas Psikologi')>Fakultas Psikologi</option>
+          <option value="Fakultas Hukum" @selected($fakultasValue=='Fakultas Hukum')>Fakultas Hukum</option>
+          <option value="Fakultas Ilmu Sosial dan Ilmu Politik" @selected($fakultasValue=='Fakultas Ilmu Sosial dan Ilmu Politik')>Fakultas Ilmu Sosial dan Ilmu Politik</option>
+          <option value="Fakultas Ilmu Budaya" @selected($fakultasValue=='Fakultas Ilmu Budaya')>Fakultas Ilmu Budaya</option>
+          <option value="Fakultas Ekonomi dan Bisnis" @selected($fakultasValue=='Fakultas Ekonomi dan Bisnis')>Fakultas Ekonomi dan Bisnis</option>
+          <option value="Sekolah Vokasi" @selected($fakultasValue=='Sekolah Vokasi')>Sekolah Vokasi</option>
+          <option value="Sekolah Pasca Sarjana" @selected($fakultasValue=='Sekolah Pasca Sarjana')>Sekolah Pasca Sarjana</option>
         </select>
         @error('fakultas') <small class="error">{{ $message }}</small> @enderror
       </div>
@@ -87,7 +91,7 @@
       <div class="field">
         <label class="label">Tanggal Pengisian <span class="req">*</span></label>
         <input type="date" class="input" id="tanggal_pengisian" name="tanggal_pengisian"
-               value="{{ old('tanggal_pengisian', now()->format('Y-m-d')) }}" required>
+               value="{{ old('tanggal_pengisian', $draft['tanggal_pengisian'] ?? now()->format('Y-m-d')) }}" required>
         @error('tanggal_pengisian') <small class="error">{{ $message }}</small> @enderror
       </div>
     </div>
@@ -97,24 +101,33 @@
 {{-- ACTIONS BAR --}}
 <div class="skm-actions">
   <div class="skm-actions__left">
-    <button type="button" class="skm-btn skm-btn--prev"
-      data-fallback="{{ route('hakpaten.draftpatenisiformulir') }}"
-      onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)">
-      &laquo; Sebelumnya
-    </button>
-
-    <a class="btn-next"
-      href="{{ route('patenverif.all', $verif->id) }}">
-      Selanjutnya &raquo;
-    </a>
+    <button type="submit"
+    form="downloadForm"
+    name="action"
+    value="prev"
+    class="skm-btn skm-btn--prev">
+  &laquo; Sebelumnya
+</button>
+    <button type="submit"
+    form="downloadForm"
+    name="action"
+    value="next"
+    class="btn-next">
+  Selanjutnya &raquo;
+</button>
   </div>
 
   <div class="actions-right">
     {{-- tombol unduh submit ke form download --}}
+    
     <div class="actions-right2" style="display:flex; gap:10px; align-items:center;">
         <select form="downloadForm" name="download_format" class="input" style="width:160px;">
-          <option value="pdf"  {{ old('download_format','pdf')=='pdf' ? 'selected' : '' }}>PDF</option>
-          <option value="docx" {{ old('download_format')=='docx' ? 'selected' : '' }}>DOCX</option>
+          @php
+  $downloadFormat = old('download_format', $draft['download_format'] ?? 'pdf');
+@endphp
+
+<option value="pdf"  {{ $downloadFormat == 'pdf' ? 'selected' : '' }}>PDF</option>
+<option value="docx" {{ $downloadFormat == 'docx' ? 'selected' : '' }}>DOCX</option>
         </select>
 
         <button form="downloadForm" class="unduh" type="submit" name="action" value="download">
@@ -125,23 +138,87 @@
 
     {{-- FORM UPLOAD (verif) --}}
     <div class="button-upload">
-      <form id="draftForm"
-            action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
-            method="POST" enctype="multipart/form-data">
-        @csrf
+  <form id="draftForm"
+        action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
+        method="POST" enctype="multipart/form-data">
+    @csrf
 
-        <input id="draftFile"
-              type="file"
-              name="file"
-              required
-              hidden
-              accept=".doc,.docx,.pdf">
+    <input id="draftFile"
+          type="file"
+          name="file"
+          required
+          hidden
+          accept=".doc,.docx,.pdf">
 
-        <button id="uploadButton" type="button" class="btn-upload">Upload</button>
-        <span id="fileName">Belum Pilih File</span>
-      </form>
-    </div>
+    <label for="draftFile" class="btn-upload" id="uploadButtonLabel">Upload</label>
+
+    <span id="fileName">
+      {{ $draft['file_name'] ?? 'Belum Pilih File' }}
+    </span>
+
+    @if(!empty($draft['file_path']))
+      <div style="margin-top:6px;">
+        <a href="{{ Storage::url($draft['file_path']) }}" target="_blank">Lihat file</a>
+      </div>
+    @endif
+  </form>
+</div>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const draftFile = document.getElementById('draftFile');
+  const fileName = document.getElementById('fileName');
+  const draftForm = document.getElementById('draftForm');
+  const downloadForm = document.getElementById('downloadForm');
+  const uploadButtonLabel = document.getElementById('uploadButtonLabel');
 
+  let isSubmitting = false;
+
+  function upsertHidden(name, value) {
+    let input = draftForm.querySelector(`input[type="hidden"][name="${name}"]`);
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      draftForm.appendChild(input);
+    }
+    input.value = value ?? '';
+  }
+
+  if (draftFile && draftForm && downloadForm) {
+    draftFile.addEventListener('change', () => {
+      const file = draftFile.files && draftFile.files[0];
+      if (!file || isSubmitting) return;
+
+      isSubmitting = true;
+
+      if (fileName) fileName.textContent = file.name;
+      if (uploadButtonLabel) {
+        uploadButtonLabel.style.pointerEvents = 'none';
+        uploadButtonLabel.textContent = 'Mengupload...';
+      }
+
+      const fields = [
+        'nama_lengkap',
+        'program_studi',
+        'judul_paten',
+        'nidn_nip',
+        'fakultas',
+        'tanggal_pengisian',
+        'download_format'
+      ];
+
+      fields.forEach(name => {
+        const el = downloadForm.querySelector(`[name="${name}"]`);
+        if (el) {
+          upsertHidden(name, el.value);
+        }
+      });
+
+      draftForm.submit();
+    });
+  }
+});
+</script>
 @endsection
