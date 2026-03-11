@@ -387,7 +387,10 @@ $verifSession = session('hakpaten.verif', []);
           {{ old('skema_penelitian', data_get($verifSession,'skema_penelitian')) == 'Penelitian Pengembangan (TKT 7 - 9)' ? 'selected' : '' }}>
           Penelitian Pengembangan (TKT 7 - 9)
           </option>
-
+          <option value="Bukan dihasilkan dari Skema Penelitian"
+          {{ old('skema_penelitian', data_get($verifSession,'skema_penelitian')) == 'Bukan dihasilkan dari Skema Penelitian' ? 'selected' : '' }}>
+          Bukan dihasilkan dari Skema Penelitian
+        </option>
           </select>
       </div>
 

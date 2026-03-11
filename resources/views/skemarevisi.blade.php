@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Skema Pengembangan')
+@section('title','Revisi Skema Pengembangan')
 
 @section('content')
 <div class="judul">
@@ -106,15 +106,7 @@
     name="action"
     value="prev"
     class="skm-btn skm-btn--prev">
-  &laquo; Sebelumnya
-</button>
-    <button type="submit"
-    form="downloadForm"
-    name="action"
-    value="next"
-    class="btn-next">
-  Selanjutnya &raquo;
-</button>
+   Simpan
   </div>
 
   <div class="actions-right">
