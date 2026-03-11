@@ -17,6 +17,15 @@
   ];
   $docKeys = array_keys($docLabels);
 
+  // ✅ dokumen revisi yang punya inputan dari isi formulir (jadi boleh Edit)
+  $editableDocKeysByType = [
+    'cipta' => ['surat_permohonan','surat_pernyataan','surat_pengalihan'],
+    'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan'],
+  ];
+
+  // ✅ karena ini file cipta detail
+  $editableDocKeys = $editableDocKeysByType['cipta'];
+
   // pencipta
   $inventors = $row->inventors_arr ?? [];
 
@@ -412,7 +421,14 @@ if (!$isKeyedByDoc) {
                       $dotClass = (data_get($lastSignal,'from_role') === 'pemohon') ? 'green' : 'red';
                     }
 
-                    // buat tooltip biar pas
+                    // ✅ FALLBACK: kalau admin revisi ada tapi cycles kosong / ga ada signal,
+                    // tetap tampil dot merah (menunggu pemohon)
+                    if (!$showDot && $hasAdminRevisi && !$hasPemohonUpload) {
+                      $showDot = true;
+                      $dotClass = 'red';
+                    }
+
+                    // tooltip
                     $dotTitle = ($dotClass === 'green')
                       ? 'Pemohon sudah upload revisi'
                       : 'Menunggu upload revisi pemohon';

@@ -26,7 +26,12 @@ use App\Http\Controllers\HakCiptaVerifController;
 use App\Http\Controllers\PernyataanCiptaController;
 use App\Http\Controllers\PengalihanHakCiptaController;
 use App\Http\Controllers\FormulirMasterController;
-
+use App\Http\Controllers\DuplicateIsiFormController;
+use App\Http\Controllers\DuplicateFormPendaftaranCiptaanController;
+use App\Http\Controllers\DuplicatePernyataanCiptaController;
+use App\Http\Controllers\DuplicatePengalihanHakCiptaController;
+use App\Http\Controllers\DuplicateInvensiController;
+use App\Http\Controllers\DuplicatePengalihanHakController;
 /*
 |--------------------------------------------------------------------------
 | ADMIN ROUTES
@@ -539,3 +544,56 @@ Route::get('/hak-cipta/sukses', fn () => view('hakcipta.sukses'))->name('hakcipt
 |--------------------------------------------------------------------------
 */
 Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking');
+
+/*
+|--------------------------------------------------------------------------
+| DUPLICATE ISI FORMULIR
+|--------------------------------------------------------------------------
+*/
+Route::get('/pemohon/revisi/edit', [PemohonDashboardController::class, 'editRevisi'])
+  ->name('pemohon.revisi.edit');
+
+/*
+|--------------------------------------------------------------------------
+| DUPLICATE HAK CIPTA - ISI FORMULIR
+|--------------------------------------------------------------------------
+*/
+Route::prefix('dup/hak-cipta')->name('dup.hakcipta.isiform.')->group(function () {
+
+    Route::view('/pendaftaranCiptaan', 'isiform.hakcipta.duplicateformpendaftaranciptaan')
+        ->name('formpendaftaran');
+
+    Route::view('/suratpernyataan-isiform', 'isiform.hakcipta.duplicatesuratpernyataan')
+        ->name('suratpernyataan');
+
+    Route::view('/pengalihanhakcipta', 'isiform.hakcipta.duplicatepengalihanhakcipta')
+        ->name('pengalihanhak');
+
+    Route::view('/peralihancipta', 'isiform.hakcipta.duplicateperalihanverifcipta')
+        ->name('peralihanverifcipta');
+});
+
+// POST khusus duplicate (name juga dibedain)
+Route::post('/dup/isiform', [DuplicateFormPendaftaranCiptaanController::class, 'store'])->name('dup.isiformCipta.store');
+Route::post('/dup/pernyataan', [DuplicatePernyataanCiptaController::class, 'store'])->name('dup.pernyataanCipta.store');
+Route::post('/dup/pengalihan', [DuplicatePengalihanHakCiptaController::class, 'store'])->name('dup.pengalihanhakCipta.store');
+
+
+ /*
+|--------------------------------------------------------------------------
+| DUPLICATE HAK PATEN - ISI FORMULIR
+|--------------------------------------------------------------------------
+*/
+Route::prefix('dup/hak-paten')->name('dup.hakpaten.isiformulir.')->group(function () {
+
+    Route::view('/draft', 'isiform.paten.duplicatedraftpatenisiformulir')->name('draft');
+    Route::view('/isi-formulir', 'isiform.paten.duplicateisiformulir')->name('isiform');
+    Route::view('/invensi', 'isiform.paten.duplicateinvensiformulir')->name('invensi');
+    Route::view('/pengalihan', 'isiform.paten.duplicatepengalihanhakformulir')->name('pengalihan');
+    Route::view('/peralihan', 'isiform.paten.duplicateperalihankeverif')->name('peralihan');
+});
+
+// POST khusus duplicate
+Route::post('/dup/isiformpaten', [DuplicateIsiFormController::class, 'store'])->name('dup.isiform.store');
+Route::post('/dup/invensipaten', [DuplicateInvensiController::class, 'store'])->name('dup.invensi.store');
+Route::post('/dup/pengalihanpaten', [DuplicatePengalihanHakController::class, 'store'])->name('dup.pengalihanhak.store');

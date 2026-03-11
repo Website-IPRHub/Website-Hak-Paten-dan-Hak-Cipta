@@ -1,15 +1,12 @@
 @extends('layouts.app')
-@section('title','Upload Berkas Verifikasi Paten')
+@section('title','Upload Berkas Verifikasi Hak Cipta')
 @section('body-class','paten-page')
-
-@push('styles')
-  <link rel="stylesheet" href="{{ asset('css/paten-upload.css') }}">
-@endpush
 
 @section('content')
 
 @php $activeStep = 4; @endphp
-@include('hakpaten.isiformulir.menuformulir')
+@include('hakcipta.isiform.menuformcipta')
+
 
 @if(session('submit_error'))
 <script>
@@ -43,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="upload-head">
       <div>
-        <h1 class="upload-title">Upload Berkas Verifikasi Paten</h1>
+        <h1 class="upload-title">Upload Berkas Verifikasi Hak Cipta</h1>
         <p class="upload-sub">Upload satu per satu dan terakhir baru klik <b>Submit Verifikasi</b>.</p>
       </div>
     </div>
@@ -54,31 +51,31 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="card">
         <div class="card-top">
           <div>
-            <p class="card-name">Draft Paten <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF • max 5MB</p>
+            <p class="card-name">Formulir Permohonan Pendaftaran Ciptaan <span class="req">*</span></p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
-          <span class="status {{ $verif->draft_paten ? 'ok' : 'no' }}">
-            {{ $verif->draft_paten ? 'Sudah' : 'Belum' }}
+          <span class="status {{ $verif->surat_permohonan  ? 'ok' : 'no' }}">
+            {{ $verif->surat_permohonan  ? 'Sudah' : 'Belum' }}
           </span>
         </div>
         <div class="card-body">
-          <form class="upload-form" method="POST" action="{{ route('patenverif.upload.draft',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
+          <form class="upload-form" method="POST" action="{{ route('ciptaverif.upload.form',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
             @csrf
             <input class="upload-input" type="file" name="file" hidden accept=".doc,.docx,.pdf" required>
 
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                    @if($verif->draft_paten)
-                        {{ basename($verif->draft_paten) }}
+                    @if($verif->surat_permohonan )
+                        {{ basename($verif->surat_permohonan ) }}
                     @else
                         Belum pilih file
                     @endif
                   </div>
 
-                  @if($verif->draft_paten)
+                  @if($verif->surat_permohonan )
                       <div style="margin-top:6px;">
-                          <a href="{{ Storage::url($verif->draft_paten) }}" target="_blank" class="lihat-file-link">
+                          <a href="{{ Storage::url($verif->surat_permohonan ) }}" target="_blank" class="lihat-file-link">
                               Lihat File
                           </a>
                       </div>
@@ -94,35 +91,35 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>
 
-      {{-- 2) Form Permohonan --}}
+      {{-- 2) Surat Pernyataan --}}
       <div class="card">
         <div class="card-top">
           <div>
-            <p class="card-name">Form Permohonan <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF • tanpa tanda tangan</p>
+            <p class="card-name">Surat Pernyataan <span class="req">*</span></p>
+            <p class="card-hint">DOC/DOCX/PDF • tanpa tanda tangan • max 10MB</p>
           </div>
-          <span class="status {{ $verif->form_permohonan ? 'ok' : 'no' }}">
-            {{ $verif->form_permohonan ? 'Sudah' : 'Belum' }}
+          <span class="status {{ $verif->surat_pernyataan  ? 'ok' : 'no' }}">
+            {{ $verif->surat_pernyataan  ? 'Sudah' : 'Belum' }}
           </span>
         </div>
         <div class="card-body">
-          <form class="upload-form" method="POST" action="{{ route('patenverif.upload.form',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
+          <form class="upload-form" method="POST" action="{{ route('ciptaverif.upload.invensi', ['verif' => $verif->id]) }}" enctype="multipart/form-data">
             @csrf
             <input class="upload-input" type="file" name="file" hidden accept=".doc,.docx,.pdf" required>
 
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  @if($verif->form_permohonan)
-                      {{ basename($verif->form_permohonan) }}
+                  @if($verif->surat_pernyataan )
+                      {{ basename($verif->surat_pernyataan ) }}
                   @else
                       Belum pilih file
                   @endif
                 </div>
 
-                @if($verif->form_permohonan)
+                @if($verif->surat_pernyataan )
                     <div style="margin-top:6px;">
-                        <a href="{{ Storage::url($verif->form_permohonan) }}" target="_blank" class="lihat-file-link">
+                        <a href="{{ Storage::url($verif->surat_pernyataan ) }}" target="_blank" class="lihat-file-link">
                             Lihat File
                         </a>
                     </div>
@@ -138,83 +135,39 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>
 
-      {{-- 3) Surat Kepemilikan Invensi --}}
+      {{-- 3) Surat Pengalihan Hak --}}
       <div class="card">
         <div class="card-top">
           <div>
-            <p class="card-name">Surat Kepemilikan Invensi <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF</p>
-          </div>
-          <span class="status {{ $verif->surat_kepemilikan ? 'ok' : 'no' }}">
-            {{ $verif->surat_kepemilikan ? 'Sudah' : 'Belum' }}
-          </span>
-        </div>
-        <div class="card-body">
-          <form class="upload-form" method="POST" action="{{ route('patenverif.upload.invensi',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
-            @csrf
-            <input class="upload-input" type="file" name="file" hidden accept=".doc,.docx,.pdf" required>
-
-            <div class="drop">
-              <div class="file-meta">
-                <div class="fn upload-fn">
-                  @if($verif->surat_kepemilikan)
-                      {{ basename($verif->surat_kepemilikan) }}
-                  @else
-                      Belum pilih file
-                  @endif
-                </div>
-
-                @if($verif->surat_kepemilikan)
-                    <div style="margin-top:6px;">
-                        <a href="{{ Storage::url($verif->surat_kepemilikan) }}" target="_blank" class="lihat-file-link">
-                            Lihat File
-                        </a>
-                    </div>
-                @endif
-                <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
-              </div>
-              <div class="btns">
-                <button type="button" class="btn-soft upload-pick">Upload</button>
-                <button type="submit" class="upload-submit" hidden>Kirim</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {{-- 4) Surat Pengalihan Hak --}}
-      <div class="card">
-        <div class="card-top">
-          <div>
-            <p class="card-name">Surat Pengalihan Hak <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF</p>
+            <p class="card-name">Surat Pengalihan Hak Cipta <span class="req">*</span></p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->surat_pengalihan ? 'ok' : 'no' }}">
             {{ $verif->surat_pengalihan ? 'Sudah' : 'Belum' }}
           </span>
         </div>
         <div class="card-body">
-          <form class="upload-form" method="POST" action="{{ route('patenverif.upload.pengalihan',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
+          <form class="upload-form" method="POST" action="{{ route('ciptaverif.upload.pengalihan',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
             @csrf
             <input class="upload-input" type="file" name="file" hidden accept=".doc,.docx,.pdf" required>
 
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  @if($verif->surat_pengalihan)
-                      {{ basename($verif->surat_pengalihan) }}
-                  @else
-                      Belum pilih file
-                  @endif
-                </div>
+                    @if($verif->surat_pengalihan)
+                        {{ basename($verif->surat_pengalihan) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
 
-                @if($verif->surat_pengalihan)
-                    <div style="margin-top:6px;">
-                        <a href="{{ Storage::url($verif->surat_pengalihan) }}" target="_blank" class="lihat-file-link">
-                            Lihat File
-                        </a>
-                    </div>
-                @endif
+                  @if($verif->surat_pengalihan)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->surat_pengalihan) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -225,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
           </form>
         </div>
       </div>
+
 
       {{-- 5) Scan KTP --}}
       <div class="card">
@@ -238,27 +192,27 @@ document.addEventListener('DOMContentLoaded', function () {
           </span>
         </div>
         <div class="card-body">
-          <form class="upload-form" method="POST" action="{{ route('patenverif.upload.ktp',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
+          <form class="upload-form" method="POST" action="{{ route('ciptaverif.upload.scanktp',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
             @csrf
             <input class="upload-input" type="file" name="file" hidden accept=".pdf" required>
 
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  @if($verif->scan_ktp)
-                      {{ basename($verif->scan_ktp) }}
-                  @else
-                      Belum pilih file
-                  @endif
-                </div>
+                    @if($verif->scan_ktp)
+                        {{ basename($verif->scan_ktp) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
 
-                @if($verif->scan_ktp)
-                    <div style="margin-top:6px;">
-                        <a href="{{ Storage::url($verif->scan_ktp) }}" target="_blank" class="lihat-file-link">
-                            Lihat File
-                        </a>
-                    </div>
-                @endif
+                  @if($verif->scan_ktp)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->scan_ktp) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
                 <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
@@ -270,40 +224,40 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>
 
-      {{-- 6) Gambar Prototipe --}}
+      {{-- 6) Hasil Ciptaan --}}
       <div class="card">
         <div class="card-top">
           <div>
-            <p class="card-name">Gambar Prototipe</p>
-            <p class="card-hint">PNG/JPG/JPEG/SVG/PDF</p>
+            <p class="card-name">Hasil Ciptaan <span class="req">*</span></p>
+            <p class="card-hint">PNG/JPG/JPEG/SVG/PDF • max 10MB</p>
           </div>
-          <span class="status {{ $verif->gambar_prototipe ? 'ok' : 'no' }}">
-            {{ $verif->gambar_prototipe ? 'Sudah' : 'Belum' }}
+          <span class="status {{ $verif->hasil_ciptaan ? 'ok' : 'no' }}">
+            {{ $verif->hasil_ciptaan ? 'Sudah' : 'Belum' }}
           </span>
         </div>
         <div class="card-body">
-          <form class="upload-form" method="POST" action="{{ route('patenverif.upload.gambar',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
+          <form class="upload-form" method="POST" action="{{ route('ciptaverif.upload.hasilciptaan',['verif'=>$verif->id]) }}" enctype="multipart/form-data">
             @csrf
             <input class="upload-input" type="file" name="file" hidden accept=".png,.jpg,.jpeg,.svg,.pdf">
 
             <div class="drop">
               <div class="file-meta">
                 <div class="fn upload-fn">
-                  @if($verif->gambar_prototipe)
-                      {{ basename($verif->gambar_prototipe) }}
-                  @else
-                      Belum pilih file
-                  @endif
-                </div>
+                    @if($verif->hasil_ciptaan)
+                        {{ basename($verif->hasil_ciptaan) }}
+                    @else
+                        Belum pilih file
+                    @endif
+                  </div>
 
-                @if($verif->gambar_prototipe)
-                    <div style="margin-top:6px;">
-                        <a href="{{ Storage::url($verif->gambar_prototipe) }}" target="_blank" class="lihat-file-link">
-                            Lihat File
-                        </a>
-                    </div>
-                @endif
-                <div class="ft">Klik Upload → pilih file → otomatis kirim</div>
+                  @if($verif->hasil_ciptaan)
+                      <div style="margin-top:6px;">
+                          <a href="{{ Storage::url($verif->hasil_ciptaan) }}" target="_blank" class="lihat-file-link">
+                              Lihat File
+                          </a>
+                      </div>
+                  @endif
+                <div class="ft">Khusus jenis Karya Rekaman Video mengupload screenshoot video (pdf)<br>Klik Upload → pilih file → otomatis kirim</div>
               </div>
               <div class="btns">
                 <button type="button" class="btn-soft upload-pick">Upload</button>
@@ -314,25 +268,26 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>
 
-      {{-- 7) Deskripsi --}}
+      {{-- 7) Link Ciptaan --}}
       <div class="card card-wide">
         <div class="card-top">
           <div>
-            <p class="card-name">Deskripsi Singkat Prototipe</p>
-            <p class="card-hint">Maks 255 karakter (opsional). Akan ikut tersimpan saat Submit Final.</p>
+            <p class="card-name">Link Ciptaan</p>
+            <p class="card-hint">Link Ciptaan untuk Hak Cipta jenis Karya Rekaman Video.</p>
           </div>
-          <span class="status {{ $verif->deskripsi_singkat_prototipe ? 'ok' : 'no' }}">
-            {{ $verif->deskripsi_singkat_prototipe ? 'Terisi' : 'Kosong' }}
-          </span>
+          @if($verif->link_ciptaan)
+            <span class="status ok">Terisi</span>
+          @endif
         </div>
         <div class="card-body">
           <textarea
+            id="link_ciptaan_input"
             class="textarea"
-            name="deskripsi"
+            name="link_ciptaan"
             maxlength="255"
             form="finalSubmitForm"
-            placeholder="Tulis deskripsi singkat..."
-          >{{ old('deskripsi', $verif->deskripsi_singkat_prototipe) }}</textarea>
+            placeholder="Tulis link hasil ciptaan..."
+          >{{ old('link_ciptaan', $verif->link_ciptaan) }}</textarea>
         </div>
       </div>
 
@@ -342,12 +297,12 @@ document.addEventListener('DOMContentLoaded', function () {
       <button
           type="button"
           class="btn-prev"
-          onclick="window.location.href='{{ route('patenverif.datadiri', $verif->id) }}'"
-        >
+          onclick="window.location.href='{{ route('datadiricipta') }}'"
+      >
           &laquo; Sebelumnya
-        </button>
+      </button>
 
-      <form id="finalSubmitForm" method="POST" action="{{ route('patenverif.submit.final',['verif'=>$verif->id]) }}">
+      <form id="finalSubmitForm" method="POST" action="{{ route('ciptaverif.submit.final',['verif'=>$verif->id]) }}">
         @csrf
         <button type="submit" class="btn-final">
           Submit Verifikasi
@@ -381,23 +336,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-document.addEventListener("DOMContentLoaded", function () {
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const key = 'hakcipta_link_ciptaan_{{ $verif->id }}';
+  const textarea = document.getElementById('link_ciptaan_input');
+  const finalForm = document.getElementById('finalSubmitForm');
 
-    const textarea = document.querySelector("textarea[name='deskripsi']");
-    const key = "deskripsi_prototipe";
+  if (!textarea) return;
 
-    if(!textarea) return;
+  // kalau DB kosong, isi dari sessionStorage
+  if (!textarea.value) {
+    const saved = sessionStorage.getItem(key);
+    if (saved) textarea.value = saved;
+  }
 
-    // load saat halaman dibuka
-    if(localStorage.getItem(key) && textarea.value === ""){
-        textarea.value = localStorage.getItem(key);
-    }
+  // simpan tiap user ngetik
+  textarea.addEventListener('input', () => {
+    sessionStorage.setItem(key, textarea.value);
+  });
 
-    // simpan saat user mengetik
-    textarea.addEventListener("input", function(){
-        localStorage.setItem(key, textarea.value);
+  // kalau submit final berhasil, hapus cache browser
+  if (finalForm) {
+    finalForm.addEventListener('submit', () => {
+      sessionStorage.removeItem(key);
     });
-
+  }
 });
 </script>
 

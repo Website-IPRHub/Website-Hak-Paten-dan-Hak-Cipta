@@ -254,8 +254,4 @@ console.log("OLD INVENTOR:", oldInventor);
       jumlahInput.value = cards.length || 1;
     });
   }
-
-  
-
-
 });

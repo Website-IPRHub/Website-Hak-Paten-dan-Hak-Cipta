@@ -261,6 +261,13 @@
                     'hasil_ciptaan'=>'Hasil Ciptaan',
                   ];
 
+                  $editableDocKeysByType = [
+                    'cipta' => ['surat_permohonan','surat_pernyataan','surat_pengalihan'],
+                    'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan'],
+                  ];
+
+                  $editableDocKeys = $editableDocKeysByType[$pengajuan->type] ?? [];
+
                   $hist = collect($revHistory ?? [])
                     ->filter(function($h){
                       return !empty(data_get($h, 'pemohon_file_path'));
@@ -278,96 +285,123 @@
     @if(($status ?? '') === 'revisi')
       <div class="pd-revisi-title">Dokumen yang Perlu Direvisi</div>
 
+      <p style="
+    margin:10px 0 16px 0;
+    padding:12px 14px;
+    background:#eef4ff;
+    border-left:4px solid #2563eb;
+    color:#1e3a8a;
+    font-size:15px;
+    font-weight:500;
+    border-radius:6px;
+">
+  ℹ️ Jika tersedia tombol <b>Edit</b>, silakan perbaiki data pada formulir terlebih dahulu, 
+  kemudian <b>download ulang dokumen</b> dan <b>upload kembali</b> file revisi pada kolom 
+  <b>Upload Revisi</b>.
+</p>
       <div class="pd-table-shell">
         <table class="pd-revisi-table revisi">
-          <thead>
-            <tr>
-              <th>Dokumen</th>
-              <th>Catatan</th>
-              <th>File Resivi</th>
-              <th>Status</th>
-              <th>Upload Revisi</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse(($revActiveByDoc ?? []) as $req)
-              @php
-                $docKey = $req->doc_key ?? '-';
-                $docLabel = $labels[$docKey] ?? $docKey;
+         <thead>
+  <tr>
+    <th>Dokumen</th>
+    <th>Catatan</th>
+    <th>File Resivi</th>
+    <th>Status</th>
+    <th>Aksi</th>
+    <th>Upload Revisi</th>
+  </tr>
+</thead>
 
-                $pemohonUploaded = !empty($req->pemohon_uploaded);
-                $adminNote = $req->admin_note ?? '-';
-                $adminFile = $req->admin_file_path ?? null;
-              @endphp
+<tbody>
+  @forelse(($revActiveByDoc ?? []) as $req)
+    @php
+      $docKey = $req->doc_key ?? '-';
+      $docLabel = $labels[$docKey] ?? $docKey;
 
-              <tr>
-                <td>{{ $docLabel }}</td>
+      $pemohonUploaded = !empty($req->pemohon_uploaded);
+      $adminNote = $req->admin_note ?? '-';
+      $adminFile = $req->admin_file_path ?? null;
 
-              <td>
-                  @php
-                    $noteText = trim((string)($adminNote ?? ''));
-                    $noteText = ($noteText === '' ? '-' : $noteText);
-                    $noteClamp = trim(preg_replace("/\r\n|\r|\n/", " ", (string)$noteText));
-                  @endphp
+      $revId = $req->id ?? null;
+    @endphp
 
-                  <div class="pd-note-cell">
-                    @if($noteText === '-')
-                      <span class="pd-dash">-</span>
-                    @else
-                     <div class="pd-note-clamp">{{ $noteClamp }}</div>
+    <tr>
+      <td>{{ $docLabel }}</td>
 
-{{-- FULL: jangan nl2br, cukup text biasa --}}
-<div class="pd-note-full" hidden>{{ $noteText }}</div>
+      <td>
+        @php
+          $noteText = trim((string)($adminNote ?? ''));
+          $noteText = ($noteText === '' ? '-' : $noteText);
+          $noteClamp = trim(preg_replace("/\r\n|\r|\n/", " ", (string)$noteText));
+        @endphp
 
-<button type="button" class="pd-note-toggle jsNoteToggle" hidden>Selengkapnya</button>
-                    @endif
-                  </div>
-                </td>
+        <div class="pd-note-cell">
+          @if($noteText === '-')
+            <span class="pd-dash">-</span>
+          @else
+            <div class="pd-note-clamp">{{ $noteClamp }}</div>
+            <div class="pd-note-full" hidden>{{ $noteText }}</div>
+            <button type="button" class="pd-note-toggle jsNoteToggle" hidden>Selengkapnya</button>
+          @endif
+        </div>
+      </td>
 
-                <td class="pd-td-center">
-                  @if($adminFile)
-                    <a href="{{ asset('storage/'.$adminFile) }}" target="_blank" class="pd-action-link">
-                      Download
-                    </a>
-                  @else
-                    <span class="pd-dash">-</span>
-                  @endif
-                </td>
+      <td class="pd-td-center">
+        @if($adminFile)
+          <a href="{{ asset('storage/'.$adminFile) }}" target="_blank" class="pd-action-link">
+            Download
+          </a>
+        @else
+          <span class="pd-dash">-</span>
+        @endif
+      </td>
 
-                <td class="pd-td-center">
-                  @if($pemohonUploaded)
-                    <span class="pd-pill done">Sudah upload</span>
-                  @else
-                    <span class="pd-pill todo">Belum upload</span>
-                  @endif
-                </td>
+      <td class="pd-td-center">
+        @if($pemohonUploaded)
+          <span class="pd-pill done">Sudah upload</span>
+        @else
+          <span class="pd-pill todo">Belum upload</span>
+        @endif
+      </td>
 
-                <td>
-                  @php $revId = $req->id ?? null; @endphp
+      {{-- EDIT --}}
+      <td class="pd-td-center">
+        @if(in_array($docKey, $editableDocKeys))
+          <a
+            href="{{ route('pemohon.revisi.edit', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'doc'=>$docKey]) }}"
+            class="pd-mini-btn"
+          >
+            Edit
+          </a>
+        @else
+          <span class="pd-muted">-</span>
+        @endif
+      </td>
 
-                  @if($revId)
-                    @if(!$pemohonUploaded)
-                      <form method="POST"
-                            action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
-                            enctype="multipart/form-data"
-                            class="pd-upload-form">
-                        @csrf
-                        <input type="file" name="file" required>
-                        <button type="submit" class="pd-mini-btn">Upload</button>
-                      </form>
-                    @else
-                      <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
-                    @endif
-                  @else
-                    <span class="pd-muted">Data revisi belum valid (id kosong).</span>
-                  @endif
-                </td>
-              </tr>
-
-            @empty
-              <tr><td colspan="5">Belum ada dokumen revisi.</td></tr>
-            @endforelse
-          </tbody>
+      {{-- UPLOAD REVISI --}}
+      <td>
+        @if($revId)
+          @if(!$pemohonUploaded)
+            <form method="POST"
+                  action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
+                  enctype="multipart/form-data"
+                  class="pd-upload-form">
+              @csrf
+              <input type="file" name="file" required>
+              <button type="submit" class="pd-mini-btn">Upload</button>
+            </form>
+          @else
+            <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
+          @endif
+        @else
+          <span class="pd-muted">Data revisi belum valid (id kosong).</span>
+        @endif
+      </td>
+    </tr>
+  @empty
+    <tr><td colspan="6">Belum ada dokumen revisi.</td></tr>
+  @endforelse
+</tbody>
         </table>
       </div>
     @endif

@@ -162,10 +162,13 @@ body.paten-detail-page .acc-sub{
 }
 
 /* ===== DOKUMEN ===== */
-
 body.paten-detail-page .doc-top{
+  display:flex !important;
+  flex-wrap:wrap !important;              /* ✅ biar item bisa turun baris */
   align-items:flex-start;
-  gap:14px;
+  justify-content:space-between !important;/* ✅ badge tetep kanan atas */
+  gap:6px 14px !important;                /* row-gap kecil */
+  width:100%;
 }
 
 body.paten-detail-page .doc-link{
@@ -1173,13 +1176,6 @@ body.paten-detail-page .dash-hero button{
   pointer-events: auto !important;
 }
 
-/* 3) STICKY FOOTER + DIATAS SEMUA LAYER */
-body.paten-detail-page .docs-footer-actions{
-  position: sticky !important;
-  bottom: 12px !important;
-  z-index: 2147483647 !important; /* paling atas */
-}
-
 /* 4) PASTIIN WRAPPER KONTEN IKUT DIATAS (BIAR STICKY KEHITUNG) */
 body.paten-detail-page .dash-content{
   position: relative !important;
@@ -1628,13 +1624,9 @@ body.cipta-detail-page .acc-head{
 
 /* bikin teks deskripsi turun ke bawah, gak nabrak badge */
 .doc-text-block{
-  display:block;
-  width:100%;
-  margin-top:6px;
-  text-align:left;
-  white-space:pre-wrap;
-  word-break:break-word;
-  overflow-wrap:anywhere;
+  flex: 0 0 100% !important;   /* ✅ paksa full row sendiri */
+  width:100% !important;
+  margin-top:6px !important;
 }
 
 .note-cell { display:flex; flex-direction:column; gap:4px; }
@@ -2009,3 +2001,255 @@ body.cipta-detail-page .paten-row .p-value a{
   white-space: normal !important;
   word-break: break-word !important;
 }
+
+/* =========================================================
+   REVISION POPUP -> MODAL BESAR DI TENGAH (PATEN + CIPTA)
+   Tanpa ubah HTML: pakai :has()
+========================================================= */
+
+/* 3) rev-pop jadi modal di tengah */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-pop:not([hidden]){
+  position: fixed;
+  top: 50%;
+  left: 55%;
+  transform: translate(-50%,-50%);
+  z-index: 9999;
+
+  width: min(920px, calc(100vw - 32px));
+  max-height: min(90vh, 860px);
+  overflow: auto;
+
+  background: #fff;
+  border: 1px solid rgba(11,44,95,.16);
+  border-radius: 18px;
+  box-shadow: 0 18px 60px rgba(0,0,0,.28);
+  padding: 18px 18px 16px;
+}
+
+/* 4) rapihin form isi modal */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-pop form{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 5) textarea lebih besar */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-pop textarea.input{
+  width: 100%;
+  min-height: 200px;      /* ✅ bikin besar */
+  resize: vertical;
+  line-height: 1.45;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(11,44,95,.18);
+}
+
+/* 6) file input biar rapi */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-pop input[type="file"]{
+  width: 100%;
+}
+
+/* 7) tombol simpan revisi lebih “utama” */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-pop .btn-mini{
+  align-self: flex-start;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+/* 8) optional: biar popover kecil (rev-dd) ga ikut jadi container aneh */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-dd{
+  position: relative;
+  z-index: 1;
+}
+
+/* modalnya yang boleh scroll */
+body:is(.paten-detail-page,.cipta-detail-page) .rev-pop{
+  overflow: auto !important;
+  max-height: min(82vh, 720px);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* popup selalu di atas */
+.rev-pop{
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}
+
+/* saat popup buka: turunin layer area tombol di belakang */
+body.modal-rev-open .doc-actions,
+body.modal-rev-open .docs-footer-actions{
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+/* =========================
+   REV POP OPEN (tanpa :has)
+========================= */
+
+/* modal selalu di atas */
+.rev-pop{
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}
+
+/* saat popup revisi terbuka -> sembunyikan footer actions */
+body.modal-rev-open .docs-footer-actions{
+  display: none !important;
+}
+
+/* lock scroll halaman */
+html, body{
+  height: auto;
+}
+body.modal-rev-open{
+  height: 100%;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+/* modalnya boleh scroll */
+body.modal-rev-open .rev-pop{
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* optional: background nggak bisa diklik */
+body.modal-rev-open .dash-content{
+  pointer-events: none !important;
+}
+body.modal-rev-open .rev-pop{
+  pointer-events: auto !important;
+}
+
+/* popup selalu di atas */
+.rev-pop{
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}
+
+/* tombol footer belakang hilang */
+body.modal-rev-open .docs-footer-actions{
+  display: none !important;
+}
+
+/* HANYA tombol OK/Revisi di belakang yang disembunyiin */
+body.modal-rev-open .doc-actions .btn-mini{
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* tapi tombol di DALAM popup jangan ikut hilang */
+body.modal-rev-open .rev-pop .btn-mini{
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ===== FIX GAP SELENGKAPNYA (DETAILS) ===== */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:6px !important;
+}
+
+/* JANGAN HILANGKAN PREVIEW SAAT OPEN (biar gak kosong -> gak ada gap) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-short{
+  display:block !important;
+}
+
+/* TOMBOL tetap tampil, cuma teksnya berubah via ::after */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-action{
+  display:block !important;
+}
+
+/* matikan tombol tutup bawah (biar gak dobel) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
+  display:none !important;
+}
+
+/* rapetin jarak isi panjang biar nempel */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long{
+  margin-top:6px !important;
+}
+/* ===== FIX CATATAN JANGAN BOLD SETELAH REFRESH ===== */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-short,
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long,
+body:is(.paten-detail-page,.cipta-detail-page) .note-plain{
+  font-weight:400 !important;
+}
+
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action{
+  font-weight:800 !important;
+}
+/* ===== FIX: JANGAN DOUBLE SAAT SELENGKAPNYA ===== */
+
+/* summary tetap layout kolom */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:6px !important;
+}
+
+/* ✅ saat OPEN: sembunyikan preview biar gak double */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-short{
+  display:none !important;
+}
+
+/* ✅ saat OPEN: tombol tetap ada (jadi summary gak kosong) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-action{
+  display:block !important;
+}
+
+/* matikan tombol tutup bawah (biar gak dobel) */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
+  display:none !important;
+}
+
+/* rapetin jarak isi panjang */
+body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long{
+  margin-top:6px !important;
+}
+/* ===== FIX: TUTUP HARUS DI BAWAH (BUKAN DI SUMMARY) ===== */
+
+/* pas open: preview di summary hilang (biar gak double) */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail[open] summary.note-sum .note-short{
+  display:none !important;
+}
+
+/* pas open: sembunyikan tombol "Tutup" yang di summary */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail[open] summary.note-sum .note-action{
+  display:none !important;
+}
+
+/* pas open: rapetin summary biar gak ada gap */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail[open] summary.note-sum{
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* full text nempel langsung */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail .note-long{
+  margin-top: 6px !important;
+}
+
+/* tombol tutup bawah: default sembunyi */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail .note-close{
+  display:none !important;
+}
+
+/* tombol tutup bawah: muncul hanya saat open */
+body:is(.paten-detail-page,.cipta-detail-page)
+details.note-detail[open] .note-close{
+  display:inline-block !important;
+  margin-top: 6px !important;
+}
+

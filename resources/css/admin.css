@@ -1425,7 +1425,8 @@ body.admin-page .dash-content{
   height: 100%;
   min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;          /* ✅ biar nggak kepotong saat zoom */
+  -webkit-overflow-scrolling: touch;
 }
 
 /************* ADMIN SCOPE GUARD (PALING BAWAH) *************/
@@ -1689,7 +1690,13 @@ body.admin-page .dash-content{
 .date-range-wrap{ position:relative; display:flex; align-items:center; }
 .date-ic{ position:absolute; left:10px; font-size:14px; opacity:.7; }
 
-.date-range-input{ padding-left:34px; min-width: 240px; padding-right:34px; }
+.date-range-input{
+  padding-left:34px;
+  padding-right:34px;
+  width: 240px;
+  max-width: 22vw;
+  min-width: 160px;   /* ✅ masih aman tapi nggak maksa */
+}
 
 .date-clear{
   position:absolute;
@@ -1751,22 +1758,30 @@ body.admin-page .dash-content{
   border-color: #bbb;
 }
 
-.page-actions--paten{
+/* PATEN + CIPTA: biar bar atas responsif */
+.page-actions--paten,
+.page-actions--cipta{
   display:flex;
-  align-items:center;
+  align-items:flex-end;
   gap:12px;
-  flex-wrap:nowrap;     /* ✅ jangan wrap */
+  flex-wrap:nowrap;     /* tetap 1 baris seperti gambar 2 */
+  min-width:0;          /* penting supaya anaknya boleh shrink */
+}
+
+/* form filter harus boleh mengecil */
+.page-actions--paten .filters-bar,
+.page-actions--cipta .filters-bar{
+  flex: 1 1 auto;       /* ✅ dari 0 0 auto -> jadi bisa shrink */
   min-width:0;
 }
 
-.filters-bar{ flex:0 0 auto; }
-
-.export-actions{ flex:0 0 auto; display:flex; gap:10px; }
-
-.search-right{
-  margin-left:auto;     /* ✅ dorong ke ujung kanan */
-  width:340px;
-  max-width:40vw;
+/* input search jangan maksa fix gede */
+.search-input--paten,
+.search-input--cipta{
+  flex: 0 1 320px;      /* ✅ boleh mengecil */
+  width: 320px;
+  max-width: 40vw;
+  min-width: 180px;     /* biar masih kepake */
 }
 
 .page-head-row{

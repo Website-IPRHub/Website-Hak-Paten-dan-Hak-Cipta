@@ -1,3 +1,4 @@
+frompendaftaranciptaancontroller
 <?php
 
 namespace App\Http\Controllers;
@@ -17,22 +18,53 @@ class FormPendaftaranCiptaanController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'jumlah_inventor'   => ['required', 'integer', 'min:1', 'max:20'],
-            'judul_ciptaan'     => ['required', 'string', 'max:255'],
-            'link_ciptaan'      => ['required', 'url'],
-            'tanggal_pengisian' => ['required', 'date'],
-            'tempat'            => ['required', 'string', 'max:100'],
+    'jumlah_inventor'        => ['required', 'integer', 'min:1', 'max:20'],
+    'jenis_cipta'            => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+    'jenis_cipta_lainnya'    => ['nullable', 'string', 'max:255'],
+    'judul_ciptaan'          => ['required', 'string', 'max:255'],
+    'link_ciptaan'           => ['required', 'url'],
+    'berupa'                 => ['required', 'string', 'max:255'],
+    'tanggal_pengisian'      => ['required', 'date'],
+    'tempat'                 => ['required', 'string', 'max:100'],
+    'uraian'                 => ['required', 'string', 'max:350'],
 
-            'inventor'             => ['required', 'array'],
-            'inventor.nama'        => ['required', 'array'],
-            'inventor.nama.*'      => ['required', 'string', 'max:200'],
-            'inventor.alamat.*'    => ['required', 'string'],
-            'inventor.tlp_rumah.*' => ['nullable', 'string', 'max:50'],
-            'inventor.no_hp.*'     => ['required', 'string', 'max:50'],
-            'inventor.email.*'     => ['required', 'email', 'max:100'],
+    'inventor'               => ['required', 'array'],
 
-            'download_format' => ['required', 'in:pdf,docx'],
-        ]);
+'inventor.nama'          => ['required', 'array'],
+'inventor.nama.*'        => ['required', 'string', 'max:200'],
+
+'inventor.nik'           => ['required', 'array'],
+'inventor.nik.*'         => ['required', 'string', 'max:50'],
+
+'inventor.nip_nim'       => ['required', 'array'],
+'inventor.nip_nim.*'     => ['required', 'string', 'max:50'],
+
+'inventor.fakultas'      => ['required', 'array'],
+'inventor.fakultas.*'    => ['required', 'string', 'max:255'],
+
+'inventor.nidn'          => ['nullable', 'array'],
+'inventor.nidn.*'        => ['nullable', 'string', 'max:20'],
+
+'inventor.status'        => ['required', 'array'],
+'inventor.status.*'      => ['required', 'string', 'max:50'],
+
+'inventor.no_hp'         => ['required', 'array'],
+'inventor.no_hp.*'       => ['required', 'string', 'max:50'],
+
+'inventor.tlp_rumah'     => ['nullable', 'array'],
+'inventor.tlp_rumah.*'   => ['nullable', 'string', 'max:50'],
+
+'inventor.email'         => ['required', 'array'],
+'inventor.email.*'       => ['required', 'email', 'max:100'],
+
+'inventor.alamat'        => ['required', 'array'],
+'inventor.alamat.*'      => ['required', 'string'],
+
+'inventor.kode_pos'      => ['required', 'array'],
+'inventor.kode_pos.*'    => ['required', 'string', 'max:20'],
+
+    'download_format'        => ['nullable', 'in:pdf,docx'],
+]);
 
         $jumlah = (int) $data['jumlah_inventor'];
         $actual = count($data['inventor']['nama'] ?? []);
@@ -41,8 +73,20 @@ class FormPendaftaranCiptaanController extends Controller
         }
 
         // simpan session kalau kamu masih butuh flow "Next"
-        $existing = session('hakcipta.form', []);
-        session()->put('hakcipta.form', array_merge($existing, $request->all()));
+        $existingForm = session('hakcipta.form', []);
+
+session()->put('hakcipta.form', array_merge($existingForm, [
+    'jumlah_inventor'      => $request->jumlah_inventor,
+    'jenis_cipta'          => $request->jenis_cipta,
+    'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
+    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
+    'judul_ciptaan'        => $request->judul_ciptaan,
+    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
+    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
+    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
+    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
+    'inventor'             => $request->inventor,
+]));
 
         // kalau klik tombol Next (sesuaikan route kamu)
         if ($request->input('action') === 'next') {
