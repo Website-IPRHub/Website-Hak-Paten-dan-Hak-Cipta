@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="card-top">
           <div>
             <p class="card-name">Draft Paten <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF • max 5MB</p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->draft_paten ? 'ok' : 'no' }}">
             {{ $verif->draft_paten ? 'Sudah' : 'Belum' }}
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="card-top">
           <div>
             <p class="card-name">Form Permohonan <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF • tanpa tanda tangan</p>
+            <p class="card-hint">DOC/DOCX/PDF • tanpa tanda tangan • max 10MB</p>
           </div>
           <span class="status {{ $verif->form_permohonan ? 'ok' : 'no' }}">
             {{ $verif->form_permohonan ? 'Sudah' : 'Belum' }}
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="card-top">
           <div>
             <p class="card-name">Surat Kepemilikan Invensi <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF</p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->surat_kepemilikan ? 'ok' : 'no' }}">
             {{ $verif->surat_kepemilikan ? 'Sudah' : 'Belum' }}
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="card-top">
           <div>
             <p class="card-name">Surat Pengalihan Hak <span class="req">*</span></p>
-            <p class="card-hint">DOC/DOCX/PDF</p>
+            <p class="card-hint">DOC/DOCX/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->surat_pengalihan ? 'ok' : 'no' }}">
             {{ $verif->surat_pengalihan ? 'Sudah' : 'Belum' }}
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="card-top">
           <div>
             <p class="card-name">Gambar Prototipe</p>
-            <p class="card-hint">PNG/JPG/JPEG/SVG/PDF</p>
+            <p class="card-hint">PNG/JPG/JPEG/SVG/PDF • max 10MB</p>
           </div>
           <span class="status {{ $verif->gambar_prototipe ? 'ok' : 'no' }}">
             {{ $verif->gambar_prototipe ? 'Sudah' : 'Belum' }}
@@ -321,9 +321,9 @@ document.addEventListener('DOMContentLoaded', function () {
             <p class="card-name">Deskripsi Singkat Prototipe</p>
             <p class="card-hint">Maks 255 karakter (opsional). Akan ikut tersimpan saat Submit Final.</p>
           </div>
-          <span class="status {{ $verif->deskripsi_singkat_prototipe ? 'ok' : 'no' }}">
-            {{ $verif->deskripsi_singkat_prototipe ? 'Terisi' : 'Kosong' }}
-          </span>
+          @if($verif->deskripsi_singkat_prototipe)
+            <span class="status ok">Terisi</span>
+          @endif
         </div>
         <div class="card-body">
           <textarea

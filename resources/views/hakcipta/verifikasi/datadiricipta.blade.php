@@ -408,4 +408,43 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
+  const fields = {
+    nilai_perolehan: document.getElementById('nilai_perolehan'),
+    sumber_dana: document.getElementById('sumber_dana'),
+    skema_penelitian: document.getElementById('skema_penelitian'),
+  };
+
+  Object.entries(fields).forEach(([name, el]) => {
+    if (!el) return;
+
+    const key = `${keyPrefix}_${name}`;
+
+    // restore dari sessionStorage kalau value blade kosong
+    if (!el.value) {
+      const saved = sessionStorage.getItem(key);
+      if (saved !== null) {
+        el.value = saved;
+      }
+    }
+
+    // save saat user input/change
+    const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(evt, () => {
+      sessionStorage.setItem(key, el.value);
+    });
+  });
+
+  // kalau form page 2 berhasil submit, hapus draft browser
+  const form = document.getElementById('draftForm');
+  if (form) {
+    form.addEventListener('submit', () => {
+      Object.keys(fields).forEach(name => {
+        sessionStorage.removeItem(`${keyPrefix}_${name}`);
+      });
+    });
+  }
+});
+</script>
+
+
 @endsection

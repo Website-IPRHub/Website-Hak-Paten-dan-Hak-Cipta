@@ -26,18 +26,8 @@
         </p>
         <h1>Catatan: Mohon rapikan kembali dokumen sebelum dikirimkan ke proses verifikasi.</h1>
   </div>
-  <div class="actions-bar">
-      <div class="actions-left">
-        <button
-          type="button"
-          class="btn-prev"
-          data-fallback="{{ route('menuhakpaten') }}"
-          onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
-        >&laquo; Sebelumnya</button>
-
-        <a class="btn-next" href="{{ route('hakpaten.isiformulir') }}">
-          Selanjutnya &raquo;
-        </a>
-      </div>
+   <a href="{{ route('hakpaten.isiformulir')}}" class="btn-verif">
+  Mulai Proses 
+</a>
 </section>
 @endsection
