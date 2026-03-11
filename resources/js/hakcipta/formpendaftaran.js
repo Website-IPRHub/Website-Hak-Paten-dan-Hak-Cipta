@@ -275,4 +275,8 @@ if (jumlahInput) {
       jumlahInput.value = cards.length || 1;
     });
   }
+
+  
+
+
 });

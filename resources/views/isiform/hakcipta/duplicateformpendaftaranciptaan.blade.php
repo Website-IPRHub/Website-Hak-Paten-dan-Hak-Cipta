@@ -12,16 +12,13 @@
 @include('isiform.hakcipta.duplicatemenuformcipta')
 
 @php
-  // Ambil ID referensi
+  $activeStep = 2; 
   $ref = request('ref') ?? session('edit_ref_id');
   
-  // Ambil data session spesifik ID (hasil jemputan Controller Dashboard tadi)
+  // ✅ Pake nama $data biar lo gak ribet, tapi ambil dari saku spesifik ID
   $data = $ref 
       ? session("hakcipta.form.$ref", session('hakcipta.form', [])) 
       : session('hakcipta.form', []);
-
-  // Variabel buat script inventor biar gak error
-  $prefill = $data; 
 @endphp
 
 <script type="application/json" id="prefill-inventor-data">
@@ -120,42 +117,45 @@
   </div>
 
       <div class="field">
-        <label class="label">Link Ciptaan <span class="req">*</span></label>
-        <input
-          type="url"
-          class="input"
-          name="link_ciptaan"
-          placeholder="Contoh: https://drive.google.com/..."
-          value="{{ old('link_ciptaan', $data['link_ciptaan'] ?? '') }}"
-          required
-        >
-        @error('link_ciptaan') <small class="err">{{ $message }}</small> @enderror
-      </div>
+    <label class="label">Link Ciptaan <span class="req">*</span></label>
+    <input
+        type="url"
+        class="input"
+        name="link_ciptaan"
+        placeholder="Contoh: https://drive.google.com/..."
+        {{-- ✅ GANTI BAGIAN INI --}}
+        value="{{ old('link_ciptaan', $data['link_ciptaan'] ?? '') }}"
+        required
+    >
+    @error('link_ciptaan') <small class="err">{{ $message }}</small> @enderror
+</div>
+<div class="field span-2">
+    <label class="label">Judul Ciptaan <span class="req">*</span></label>
+    <input
+        type="text"
+        class="input"
+        name="judul_ciptaan"
+        placeholder="Masukkan judul ciptaan"
+        {{-- ✅ GANTI BAGIAN INI --}}
+        value="{{ old('judul_ciptaan', $data['judul_ciptaan'] ?? '') }}"
+        required
+    >
+    @error('judul_ciptaan') <small class="err">{{ $message }}</small> @enderror
+</div>
 
-      <div class="field span-2">
-        <label class="label">Judul Ciptaan <span class="req">*</span></label>
-        <input
-          type="text"
-          class="input"
-          name="judul_ciptaan"
-          placeholder="Masukkan judul ciptaan"
-          value="{{ old('judul_ciptaan', $data['judul_ciptaan'] ?? '') }}"
-          required
-        >
-        @error('judul_ciptaan') <small class="err">{{ $message }}</small> @enderror
-      </div>
-      <div class="field span-2">
-        <label class="label">Produk Ciptaan Berupa? <span class="req">*</span></label>
-        <input
-          type="text"
-          class="input"
-          name="berupa"
-          placeholder="Produk ciptaan berupa..."
-          value="{{ old('berupa', $data['berupa'] ?? '') }}"
-          required
-        >
-        @error('berupa') <small class="err">{{ $message }}</small> @enderror
-      </div>
+     <div class="field span-2">
+    <label class="label">Produk Ciptaan Berupa? <span class="req">*</span></label>
+    <input
+        type="text"
+        class="input"
+        name="berupa"
+        placeholder="Produk ciptaan berupa..."
+        {{-- ✅ GANTI BAGIAN INI --}}
+        value="{{ old('berupa', $data['berupa'] ?? '') }}"
+        required
+    >
+    @error('berupa') <small class="err">{{ $message }}</small> @enderror
+</div>
 
       <div class="field">
         <label class="label">Tanggal Pengisian <span class="req">*</span></label>
@@ -164,24 +164,26 @@
           class="input"
           id="tanggal_pengisian"
           name="tanggal_pengisian"
+          {{-- ✅ GANTI DISINI: biar tanggalnya stay --}}
           value="{{ old('tanggal_pengisian', $data['tanggal_pengisian'] ?? now()->format('Y-m-d')) }}"
         >
         @error('tanggal_pengisian') <small class="err">{{ $message }}</small> @enderror
       </div>
 
       <div class="field span-2">
-        <label class="label">Tempat Pengisian <span class="req">*</span></label>
-        <p class="hint">Tempat saat anda mengisi form ini.</p>
-        <input
-          type="text"
-          class="input"
-          name="tempat"
-          placeholder="Contoh: Semarang"
-          value="{{ old('tempat', $data['tempat'] ?? '') }}"
-          required
-        >
-        @error('tempat') <small class="err">{{ $message }}</small> @enderror
-      </div>
+    <label class="label">Tempat Pengisian <span class="req">*</span></label>
+    <p class="hint">Tempat saat anda mengisi form ini.</p>
+    <input
+        type="text"
+        class="input"
+        name="tempat"
+        placeholder="Contoh: Semarang"
+        {{-- ✅ GANTI BAGIAN INI --}}
+        value="{{ old('tempat', $data['tempat'] ?? '') }}"
+        required
+    >
+    @error('tempat') <small class="err">{{ $message }}</small> @enderror
+</div>
     </div>
 
     {{-- DATA PENCIPTA --}}
@@ -196,19 +198,18 @@
 
     {{-- ULASAN (DI ATAS BUTTON) --}}
     <div class="field mt-16">
-      <label class="label">Ulasan Ciptaan <span class="req">*</span></label>
-      <p class="hint">Tulis singkat (± 2–3 kalimat).</p>
-      <textarea
+    <label class="label">Ulasan Ciptaan <span class="req">*</span></label>
+    <p class="hint">Tulis singkat (± 2–3 kalimat).</p>
+    <textarea
         class="input input-full"
         name="uraian"
         rows="4"
         maxlength="350"
         placeholder="Masukkan uraian produk ciptaan"
         required
-      >{{ old('uraian', $data['uraian'] ?? '') }}</textarea>
-
-      @error('uraian') <small class="err">{{ $message }}</small> @enderror
-    </div>
+    >{{-- ✅ GANTI BAGIAN INI --}}{{ old('uraian', $data['uraian'] ?? '') }}</textarea>
+    @error('uraian') <small class="err">{{ $message }}</small> @enderror
+</div>
 
     {{-- ACTIONS BAR --}}
     {{-- ACTIONS BAR --}}
@@ -225,7 +226,7 @@
       Simpan Perubahan
     </button>
   </div>
-       <script>
+             <script>
 document.addEventListener('DOMContentLoaded', () => {
   const nextBtn = document.getElementById('nextLinkIsiform');
   if (!nextBtn) return;
@@ -271,11 +272,11 @@ document.addEventListener('DOMContentLoaded', () => {
           html: `
             <p>Data perubahan Anda sudah tersimpan di sistem (Sesi).</p>
             <hr style="margin:15px 0;">
-            <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru sebelum melanjutkan ke tahap verifikasi:</p>
-            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:15px;">
-              <li>• Form Paten</li>
-              <li>• Surat Pengalihan Hak</li>
-              <li>• Kepemilikan Invensi</li>
+            <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru</p>
+            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:16px;">
+              <li>• Formulir Permohonan Pendaftaran Cipta</li>
+              <li>• Surat Pernyataan</li>
+              <li>• Surat Pengalihan Hak Cipta</li>
             </ul>
           `,
           icon: 'success',
@@ -380,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <label class="label">NIK <span class="req">*</span></label>
           <input type="text"
                 class="input"
-                name="inventor[NIK][]"
+                name="inventor[nik][]"
                 placeholder="Masukkan NIK Anda"
                 required>
         </div>
@@ -476,7 +477,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
        <div class="field span-2">
   <label class="label">Alamat Lengkap (sesuai KTP) <span class="req">*</span></label>
-  {{-- ✅ Pastikan name="inventor[alamat][]" (huruf kecil) sesuai keys di JS --}}
   <textarea class="input" name="inventor[alamat][]" rows="3" placeholder="Alamat lengkap" required></textarea>
 </div>
 

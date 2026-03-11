@@ -365,18 +365,26 @@
       </td>
 
       {{-- EDIT --}}
-      <td class="pd-td-center">
-        @if(in_array($docKey, $editableDocKeys))
-          <a
-            href="{{ route('pemohon.revisi.edit', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'doc'=>$docKey]) }}"
-            class="pd-mini-btn"
-          >
-            Edit
-          </a>
-        @else
-          <span class="pd-muted">-</span>
-        @endif
-      </td>
+    {{-- REVISI TOMBOL EDIT DI DASHBOARD --}}
+<td class="pd-td-center">
+  @if(in_array($docKey, $editableDocKeys))
+    @php
+      // Tentukan route berdasarkan tipe pengajuan
+      $targetRoute = ($pengajuan->type === 'cipta') 
+          ? 'dup.hakcipta.isiform.formpendaftaran' 
+          : 'dup.hakpaten.isiformulir.isiform';
+    @endphp
+    
+    <a
+      href="{{ route($targetRoute, ['ref' => $pengajuan->id]) }}"
+      class="pd-mini-btn"
+    >
+      Edit
+    </a>
+  @else
+    <span class="pd-muted">-</span>
+  @endif
+</td>
 
       {{-- UPLOAD REVISI --}}
       <td>

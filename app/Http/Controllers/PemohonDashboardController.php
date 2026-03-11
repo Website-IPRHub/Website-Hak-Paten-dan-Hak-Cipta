@@ -580,8 +580,7 @@ public function uploadRevisi(Request $request, int $revisionId)
     DB::beginTransaction();
     try {
         $file = $request->file('file');
-
-        $original = $file->getClientOriginalName();              // ✅ nama asli
+        $original = $file->getClientOriginalName();
         $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
 
         $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
@@ -596,7 +595,20 @@ public function uploadRevisi(Request $request, int $revisionId)
             $counter++;
         }
 
-        $path = $file->storeAs($dir, $finalName, 'public');      // ✅ tidak random
+        $path = $file->storeAs($dir, $finalName, 'public');
+        $fullPathForDb = 'storage/' . $path; // ✅ Path lengkap untuk tabel pendaftaran
+
+        // ========================================================
+        // 🚀 LOGIC REPLACING (SINKRONISASI KE TABEL UTAMA)
+        // ========================================================
+        $tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
+        
+        // Menimpa kolom file lama di tabel pendaftaran dengan file baru hasil revisi
+        DB::table($tableName)->where('id', $reqRow->ref_id)->update([
+            $reqRow->doc_key => $fullPathForDb,
+            'updated_at'     => now(),
+        ]);
+        // ========================================================
 
         // 1) tutup request admin
         DB::table('revisions')->where('id', $revisionId)->update([
@@ -606,7 +618,7 @@ public function uploadRevisi(Request $request, int $revisionId)
             'updated_at'     => now(),
         ]);
 
-        // 2) insert submitted pemohon
+        // 2) insert submitted pemohon (History)
         DB::table('revisions')->insert([
             'type'               => $reqRow->type,
             'ref_id'             => $reqRow->ref_id,
@@ -614,22 +626,18 @@ public function uploadRevisi(Request $request, int $revisionId)
             'from_role'          => 'pemohon',
             'state'              => 'submitted',
             'note'               => null,
-
-            'file_path'          => null, // jangan sentuh file admin
-
+            'file_path'          => null,
             'pemohon_file_path'  => $path,
-            'pemohon_file_name'  => $finalName,   // ✅ ini yang dipakai UI & download name
+            'pemohon_file_name'  => $finalName,
             'pemohon_uploaded_at'=> now(),
-
             'is_read_admin'      => 0,
             'is_read_pemohon'    => 1,
-
             'created_at'         => now(),
             'updated_at'         => now(),
         ]);
 
         DB::commit();
-        return back()->with('success', 'File revisi berhasil diupload.');
+        return back()->with('success', 'File revisi berhasil diupload dan dokumen pendaftaran telah diperbarui.');
     } catch (\Throwable $e) {
         DB::rollBack();
         throw $e;

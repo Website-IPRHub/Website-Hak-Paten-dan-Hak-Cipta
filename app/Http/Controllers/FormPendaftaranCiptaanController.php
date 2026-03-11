@@ -1,4 +1,3 @@
-frompendaftaranciptaancontroller
 <?php
 
 namespace App\Http\Controllers;

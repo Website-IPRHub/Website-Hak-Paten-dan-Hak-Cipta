@@ -559,21 +559,21 @@ Route::get('/pemohon/revisi/edit', [PemohonDashboardController::class, 'editRevi
 |--------------------------------------------------------------------------
 */
 Route::prefix('dup/hak-cipta')->name('dup.hakcipta.isiform.')->group(function () {
-
-    Route::view('/pendaftaranCiptaan', 'isiform.hakcipta.duplicateformpendaftaranciptaan')
+    // ✅ GANTI SEMUA Route::view JADI Route::get KE CONTROLLER
+    Route::get('/pendaftaranCiptaan', [DuplicateFormPendaftaranCiptaanController::class, 'index'])
         ->name('formpendaftaran');
 
-    Route::view('/suratpernyataan-isiform', 'isiform.hakcipta.duplicatesuratpernyataan')
+    Route::get('/suratpernyataan-isiform', [DuplicatePernyataanCiptaController::class, 'index'])
         ->name('suratpernyataan');
 
-    Route::view('/pengalihanhakcipta', 'isiform.hakcipta.duplicatepengalihanhakcipta')
+    Route::get('/pengalihanhakcipta', [DuplicatePengalihanHakCiptaController::class, 'index'])
         ->name('pengalihanhak');
 
-    Route::view('/peralihancipta', 'isiform.hakcipta.duplicateperalihanverifcipta')
+    Route::get('/peralihancipta', [DuplicateFormPendaftaranCiptaanController::class, 'peralihan']) 
         ->name('peralihanverifcipta');
 });
 
-// POST khusus duplicate (name juga dibedain)
+// POST tetap sama
 Route::post('/dup/isiform', [DuplicateFormPendaftaranCiptaanController::class, 'store'])->name('dup.isiformCipta.store');
 Route::post('/dup/pernyataan', [DuplicatePernyataanCiptaController::class, 'store'])->name('dup.pernyataanCipta.store');
 Route::post('/dup/pengalihan', [DuplicatePengalihanHakCiptaController::class, 'store'])->name('dup.pengalihanhakCipta.store');

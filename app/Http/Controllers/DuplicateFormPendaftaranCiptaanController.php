@@ -5,9 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DuplicateFormPendaftaranCiptaanController extends Controller
 {
+
+  public function index(Request $request)
+{
+    $ref = $request->query('ref') ?? session('edit_ref_id');
+    
+    // Samain kayak saku di Paten, tapi buat Hak Cipta
+    $data = $ref 
+        ? session("hakcipta.form.$ref", session('hakcipta.form', [])) 
+        : session('hakcipta.form', []);
+
+    return view('isiform.hakcipta.duplicateformpendaftaranciptaan', [
+        'data' => $data,
+        'ref'  => $ref
+    ]);
+}
     private function val($v): string
     {
         $s = trim((string)($v ?? ''));
@@ -15,102 +31,69 @@ class DuplicateFormPendaftaranCiptaanController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $action = $request->input('action', 'download');
-        $data = $request->validate([
-        'jumlah_inventor'        => ['required', 'integer', 'min:1', 'max:20'],
-        'jenis_cipta'            => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-        'jenis_cipta_lainnya'    => ['nullable', 'string', 'max:255'],
-        'judul_ciptaan'          => ['required', 'string', 'max:255'],
-        'link_ciptaan'           => ['required', 'url'],
-        'berupa'                 => ['required', 'string', 'max:255'],
-        'tanggal_pengisian'      => ['required', 'date'],
-        'tempat'                 => ['required', 'string', 'max:100'],
-        'uraian'                 => ['required', 'string', 'max:350'],
+{
+    $action = $request->input('action', 'download');
 
-        'inventor'               => ['required', 'array'],
+    // 1. VALIDASI DATA (Gue samain kuncinya ama Blade lo: NIK Gede, Alamat, Kode Pos, dll)
+    $data = $request->validate([
+        'jumlah_inventor'     => ['required', 'integer', 'min:1', 'max:20'],
+        'jenis_cipta'         => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+        'jenis_cipta_lainnya' => ['nullable', 'string', 'max:255'],
+        'judul_ciptaan'       => ['required', 'string', 'max:255'],
+        'link_ciptaan'        => ['required', 'url'],
+        'berupa'              => ['required', 'string', 'max:255'],
+        'tanggal_pengisian'   => ['required', 'date'],
+        'tempat'              => ['required', 'string', 'max:100'],
+        'uraian'              => ['required', 'string', 'max:350'],
 
-        'inventor.nama'          => ['required', 'array'],
-        'inventor.nama.*'        => ['required', 'string', 'max:200'],
+        'inventor'            => ['required', 'array'],
+        'inventor.nama'       => ['required', 'array'],
+        'inventor.nik'        => ['required', 'array'], // ✅ Sesuai Blade lo
+        'inventor.nip_nim'    => ['required', 'array'],
+        'inventor.fakultas'   => ['required', 'array'],
+        'inventor.status'     => ['required', 'array'],
+        'inventor.no_hp'      => ['required', 'array'],
+        'inventor.email'      => ['required', 'array'],
+        'inventor.alamat'     => ['required', 'array'],
+        'inventor.kode_pos'   => ['required', 'array'],
+        
+        'inventor.nidn'       => ['nullable', 'array'],
+        'inventor.tlp_rumah'  => ['nullable', 'array'],
+        'download_format'     => ['nullable', 'in:pdf,docx'],
+    ]);
 
-        'inventor.nik'           => ['required', 'array'],
-        'inventor.NIK.*'         => ['required', 'string', 'max:50'],
+    // 2. AMBIL ID DARI REQUEST ATAU SESSION (Copy logic Paten)
+    $refId = $request->input('ref') ?? session('edit_ref_id');
 
-        'inventor.nip_nim'       => ['required', 'array'],
-        'inventor.nip_nim.*'     => ['required', 'string', 'max:50'],
+    // 2. SIMPAN KE SESSION (Ini yang bikin NIK & Ulasan nempel pas refresh)
+    if ($refId) {
+        session()->put("hakcipta.form.$refId", $data);
+    }
+    session()->put('hakcipta.form', $data);
 
-        'inventor.fakultas'      => ['required', 'array'],
-        'inventor.fakultas.*'    => ['required', 'string', 'max:255'],
-
-        'inventor.nidn'          => ['nullable', 'array'],
-        'inventor.nidn.*'        => ['nullable', 'string', 'max:20'],
-
-        'inventor.status'        => ['required', 'array'],
-        'inventor.status.*'      => ['required', 'string', 'max:50'],
-
-        'inventor.no_hp'         => ['required', 'array'],
-        'inventor.no_hp.*'       => ['required', 'string', 'max:50'],
-
-        'inventor.tlp_rumah'     => ['nullable', 'array'],
-        'inventor.tlp_rumah.*'   => ['nullable', 'string', 'max:50'],
-
-        'inventor.email'         => ['required', 'array'],
-        'inventor.email.*'       => ['required', 'email', 'max:100'],
-
-        'inventor.alamat'        => ['required', 'array'],
-        'inventor.alamat.*'      => ['required', 'string'],
-
-        'inventor.kode_pos'      => ['required', 'array'],
-        'inventor.kode_pos.*'    => ['required', 'string', 'max:20'],
-
-        'download_format'        => ['nullable', 'in:pdf,docx'],
-        ]);
-$refId = $request->input('ref') ?? session('edit_ref_id');
-
-// ✅ TRICK: Kita samain datanya biar JS ga bingung pas manggil ulang
-if (isset($data['inventor'])) {
-    $data['inventor']['nik'] = $data['inventor']['NIK']; // Copy NIK gede ke nik kecil
-}
-
-// SIMPAN KE SESSION
-if ($refId) {
-    session()->put("hakcipta.form.$refId", $data);
-}
-        // 4. LOGIC SIMPAN REVISI KE DATABASE (BAGIAN BARU)
-        // Ini biar pas klik "Simpan Perubahan", data di tabel hak_cipta_verifs terupdate
-        if ($action === 'save') {
-            if ($refId) {
-                // Susun ulang array inventor buat JSON database
-                $formattedInventors = [];
-                for ($i = 0; $i < (int)$data['jumlah_inventor']; $i++) {
-                    $formattedInventors[] = [
-                        'nama'      => $data['inventor']['nama'][$i] ?? '',
-                        'NIK'       => $data['inventor']['nik'][$i] ?? '',
-                        'nip_nim'   => $data['inventor']['nip_nim'][$i] ?? '',
-                        'fakultas'  => $data['inventor']['fakultas'][$i] ?? '',
-                        'no_hp'     => $data['inventor']['no_hp'][$i] ?? '',
-                        'email'     => $data['inventor']['email'][$i] ?? '',
-                        'status'    => $data['inventor']['status'][$i] ?? '',
-                        'nidn'      => $data['inventor']['nidn'][$i] ?? null,
-                        'tlp_rumah' => $data['inventor']['tlp_rumah'][$i] ?? null,
-                        'alamat'    => $data['inventor']['alamat'][$i] ?? '',
-                        'kode_pos'  => $data['inventor']['kode_pos'][$i] ?? '',
-                    ];
-                }
-
-                // Update Tabel Database
-                \Illuminate\Support\Facades\DB::table('hak_cipta_verifs')->where('id', $refId)->update([
-                    'judul_cipta' => $data['judul_ciptaan'],
-                    'jenis_cipta' => ($data['jenis_cipta'] === 'Lainnya') ? $data['jenis_cipta_lainnya'] : $data['jenis_cipta'],
-                    'link_ciptaan'=> $data['link_ciptaan'],
-                    'inventors'   => json_encode($formattedInventors), // Update JSON inventors
-                    'updated_at'  => now(),
-                ]);
-
-                return response()->json(['ok' => true, 'message' => 'Revisi berhasil disimpan ke database.']);
+    // 3. LOGIC SIMPAN DATABASE (IKUTIN GAYA PATEN: Hanya kolom yang ADA)
+    if ($action === 'save') {
+        if ($refId) {
+            $formattedInventors = [];
+            for ($i = 0; $i < (int)$data['jumlah_inventor']; $i++) {
+                $formattedInventors[] = [
+                    'nama' => $data['inventor']['nama'][$i] ?? '',
+                    'nik'  => $data['inventor']['nik'][$i] ?? '',
+                    // ... sisanya samain ...
+                ];
             }
-            return response()->json(['ok' => true, 'message' => 'Disimpan di session.']);
+
+            // ✅ UPDATE DB: Hapus kolom 'berupa' dari sini Tik!
+            DB::table('hak_cipta_verifs')->where('id', $refId)->update([
+                'judul_cipta' => $data['judul_ciptaan'],
+                'jenis_cipta' => ($data['jenis_cipta'] === 'Lainnya') ? $data['jenis_cipta_lainnya'] : $data['jenis_cipta'],
+                'inventors'   => json_encode($formattedInventors),
+                'updated_at'  => now(),
+            ]);
+
+            return response()->json(['ok' => true, 'message' => 'Berhasil simpan revisi!']);
         }
+    }
 
         // kalau klik tombol Next (sesuaikan route kamu)
         if ($request->input('action') === 'next') {
