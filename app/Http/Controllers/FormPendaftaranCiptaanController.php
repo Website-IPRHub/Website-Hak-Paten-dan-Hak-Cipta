@@ -145,7 +145,7 @@ session()->put('hakcipta.form', array_merge($existingForm, [
         }
 
         // === Convert DOCX 
-        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
         if (!file_exists($soffice)) {
             $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
         }

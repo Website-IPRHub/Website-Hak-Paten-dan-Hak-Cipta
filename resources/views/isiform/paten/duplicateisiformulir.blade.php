@@ -697,8 +697,8 @@ document.addEventListener('DOMContentLoaded', () => {
           `,
           icon: 'success',
           showCancelButton: true,
-          confirmButtonText: 'Sudah Download Semua',
-          cancelButtonText: 'Belum, Mau Download Dulu',
+          confirmButtonText: 'Sudah Download',
+          cancelButtonText: 'Belum, Download Dulu',
           confirmButtonColor: '#2F5C9E',
           cancelButtonColor: '#6c757d',
           reverseButtons: true

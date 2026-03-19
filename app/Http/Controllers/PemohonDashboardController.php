@@ -597,17 +597,23 @@ public function uploadRevisi(Request $request, int $revisionId)
 
         $path = $file->storeAs($dir, $finalName, 'public');
         $fullPathForDb = 'storage/' . $path; // ✅ Path lengkap untuk tabel pendaftaran
+// 🚀 LOGIC REPLACING (SINKRONISASI KE TABEL UTAMA)
+$tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
 
-        // ========================================================
-        // 🚀 LOGIC REPLACING (SINKRONISASI KE TABEL UTAMA)
-        // ========================================================
-        $tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
-        
-        // Menimpa kolom file lama di tabel pendaftaran dengan file baru hasil revisi
-        DB::table($tableName)->where('id', $reqRow->ref_id)->update([
-            $reqRow->doc_key => $fullPathForDb,
-            'updated_at'     => now(),
-        ]);
+// ✅ TENTUKAN NAMA KOLOM ASLI DI DATABASE
+$targetColumn = $reqRow->doc_key;
+
+// 🔥 KUNCINYA DI SINI TIK:
+// Kalau doc_key adalah 'skema_tkt', belokkan ke kolom 'skema_tkt_template_path'
+if ($reqRow->type === 'paten' && $reqRow->doc_key === 'skema_tkt') {
+    $targetColumn = 'skema_tkt_template_path';
+}
+
+// Menimpa kolom file lama di tabel pendaftaran dengan file baru hasil revisi
+DB::table($tableName)->where('id', $reqRow->ref_id)->update([
+    $targetColumn => $fullPathForDb, // ✅ Sekarang pake targetColumn yang pinter
+    'updated_at'  => now(),
+]);
         // ========================================================
 
         // 1) tutup request admin

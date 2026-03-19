@@ -101,12 +101,17 @@
 {{-- ACTIONS BAR --}}
 <div class="skm-actions">
   <div class="skm-actions__left">
-    <button type="submit"
-    form="downloadForm"
-    name="action"
-    value="prev"
-    class="skm-btn skm-btn--prev">
-   Simpan
+    {{-- ✅ 1. Tipe ganti jadi 'button' (biar gak lari ke route next otomatis) --}}
+    {{-- ✅ 2. HAPUS atribut form="downloadForm" --}}
+    {{-- ✅ 3. Kasih ID 'btnSaveSkema' biar script lo nangkep --}}
+    {{-- ✅ 4. Kasih dataset biar JS tau harus nembak URL mana --}}
+    <button type="button" 
+            id="btnSaveSkema" 
+            class="skm-btn skm-btn--prev"
+            data-save-url="{{ route('dup.skema.download', ['verif' => $verif->id]) }}"
+            data-next-url="{{ route('pemohon.dashboard') }}">
+        Simpan Perubahan
+    </button>
   </div>
 
   <div class="actions-right">
@@ -128,89 +133,119 @@
 
       </div>
 
-    {{-- FORM UPLOAD (verif) --}}
-    <div class="button-upload">
-  <form id="draftForm"
-        action="{{ route('patenverif.skema.upload', ['verif' => $verif->id]) }}"
-        method="POST" enctype="multipart/form-data">
-    @csrf
-
-    <input id="draftFile"
-          type="file"
-          name="file"
-          required
-          hidden
-          accept=".doc,.docx,.pdf">
-
-    <label for="draftFile" class="btn-upload" id="uploadButtonLabel">Upload</label>
-
-    <span id="fileName">
-      {{ $draft['file_name'] ?? 'Belum Pilih File' }}
-    </span>
-
-    @if(!empty($draft['file_path']))
-      <div style="margin-top:6px;">
-        <a href="{{ Storage::url($draft['file_path']) }}" target="_blank">Lihat file</a>
-      </div>
-    @endif
-  </form>
-</div>
   </div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const draftFile = document.getElementById('draftFile');
-  const fileName = document.getElementById('fileName');
-  const draftForm = document.getElementById('draftForm');
-  const downloadForm = document.getElementById('downloadForm');
-  const uploadButtonLabel = document.getElementById('uploadButtonLabel');
+    const draftFile = document.getElementById('draftFile');
+    const fileName = document.getElementById('fileName');
+    const draftForm = document.getElementById('draftForm');
+    const downloadForm = document.getElementById('downloadForm');
+    const uploadButtonLabel = document.getElementById('uploadButtonLabel');
+    const btnSaveSkema = document.getElementById('btnSaveSkema');
 
-  let isSubmitting = false;
+    // --- LOGIC 1: AUTO UPLOAD SAAT PILIH FILE ---
+    if (draftFile && draftForm && downloadForm) {
+        draftFile.addEventListener('change', () => {
+            const file = draftFile.files[0];
+            if (!file) return;
 
-  function upsertHidden(name, value) {
-    let input = draftForm.querySelector(`input[type="hidden"][name="${name}"]`);
-    if (!input) {
-      input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      draftForm.appendChild(input);
+            if (fileName) fileName.textContent = file.name;
+            if (uploadButtonLabel) {
+                uploadButtonLabel.style.pointerEvents = 'none';
+                uploadButtonLabel.textContent = 'Mengupload...';
+            }
+
+            // Copy data dari form input ke form upload biar session ke-update
+            const fields = ['nama_lengkap','program_studi','judul_paten','nidn_nip','fakultas','tanggal_pengisian','download_format'];
+            fields.forEach(name => {
+                const val = downloadForm.querySelector(`[name="${name}"]`).value;
+                let hidden = draftForm.querySelector(`input[name="${name}"]`);
+                if (!hidden) {
+                    hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = name;
+                    draftForm.appendChild(hidden);
+                }
+                hidden.value = val;
+            });
+            draftForm.submit();
+        });
     }
-    input.value = value ?? '';
-  }
 
-  if (draftFile && draftForm && downloadForm) {
-    draftFile.addEventListener('change', () => {
-      const file = draftFile.files && draftFile.files[0];
-      if (!file || isSubmitting) return;
+    // --- LOGIC 2: SWEETALERT SAAT KLIK SIMPAN ---
+    if (btnSaveSkema) {
+        btnSaveSkema.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!downloadForm.checkValidity()) {
+                downloadForm.reportValidity();
+                return;
+            }
 
-      isSubmitting = true;
+            const saveUrl = btnSaveSkema.dataset.saveUrl;
+            const nextUrl = btnSaveSkema.dataset.nextUrl;
+            const fd = new FormData(downloadForm);
+            fd.set('action', 'save');
 
-      if (fileName) fileName.textContent = file.name;
-      if (uploadButtonLabel) {
-        uploadButtonLabel.style.pointerEvents = 'none';
-        uploadButtonLabel.textContent = 'Mengupload...';
-      }
+            try {
+                Swal.fire({
+                    title: 'Memproses Data...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
 
-      const fields = [
-        'nama_lengkap',
-        'program_studi',
-        'judul_paten',
-        'nidn_nip',
-        'fakultas',
-        'tanggal_pengisian',
-        'download_format'
-      ];
+                const res = await fetch(saveUrl, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: fd
+                });
 
-      fields.forEach(name => {
-        const el = downloadForm.querySelector(`[name="${name}"]`);
-        if (el) {
-          upsertHidden(name, el.value);
-        }
-      });
+                if (res.ok) {
+                    const result = await Swal.fire({
+                        title: 'Data Disimpan Sementara',
+                        html: `
+                            <p>Data perubahan Anda sudah tersimpan di sistem.</p>
+                            <hr style="margin:15px 0;">
+                            <p><b>Penting:</b> Pastikan Anda sudah mendownload ulang dokumen TKT terbaru.</p>
+                            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:16px;">
+                                <li>• Surat Pernyataan TKT 7-9</li>
+                            </ul>
+                        `,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sudah Download',
+                        cancelButtonText: 'Belum, Download Dulu',
+                        confirmButtonColor: '#2F5C9E',
+                        cancelButtonColor: '#6c757d',
+                        reverseButtons: true
+                    });
 
-      draftForm.submit();
-    });
-  }
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Kembali ke Dashboard...',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        setTimeout(() => { window.location.href = nextUrl; }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: 'Silakan Download',
+                            text: 'Gunakan tombol Unduh di bawah untuk mendapatkan file terbaru.',
+                            icon: 'info'
+                        });
+                    }
+                } else {
+                    Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan data.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Gagal terhubung ke server.', 'error');
+            }
+        });
+    }
 });
 </script>
 @endsection

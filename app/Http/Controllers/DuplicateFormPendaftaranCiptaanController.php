@@ -9,175 +9,167 @@ use Illuminate\Support\Facades\DB;
 
 class DuplicateFormPendaftaranCiptaanController extends Controller
 {
-
-  public function index(Request $request)
-{
-    $ref = $request->query('ref') ?? session('edit_ref_id');
-    
-    // Samain kayak saku di Paten, tapi buat Hak Cipta
-    $data = $ref 
-        ? session("hakcipta.form.$ref", session('hakcipta.form', [])) 
-        : session('hakcipta.form', []);
-
-    return view('isiform.hakcipta.duplicateformpendaftaranciptaan', [
-        'data' => $data,
-        'ref'  => $ref
-    ]);
-}
     private function val($v): string
     {
         $s = trim((string)($v ?? ''));
         return $s === '' ? '' : $s;
     }
 
-    public function store(Request $request)
+public function index(Request $request)
 {
-    $action = $request->input('action', 'download');
+    $ref = $request->query('ref') ?? session('edit_ref_id');
+    $sessionKey = "hakcipta.form.$ref";
 
-    // 1. VALIDASI DATA (Gue samain kuncinya ama Blade lo: NIK Gede, Alamat, Kode Pos, dll)
-    $data = $request->validate([
-        'jumlah_inventor'     => ['required', 'integer', 'min:1', 'max:20'],
-        'jenis_cipta'         => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-        'jenis_cipta_lainnya' => ['nullable', 'string', 'max:255'],
-        'judul_ciptaan'       => ['required', 'string', 'max:255'],
-        'link_ciptaan'        => ['required', 'url'],
-        'berupa'              => ['required', 'string', 'max:255'],
-        'tanggal_pengisian'   => ['required', 'date'],
-        'tempat'              => ['required', 'string', 'max:100'],
-        'uraian'              => ['required', 'string', 'max:350'],
+    $dbData = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+    if (!$dbData) return "Data tidak ditemukan.";
 
-        'inventor'            => ['required', 'array'],
-        'inventor.nama'       => ['required', 'array'],
-        'inventor.nik'        => ['required', 'array'], // ✅ Sesuai Blade lo
-        'inventor.nip_nim'    => ['required', 'array'],
-        'inventor.fakultas'   => ['required', 'array'],
-        'inventor.status'     => ['required', 'array'],
-        'inventor.no_hp'      => ['required', 'array'],
-        'inventor.email'      => ['required', 'array'],
-        'inventor.alamat'     => ['required', 'array'],
-        'inventor.kode_pos'   => ['required', 'array'],
+    // 1. Ambil session cadangan (kalo ada)
+    $s1 = session('hakcipta.form', []);
+    $s2 = session('hakcipta.verif', []);
+
+    // 2. LOGIKA DEFAULT: Kalo session editan belum ada ATAU isinya kosong melompong
+    if (!session()->has($sessionKey) || empty(session($sessionKey)['uraian'])) {
         
-        'inventor.nidn'       => ['nullable', 'array'],
-        'inventor.tlp_rumah'  => ['nullable', 'array'],
-        'download_format'     => ['nullable', 'in:pdf,docx'],
-    ]);
+        $invDb = json_decode($dbData->inventors, true) ?? [];
+        
+        $initialData = [
+            'jumlah_inventor' => count($invDb) ?: 1,
+            'judul_ciptaan'   => $dbData->judul_cipta,
+            'link_ciptaan'    => $dbData->link_ciptaan, 
+            'jenis_cipta'     => in_array($dbData->jenis_cipta, ['Buku','Program Komputer','Karya Rekaman Video']) 
+                                 ? $dbData->jenis_cipta : 'Lainnya',
+            'jenis_cipta_lainnya' => (!in_array($dbData->jenis_cipta, ['Buku','Program Komputer','Karya Rekaman Video'])) 
+                                 ? $dbData->jenis_cipta : '',
+            
+            // ✅ FORCE DEFAULT: Kalo session asli gak ada, isi teks ini!
+            'uraian'          => $s1['uraian'] ?? $s2['uraian'] ?? 'Produk karya inovatif.', 
+            'berupa'          => $s1['berupa'] ?? $s2['berupa'] ?? 'Aplikasi Digital',
+            'tempat'          => $s1['tempat'] ?? $s2['tempat'] ?? 'Semarang',
+            'tanggal_pengisian' => $s1['tanggal_pengisian'] ?? $s2['tanggal_pengisian'] ?? now()->format('Y-m-d'),
+            
+            'inventor' => [
+                'nama' => array_column($invDb, 'nama'),
+                'nik'  => array_column($invDb, 'nik'),
+                'nip_nim' => array_column($invDb, 'nip_nim'),
+                'fakultas' => array_column($invDb, 'fakultas'),
+                'status' => array_column($invDb, 'status'),
+                'no_hp' => array_column($invDb, 'no_hp'),
+                'email' => array_column($invDb, 'email'),
+                'alamat' => array_column($invDb, 'alamat'),
+                'kode_pos' => array_column($invDb, 'kode_pos'),
+                'tlp_rumah' => array_column($invDb, 'tlp_rumah'),
+            ],
+        ];
 
-    // 2. AMBIL ID DARI REQUEST ATAU SESSION (Copy logic Paten)
-    $refId = $request->input('ref') ?? session('edit_ref_id');
-
-    // 2. SIMPAN KE SESSION (Ini yang bikin NIK & Ulasan nempel pas refresh)
-    if ($refId) {
-        session()->put("hakcipta.form.$refId", $data);
+        session()->put($sessionKey, $initialData);
     }
-    session()->put('hakcipta.form', $data);
 
-    // 3. LOGIC SIMPAN DATABASE (IKUTIN GAYA PATEN: Hanya kolom yang ADA)
-    if ($action === 'save') {
-        if ($refId) {
+    $data = session($sessionKey);
+
+    return view('isiform.hakcipta.duplicateformpendaftaranciptaan', [
+        'data' => $data, 
+        'ref'  => $ref
+    ]);
+}
+
+    public function store(Request $request)
+    {
+        $action = $request->input('action', 'download');
+        $refId = $request->input('ref') ?? session('edit_ref_id');
+        $sessionKey = "hakcipta.form.$refId";
+
+        // 1. Validasi (Sama persis dengan file asli agar konsisten)
+        $validated = $request->validate([
+            'jumlah_inventor'     => ['required', 'integer', 'min:1', 'max:20'],
+            'jenis_cipta'         => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+            'jenis_cipta_lainnya' => ['nullable', 'string', 'max:255'],
+            'judul_ciptaan'       => ['required', 'string', 'max:255'],
+            'link_ciptaan'        => ['required', 'url'],
+            'berupa'              => ['required', 'string', 'max:255'],
+            'tanggal_pengisian'   => ['required', 'date'],
+            'tempat'              => ['required', 'string', 'max:100'],
+            'uraian'              => ['required', 'string', 'max:350'],
+            'inventor'            => ['required', 'array'],
+            'download_format'     => ['nullable', 'in:pdf,docx'],
+        ]);
+
+        // 2. Simpan ke Session (Logika array_merge seperti file asli)
+        $existingData = session($sessionKey, []);
+        $newPayload = array_merge($existingData, $request->all());
+        session()->put($sessionKey, $newPayload);
+
+        // 3. Simpan ke Database (AJAX Mode dari SweetAlert)
+        if ($action === 'save' && $refId) {
             $formattedInventors = [];
-            for ($i = 0; $i < (int)$data['jumlah_inventor']; $i++) {
+            for ($i = 0; $i < (int)$request->jumlah_inventor; $i++) {
                 $formattedInventors[] = [
-                    'nama' => $data['inventor']['nama'][$i] ?? '',
-                    'nik'  => $data['inventor']['nik'][$i] ?? '',
-                    // ... sisanya samain ...
+                    'nama'      => $request->inventor['nama'][$i] ?? '',
+                    'nik'       => $request->inventor['nik'][$i] ?? '',
+                    'nip_nim'   => $request->inventor['nip_nim'][$i] ?? '',
+                    'fakultas'  => $request->inventor['fakultas'][$i] ?? '',
+                    'status'    => $request->inventor['status'][$i] ?? '',
+                    'no_hp'     => $request->inventor['no_hp'][$i] ?? '',
+                    'email'     => $request->inventor['email'][$i] ?? '',
+                    'alamat'    => $request->inventor['alamat'][$i] ?? '',
+                    'kode_pos'  => $request->inventor['kode_pos'][$i] ?? '',
+                    'tlp_rumah' => $request->inventor['tlp_rumah'][$i] ?? '',
                 ];
             }
 
-            // ✅ UPDATE DB: Hapus kolom 'berupa' dari sini Tik!
             DB::table('hak_cipta_verifs')->where('id', $refId)->update([
-                'judul_cipta' => $data['judul_ciptaan'],
-                'jenis_cipta' => ($data['jenis_cipta'] === 'Lainnya') ? $data['jenis_cipta_lainnya'] : $data['jenis_cipta'],
-                'inventors'   => json_encode($formattedInventors),
-                'updated_at'  => now(),
+                'judul_cipta'   => $request->judul_ciptaan,
+                'jenis_cipta'   => ($request->jenis_cipta === 'Lainnya') ? $request->jenis_cipta_lainnya : $request->jenis_cipta,
+                'link_ciptaan'  => $request->link_ciptaan,
+                // 'hasil_ciptaan' => $request->uraian, // ⚠️ JANGAN diupdate ke DB kolom ini karena DB kamu isinya Path PDF
+                'inventors'     => json_encode($formattedInventors),
+                'updated_at'    => now(),
             ]);
 
-            return response()->json(['ok' => true, 'message' => 'Berhasil simpan revisi!']);
-        }
-    }
-
-        // kalau klik tombol Next (sesuaikan route kamu)
-        if ($request->input('action') === 'next') {
             return response()->json(['ok' => true]);
         }
 
-        $templatePath = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.docx');
-        if (!file_exists($templatePath)) {
-            abort(500, 'Template DOCX tidak ditemukan: ' . $templatePath);
-        }
+        // 4. Download Logic (Sama dengan file asli)
+        return $this->generateDocument($request);
+    }
 
+    private function generateDocument($request)
+    {
+        $templatePath = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.docx');
         $tp = new TemplateProcessor($templatePath);
 
-        // === header / info umum
-        $tp->setValue('judul_ciptaan', $this->val($data['judul_ciptaan']));
-        $tp->setValue('link_ciptaan', $this->val($data['link_ciptaan']));
-
-        // tanggal + tempat (di template kamu: ${tempat}, ${tanggal_terbit})
-        $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id')->translatedFormat('d F Y');
-        $tp->setValue('tempat', $this->val($data['tempat']));
+        $tp->setValue('judul_ciptaan', $this->val($request->judul_ciptaan));
+        $tp->setValue('link_ciptaan', $this->val($request->link_ciptaan));
+        $tp->setValue('uraian', $this->val($request->uraian));
+        $tp->setValue('tempat', $this->val($request->tempat));
+        
+        $tgl = Carbon::parse($request->tanggal_pengisian)->locale('id')->translatedFormat('d F Y');
         $tp->setValue('tanggal_terbit', $tgl);
 
-        // === inventor rows
-        // === ambil semua nama, gabung koma
-        $names = array_map(
-            fn($n) => $this->val($n),
-            $data['inventor']['nama'] ?? []
-        );
-        $names = array_values(array_filter($names, fn($n) => $n !== ''));
-        $namaGabung = implode(', ', $names);
+        $names = array_map(fn($n) => $this->val($n), $request->inventor['nama'] ?? []);
+        $namaGabung = implode(', ', array_filter($names));
 
-        // === ambil data dari inventor 1 (index 0)
-        $alamat1 = $this->val($data['inventor']['alamat'][0] ?? '');
-        $telp1   = $this->val($data['inventor']['tlp_rumah'][0] ?? ''); // sesuai input: tlp_rumah
-        $hp1     = $this->val($data['inventor']['no_hp'][0] ?? '');
-        $email1  = $this->val($data['inventor']['email'][0] ?? '');
-
-        // set ke template
         $tp->setValue('nama_lengkap', $namaGabung);
-        $tp->setValue('alamat', $alamat1);
-        $tp->setValue('tlp_rumah', $telp1);
-        $tp->setValue('no_hp', $hp1);
-        $tp->setValue('email', $email1);
-
-        // uraian kalau ada
-        $tp->setValue('uraian', $this->val($request->input('uraian')));
+        $tp->setValue('alamat', $this->val($request->inventor['alamat'][0] ?? ''));
+        $tp->setValue('tlp_rumah', $this->val($request->inventor['tlp_rumah'][0] ?? ''));
+        $tp->setValue('no_hp', $this->val($request->inventor['no_hp'][0] ?? ''));
+        $tp->setValue('email', $this->val($request->inventor['email'][0] ?? ''));
 
         $out = tempnam(sys_get_temp_dir(), 'cipta_') . '.docx';
         $tp->saveAs($out);
 
-        $format = $data['download_format'];
-
-        if ($format === 'docx') {
-        return response()
-                    ->download($out, 'Permohonan Pendaftaran Ciptaan.docx')
-                    ->deleteFileAfterSend(true);
+        if ($request->download_format === 'docx') {
+            return response()->download($out, 'Permohonan Pendaftaran Ciptaan.docx')->deleteFileAfterSend(true);
         }
 
-        // === Convert DOCX 
-        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
-        if (!file_exists($soffice)) {
-            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
-        }
-        if (!file_exists($soffice)) {
-            abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
-        }
-
-        $outDir  = dirname($out);
+        // Convert PDF
+        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        
+        $outDir = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
+        $cmd = '"' . $soffice . '" --headless --convert-to pdf --outdir "' . $outDir . '" "' . $out . '"';
+        exec($cmd);
 
-        // command (quotes penting di Windows)
-        $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
-            . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
-
-        $output = [];
-        $code = 0;
-        exec($cmd, $output, $code);
-
-        if ($code !== 0 || !file_exists($pdfPath)) {
-            abort(500, "Gagal convert PDF. ExitCode=$code\n" . implode("\n", $output));
-        }
-
-        return response()
-            ->download($pdfPath, 'Permohonan Pendaftaran Ciptaan.pdf')
-            ->deleteFileAfterSend(true);
+        return response()->download($pdfPath, 'Permohonan Pendaftaran Ciptaan.pdf')->deleteFileAfterSend(true);
     }
 }

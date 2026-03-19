@@ -6,27 +6,25 @@
 
 
 @php 
-  $activeStep = 2; 
+    $activeStep = 2; 
+    $ref = $ref ?? request('ref') ?? session('edit_ref_id');
+
+    // ✅ PRIORITAS: Ambil dari session editan dulu, kalau gak ada baru data controller
+    $currentData = session("hakcipta.form.$ref", $data ?? []);
+
+    $uraianData  = old('uraian', $currentData['uraian'] ?? '');
+    $berupaData  = old('berupa', $currentData['berupa'] ?? '');
+    $tempatData  = old('tempat', $currentData['tempat'] ?? '');
+    $tanggalData = old('tanggal_pengisian', $currentData['tanggal_pengisian'] ?? now()->format('Y-m-d'));
 @endphp
 
-@include('isiform.hakcipta.duplicatemenuformcipta')
-
-@php
-  $activeStep = 2; 
-  $ref = request('ref') ?? session('edit_ref_id');
-  
-  // ✅ Pake nama $data biar lo gak ribet, tapi ambil dari saku spesifik ID
-  $data = $ref 
-      ? session("hakcipta.form.$ref", session('hakcipta.form', [])) 
-      : session('hakcipta.form', []);
-@endphp
-
+{{-- Script Prefill pake currentData biar sinkron --}}
 <script type="application/json" id="prefill-inventor-data">
-{!! json_encode($data['inventor'] ?? []) !!}
+{!! json_encode($currentData['inventor'] ?? []) !!}
 </script>
 
 <script type="application/json" id="prefill-count">
-{!! json_encode($data['jumlah_inventor'] ?? 1) !!}
+{!! json_encode($currentData['jumlah_inventor'] ?? 1) !!}
 </script>
 
 <div class="paten-form-page">
@@ -143,15 +141,16 @@
     @error('judul_ciptaan') <small class="err">{{ $message }}</small> @enderror
 </div>
 
-     <div class="field span-2">
+{{-- Produk Berupa --}}
+<div class="field span-2">
     <label class="label">Produk Ciptaan Berupa? <span class="req">*</span></label>
     <input
         type="text"
         class="input"
         name="berupa"
         placeholder="Produk ciptaan berupa..."
-        {{-- ✅ GANTI BAGIAN INI --}}
-        value="{{ old('berupa', $data['berupa'] ?? '') }}"
+        {{-- ✅ GANTI DISINI: Panggil variabel $berupaData yang udah kita selamatin di atas --}}
+        value="{{ $berupaData }}"
         required
     >
     @error('berupa') <small class="err">{{ $message }}</small> @enderror
@@ -170,7 +169,9 @@
         @error('tanggal_pengisian') <small class="err">{{ $message }}</small> @enderror
       </div>
 
-      <div class="field span-2">
+{{-- Tempat Pengisian --}}
+{{-- Tempat Pengisian --}}
+<div class="field span-2">
     <label class="label">Tempat Pengisian <span class="req">*</span></label>
     <p class="hint">Tempat saat anda mengisi form ini.</p>
     <input
@@ -178,8 +179,8 @@
         class="input"
         name="tempat"
         placeholder="Contoh: Semarang"
-        {{-- ✅ GANTI BAGIAN INI --}}
-        value="{{ old('tempat', $data['tempat'] ?? '') }}"
+        {{-- ✅ GANTI DISINI: Panggil variabel $tempatData --}}
+        value="{{ $tempatData }}"
         required
     >
     @error('tempat') <small class="err">{{ $message }}</small> @enderror
@@ -197,7 +198,8 @@
     </div>
 
     {{-- ULASAN (DI ATAS BUTTON) --}}
-    <div class="field mt-16">
+{{-- Ulasan Ciptaan --}}
+<div class="field mt-16">
     <label class="label">Ulasan Ciptaan <span class="req">*</span></label>
     <p class="hint">Tulis singkat (± 2–3 kalimat).</p>
     <textarea
@@ -207,7 +209,7 @@
         maxlength="350"
         placeholder="Masukkan uraian produk ciptaan"
         required
-    >{{-- ✅ GANTI BAGIAN INI --}}{{ old('uraian', $data['uraian'] ?? '') }}</textarea>
+    >{{ $uraianData }}</textarea> {{-- ✅ GANTI DISINI: Panggil variabel $uraianData --}}
     @error('uraian') <small class="err">{{ $message }}</small> @enderror
 </div>
 
@@ -281,8 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
           `,
           icon: 'success',
           showCancelButton: true,
-          confirmButtonText: 'Sudah Download Semua',
-          cancelButtonText: 'Belum, Mau Download Dulu',
+          confirmButtonText: 'Sudah Download',
+          cancelButtonText: 'Belum, Download Dulu',
           confirmButtonColor: '#2F5C9E',
           cancelButtonColor: '#6c757d',
           reverseButtons: true
@@ -489,9 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </template>
 
- <script type="application/json" id="old-inventor-data">
-    {!! json_encode(old('inventor', $data['inventor'] ?? [])) !!}
-</script>
+<script type="application/json" id="old-inventor-data">
+  {!! json_encode(old('inventor', $currentData['inventor'] ?? [])) !!}
+  </script>
 
   
 </div>

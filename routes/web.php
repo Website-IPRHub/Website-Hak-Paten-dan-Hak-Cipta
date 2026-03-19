@@ -32,6 +32,7 @@ use App\Http\Controllers\DuplicatePernyataanCiptaController;
 use App\Http\Controllers\DuplicatePengalihanHakCiptaController;
 use App\Http\Controllers\DuplicateInvensiController;
 use App\Http\Controllers\DuplicatePengalihanHakController;
+use App\Http\Controllers\DuplicateSkemaController;
 /*
 |--------------------------------------------------------------------------
 | ADMIN ROUTES
@@ -597,3 +598,13 @@ Route::prefix('dup/hak-paten')->name('dup.hakpaten.isiformulir.')->group(functio
 Route::post('/dup/isiformpaten', [DuplicateIsiFormController::class, 'store'])->name('dup.isiform.store');
 Route::post('/dup/invensipaten', [DuplicateInvensiController::class, 'store'])->name('dup.invensi.store');
 Route::post('/dup/pengalihanpaten', [DuplicatePengalihanHakController::class, 'store'])->name('dup.pengalihanhak.store');
+
+// ROUTE KHUSUS DUPLICATE SKEMA TKT 7-9
+Route::get('/dup/skema-tkt/{verif}', [DuplicateSkemaController::class, 'showDuplicate'])
+    ->name('dup.skema.form');
+
+Route::post('/dup/skema-tkt/{verif}/download', [DuplicateSkemaController::class, 'downloadDuplicate'])
+    ->name('dup.skema.download');
+
+Route::post('/dup/skema-tkt/{verif}/upload', [DuplicateSkemaController::class, 'uploadDuplicate'])
+    ->name('dup.skema.upload');

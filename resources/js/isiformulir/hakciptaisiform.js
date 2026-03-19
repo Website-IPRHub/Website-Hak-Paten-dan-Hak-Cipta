@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. FUNGSI PENGISI DATA (LENGKAP DENGAN FIX NIK ILANG)
    const fillFromOld = (root, idx, snap) => {
     // Daftar kunci (pake nik kecil sesuai Blade lo)
-    const keys = ["nama", "nik", "nip_nim", "fakultas", "status", "no_hp", "email", "alamat", "kode_pos"];
+    const keys = ["nama", "nik", "nip_nim", "fakultas", "status", "no_hp", "email", "alamat", "kode_pos", "tlp_rumah"];
 
     keys.forEach((k) => {
         const el = root.querySelector(`[name="inventor[${k}][]"]`);

@@ -35,52 +35,68 @@ class SkemaController extends Controller
 }
 
     public function uploadVerif(Request $request, PatenVerif $verif)
-{
-    return $this->handleUpload(
-        request: $request,
-        noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
-        storeDir: 'paten-verif/skema',
-        updateModel: fn(string $path) => $verif->update(['skema_tkt_template_path' => $path]),
-        fallbackRedirect: route('patenverif.skema.form', ['verif' => $verif->id]),
-        sessionKey: "patenverif.{$verif->id}.skema",
-    );
-}
-
-    // ===== PATEN =====
-    public function showPaten(Paten $paten)
     {
-        $draft = session("paten.{$paten->id}.skema", []);
-        return view('hakpaten.skemapengembanganpaten', compact('paten','draft'));
+        return $this->handleUpload(
+            request: $request,
+            noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
+            storeDir: 'paten-verif/skema',
+            updateModel: function(string $path) use ($verif) {
+                // ✅ KUNCINYA DI SINI:
+                // Kita simpan ke kolom skema_tkt_template_path (untuk internal sistem)
+                // DAN kita daftarin ke JSON 'docs' supaya muncul di list dokumen Admin
+                $docs = $verif->docs ?? [];
+                $docs['skema_tkt'] = [
+                    'status' => 'pending', // atau 'ok' kalau mau langsung dianggap aman
+                    'path'   => $path,
+                    'note'   => null,
+                    'updated_at' => now(),
+                ];
+
+                $verif->update([
+                    'skema_tkt_template_path' => $path, // kolom lama tetep diupdate
+                    'docs' => $docs // Masukin ke array docs
+                ]);
+            },
+            fallbackRedirect: route('patenverif.skema.form', ['verif' => $verif->id]),
+            sessionKey: "patenverif.{$verif->id}.skema",
+        );
     }
 
-    public function downloadPaten(Request $request, Paten $paten)
-{
-    $this->saveSkemaDraft($request, "paten.{$paten->id}.skema");
+        // ===== PATEN =====
+        public function showPaten(Paten $paten)
+        {
+            $draft = session("paten.{$paten->id}.skema", []);
+            return view('hakpaten.skemapengembanganpaten', compact('paten','draft'));
+        }
 
-    if ($request->input('action') === 'prev') {
-        return redirect()->route('hakpaten.datadiri');
+        public function downloadPaten(Request $request, Paten $paten)
+    {
+        $this->saveSkemaDraft($request, "paten.{$paten->id}.skema");
+
+        if ($request->input('action') === 'prev') {
+            return redirect()->route('hakpaten.datadiri');
+        }
+
+        if ($request->input('action') === 'next') {
+            return redirect()->route('hakpaten.all', $paten->id);
+        }
+
+        return $this->downloadDocx($request);
     }
 
-    if ($request->input('action') === 'next') {
-        return redirect()->route('hakpaten.all', $paten->id);
+        public function uploadPaten(Request $request, Paten $paten)
+    {
+        return $this->handleUpload(
+            request: $request,
+            noPendaftaran: $paten->no_pendaftaran ?? ('P_'.$paten->id),
+            storeDir: 'hak-paten/skema',
+            updateModel: fn(string $path) => $paten->update([
+                'skema_tkt_template_path' => $path,
+            ]),
+            fallbackRedirect: route('hakpaten.skema.form', ['paten' => $paten->id]),
+            sessionKey: "paten.{$paten->id}.skema",
+        );
     }
-
-    return $this->downloadDocx($request);
-}
-
-    public function uploadPaten(Request $request, Paten $paten)
-{
-    return $this->handleUpload(
-        request: $request,
-        noPendaftaran: $paten->no_pendaftaran ?? ('P_'.$paten->id),
-        storeDir: 'hak-paten/skema',
-        updateModel: fn(string $path) => $paten->update([
-            'skema_tkt_template_path' => $path,
-        ]),
-        fallbackRedirect: route('hakpaten.skema.form', ['paten' => $paten->id]),
-        sessionKey: "paten.{$paten->id}.skema",
-    );
-}
 
 
     // ===== Shared helpers =====
@@ -122,9 +138,9 @@ class SkemaController extends Controller
         }
 
         // ===== PDF (convert dari DOCX template via LibreOffice) =====
-        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
         if (!file_exists($soffice)) {
-            $soffice = 'D:\Program Files (x86)\LibreOffice\program\soffice.exe';
+            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
         }
         if (!file_exists($soffice)) {
             abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');

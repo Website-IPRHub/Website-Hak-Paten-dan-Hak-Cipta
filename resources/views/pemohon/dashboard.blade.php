@@ -120,6 +120,7 @@
                 @php
                   $labelsTerkirim = $pengajuan->type === 'paten'
                     ? [
+                        'skema_tkt'         => 'Dokumen TKT 7-9',
                         'draft_paten'       => 'Draft Paten',
                         'form_permohonan'   => 'Formulir Permohonan Paten',
                         'surat_kepemilikan' => 'Surat Pernyataan Kepemilikan Invensi',
@@ -220,17 +221,28 @@
                   @endif
 
                 @else
-                  {{-- FILE --}}
-                  @if(!empty($d->value))
-                    @php $shownName = $prettyName($d->value, $d->label); @endphp
-                    <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
-                      class="pd-file-link">
-                      {{ $shownName }}
-                    </a>
-                  @else
-                    <span class="pd-muted">Belum diupload</span>
-                  @endif
-                @endif
+  {{-- FILE --}}
+  @php
+    // 🔥 KUNCINYA DI SINI TIK!
+    // Kita cek: kalau key-nya skema_tkt, ambil dari kolom skema_tkt_template_path
+    $realValue = $d->value; 
+    if ($d->key === 'skema_tkt') {
+        $realValue = $source->skema_tkt_template_path;
+    }
+  @endphp
+
+  @if(!empty($realValue))
+    {{-- ✅ Gunakan $realValue untuk dapet path filenya --}}
+    @php $shownName = $prettyName($realValue, $d->label); @endphp
+    
+    <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
+       class="pd-file-link">
+       {{ $shownName }}
+    </a>
+  @else
+    <span class="pd-muted">Belum diupload</span>
+  @endif
+@endif
 
               </td>
             </tr>
@@ -249,6 +261,7 @@
               @if($s['key'] === 'revisi' && in_array(($status ?? ''), ['revisi','approve']))
                 @php
                   $labels = [
+                    'skema_tkt'         => 'Dokumen TKT 7-9',
                     'draft_paten'=>'Draft Paten',
                     'form_permohonan'=>'Form Permohonan',
                     'surat_kepemilikan'=>'Surat Kepemilikan Invensi',
@@ -263,7 +276,7 @@
 
                   $editableDocKeysByType = [
                     'cipta' => ['surat_permohonan','surat_pernyataan','surat_pengalihan'],
-                    'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan'],
+                    'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan', 'skema_tkt'],
                   ];
 
                   $editableDocKeys = $editableDocKeysByType[$pengajuan->type] ?? [];
@@ -366,19 +379,25 @@
 
       {{-- EDIT --}}
     {{-- REVISI TOMBOL EDIT DI DASHBOARD --}}
+{{-- LOGIKA 2 KONDISI TOMBOL EDIT TIK --}}
 <td class="pd-td-center">
   @if(in_array($docKey, $editableDocKeys))
     @php
-      // Tentukan route berdasarkan tipe pengajuan
-      $targetRoute = ($pengajuan->type === 'cipta') 
-          ? 'dup.hakcipta.isiform.formpendaftaran' 
-          : 'dup.hakpaten.isiformulir.isiform';
+      // Kondisi 1: Jalur khusus Skema TKT 7-9
+      if ($docKey === 'skema_tkt') {
+          $urlEdit = route('dup.skema.form', ['verif' => $pengajuan->id]);
+      } 
+      // Kondisi 2: Jalur Formulir / Surat lainnya (Paten/Cipta)
+      else {
+          $targetRoute = ($pengajuan->type === 'cipta') 
+              ? 'dup.hakcipta.isiform.formpendaftaran' 
+              : 'dup.hakpaten.isiformulir.isiform';
+          
+          $urlEdit = route($targetRoute, ['ref' => $pengajuan->id]);
+      }
     @endphp
     
-    <a
-      href="{{ route($targetRoute, ['ref' => $pengajuan->id]) }}"
-      class="pd-mini-btn"
-    >
+    <a href="{{ $urlEdit }}" class="pd-mini-btn">
       Edit
     </a>
   @else
