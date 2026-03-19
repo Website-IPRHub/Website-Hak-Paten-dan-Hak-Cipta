@@ -126,7 +126,7 @@ class PatenController extends Controller
     private function generateNoPendaftaran(): string
     {
         $year   = now()->format('Y');
-        $prefix = 'P00' . $year;
+        $prefix = 'VP0' . $year;
 
         $last = DB::table('paten')
             ->where('no_pendaftaran', 'like', $prefix . '%')

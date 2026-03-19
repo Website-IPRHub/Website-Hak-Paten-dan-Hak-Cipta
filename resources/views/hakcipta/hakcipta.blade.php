@@ -23,7 +23,7 @@
       </div>
     @endif
 
-    <form id="draftForm" action="{{ route('hakcipta.start') }}" method="POST" novalidate>
+    <form id="draftForm" action="{{ route('ciptaverif.start') }}" method="POST" novalidate>
       @csrf
 
       <div class="form-2col">

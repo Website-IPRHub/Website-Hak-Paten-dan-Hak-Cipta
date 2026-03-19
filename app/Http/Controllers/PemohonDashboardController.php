@@ -347,6 +347,114 @@ if (in_array($status, ['revisi', 'approve'])) {
     ));
 }
 
+public function editRevisi(Request $request)
+{
+    $pemohon = Auth::guard('pemohon')->user();
+    if (!$pemohon) {
+        return redirect()->route('pemohon.login.form');
+    }
+
+    $type = $request->query('type');
+    $ref  = (int) $request->query('ref');
+    $doc  = $request->query('doc');
+
+    if (!in_array($type, ['cipta', 'paten'], true) || !$ref || !$doc) {
+        abort(404, 'Parameter revisi tidak valid.');
+    }
+
+   if ($type === 'cipta') {
+    $row = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+    if (!$row) abort(404);
+    
+    $inventors = !empty($row->inventors) ? (is_string($row->inventors) ? json_decode($row->inventors, true) : (array)$row->inventors) : [];
+
+    $sessionKeySpecific = "hakcipta.form.$ref";
+    $sessionKeyGlobal   = "hakcipta.form";
+
+    $existingSession = session($sessionKeySpecific) ?? session($sessionKeyGlobal, []);
+
+    $dbData = [
+        'jumlah_inventor'     => count($inventors) ?: 1,
+        'judul_ciptaan'       => $row->judul_cipta ?? '',
+        'jenis_cipta'         => $row->jenis_cipta ?? '',
+        'jenis_cipta_lainnya' => $row->jenis_lainnya ?? '',
+        'link_ciptaan'        => $row->link_ciptaan ?? '',
+        'tanggal_pengisian'   => now()->format('Y-m-d'),
+        'inventor' => [
+            'nama'      => collect($inventors)->pluck('nama')->all(),
+            'NIK'       => collect($inventors)->pluck('NIK')->all(), // ✅ Pake NIK (Besar) biar sama ama Blade
+            'nip_nim'   => collect($inventors)->pluck('nip_nim')->all(),
+            'fakultas'  => collect($inventors)->pluck('fakultas')->all(),
+            'status'    => collect($inventors)->pluck('status')->all(),
+            'no_hp'     => collect($inventors)->pluck('no_hp')->all(),
+            'email'     => collect($inventors)->pluck('email')->all(),
+            'tlp_rumah' => collect($inventors)->pluck('tlp_rumah')->all(),
+            'alamat'    => collect($inventors)->pluck('alamat')->all(),
+            'kode_pos'  => collect($inventors)->pluck('kode_pos')->all(),
+            'nidn'      => collect($inventors)->pluck('nidn')->all(),
+        ],
+    ];
+
+    $finalData = array_merge($dbData, $existingSession);
+    session([$sessionKeySpecific => $finalData]);
+    session(['edit_ref_id' => $ref]);
+
+    return redirect()->route('dup.hakcipta.isiform.formpendaftaran', ['ref' => $ref]);
+}
+
+    // --- LOGIC UNTUK HAK PATEN (Perbaikan di Sini) ---
+   // --- LOGIC UNTUK HAK PATEN (DIBENARKAN) ---
+    // --- LOGIC UNTUK HAK PATEN (DIPERBAIKI TOTAL) ---
+   // --- LOGIC UNTUK HAK PATEN (PASTI MUNCUL) ---
+    if ($type === 'paten') {
+        $row = DB::table('paten_verifs')->where('id', $ref)->first();
+        if (!$row) abort(404);
+        
+        $inventors = !empty($row->inventors) ? (is_string($row->inventors) ? json_decode($row->inventors, true) : (array)$row->inventors) : [];
+
+        $sessionKeySpecific = "hakpaten.isiform.$ref";
+        $sessionKeyGlobal   = "hakpaten.isiform";
+
+        // 1. Ambil data dari saku spesifik (hasil edit/revisi sebelumnya)
+        $existingSession = session($sessionKeySpecific);
+        
+        if (!$existingSession) {
+            // 2. KALO KOSONG (Pas pertama kali klik EDIT), ambil dari saku pendaftaran awal
+            $existingSession = session($sessionKeyGlobal, []);
+        }
+
+        // 3. Data dari Database
+        $dbData = [
+            'jenis_paten'     => $row->jenis_paten ?? '',
+            'judul_invensi'   => $row->judul_paten ?? '',
+            'jumlah_inventor' => count($inventors) ?: 1,
+            'inventor' => [
+                'nama'            => collect($inventors)->pluck('nama')->all(),
+                'nip_nim'         => collect($inventors)->pluck('nip_nim')->all(),
+                'alamat'          => collect($inventors)->pluck('alamat')->all(),
+                'kode_pos'        => collect($inventors)->pluck('kode_pos')->all(),
+                'pekerjaan'       => collect($inventors)->pluck('pekerjaan')->all(),
+                'kewarganegaraan' => collect($inventors)->pluck('kewarganegaraan')->all(),
+                'fakultas'        => collect($inventors)->pluck('fakultas')->all(),
+                'no_hp'           => collect($inventors)->pluck('no_hp')->all(),
+                'email'           => collect($inventors)->pluck('email')->all(),
+                'status'          => collect($inventors)->pluck('status')->all(),
+                'nidn'            => collect($inventors)->pluck('nidn')->all(),
+            ],
+        ];
+
+        // 4. GABUNGKAN: Data dari session (Uraian, Klaim, dll) mengisi bagian yang kosong di DB
+        $finalData = array_merge($dbData, $existingSession);
+
+        // 5. Simpan ke saku spesifik ID biar kedepannya nempel terus di ID ini
+        session([$sessionKeySpecific => $finalData]);
+        session(['edit_ref_id' => $ref]);
+
+        return redirect()->route('dup.hakpaten.isiformulir.isiform', ['ref' => $ref]);
+    }
+    abort(404);
+}
+
     public function downloadTandaTerima(Request $request)
     {
         $pemohon = Auth::guard('pemohon')->user();
@@ -472,8 +580,7 @@ public function uploadRevisi(Request $request, int $revisionId)
     DB::beginTransaction();
     try {
         $file = $request->file('file');
-
-        $original = $file->getClientOriginalName();              // ✅ nama asli
+        $original = $file->getClientOriginalName();
         $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
 
         $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
@@ -488,7 +595,26 @@ public function uploadRevisi(Request $request, int $revisionId)
             $counter++;
         }
 
-        $path = $file->storeAs($dir, $finalName, 'public');      // ✅ tidak random
+        $path = $file->storeAs($dir, $finalName, 'public');
+        $fullPathForDb = 'storage/' . $path; // ✅ Path lengkap untuk tabel pendaftaran
+// 🚀 LOGIC REPLACING (SINKRONISASI KE TABEL UTAMA)
+$tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
+
+// ✅ TENTUKAN NAMA KOLOM ASLI DI DATABASE
+$targetColumn = $reqRow->doc_key;
+
+// 🔥 KUNCINYA DI SINI TIK:
+// Kalau doc_key adalah 'skema_tkt', belokkan ke kolom 'skema_tkt_template_path'
+if ($reqRow->type === 'paten' && $reqRow->doc_key === 'skema_tkt') {
+    $targetColumn = 'skema_tkt_template_path';
+}
+
+// Menimpa kolom file lama di tabel pendaftaran dengan file baru hasil revisi
+DB::table($tableName)->where('id', $reqRow->ref_id)->update([
+    $targetColumn => $fullPathForDb, // ✅ Sekarang pake targetColumn yang pinter
+    'updated_at'  => now(),
+]);
+        // ========================================================
 
         // 1) tutup request admin
         DB::table('revisions')->where('id', $revisionId)->update([
@@ -498,7 +624,7 @@ public function uploadRevisi(Request $request, int $revisionId)
             'updated_at'     => now(),
         ]);
 
-        // 2) insert submitted pemohon
+        // 2) insert submitted pemohon (History)
         DB::table('revisions')->insert([
             'type'               => $reqRow->type,
             'ref_id'             => $reqRow->ref_id,
@@ -506,22 +632,18 @@ public function uploadRevisi(Request $request, int $revisionId)
             'from_role'          => 'pemohon',
             'state'              => 'submitted',
             'note'               => null,
-
-            'file_path'          => null, // jangan sentuh file admin
-
+            'file_path'          => null,
             'pemohon_file_path'  => $path,
-            'pemohon_file_name'  => $finalName,   // ✅ ini yang dipakai UI & download name
+            'pemohon_file_name'  => $finalName,
             'pemohon_uploaded_at'=> now(),
-
             'is_read_admin'      => 0,
             'is_read_pemohon'    => 1,
-
             'created_at'         => now(),
             'updated_at'         => now(),
         ]);
 
         DB::commit();
-        return back()->with('success', 'File revisi berhasil diupload.');
+        return back()->with('success', 'File revisi berhasil diupload dan dokumen pendaftaran telah diperbarui.');
     } catch (\Throwable $e) {
         DB::rollBack();
         throw $e;

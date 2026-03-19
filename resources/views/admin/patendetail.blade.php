@@ -165,6 +165,7 @@
 
     @php
       $docLabels = [
+        'skema_tkt'         => 'Dokumen TKT 7-9',
         'draft_paten'       => 'Draft Paten',
         'form_permohonan'   => 'Form Permohonan',
         'surat_kepemilikan' => 'Surat Kepemilikan',
@@ -344,14 +345,25 @@ if (!$isKeyedByDoc) {
   $note      = data_get($doc, 'note');
 
   // ✅ tampil utama: TEKS vs FILE
+ // ✅ tampil utama: TEKS vs FILE
   if($isText){
     $textValue = trim((string) data_get($row, $k, ''));
     $filePath  = null;
     $shownName = null;
-  }else{
-    $filePath  = data_get($row, $k);
+  } else {
+    // 🔥 DISINI KUNCINYA TIK!
+    if ($k === 'skema_tkt') {
+        // Ambil dari kolom khusus skema TKT
+        $filePath = $row->skema_tkt_template_path;
+    } else {
+        // Ambil reguler (draft_paten, scan_ktp, dll)
+        $filePath = data_get($row, $k);
+    }
+
     $nameField = $k.'_name';
     $labelForName = $docLabels[$k] ?? $k;
+    
+    // Untuk shownName, kalau TKT ambil manual aja namanya
     $shownName = data_get($row, $nameField)
       ?: ($filePath ? $prettyName($filePath, $labelForName) : null);
 

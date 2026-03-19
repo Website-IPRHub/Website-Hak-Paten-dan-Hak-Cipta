@@ -5,19 +5,26 @@
 @section('content')
 
 
-@php $activeStep = 2; @endphp
-@include('hakcipta.isiform.menuformcipta')
+@php 
+    $activeStep = 2; 
+    $ref = $ref ?? request('ref') ?? session('edit_ref_id');
 
-@php
-    $data = session('hakcipta.form', []);
+    // ✅ PRIORITAS: Ambil dari session editan dulu, kalau gak ada baru data controller
+    $currentData = session("hakcipta.form.$ref", $data ?? []);
+
+    $uraianData  = old('uraian', $currentData['uraian'] ?? '');
+    $berupaData  = old('berupa', $currentData['berupa'] ?? '');
+    $tempatData  = old('tempat', $currentData['tempat'] ?? '');
+    $tanggalData = old('tanggal_pengisian', $currentData['tanggal_pengisian'] ?? now()->format('Y-m-d'));
 @endphp
 
+{{-- Script Prefill pake currentData biar sinkron --}}
 <script type="application/json" id="prefill-inventor-data">
-{!! json_encode($data['inventor'] ?? []) !!}
+{!! json_encode($currentData['inventor'] ?? []) !!}
 </script>
 
 <script type="application/json" id="prefill-count">
-{!! json_encode($data['jumlah_inventor'] ?? 1) !!}
+{!! json_encode($currentData['jumlah_inventor'] ?? 1) !!}
 </script>
 
 <div class="paten-form-page">
@@ -26,15 +33,15 @@
     <p>Isi formulir ini untuk mendapatkan dokumen formulir pendaftaran hak cipta</p>
   </div>
 
-  <form class="form" method="POST" action="{{ route('isiformCipta.store') }}" autocomplete="off">
-    
+  <form class="form" method="POST" action="{{ route('dup.isiformCipta.store') }}">
     @csrf
+    <input type="hidden" name="ref" value="{{ $ref }}">
 
     {{-- GRID UTAMA --}}
     <div class="grid-2">
       @php
-          $jumlahInventor = old('jumlah_inventor', $data['jumlah_inventor'] ?? 1);
-      @endphp
+    $jumlahInventor = old('jumlah_inventor', $data['jumlah_inventor'] ?? 1);
+@endphp
 
       <div class="field">
           <label class="label">Jumlah pencipta <span class="req">*</span></label>
@@ -59,10 +66,10 @@
       </div>
 
       <div class="field">
-    @php
-        $jenisOld = old('jenis_cipta', session('hakcipta.form.jenis_cipta'));
-        $jenisLainnyaOld = old('jenis_cipta_lainnya', session('hakcipta.form.jenis_cipta_lainnya'));
-    @endphp
+   @php
+    $jenisOld = old('jenis_cipta', $data['jenis_cipta'] ?? null);
+    $jenisLainnyaOld = old('jenis_cipta_lainnya', $data['jenis_cipta_lainnya'] ?? null);
+@endphp
 
     <label class="label">Jenis Hak Cipta <span class="req">*</span></label>
 
@@ -108,42 +115,46 @@
   </div>
 
       <div class="field">
-        <label class="label">Link Ciptaan <span class="req">*</span></label>
-        <input
-          type="url"
-          class="input"
-          name="link_ciptaan"
-          placeholder="Contoh: https://drive.google.com/..."
-          value="{{ old('link_ciptaan', $data['link_ciptaan'] ?? '') }}"
-          required
-        >
-        @error('link_ciptaan') <small class="err">{{ $message }}</small> @enderror
-      </div>
+    <label class="label">Link Ciptaan <span class="req">*</span></label>
+    <input
+        type="url"
+        class="input"
+        name="link_ciptaan"
+        placeholder="Contoh: https://drive.google.com/..."
+        {{-- ✅ GANTI BAGIAN INI --}}
+        value="{{ old('link_ciptaan', $data['link_ciptaan'] ?? '') }}"
+        required
+    >
+    @error('link_ciptaan') <small class="err">{{ $message }}</small> @enderror
+</div>
+<div class="field span-2">
+    <label class="label">Judul Ciptaan <span class="req">*</span></label>
+    <input
+        type="text"
+        class="input"
+        name="judul_ciptaan"
+        placeholder="Masukkan judul ciptaan"
+        {{-- ✅ GANTI BAGIAN INI --}}
+        value="{{ old('judul_ciptaan', $data['judul_ciptaan'] ?? '') }}"
+        required
+    >
+    @error('judul_ciptaan') <small class="err">{{ $message }}</small> @enderror
+</div>
 
-      <div class="field span-2">
-        <label class="label">Judul Ciptaan <span class="req">*</span></label>
-        <input
-          type="text"
-          class="input"
-          name="judul_ciptaan"
-          placeholder="Masukkan judul ciptaan"
-          value="{{ old('judul_ciptaan', $data['judul_ciptaan'] ?? '') }}"
-          required
-        >
-        @error('judul_ciptaan') <small class="err">{{ $message }}</small> @enderror
-      </div>
-      <div class="field span-2">
-        <label class="label">Produk Ciptaan Berupa? <span class="req">*</span></label>
-        <input
-          type="text"
-          class="input"
-          name="berupa"
-          placeholder="Produk ciptaan berupa..."
-          value="{{ old('berupa', $data['berupa'] ?? '') }}"
-          required
-        >
-        @error('berupa') <small class="err">{{ $message }}</small> @enderror
-      </div>
+{{-- Produk Berupa --}}
+<div class="field span-2">
+    <label class="label">Produk Ciptaan Berupa? <span class="req">*</span></label>
+    <input
+        type="text"
+        class="input"
+        name="berupa"
+        placeholder="Produk ciptaan berupa..."
+        {{-- ✅ GANTI DISINI: Panggil variabel $berupaData yang udah kita selamatin di atas --}}
+        value="{{ $berupaData }}"
+        required
+    >
+    @error('berupa') <small class="err">{{ $message }}</small> @enderror
+</div>
 
       <div class="field">
         <label class="label">Tanggal Pengisian <span class="req">*</span></label>
@@ -152,24 +163,28 @@
           class="input"
           id="tanggal_pengisian"
           name="tanggal_pengisian"
+          {{-- ✅ GANTI DISINI: biar tanggalnya stay --}}
           value="{{ old('tanggal_pengisian', $data['tanggal_pengisian'] ?? now()->format('Y-m-d')) }}"
         >
         @error('tanggal_pengisian') <small class="err">{{ $message }}</small> @enderror
       </div>
 
-      <div class="field span-2">
-        <label class="label">Tempat Pengisian <span class="req">*</span></label>
-        <p class="hint">Tempat saat anda mengisi form ini.</p>
-        <input
-          type="text"
-          class="input"
-          name="tempat"
-          placeholder="Contoh: Semarang"
-          value="{{ old('tempat', $data['tempat'] ?? '') }}"
-          required
-        >
-        @error('tempat') <small class="err">{{ $message }}</small> @enderror
-      </div>
+{{-- Tempat Pengisian --}}
+{{-- Tempat Pengisian --}}
+<div class="field span-2">
+    <label class="label">Tempat Pengisian <span class="req">*</span></label>
+    <p class="hint">Tempat saat anda mengisi form ini.</p>
+    <input
+        type="text"
+        class="input"
+        name="tempat"
+        placeholder="Contoh: Semarang"
+        {{-- ✅ GANTI DISINI: Panggil variabel $tempatData --}}
+        value="{{ $tempatData }}"
+        required
+    >
+    @error('tempat') <small class="err">{{ $message }}</small> @enderror
+</div>
     </div>
 
     {{-- DATA PENCIPTA --}}
@@ -183,119 +198,140 @@
     </div>
 
     {{-- ULASAN (DI ATAS BUTTON) --}}
-    <div class="field mt-16">
-      <label class="label">Ulasan Ciptaan <span class="req">*</span></label>
-      <p class="hint">Tulis singkat (± 2–3 kalimat).</p>
-      <textarea
-    class="input input-full"
-    name="uraian"
-    rows="4"
-    maxlength="350"
-    placeholder="Masukkan uraian produk ciptaan"
-    required
->{{ old('uraian', $data['uraian'] ?? '') }}</textarea>
-
-      @error('uraian') <small class="err">{{ $message }}</small> @enderror
-    </div>
+{{-- Ulasan Ciptaan --}}
+<div class="field mt-16">
+    <label class="label">Ulasan Ciptaan <span class="req">*</span></label>
+    <p class="hint">Tulis singkat (± 2–3 kalimat).</p>
+    <textarea
+        class="input input-full"
+        name="uraian"
+        rows="4"
+        maxlength="350"
+        placeholder="Masukkan uraian produk ciptaan"
+        required
+    >{{ $uraianData }}</textarea> {{-- ✅ GANTI DISINI: Panggil variabel $uraianData --}}
+    @error('uraian') <small class="err">{{ $message }}</small> @enderror
+</div>
 
     {{-- ACTIONS BAR --}}
-    <div class="actions-bar">
-      <div class="actions-left">
-        <button
-          type="button"
-          class="btn-prev"
-          data-fallback="{{ route('hakcipta.isiform.peralihanverifcipta') }}"
-          onclick="(history.length > 1) ? history.back() : (window.location.href=this.dataset.fallback)"
-        >
-          &laquo; Sebelumnya
-        </button>
+    {{-- ACTIONS BAR --}}
+<div class="actions-bar">
+  <div class="actions-left">
+    {{-- ✅ KASIH ID "nextLinkIsiform" BIAR SWEETALERT JALAN --}}
+    <button
+      type="button" 
+      id="nextLinkIsiform"
+      class="btn-next"
+      data-save-url="{{ route('dup.isiformCipta.store') }}"
+      data-next-url="{{ route('pemohon.dashboard') }}"
+    >
+      Simpan Perubahan
+    </button>
+  </div>
+             <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const nextBtn = document.getElementById('nextLinkIsiform');
+  if (!nextBtn) return;
 
-        <a
-          id="nextLinkIsiform"
-          href="#"
-          class="btn-next"
-          data-save-url="{{ route('isiformCipta.store') }}"
-          data-next-url="{{ route('datadiricipta') }}"
-        >
-          Selanjutnya &raquo;
-        </a>
+  nextBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
 
-        <script>
-          document.addEventListener('DOMContentLoaded', () => {
-            const nextBtn = document.getElementById('nextLinkIsiform');
-            if (!nextBtn) return;
+    const form = nextBtn.closest('form');
+    if (!form) return;
 
-            nextBtn.addEventListener('click', async (e) => {
-              e.preventDefault();
+    // 1. Validasi Input (Wajib isi yang ada tanda *)
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
-              const form = nextBtn.closest('form');
-              if (!form) { console.error('Form tidak ketemu'); return; }
+    // --- PROSES SIMPAN KE SESSION ---
+    const saveUrl = nextBtn.dataset.saveUrl;
+    const nextUrl = nextBtn.dataset.nextUrl;
+    const fd = new FormData(form);
+    
+    // Kita kirim action 'save' agar Controller menjalankan session()->put()
+    fd.set('action', 'save'); 
 
-              // optional: validasi HTML5
-              if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-              }
+    try {
+      // Tampilkan loading sebentar
+      Swal.fire({
+        title: 'Memproses Data...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
 
-              // SWEET ALERT 
-              const result = await Swal.fire({
-                title: 'Konfirmasi Download',
-                html: `
-                  <p>Apakah Anda sudah mendownload 3 file berikut?</p>
-                  <ul style="text-align:left; margin-top:10px;">
-                    <li>• Formulir Permohonan Pendaftaran Ciptaan</li>
-                    <li>• Surat Pengalihan Hak Cipta</li>
-                    <li>• Surat Pernyataan</li>
-                  </ul>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sudah',
-                cancelButtonText: 'Belum',
-                confirmButtonColor: '#2F5C9E',
-                cancelButtonColor: '#6c757d',
-                reverseButtons: true
-              });
+      const res = await fetch(saveUrl, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd
+      });
 
-              if (!result.isConfirmed) {
-                return; // kalau klik "Belum" tetap di halaman
-              }
+      if (res.ok) {
+        // 2. SETELAH DATA MASUK SESSION, BARU TANYA DOWNLOAD
+        const result = await Swal.fire({
+          title: 'Data Disimpan Sementara',
+          html: `
+            <p>Data perubahan Anda sudah tersimpan di sistem (Sesi).</p>
+            <hr style="margin:15px 0;">
+            <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru</p>
+            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:16px;">
+              <li>• Formulir Permohonan Pendaftaran Cipta</li>
+              <li>• Surat Pernyataan</li>
+              <li>• Surat Pengalihan Hak Cipta</li>
+            </ul>
+          `,
+          icon: 'success',
+          showCancelButton: true,
+          confirmButtonText: 'Sudah Download',
+          cancelButtonText: 'Belum, Download Dulu',
+          confirmButtonColor: '#2F5C9E',
+          cancelButtonColor: '#6c757d',
+          reverseButtons: true
+        });
 
-              const saveUrl = nextBtn.dataset.saveUrl;
-              const nextUrl = nextBtn.dataset.nextUrl;
-
-              const fd = new FormData(form);
-              fd.set('action', 'next'); // biar controller tahu ini "save & lanjut"
-
-              try {
-                const res = await fetch(saveUrl, {
-                  method: 'POST',
-                  headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                  body: fd
-                });
-
-                if (!res.ok) {
-                  console.error('Save gagal', res.status);
-                  return;
-                }
-
-                window.location.href = nextUrl;
-              } catch (err) {
-                console.error(err);
-              }
+       if (result.isConfirmed) {
+            // Jika klik "Sudah Download", arahkan ke Dashboard Pemohon
+            const nextUrl = nextBtn.dataset.nextUrl; // Ini akan mengambil route('pemohon.dashboard')
+            
+            Swal.fire({
+                title: 'Berhasil!',
+                text: 'Data disimpan. Kembali ke Dashboard...',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
             });
-          });
-          </script>
 
+            setTimeout(() => {
+                window.location.href = nextUrl;
+            }, 1500);
+        } else {
+            // Jika klik "Belum", biarkan tetap di halaman ini agar bisa download dulu
+            Swal.fire({
+                title: 'Silakan Download',
+                text: 'Gunakan tombol download di bawah sebelum kembali ke dashboard.',
+                icon: 'info'
+            });
+        }
 
-      </div>
+      } else {
+        Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan ke session.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Gagal terhubung ke server.', 'error');
+    }
+  });
+});
+</script>
+
 
       <div class="actions-download">
         <select id="doc_type" class="input" style="width:220px;">
           <option value="" selected disabled>-- Pilih Dokumen --</option>
-          <option value="{{ route('isiformCipta.store') }}">Formulir Permohonan Pendaftaran Ciptaan</option>
-          <option value="{{ route('pernyataanCipta.store') }}">Surat Pernyataan</option>
-          <option value="{{ route('pengalihanhakCipta.store') }}">Surat Pengalihan Hak Cipta</option>
+         <option value="{{ route('dup.isiformCipta.store') }}">Formulir Permohonan Pendaftaran Ciptaan</option>
+        <option value="{{ route('dup.pernyataanCipta.store') }}">Surat Pernyataan</option>
+        <option value="{{ route('dup.pengalihanhakCipta.store') }}">Surat Pengalihan Hak Cipta</option>
         </select>
 
         <select name="download_format" class="input" style="width:160px;">
@@ -441,32 +477,23 @@
                 required>
         </div>
 
-        {{-- Alamat --}}
-        <div class="field span-2">
-          <label class="label">Alamat Lengkap (sesuai KTP) <span class="req">*</span></label>
-          <textarea class="input"
-                    name="inventor[alamat][]"
-                    rows="3"
-                    placeholder="Alamat lengkap"
-                    required></textarea>
-        </div>
+       <div class="field span-2">
+  <label class="label">Alamat Lengkap (sesuai KTP) <span class="req">*</span></label>
+  <textarea class="input" name="inventor[alamat][]" rows="3" placeholder="Alamat lengkap" required></textarea>
+</div>
 
-        {{-- Kode Pos --}}
-        <div class="field">
-          <label class="label">Kode Pos <span class="req">*</span></label>
-          <input type="text"
-                class="input"
-                name="inventor[kode_pos][]"
-                placeholder="Masukkan Kode Pos"
-                required>
-        </div>
+<div class="field">
+  <label class="label">Kode Pos <span class="req">*</span></label>
+  {{-- ✅ Pastikan name="inventor[kode_pos][]" --}}
+  <input type="text" class="input" name="inventor[kode_pos][]" placeholder="Contoh: 50275" required>
+</div>
       </div>
     </div>
   </template>
 
-  <script type="application/json" id="old-inventor-data">
-    {!! json_encode(old('inventor', $data['inventor'] ?? [])) !!}
-</script>
+<script type="application/json" id="old-inventor-data">
+  {!! json_encode(old('inventor', $currentData['inventor'] ?? [])) !!}
+  </script>
 
   
 </div>

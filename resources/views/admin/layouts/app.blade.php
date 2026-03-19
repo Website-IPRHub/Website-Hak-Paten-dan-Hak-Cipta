@@ -95,76 +95,7 @@
 </div>
 
 {{-- Modal logout + ubah password (sekali aja di layout biar konsisten) --}}
-{{-- resources/views/admin/partials/modals.blade.php --}}
-
-{{-- MODAL KONFIRMASI LOGOUT --}}
-<div class="modal-backdrop" id="logoutBackdrop" hidden></div>
-<div class="modal" id="logoutModal" hidden role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
-  <div class="modal-card">
-    <h3 id="logoutTitle" class="modal-title">Konfirmasi Logout</h3>
-    <p class="modal-text">Kamu yakin mau logout?</p>
-
-    <div class="modal-actions">
-      <button type="button" class="btn-ghost" id="cancelLogout">Batal</button>
-      <form method="POST" action="{{ route('admin.logout') }}">
-        @csrf
-        <button type="submit" class="btn-danger">Ya, Logout</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-{{-- MODAL UBAH PASSWORD --}}
-<div class="modal-backdrop" id="passBackdrop" hidden></div>
-<div class="modal" id="passModal" hidden role="dialog" aria-modal="true" aria-labelledby="passTitle">
-  <div class="modal-card">
-    <h3 id="passTitle" class="modal-title">Ubah Password</h3>
-
-    <form method="POST" action="{{ route('admin.password.update') }}">
-      @csrf
-
-      <label style="display:block; font-size:12px; margin-top:10px;">Password Lama</label>
-      <input class="input" type="password" name="old_password" required>
-
-      <label style="display:block; font-size:12px; margin-top:10px;">Password Baru</label>
-      <input class="input" type="password" name="new_password" minlength="6" required>
-
-      <label style="display:block; font-size:12px; margin-top:10px;">Konfirmasi Password Baru</label>
-      <input class="input" type="password" name="new_password_confirmation" minlength="6" required>
-
-      <div class="modal-actions" style="margin-top:14px;">
-        <button type="button" class="btn-ghost" id="cancelPass">Batal</button>
-        <button type="submit" class="btn-danger">Simpan</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-{{-- MODAL KONFIRMASI HAPUS --}}
-<div class="modal-backdrop" id="deleteBackdrop" hidden></div>
-<div class="modal" id="deleteModal" hidden>
-  <div class="modal-card modal-lg">
-    <div class="modal-icon">!</div>
-    <h3 class="modal-title" id="deleteTitle">Konfirmasi Hapus</h3>
-
-    <p class="modal-text" id="deleteText">
-      Apakah yakin ingin menghapus data ini?
-      <br>
-      <span class="modal-warning">Tindakan ini bersifat permanen dan tidak dapat dibatalkan.</span>
-    </p>
-
-    <div class="modal-actions">
-      <button type="button" class="btn-ghost" id="cancelDelete">Batal</button>
-
-      <form method="POST" id="deleteForm">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn-danger">Hapus</button>
-      </form>
-    </div>
-  </div>
-</div>
-
+@include('admin.partials.modals') {{-- nanti bikin file ini, atau paste modal yang sudah kamu punya --}}
 
 @yield('page_scripts')
 </body>

@@ -388,29 +388,36 @@ if (table) {
       const wrapRev = e.target.closest("[data-rev]");
 
       // klik tombol revisi
-      if (btn && wrapRev) {
-        e.preventDefault();
-        e.stopPropagation();
+      // klik tombol revisi
+if (btn && wrapRev) {
+  e.preventDefault();
+  e.stopPropagation();
 
-        const myPop = wrapRev.querySelector("[data-rev-pop]");
-        if (!myPop) return;
+  const myPop = wrapRev.querySelector("[data-rev-pop]");
+  if (!myPop) return;
 
-        // tutup popup lain
-        document.querySelectorAll("[data-rev-pop]").forEach((p) => {
-          if (p !== myPop) p.hidden = true;
-        });
+  // tutup popup lain
+  document.querySelectorAll("[data-rev-pop]").forEach((p) => {
+    if (p !== myPop) p.hidden = true;
+  });
 
-        myPop.hidden = !myPop.hidden;
-        return;
-      }
+  // toggle popup ini
+  myPop.hidden = !myPop.hidden;
+
+  // ✅ KUNCI: sync class body
+  if (!myPop.hidden) document.body.classList.add("modal-rev-open");
+  else document.body.classList.remove("modal-rev-open");
+
+  return;
+}
 
       // klik di dalam pop -> jangan nutup
       if (popInside) return;
 
       // klik di luar -> tutup semua
-      document
-        .querySelectorAll("[data-rev-pop]")
-        .forEach((p) => (p.hidden = true));
+      // klik di luar -> tutup semua
+      document.querySelectorAll("[data-rev-pop]").forEach((p) => (p.hidden = true));
+      document.body.classList.remove("modal-rev-open"); // ✅ KUNCI
     },
     true
   );
@@ -480,6 +487,7 @@ if (table) {
       // tutup popover revisi
       const pop = form.closest("[data-rev-pop]");
       if (pop) pop.hidden = true;
+      document.body.classList.remove("modal-rev-open"); // ✅ penting
 
       refreshCanSend();
     } catch (err) {

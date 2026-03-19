@@ -400,7 +400,7 @@
 
 .pd-revisi-title{
   font-weight: 900;
-  font-size: 13px;
+  font-size: 16px;
   margin-bottom: 8px;
 }
 
@@ -961,13 +961,15 @@
 .pd-revisi-table.revisi td:nth-child(2){ width: 28%; }
 
 .pd-revisi-table.revisi th:nth-child(3),
-.pd-revisi-table.revisi td:nth-child(3){ width: 22%; }
+.pd-revisi-table.revisi td:nth-child(3){ width: 20%; }
 
 .pd-revisi-table.revisi th:nth-child(4),
-.pd-revisi-table.revisi td:nth-child(4){ width: 20%; }
+.pd-revisi-table.revisi td:nth-child(4){ width: 16%; }
 
 .pd-revisi-table.revisi th:nth-child(5),
-.pd-revisi-table.revisi td:nth-child(5){ width: 28%; }
+.pd-revisi-table.revisi td:nth-child(5){ width: 12%; }
+.pd-revisi-table.revisi th:nth-child(6),
+.pd-revisi-table.revisi td:nth-child(6){ width: 28%; }
 
 .pd-revisi-table.riwayat th:nth-child(1),
 .pd-revisi-table.riwayat td:nth-child(1){ width: 22%; }
@@ -983,6 +985,8 @@
 
 .pd-revisi-table.riwayat th:nth-child(5),
 .pd-revisi-table.riwayat td:nth-child(5){ width: 28%; }
+.pd-revisi-table.riwayat th:nth-child(6),
+.pd-revisi-table.riwayat td:nth-child(6){ width: 28%; }
 
 /* =========================
    STATUS BADGE (SINGLE)
