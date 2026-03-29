@@ -2,7 +2,21 @@
 
 @section('title','Skema Pengembangan')
 
+
 @section('content')
+
+@php
+  $isiform = session('hakpaten.isiform', []);
+  $verifSession = session('hakpaten.verif', []);
+  $draft = $draft ?? [];
+
+  $inventor1Nama = data_get($isiform, 'inventor.nama.0', '');
+  $inventor1NipNim = data_get($isiform, 'inventor.nip_nim.0', '');
+  $inventor1Nidn = data_get($isiform, 'inventor.nidn.0', '');
+  $inventor1Fakultas = data_get($isiform, 'inventor.fakultas.0', '');
+  $judulPaten = data_get($verifSession, 'judul_paten', data_get($isiform, 'judul_invensi', ''));
+@endphp
+
 <div class="judul">
   <h2>Skema Penelitian Pengembangan (TKT 7 - 9)</h2>
   <p>Catatan: Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.<br>
@@ -27,7 +41,7 @@
       <div class="field">
         <label class="label">Nama Lengkap <span class="req">*</span></label>
         <input class="input" name="nama_lengkap" placeholder="Masukkan nama lengkap Dosen (Inventor 1)"
-               value="{{ old('nama_lengkap', $draft['nama_lengkap'] ?? '') }}" required>
+               value="{{ old('nama_lengkap', $draft['nama_lengkap'] ?? $inventor1Nama) }}" required>
         @error('nama_lengkap') <small class="error">{{ $message }}</small> @enderror
       </div>
 
@@ -55,7 +69,7 @@
     class="input nidn-nip-input"
     name="nidn_nip"
     placeholder="Masukkan NIDN/NIP Anda"
-    value="{{ old('nidn_nip', $draft['nidn_nip'] ?? '') }}"
+    value="{{ old('nidn_nip', $draft['nidn_nip'] ?? ($inventor1Nidn ?: $inventor1NipNim)) }}"
     required
 >
                       <small class="nip-warning">
@@ -66,8 +80,8 @@
 
       <div class="field">
         @php
-          $fakultasValue = old('fakultas', $draft['fakultas'] ?? '');
-        @endphp
+  $fakultasValue = old('fakultas', $draft['fakultas'] ?? $inventor1Fakultas);
+@endphp
         <label class="label">Fakultas <span class="req">*</span></label>
         <select class="input" name="fakultas" required>
           <option value="" disabled @selected(!$fakultasValue)>-- Pilih Fakultas --</option>

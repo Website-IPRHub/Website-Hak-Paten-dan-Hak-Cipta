@@ -397,17 +397,13 @@ $verifSession = session('hakpaten.verif', []);
       {{-- ACTIONS --}}
       <div class="actions-bar">
         <div class="actions-left">
-          <button
-            type="button"
-            class="btn-prev"
-            onclick="window.location.href='{{ route('hakpaten.isiformulir') }}'"
-          >
-            &laquo; Sebelumnya
-          </button>
+          <button type="submit" name="action" value="prev" class="btn-prev">
+  &laquo; Sebelumnya
+</button>
 
-          <button type="submit" class="btn-next">
-              Selanjutnya »
-          </button>
+<button type="submit" name="action" value="next" class="btn-next">
+  Selanjutnya &raquo;
+</button>
         </div>
       </div>
 

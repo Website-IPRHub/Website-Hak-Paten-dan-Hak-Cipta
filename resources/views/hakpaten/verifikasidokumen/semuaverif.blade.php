@@ -340,12 +340,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="footer-actions">
       <button
-          type="button"
-          class="btn-prev"
-          onclick="window.location.href='{{ route('patenverif.datadiri', $verif->id) }}'"
-        >
-          &laquo; Sebelumnya
-        </button>
+    type="button"
+    class="btn-prev"
+    onclick="window.location.href='{{ $prevRoute }}'"
+>
+  &laquo; Sebelumnya
+</button>
 
       <form id="finalSubmitForm" method="POST" action="{{ route('patenverif.submit.final',['verif'=>$verif->id]) }}">
         @csrf

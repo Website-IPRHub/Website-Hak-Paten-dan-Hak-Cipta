@@ -66,6 +66,12 @@ class PatenVerifController extends Controller
             ]
         ]);
 
+        $action = $request->input('action', 'next');
+
+if ($action === 'prev') {
+    return redirect()->route('hakpaten.isiformulir');
+}
+
         if (($validated['inventor']['status'][0] ?? null) !== 'Dosen') {
             return back()->withErrors([
                 'inventor.status.0' => 'Inventor pertama wajib berstatus Dosen'
@@ -346,12 +352,21 @@ class PatenVerifController extends Controller
     return view('hakpaten.verifikasidokumen.semuaverif', compact('verif'));
 }
 
-
-    public function all($id)
-    {
-        $verif = PatenVerif::findOrFail($id);
-        return view('hakpaten.verifikasidokumen.semuaverif', compact('verif'));
+private function getPrevRouteForUpload(PatenVerif $verif): string
+{
+    if ($verif->skema_penelitian === 'Penelitian Pengembangan (TKT 7 - 9)') {
+        return route('patenverif.skema.form', $verif->id);
     }
+
+    return route('patenverif.datadiri', $verif->id);
+}
+    public function all($id)
+{
+    $verif = PatenVerif::findOrFail($id);
+    $prevRoute = $this->getPrevRouteForUpload($verif);
+
+    return view('hakpaten.verifikasidokumen.semuaverif', compact('verif', 'prevRoute'));
+}
 
 
     private function storeUploadedOriginalName(Request $request, string $dir): string
@@ -624,6 +639,7 @@ private function getDraft(PatenVerif $verif, string $step): array
 {
     return session("draft.{$verif->id}.{$step}", []);
 }
+
 
 
 
