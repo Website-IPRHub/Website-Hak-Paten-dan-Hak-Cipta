@@ -13,6 +13,34 @@ body {
   color: #111827;
 }
 
+/* default (belum pilih) */
+.prototipe-select {
+  background-color: #ffe4ec; /* pink lembut */
+  border: 1px solid #ffb6c1;
+}
+
+/* kalau SUDAH */
+.prototipe-select.sudah {
+  background-color: #e6ddff; /* lilac */
+  border: 1px solid #b8a2ff;
+}
+
+/* kalau BELUM */
+.prototipe-select.belum {
+  background-color: #fff7fa;
+  border: 1px solid #f3dbe4;
+  color: #8c6a76;
+}
+
+.prototipe-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  color: #7a7a7a;
+  line-height: 1.0;
+  font-family: 'inter', sans-serif;
+}
+
 /* Outer section */
 .section-full.section-isi {
   padding: 28px 18px 48px;

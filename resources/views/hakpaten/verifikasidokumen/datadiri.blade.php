@@ -140,8 +140,7 @@ $verifSession = session('hakpaten.verif', []);
         <div class="col-right">
           <div class="field">
             <label class="label">Prototipe <span class="req">*</span></label>
-            <select class="input" name="prototipe" required>
-            <option value="" disabled
+            <select class="input prototipe-select" name="prototipe" required>
               {{ old('prototipe', data_get($verifSession,'prototipe')) ? '' : 'selected' }}>
               -- Prototipe --
             </option>
@@ -157,6 +156,10 @@ $verifSession = session('hakpaten.verif', []);
             </option>
           </select>
           </div>
+          <small class="hint prototipe-note">
+          Warna ungu menandakan <strong>prototipe sudah tersedia</strong>, 
+          sedangkan warna pink menandakan <strong>prototipe belum tersedia</strong>.
+        </small>
 
           <div class="field">
             <label class="label">Nilai Perolehan <span class="req">*</span></label>
@@ -468,6 +471,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.querySelector('.prototipe-select');
+  if (!select) return;
+
+  function updateColor() {
+    select.classList.remove('sudah', 'belum');
+
+    if (select.value === 'Sudah') {
+      select.classList.add('sudah');
+    } else if (select.value === 'Belum') {
+      select.classList.add('belum');
+    }
+  }
+
+  // jalan saat load (biar old() ikut ke-style)
+  updateColor();
+
+  // jalan saat user ganti
+  select.addEventListener('change', updateColor);
+});
+</script>
 
   </div>
 </section>

@@ -34,8 +34,8 @@ class PengalihanHakCiptaController extends Controller
             'inventor' => ['required', 'array'],
             'inventor.nama' => ['required', 'array'],
             'inventor.nama.*' => ['required', 'string', 'max:200'],
-            'inventor.NIK' => ['nullable', 'array'],
-            'inventor.NIK.*' => ['nullable', 'string', 'max:100'],
+            'inventor.nik' => ['nullable', 'array'],
+'inventor.nik.*' => ['nullable', 'string', 'max:100'],
             'inventor.alamat' => ['required', 'array'],
             'inventor.alamat.*' => ['required', 'string'],
             'inventor.kode_pos' => ['nullable', 'array'],
@@ -83,7 +83,7 @@ class PengalihanHakCiptaController extends Controller
         for ($i = 1; $i <= $jumlah; $i++) {
             $idx = $i - 1;
             $tp->setValue("no#{$i}", (string)$i);
-            $tp->setValue("NIK#{$i}", $this->val($data['inventor']['NIK'][$idx] ?? ''));
+            $tp->setValue("NIK#{$i}", $this->val($data['inventor']['nik'][$idx] ?? ''));
             $tp->setValue("nama#{$i}", $this->val($data['inventor']['nama'][$idx] ?? ''));
             $tp->setValue("alamat#{$i}", $this->val($data['inventor']['alamat'][$idx] ?? ''));
             $tp->setValue("kode_pos#{$i}", $this->val($data['inventor']['kode_pos'][$idx] ?? ''));
