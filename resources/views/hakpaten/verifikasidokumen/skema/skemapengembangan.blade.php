@@ -35,6 +35,8 @@
       action="{{ route('patenverif.skema.download', ['verif' => $verif->id]) }}">
   @csrf
 
+  <input type="hidden" name="action" id="skemaAction">
+
   <div class="grid-2">
     {{-- KIRI (3 field) --}}
     <div class="col">
@@ -122,11 +124,7 @@
     class="skm-btn skm-btn--prev">
   &laquo; Sebelumnya
 </button>
-    <button type="submit"
-    form="downloadForm"
-    name="action"
-    value="next"
-    class="btn-next">
+    <button type="button" id="btnNextSkema" class="btn-next">
   Selanjutnya &raquo;
 </button>
   </div>
@@ -200,39 +198,74 @@ document.addEventListener('DOMContentLoaded', () => {
     input.value = value ?? '';
   }
 
-  if (draftFile && draftForm && downloadForm) {
-    draftFile.addEventListener('change', () => {
-      const file = draftFile.files && draftFile.files[0];
-      if (!file || isSubmitting) return;
+  if (!draftFile || !draftForm || !downloadForm) return;
 
-      isSubmitting = true;
+  draftFile.addEventListener('change', () => {
+    const file = draftFile.files && draftFile.files[0];
+    if (!file || isSubmitting) return;
 
-      if (fileName) fileName.textContent = file.name;
-      if (uploadButtonLabel) {
-        uploadButtonLabel.style.pointerEvents = 'none';
-        uploadButtonLabel.textContent = 'Mengupload...';
-      }
+    isSubmitting = true;
 
-      const fields = [
-        'nama_lengkap',
-        'program_studi',
-        'judul_paten',
-        'nidn_nip',
-        'fakultas',
-        'tanggal_pengisian',
-        'download_format'
-      ];
+    if (fileName) fileName.textContent = file.name;
 
-      fields.forEach(name => {
-        const el = downloadForm.querySelector(`[name="${name}"]`);
-        if (el) {
-          upsertHidden(name, el.value);
-        }
-      });
+    if (uploadButtonLabel) {
+      uploadButtonLabel.style.pointerEvents = 'none';
+      uploadButtonLabel.textContent = 'Mengupload...';
+    }
 
-      draftForm.submit();
+    const fields = [
+      'nama_lengkap',
+      'program_studi',
+      'judul_paten',
+      'nidn_nip',
+      'fakultas',
+      'tanggal_pengisian',
+      'download_format'
+    ];
+
+    fields.forEach((name) => {
+      const el = downloadForm.querySelector(`[name="${name}"]`);
+      if (el) upsertHidden(name, el.value);
     });
-  }
+
+    draftForm.submit();
+  });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('downloadForm');
+  const btnNext = document.getElementById('btnNextSkema');
+  const actionInput = document.getElementById('skemaAction');
+
+  if (!form || !btnNext || !actionInput) return;
+
+  btnNext.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const fileNameText = document.getElementById('fileName')?.textContent?.trim() || '';
+
+    if (!fileNameText || fileNameText === 'Belum Pilih File') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Upload diperlukan',
+        text: 'Silakan upload surat pernyataan skema pengembangan terlebih dahulu.',
+        confirmButtonText: 'Baik',
+        confirmButtonColor: '#2F5C9E'
+      });
+      return;
+    }
+
+    actionInput.value = 'next';
+    form.submit();
+  });
+});
+</script>
+
 @endsection

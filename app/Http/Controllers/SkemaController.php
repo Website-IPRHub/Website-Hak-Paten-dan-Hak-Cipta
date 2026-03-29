@@ -21,19 +21,41 @@ class SkemaController extends Controller
 
     public function downloadVerif(Request $request, PatenVerif $verif)
 {
-    $this->saveSkemaDraft($request, "patenverif.{$verif->id}.skema");
+    $sessionKey = "patenverif.{$verif->id}.skema";
+    $action = $request->input('action');
 
-    if ($request->input('action') === 'prev') {
-        return redirect()->route('patenverif.datadiri');
+    $this->saveSkemaDraft($request, $sessionKey);
+
+    if ($action === 'prev') {
+        return redirect()->route('patenverif.datadiri', $verif->id);
     }
 
-    if ($request->input('action') === 'next') {
+    $validated = $request->validate([
+        'nama_lengkap'      => ['required', 'string', 'max:255'],
+        'program_studi'     => ['required', 'string', 'max:255'],
+        'judul_paten'       => ['required', 'string', 'max:255'],
+        'nidn_nip'          => ['required', 'regex:/^(\d{8}|\d{18})$/'],
+        'fakultas'          => ['required', 'string', 'max:255'],
+        'tanggal_pengisian' => ['required', 'date'],
+        'download_format'   => ['nullable', 'in:pdf,docx'],
+    ], [
+        'nidn_nip.regex' => 'NIDN/NIP harus terdiri dari 8 atau 18 digit angka.',
+    ]);
+
+    session()->put($sessionKey, array_merge(session($sessionKey, []), $validated));
+
+    if ($action === 'next') {
+        if (empty($verif->skema_tkt_template_path)) {
+            return back()
+                ->withErrors(['file' => 'Upload surat pernyataan skema pengembangan terlebih dahulu.'])
+                ->withInput();
+        }
+
         return redirect()->route('patenverif.all', $verif->id);
     }
 
     return $this->downloadDocx($request);
 }
-
     public function uploadVerif(Request $request, PatenVerif $verif)
     {
         return $this->handleUpload(
@@ -41,7 +63,6 @@ class SkemaController extends Controller
             noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
             storeDir: 'paten-verif/skema',
             updateModel: function(string $path) use ($verif) {
-                // ✅ KUNCINYA DI SINI:
                 // Kita simpan ke kolom skema_tkt_template_path (untuk internal sistem)
                 // DAN kita daftarin ke JSON 'docs' supaya muncul di list dokumen Admin
                 $docs = $verif->docs ?? [];
@@ -138,9 +159,9 @@ class SkemaController extends Controller
         }
 
         // ===== PDF (convert dari DOCX template via LibreOffice) =====
-        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
         if (!file_exists($soffice)) {
-            $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+            $soffice = 'D:\Program Files (x86)\LibreOffice\program\soffice.exe';
         }
         if (!file_exists($soffice)) {
             abort(500, 'soffice.exe tidak ditemukan. Cek instalasi LibreOffice.');
