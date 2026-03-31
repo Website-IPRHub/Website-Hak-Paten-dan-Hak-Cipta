@@ -39,9 +39,9 @@
   </a>
 
   <a href="{{ route('daftar') }}" class="icon-btn rahasia">
-    <span class="icon"><i class="fa-solid fa-user-secret"></i></span>
-    <span class="label">Daftar Rahasia Dagang</span>
-  </a>
+  <span class="icon"><i class="fa-solid fa-lock"></i></span>
+  <span class="label">Daftar Rahasia Dagang</span>
+</a>
 
   <a href="{{ route('daftar') }}" class="icon-btn merek">
     <span class="icon"><i class="fa-solid fa-tag"></i></span>
