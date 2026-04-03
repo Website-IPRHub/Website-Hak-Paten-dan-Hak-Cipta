@@ -18,56 +18,53 @@ class DuplicateFormPendaftaranCiptaanController extends Controller
 public function index(Request $request)
 {
     $ref = $request->query('ref') ?? session('edit_ref_id');
-    $sessionKey = "hakcipta.form.$ref";
-
-    $dbData = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
-    if (!$dbData) return "Data tidak ditemukan.";
-
-    // 1. Ambil session cadangan (kalo ada)
-    $s1 = session('hakcipta.form', []);
-    $s2 = session('hakcipta.verif', []);
-
-    // 2. LOGIKA DEFAULT: Kalo session editan belum ada ATAU isinya kosong melompong
-    if (!session()->has($sessionKey) || empty(session($sessionKey)['uraian'])) {
-        
-        $invDb = json_decode($dbData->inventors, true) ?? [];
-        
-        $initialData = [
-            'jumlah_inventor' => count($invDb) ?: 1,
-            'judul_ciptaan'   => $dbData->judul_cipta,
-            'link_ciptaan'    => $dbData->link_ciptaan, 
-            'jenis_cipta'     => in_array($dbData->jenis_cipta, ['Buku','Program Komputer','Karya Rekaman Video']) 
-                                 ? $dbData->jenis_cipta : 'Lainnya',
-            'jenis_cipta_lainnya' => (!in_array($dbData->jenis_cipta, ['Buku','Program Komputer','Karya Rekaman Video'])) 
-                                 ? $dbData->jenis_cipta : '',
-            
-            // ✅ FORCE DEFAULT: Kalo session asli gak ada, isi teks ini!
-            'uraian'          => $s1['uraian'] ?? $s2['uraian'] ?? 'Produk karya inovatif.', 
-            'berupa'          => $s1['berupa'] ?? $s2['berupa'] ?? 'Aplikasi Digital',
-            'tempat'          => $s1['tempat'] ?? $s2['tempat'] ?? 'Semarang',
-            'tanggal_pengisian' => $s1['tanggal_pengisian'] ?? $s2['tanggal_pengisian'] ?? now()->format('Y-m-d'),
-            
-            'inventor' => [
-                'nama' => array_column($invDb, 'nama'),
-                'nik'  => array_column($invDb, 'nik'),
-                'nip_nim' => array_column($invDb, 'nip_nim'),
-                'fakultas' => array_column($invDb, 'fakultas'),
-                'status' => array_column($invDb, 'status'),
-                'no_hp' => array_column($invDb, 'no_hp'),
-                'email' => array_column($invDb, 'email'),
-                'alamat' => array_column($invDb, 'alamat'),
-                'kode_pos' => array_column($invDb, 'kode_pos'),
-                'tlp_rumah' => array_column($invDb, 'tlp_rumah'),
-            ],
-        ];
-
-        session()->put($sessionKey, $initialData);
+    if ($ref) {
+        session(['edit_ref_id' => $ref]);
     }
 
-    $data = session($sessionKey);
+    $dbData = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+    if (!$dbData) {
+        return "Data tidak ditemukan.";
+    }
 
+    $sessionSpecific = session("hakcipta.form.$ref", []);
+    $formSession = session('hakcipta.form', []);
+
+    // 🔥 Gabungkan saku revisi dengan saku pendaftaran awal
+    // Biar field non-DB (berupa, tempat, ulasan) muncul dari pendaftaran awal
+    $source = array_merge($formSession, $sessionSpecific);
+
+    $invDb = json_decode($dbData->inventors, true) ?? [];
+
+    $data = [
+        'jumlah_inventor' => $source['jumlah_inventor'] ?? (count($invDb) ?: 1),
+        'judul_ciptaan'   => $source['judul_ciptaan'] ?? ($dbData->judul_cipta ?? ''),
+        'link_ciptaan'    => $source['link_ciptaan'] ?? ($dbData->link_ciptaan ?? ''),
+        
+        // 🔥 Sekarang field ini ambil dari $source (hasil merge pendaftaran awal + revisi)
+        'berupa'            => $source['berupa'] ?? '',
+        'tempat'            => $source['tempat'] ?? '',
+        'uraian'            => $source['uraian'] ?? '',
+        'tanggal_pengisian' => $source['tanggal_pengisian'] ?? now()->format('Y-m-d'),
+
+        'jenis_cipta' => $source['jenis_cipta'] ?? (in_array($dbData->jenis_cipta, ['Buku', 'Program Komputer', 'Karya Rekaman Video']) ? $dbData->jenis_cipta : 'Lainnya'),
+
+        'inventor' => $source['inventor'] ?? [
+            'nama' => array_column($invDb, 'nama'),
+            'nik' => array_column($invDb, 'nik'),
+            'nip_nim' => array_column($invDb, 'nip_nim'),
+            'fakultas' => array_column($invDb, 'fakultas'),
+            'status' => array_column($invDb, 'status'),
+            'no_hp' => array_column($invDb, 'no_hp'),
+            'email' => array_column($invDb, 'email'),
+            'alamat' => array_column($invDb, 'alamat'),
+            'kode_pos' => array_column($invDb, 'kode_pos'),
+            'tlp_rumah' => array_column($invDb, 'tlp_rumah'),
+        ],
+    ];
+    
     return view('isiform.hakcipta.duplicateformpendaftaranciptaan', [
-        'data' => $data, 
+        'data' => $data,
         'ref'  => $ref
     ]);
 }
@@ -94,9 +91,23 @@ public function index(Request $request)
         ]);
 
         // 2. Simpan ke Session (Logika array_merge seperti file asli)
-        $existingData = session($sessionKey, []);
-        $newPayload = array_merge($existingData, $request->all());
-        session()->put($sessionKey, $newPayload);
+     $newPayload = [
+    'jumlah_inventor'     => (int) $request->jumlah_inventor,
+    'jenis_cipta'         => $request->jenis_cipta,
+    'jenis_cipta_lainnya' => $request->jenis_cipta_lainnya ?? '',
+    'judul_ciptaan'       => $request->judul_ciptaan ?? '',
+    'link_ciptaan'        => $request->link_ciptaan ?? '',
+    'berupa'              => $request->berupa ?? '',
+    'tempat'              => $request->tempat ?? '',
+    'uraian'              => $request->uraian ?? '',
+    'tanggal_pengisian'   => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+    'inventor'            => $request->input('inventor', []),
+];
+
+session()->put("hakcipta.form.$refId", $newPayload);
+session()->put('hakcipta.form', $newPayload);
+session()->put('edit_ref_id', $refId);
+
 
         // 3. Simpan ke Database (AJAX Mode dari SweetAlert)
         if ($action === 'save' && $refId) {

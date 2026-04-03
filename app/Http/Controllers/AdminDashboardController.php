@@ -219,6 +219,7 @@ class AdminDashboardController extends Controller
         // keys dokumen per tipe
         $keysByType = [
             'paten' => [
+                'skema_tkt',
                 'draft_paten',
                 'form_permohonan',
                 'surat_kepemilikan',
@@ -226,6 +227,7 @@ class AdminDashboardController extends Controller
                 'scan_ktp',
                 'tanda_terima',
                 'gambar_prototipe',
+                'deskripsi_singkat_prototipe',
             ],
             'cipta' => [
                 'surat_permohonan',
@@ -788,6 +790,45 @@ class AdminDashboardController extends Controller
             ]);
 
             $newStatus = strtolower($request->input('status'));
+            if ($newStatus === 'approve') {
+    $docKeysByType = [
+        'paten' => [
+            'skema_tkt',
+            'draft_paten',
+            'form_permohonan',
+            'surat_kepemilikan',
+            'surat_pengalihan',
+            'scan_ktp',
+            'gambar_prototipe',
+            'deskripsi_singkat_prototipe',
+        ],
+        'cipta' => [
+            'surat_permohonan',
+            'surat_pernyataan',
+            'surat_pengalihan',
+            'scan_ktp',
+            'hasil_ciptaan',
+        ],
+    ];
+
+    $docKeys = $docKeysByType[$type] ?? [];
+
+    $docs = VerifikasiDokumen::where('ref_type', $type)
+        ->where('ref_id', $id)
+        ->get()
+        ->keyBy('doc_key');
+
+    foreach ($docKeys as $docKey) {
+        $statusDoc = strtolower((string) optional($docs->get($docKey))->status ?? 'pending');
+
+        if ($statusDoc !== 'ok') {
+            $msg = 'Approve ditolak. Semua dokumen harus berstatus OK terlebih dahulu.';
+            return $request->expectsJson()
+                ? response()->json(['ok'=>false, 'message'=>$msg], 422)
+                : redirect()->back()->with('admin_success', $msg);
+        }
+    }
+}
 
             // ✅ ambil old dulu (biar created_at aman)
         $old = DB::table('status_verifikasi')
@@ -855,7 +896,7 @@ class AdminDashboardController extends Controller
                 $msg = 'Status tidak berubah.';
                 return $request->expectsJson()
                     ? response()->json(['ok'=>true,'message'=>$msg,'status'=>$newStatus,'no_change'=>true])
-                    : redirect()->route('admin.dashboard', ['tab'=>'status'])->with('success', $msg);
+                    : redirect()->route('admin.dashboard', ['tab'=>'status'])->with('admin_success', $msg);
             }
 
             // email status tertentu (silakan atur)
@@ -941,7 +982,7 @@ class AdminDashboardController extends Controller
             }
 
             return redirect()->route('admin.dashboard', ['tab' => 'status'])
-                ->with('success', $msg)
+                ->with('admin_success', $msg)
                 ->with('wa_link', $waLink)
                 ->with('wa_label', 'Kirim WA (Status Update)');
         }
@@ -1077,7 +1118,7 @@ class AdminDashboardController extends Controller
 
         $request->validate([
             'doc_key' => 'required|string|max:100',
-            'action'  => 'required|in:ok,revisi',
+            'action'  => 'required|in:ok,revisi,pending',
             'note'    => 'nullable|string',
             'admin_attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
         ]);
@@ -1085,33 +1126,78 @@ class AdminDashboardController extends Controller
         $docKey = $request->input('doc_key');
         $action = $request->input('action');
 
+        $existing = VerifikasiDokumen::where([
+    'ref_type' => $type,
+    'ref_id'   => $id,
+    'doc_key'  => $docKey,
+])->first();
+
+$currentStatus = strtolower((string)($existing->status ?? 'pending'));
+
+// ✅ dokumen opsional yang belum ada isi/file dari pemohon tidak boleh direvisi
+if ($action === 'revisi') {
+    $meta = $this->getRowByType($type, $id);
+    $row  = $meta['row'];
+
+    $isText = ($docKey === 'deskripsi_singkat_prototipe');
+
+    if ($isText) {
+        $sourceValue = trim((string) data_get($row, $docKey, ''));
+    } else {
+        $sourceValue = null;
+
+        if ($type === 'paten' && $docKey === 'skema_tkt') {
+            $sourceValue = data_get($row, 'skema_tkt_template_path');
+        } else {
+            $sourceValue = data_get($row, $docKey);
+        }
+    }
+
+    $hasSourceValue = $isText
+        ? ($sourceValue !== '')
+        : !empty($sourceValue);
+
+    if (!$hasSourceValue) {
+        $msg = 'Dokumen opsional yang belum diisi / diupload tidak bisa direvisi. Silakan pilih OK jika memang tidak dilampirkan.';
+        return $request->expectsJson()
+            ? response()->json(['ok' => false, 'message' => $msg], 422)
+            : redirect()->back()->with('admin_success', $msg);
+    }
+}
+// kalau sebelumnya sudah revisi, jangan turunin ke pending dari tombol OK -> "Belum"
+if ($currentStatus === 'revisi' && $action === 'pending') {
+    $action = 'revisi';
+}
+
+if ($currentStatus === 'ok' && $action === 'revisi') {
+    return $request->expectsJson()
+        ? response()->json(['ok'=>false,'message'=>'Dokumen yang sudah OK tidak bisa direvisi lagi.'], 422)
+        : redirect()->back()->with('success', 'Dokumen yang sudah OK tidak bisa direvisi lagi.');
+}
+
     $data = [
-        'status' => $action === 'ok' ? 'ok' : 'revisi',
+        'status' => in_array($action, ['ok', 'revisi', 'pending'], true) ? $action : 'pending',
     ];
 
     // kalau revisi → admin memang “update”
-    if ($action === 'revisi') {
-        if (!trim((string)$request->input('note'))) {
-            if ($request->expectsJson()) {
-                return response()->json(['ok'=>false,'message'=>'Catatan revisi wajib diisi.'], 422);
-            }
-            return redirect()->back()->with('success', 'Catatan revisi wajib diisi.');
+if ($action === 'revisi') {
+    if (!trim((string)$request->input('note'))) {
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'message'=>'Catatan revisi wajib diisi.'], 422);
         }
-
-        $data['note'] = $request->input('note');
-        $data['requested_at'] = now();     // ✅ ini jadi patokan Update (Admin)
-        // optional: kalau mau tetap punya updated_at berubah saat revisi
-        $data['updated_at'] = now();
-    } else {
-        // ok → bersihkan revisi
-        $data['note'] = null;
-        $data['requested_at'] = null;
-        $data['admin_attachment_path'] = null;
-        $data['admin_attachment_name'] = null;
-
-        // ✅ penting: jangan paksa updated_at sekarang kalau cuma OK
-        // (biarkan tidak di-set)
+        return redirect()->back()->with('success', 'Catatan revisi wajib diisi.');
     }
+
+    $data['note'] = $request->input('note');
+    $data['requested_at'] = now();
+    $data['updated_at'] = now();
+} elseif ($action === 'ok') {
+    // ✅ status jadi OK, tapi arsip revisi JANGAN dihapus
+    $data['updated_at'] = now();
+} else { // pending
+    // ✅ kalau balik pending, arsip revisi juga tetap ada
+    $data['updated_at'] = now();
+}
 
     if ($request->hasFile('admin_attachment')) {
         $file = $request->file('admin_attachment');
@@ -1169,6 +1255,8 @@ class AdminDashboardController extends Controller
                     'doc_key'               => $docKey,
                     'status'                => $doc->status ?? 'pending',
                     'note'                  => $doc->note,
+                    'updated_at'            => $doc->updated_at,
+                    'requested_at'          => $doc->requested_at,
                     'admin_attachment_path' => $doc->admin_attachment_path,
                     'admin_attachment_url'  => $doc->admin_attachment_path
                         ? asset('storage/' . $doc->admin_attachment_path)
@@ -1446,6 +1534,89 @@ class AdminDashboardController extends Controller
         }
     }
 
+        public function getWaLinks(Request $request, string $type, int $id)
+{
+    if (!$request->session()->get('admin_logged_in')) {
+        return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
+    }
+
+    if (!in_array($type, ['paten', 'cipta'], true)) {
+        abort(404);
+    }
+
+    $meta = $this->getRowByType($type, $id);
+    $row = $meta['row'];
+    $kategori = strtoupper($type === 'paten' ? 'PATEN' : 'HAK CIPTA');
+    $judul = $meta['judul'] ?? '-';
+    $no = $meta['no'] ?? '-';
+
+    $phones = $this->getPemohonPhones($row);
+    if (count($phones) === 0) {
+        return response()->json([
+            'ok' => false,
+            'message' => 'Nomor WhatsApp pemohon tidak tersedia.',
+        ], 422);
+    }
+
+    $sv = DB::table('status_verifikasi')
+        ->where(['ref_type' => $type, 'ref_id' => $id])
+        ->first();
+
+    $status = strtolower((string)($sv->status ?? ''));
+
+    if ($status === 'approve') {
+        $nama = $this->getPemohonName($row);
+
+        $waMsg = $this->buildWaStatusMessage(
+            $kategori,
+            $judul,
+            $no,
+            'approve'
+        );
+
+        $waLinks = $this->makeWaLinks($phones, $waMsg);
+
+        return response()->json([
+            'ok' => true,
+            'mode' => 'approve',
+            'title' => 'Kirim WA Approve',
+            'wa_links' => $waLinks,
+        ]);
+    }
+
+    if ($status === 'revisi') {
+        $loginUrl = url('/pemohon/login');
+
+        $waMsg =
+            "Yth. Bapak/Ibu Pemohon,\n\n"
+            . "Dengan hormat,\n\n"
+            . "Bersama ini kami sampaikan bahwa pengajuan {$kategori} membutuhkan *REVISI*.\n"
+            . "Mohon melakukan perbaikan sesuai catatan revisi dan mengunggah kembali dokumen melalui sistem.\n\n"
+            . "Rincian Pengajuan:\n"
+            . "• Kategori : {$kategori}\n"
+            . "• No. Pendaftaran : {$no}\n"
+            . "• Judul : {$judul}\n\n"
+            . "Silakan login melalui tautan berikut untuk melihat detail revisi:\n"
+            . "{$loginUrl}\n\n"
+            . "Terima kasih atas perhatian dan kerja samanya.\n\n"
+            . "Hormat kami,\n"
+            . "Admin KIHub";
+
+        $waLinks = $this->makeWaLinks($phones, $waMsg);
+
+        return response()->json([
+            'ok' => true,
+            'mode' => 'revisi',
+            'title' => 'Kirim WA Revisi',
+            'wa_links' => $waLinks,
+        ]);
+    }
+
+    return response()->json([
+        'ok' => false,
+        'message' => 'WA hanya tersedia untuk status revisi atau approve.',
+    ], 422);
+}
         public function destroyPaten($id)
         {
             $row = PatenVerif::findOrFail($id);
@@ -1984,6 +2155,7 @@ class AdminDashboardController extends Controller
 
         // attach docs (pakai helper yang sudah ada)
         $docKeys = [
+            'skema_tkt',
             'draft_paten',
             'form_permohonan',
             'surat_kepemilikan',
@@ -1991,6 +2163,7 @@ class AdminDashboardController extends Controller
             'scan_ktp',
             'tanda_terima',
             'gambar_prototipe',
+            'deskripsi_singkat_prototipe',
         ];
 
         $rowCol = collect([$row]);
@@ -2416,6 +2589,93 @@ class AdminDashboardController extends Controller
             $downloadName
         );
     }
+public function adminDownloadDocPaten(int $id, string $doc_key)
+{
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login.form');
+    }
 
+    $row = PatenVerif::findOrFail($id);
+
+    $allowedDocs = [
+        'skema_tkt',
+        'draft_paten',
+        'form_permohonan',
+        'surat_kepemilikan',
+        'surat_pengalihan',
+        'scan_ktp',
+        'tanda_terima',
+        'gambar_prototipe',
+    ];
+
+    if (!in_array($doc_key, $allowedDocs, true)) {
+        abort(404, 'Jenis dokumen tidak valid.');
+    }
+
+    if ($doc_key === 'skema_tkt') {
+        $path = $row->skema_tkt_template_path ?? null;
+    } else {
+        $path = $row->{$doc_key} ?? null;
+    }
+
+    if (!$path) {
+        abort(404, 'File tidak ditemukan di database.');
+    }
+
+    $path = ltrim((string) $path, '/');
+    $path = preg_replace('#^storage/#', '', $path);
+
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404, 'File tidak ditemukan di storage.');
+    }
+
+    return response()->download(
+        Storage::disk('public')->path($path),
+        basename($path)
+    );
+}
+
+public function adminDownloadDocCipta(int $id, string $doc_key)
+{
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login.form');
+    }
+
+    $row = DB::table('hak_cipta_verifs')->where('id', $id)->first();
+    if (!$row) {
+        abort(404);
+    }
+
+    $allowedDocs = [
+        'surat_permohonan',
+        'surat_pernyataan',
+        'surat_pengalihan',
+        'tanda_terima',
+        'scan_ktp',
+        'hasil_ciptaan',
+    ];
+
+    if (!in_array($doc_key, $allowedDocs, true)) {
+        abort(404, 'Jenis dokumen tidak valid.');
+    }
+
+    $path = $row->{$doc_key} ?? null;
+
+    if (!$path) {
+        abort(404, 'File tidak ditemukan di database.');
+    }
+
+    $path = ltrim((string) $path, '/');
+    $path = preg_replace('#^storage/#', '', $path);
+
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404, 'File tidak ditemukan di storage.');
+    }
+
+    return response()->download(
+        Storage::disk('public')->path($path),
+        basename($path)
+    );
+}
     }
 

@@ -83,6 +83,8 @@ Route::get('/debug-mail', function () {
     ];
 });
 
+Route::get('/admin/verifikasi-dokumen/{type}/{id}/wa-links', [AdminDashboardController::class, 'getWaLinks'])
+    ->name('admin.verifikasi_dokumen.waLinks');
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES (Landing)
@@ -174,6 +176,13 @@ Route::get('/admin/cipta/{id}/doc/{doc_key}/download', [AdminDashboardController
 
   Route::get('/pemohon/dokumen/{type}/{ref}/{key}', [PemohonDashboardController::class, 'downloadDokumenAwal'])
     ->name('pemohon.dokumen.download');
+
+
+Route::get('/pemohon/paten/edit-deskripsi-singkat', [PemohonDashboardController::class, 'editDeskripsiSingkat'])
+    ->name('pemohon.paten.edit_deskripsi');
+
+Route::post('/pemohon/paten/edit-deskripsi-singkat', [PemohonDashboardController::class, 'updateDeskripsiSingkat'])
+    ->name('pemohon.paten.update_deskripsi');
 
 /*s
 |--------------------------------------------------------------------------
@@ -608,3 +617,4 @@ Route::post('/dup/skema-tkt/{verif}/download', [DuplicateSkemaController::class,
 
 Route::post('/dup/skema-tkt/{verif}/upload', [DuplicateSkemaController::class, 'uploadDuplicate'])
     ->name('dup.skema.upload');
+

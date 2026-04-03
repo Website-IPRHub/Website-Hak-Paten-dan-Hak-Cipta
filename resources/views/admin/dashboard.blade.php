@@ -284,7 +284,7 @@
   </div>
 
   {{-- SUCCESS ALERT --}}
-  @if(session('success'))
+  @if(session('admin_success'))
     <div class="alert-success">
       <div>{{ session('success') }}</div>
 

@@ -1014,6 +1014,18 @@ body.paten-detail-page .acc-card{
   min-width:240px;
 }
 
+.btn-wa-right{
+  background:#0ea5e9;
+  color:#fff;
+  border:none;
+  padding:12px 18px;
+  border-radius:12px;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  min-width:160px;
+}
+
 /* badge lebih kecil di tabel revisi */
 .incoming-table .badge-small{
   font-size: 11px;
@@ -2116,13 +2128,6 @@ body.modal-rev-open .rev-pop{
   -webkit-overflow-scrolling: touch;
 }
 
-/* optional: background nggak bisa diklik */
-body.modal-rev-open .dash-content{
-  pointer-events: none !important;
-}
-body.modal-rev-open .rev-pop{
-  pointer-events: auto !important;
-}
 
 /* popup selalu di atas */
 .rev-pop{
@@ -2253,3 +2258,54 @@ details.note-detail[open] .note-close{
   margin-top: 6px !important;
 }
 
+.btn-mini:disabled,
+.rev-btn:disabled,
+.btn-send-right:disabled,
+.btn-wa-right:disabled,
+.btn-approve-right:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-approve-right:disabled,
+.btn-send-right:disabled,
+.btn-wa-right:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.btn-approve-right.is-approved,
+.btn-approve-right:disabled.is-approved {
+  background: #cbd5e1;
+  color: #64748b;
+}
+
+.btn-send-right.is-disabled-state,
+.btn-send-right:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+}
+
+.btn-wa-right:disabled {
+  background: #93c5fd;
+  color: #eff6ff;
+}
+
+/* tombol approve normal */
+#btnApprove {
+  transition: all 0.2s ease;
+}
+
+/* tombol approve disabled */
+#btnApprove:disabled {
+  background-color: #cbd5e1 !important; /* abu-abu */
+  color: #64748b !important;           /* teks lebih pudar */
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* opsional: hover jangan berubah */
+#btnApprove:disabled:hover {
+  background-color: #cbd5e1 !important;
+}

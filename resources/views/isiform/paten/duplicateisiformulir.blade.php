@@ -58,14 +58,15 @@
 
       <div class="col">
         <div class="field">
-          <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
-          <select class="input" id="is_pct" name="is_pct" required>
-           <option value="" disabled {{ old('is_pct', $prefill['is_pct'] ?? '') ? '' : 'selected' }}>-- Apakah menggunakan Nomor PCT --</option>
-            <option value="Ya" {{ old('is_pct', $prefill['is_pct'] ?? '')=='Ya'?'selected':'' }}>Ya</option>
-<option value="Tidak" {{ old('is_pct', $prefill['is_pct'] ?? '')=='Tidak'?'selected':'' }}>Tidak</option>
-          </select>
-          @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
+  <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
+
+  <select class="input" id="is_pct_display" disabled>
+    <option value="Tidak" selected>Tidak</option>
+  </select>
+  <input type="hidden" name="is_pct" value="Tidak">
+
+  @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
+</div>
 
         <div class="field" id="pct-followup" @if(old('is_pct', $prefill['is_pct'] ?? '')!=='Ya') style="display:none;" @endif>
           <label class="label">Nomor Permohonan Paten Internasional (PCT) <span class="req">*</span></label>
@@ -93,33 +94,17 @@
 
       <div class="col">
         <div class="field">
-          <label class="label">
-            Apakah merupakan pecahan paten? <span class="req">*</span>
-          </label>
+  <label class="label">Apakah merupakan pecahan paten? <span class="req">*</span></label>
 
-          <select class="input" id="is_pecahan" name="is_pecahan" required>
+  <select class="input" id="is_pecahan_display" disabled>
+    <option value="Tidak" selected>Tidak</option>
+  </select>
+  <input type="hidden" name="is_pecahan" value="Tidak">
 
-            <option value="" disabled
-              {{ old('is_pecahan', $prefill['is_pecahan'] ?? '') ? '' : 'selected' }}>
-              -- Apakah merupakan pecahan paten --
-            </option>
-
-            <option value="Ya"
-              {{ old('is_pecahan', $prefill['is_pecahan'] ?? '')=='Ya'?'selected':'' }}>
-              Ya
-            </option>
-
-            <option value="Tidak"
-              {{ old('is_pecahan', $prefill['is_pecahan'] ?? '')=='Tidak'?'selected':'' }}>
-              Tidak
-            </option>
-
-          </select>
-
-          @error('is_pecahan')
-            <small style="color:red">{{ $message }}</small>
-          @enderror
-        </div>
+  @error('is_pecahan')
+    <small style="color:red">{{ $message }}</small>
+  @enderror
+</div>
 
         <div class="field" id="pecahan-followup"
           @if(old('is_pecahan', $prefill['is_pecahan'] ?? '')!=='Ya')
@@ -152,14 +137,15 @@
     <div class="row-2">
       <div class="col">
         <div class="field">
-          <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
-          <select class="input" id="konsultanpaten" name="konsultanpaten" required>
-            <option value="" disabled {{ old('konsultanpaten', $prefill['konsultanpaten'] ?? '') ? '' : 'selected' }}>-- Apakah Melalui Konsultan Paten --</option>
-            <option value="Melalui" {{ old('konsultanpaten', $prefill['konsultanpaten'] ?? '')=='Melalui'?'selected':'' }}>Melalui</option>
-            <option value="Tidak Melalui" {{ old('konsultanpaten', $prefill['konsultanpaten'] ?? '')=='Tidak Melalui'?'selected':'' }}>Tidak Melalui</option>
-          </select>
-          @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
+  <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
+
+  <select class="input" id="konsultanpaten" disabled>
+    <option value="Tidak Melalui" selected>Tidak Melalui</option>
+  </select>
+  <input type="hidden" name="konsultanpaten" value="Tidak Melalui">
+
+  @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
+</div>
       </div>
     </div>
 
@@ -219,92 +205,21 @@
       </div>
     </div>
 
-  @php
-    $lampiranOld = old('lampiran', $prefill['lampiran'] ?? []);
-  @endphp
-
-  <div class="col">
-    <div class="field">
-      <label class="label">Lampiran 1 (satu) rangkap</label>
-
-      <div class="lampiran-list">
-
-        <label class="checkbox-item">
-          <input type="checkbox" name="lampiran[]" value="surat_kuasa"
-            {{ in_array('surat_kuasa', $lampiranOld) ? 'checked' : '' }}>
-          <span>Surat Kuasa</span>
-        </label>
-
-        <label class="checkbox-item">
-          <input type="checkbox" checked disabled>
-          <span>Surat Pengalihan Hak atas Penemuan</span>
-        </label>
-        <input type="hidden" name="lampiran[]" value="pengalihan">
-
-        <label class="checkbox-item">
-          <input type="checkbox" checked disabled>
-          <span>Bukti Pemilikan Hak atas Penemuan</span>
-        </label>
-        <input type="hidden" name="lampiran[]" value="bukti_pemilikan">
-
-        <label class="checkbox-item">
-          <input type="checkbox" name="lampiran[]" value="do_eo"
-            {{ in_array('do_eo', $lampiranOld) ? 'checked' : '' }}>
-          <span>Bukti Penunjukan Negara Tujuan (DO/EO)</span>
-        </label>
-
-        <label class="checkbox-item">
-          <input type="checkbox" name="lampiran[]" value="dok_prioritas"
-            {{ in_array('dok_prioritas', $lampiranOld) ? 'checked' : '' }}>
-          <span>Dokumen Prioritas dan Terjemahannya</span>
-        </label>
-
-        <label class="checkbox-item">
-          <input type="checkbox" name="lampiran[]" value="dok_pct"
-            {{ in_array('dok_pct', $lampiranOld) ? 'checked' : '' }}>
-          <span>Dokumen Permohonan Paten Internasional / PCT</span>
-        </label>
-
-        <label class="checkbox-item">
-          <input type="checkbox" name="lampiran[]" value="jasad_renik"
-            {{ in_array('jasad_renik', $lampiranOld) ? 'checked' : '' }}>
-          <span>Sertifikat Penyimpanan Jasad Renik</span>
-        </label>
-
-        <label class="checkbox-item">
-          <input type="checkbox" checked disabled>
-          <span>Dokumen Lain (sebutkan)</span>
-        </label>
-        <input type="hidden" name="lampiran[]" value="dok_lain">
-
-      </div>
-
-      <textarea class="input" name="lampiran_lainnya"
-        placeholder="Tulis per baris ya. Contoh:
-  Fotocopy KTP Pemohon
-  Fotocopy KTP Para Inventor
-  ">{{ old('lampiran_lainnya', $prefill['lampiran_lainnya'] ?? '') }}</textarea>
-
-      @error('lampiran')
-        <small style="color:red">{{ $message }}</small>
-      @enderror
-    </div>
-  </div>
-
     {{-- ===============================
     4) HAK PRIORITAS
     =============================== --}}
     <div class="row-2">
       <div class="col">
         <div class="field">
-          <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
-          <select class="input" id="hak_prioritas" name="hak_prioritas" required>
-            <option value="" disabled {{old('hak_prioritas', $prefill['hak_prioritas'] ?? '') ? '' : 'selected' }}>-- Hak Prioritas --</option>
-            <option value="Ya" {{old('hak_prioritas', $prefill['hak_prioritas'] ?? '')=='Ya'?'selected':'' }}>Ya</option>
-            <option value="Tidak" {{old('hak_prioritas', $prefill['hak_prioritas'] ?? '')=='Tidak'?'selected':'' }}>Tidak</option>
-          </select>
-          @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
-        </div>
+  <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
+
+  <select class="input" id="hak_prioritas" disabled>
+    <option value="Tidak" selected>Tidak</option>
+  </select>
+  <input type="hidden" name="hak_prioritas" value="Tidak">
+
+  @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
+</div>
       </div>
     </div>
 
