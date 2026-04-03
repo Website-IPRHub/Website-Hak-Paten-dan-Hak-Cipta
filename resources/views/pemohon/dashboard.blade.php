@@ -276,14 +276,15 @@
 
                   $editableDocKeysByType = [
                     'cipta' => ['surat_permohonan','surat_pernyataan','surat_pengalihan'],
-                    'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan', 'skema_tkt'],
+                    'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan', 'skema_tkt','deskripsi_singkat_prototipe',],
                   ];
 
                   $editableDocKeys = $editableDocKeysByType[$pengajuan->type] ?? [];
 
                   $hist = collect($revHistory ?? [])
                     ->filter(function($h){
-                      return !empty(data_get($h, 'pemohon_file_path'));
+                      return !empty(data_get($h, 'pemohon_file_path'))
+                          || !empty(data_get($h, 'pemohon_text'));
                     })
                     ->values();
                 @endphp
@@ -336,6 +337,8 @@
       $adminFile = $req->admin_file_path ?? null;
 
       $revId = $req->id ?? null;
+      $isTextDoc = in_array($docKey, ['deskripsi_singkat_prototipe'], true);
+      $currentText = $isTextDoc ? trim((string) data_get($source, 'deskripsi_singkat_prototipe', '')) : '';
     @endphp
 
     <tr>
@@ -370,10 +373,14 @@
       </td>
 
       <td class="pd-td-center">
-        @if($pemohonUploaded)
-          <span class="pd-pill done">Sudah upload</span>
+        @if($isTextDoc)
+          <span class="pd-pill todo">Belum diperbarui</span>
         @else
-          <span class="pd-pill todo">Belum upload</span>
+          @if($pemohonUploaded)
+            <span class="pd-pill done">Sudah upload</span>
+          @else
+            <span class="pd-pill todo">Belum upload</span>
+          @endif
         @endif
       </td>
 
@@ -381,25 +388,24 @@
     {{-- REVISI TOMBOL EDIT DI DASHBOARD --}}
 {{-- LOGIKA 2 KONDISI TOMBOL EDIT TIK --}}
 <td class="pd-td-center">
-  @if(in_array($docKey, $editableDocKeys))
-    @php
-      // Kondisi 1: Jalur khusus Skema TKT 7-9
-      if ($docKey === 'skema_tkt') {
-          $urlEdit = route('dup.skema.form', ['verif' => $pengajuan->id]);
-      } 
-      // Kondisi 2: Jalur Formulir / Surat lainnya (Paten/Cipta)
-      else {
-          $targetRoute = ($pengajuan->type === 'cipta') 
-              ? 'dup.hakcipta.isiform.formpendaftaran' 
-              : 'dup.hakpaten.isiformulir.isiform';
-          
-          $urlEdit = route($targetRoute, ['ref' => $pengajuan->id]);
-      }
-    @endphp
-    
-    <a href="{{ $urlEdit }}" class="pd-mini-btn">
-      Edit
-    </a>
+ @if(in_array($docKey, $editableDocKeys))
+  @php
+    if ($docKey === 'skema_tkt') {
+        $urlEdit = route('dup.skema.form', ['verif' => $pengajuan->id]);
+    } elseif ($docKey === 'deskripsi_singkat_prototipe') {
+        $urlEdit = route('pemohon.paten.edit_deskripsi', ['ref' => $pengajuan->id]);
+    } else {
+        $urlEdit = route('pemohon.revisi.edit', [
+            'type' => $pengajuan->type,
+            'ref'  => $pengajuan->id,
+            'doc'  => $docKey,
+        ]);
+    }
+  @endphp
+
+  <a href="{{ $urlEdit }}" class="pd-mini-btn">
+    Edit
+  </a>
   @else
     <span class="pd-muted">-</span>
   @endif
@@ -407,21 +413,37 @@
 
       {{-- UPLOAD REVISI --}}
       <td>
-        @if($revId)
-          @if(!$pemohonUploaded)
-            <form method="POST"
-                  action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
-                  enctype="multipart/form-data"
-                  class="pd-upload-form">
-              @csrf
-              <input type="file" name="file" required>
-              <button type="submit" class="pd-mini-btn">Upload</button>
-            </form>
-          @else
-            <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
-          @endif
+        @if($isTextDoc)
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="pd-muted" style="font-size:13px;">
+              Perbaiki lewat tombol <b>Edit</b>.
+            </div>
+
+            <div style="padding:10px 12px; background:#f8fafc; border:1px solid #dbe5f0; border-radius:10px;">
+              @if($currentText !== '')
+                <div style="white-space:pre-wrap;">{{ $currentText }}</div>
+              @else
+                <span class="pd-muted">Teks belum diisi.</span>
+              @endif
+            </div>
+          </div>
         @else
-          <span class="pd-muted">Data revisi belum valid (id kosong).</span>
+          @if($revId)
+            @if(!$pemohonUploaded)
+              <form method="POST"
+                    action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
+                    enctype="multipart/form-data"
+                    class="pd-upload-form">
+                @csrf
+                <input type="file" name="file" required>
+                <button type="submit" class="pd-mini-btn">Upload</button>
+              </form>
+            @else
+              <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
+            @endif
+          @else
+            <span class="pd-muted">Data revisi belum valid (id kosong).</span>
+          @endif
         @endif
       </td>
     </tr>
@@ -496,13 +518,26 @@
               </td>
 
               <td class="pd-td-center">
-                @if($pemohonFile2)
-                  <a href="{{ route('revisi.download', ['id' => $h->id]) }}"
-                    class="pd-action-link">
-                    {{ $h->pemohon_file_name_display ?? $h->pemohon_file_name ?? 'Lihat File' }}
-                  </a>
+                @php
+                  $isTextHistory = in_array($docKey2, ['deskripsi_singkat_prototipe'], true);
+                  $pemohonText2 = trim((string)($h->pemohon_text ?? ''));
+                @endphp
+
+                @if($isTextHistory)
+                  @if($pemohonText2 !== '')
+                    <div style="white-space:pre-wrap; text-align:left;">{{ $pemohonText2 }}</div>
+                  @else
+                    <span class="pd-dash">-</span>
+                  @endif
                 @else
-                  <span class="pd-dash">-</span>
+                  @if($pemohonFile2)
+                    <a href="{{ route('revisi.download', ['id' => $h->id]) }}"
+                      class="pd-action-link">
+                      {{ $h->pemohon_file_name_display ?? $h->pemohon_file_name ?? 'Lihat File' }}
+                    </a>
+                  @else
+                    <span class="pd-dash">-</span>
+                  @endif
                 @endif
               </td>
             </tr>

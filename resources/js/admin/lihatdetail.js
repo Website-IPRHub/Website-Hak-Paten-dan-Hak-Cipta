@@ -46,15 +46,12 @@ const waEl = document.getElementById("waPayload");
 if (waEl) {
   const waLabel = waEl.dataset.label || "Kirim WhatsApp";
 
-  // ✅ KUNCI: Biar popup ini cuma muncul sekali per TAB (ga balik2 muncul lagi)
   const storageKey =
     "waPayloadShown::" + (waEl.dataset.key || (location.pathname + location.search));
 
   if (sessionStorage.getItem(storageKey) === "1") {
-    // udah pernah tampil di tab ini -> buang triggernya biar gak muncul lagi
     waEl.remove();
   } else {
-    // support: data-was (json array) / fallback data-wa (single)
     let waLinks = [];
     try {
       waLinks = JSON.parse(waEl.dataset.was || "[]");
@@ -67,75 +64,39 @@ if (waEl) {
 
     const markAsShown = () => {
       sessionStorage.setItem(storageKey, "1");
-      waEl.remove(); // matiin pemicu swal lama
+      waEl.remove();
     };
 
     if (window.Swal) {
-      if (waLinks.length <= 1) {
-        const waLink = waLinks[0] || null;
-
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil",
-          text: "Revisi berhasil dikirim.",
-          showCancelButton: true,
-          confirmButtonText: waLabel,
-          cancelButtonText: "Tutup",
-        }).then((r) => {
-          // ✅ setelah popup selesai, tandain sudah tampil
-          markAsShown();
-
-          if (r.isConfirmed && waLink) window.open(waLink, "_blank");
-        });
-      } else {
-        const listHtml = waLinks
-          .map((l, i) =>
-            `<div style="margin:6px 0;">
-              <a href="${l}" target="_blank">Kirim ke nomor #${i + 1}</a>
-            </div>`
-          )
-          .join("");
-
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil",
-          html: `Pilih nomor tujuan WhatsApp:<br><br>${listHtml}`,
-          confirmButtonText: "OK",
-        }).then(() => {
-          // ✅ setelah popup selesai, tandain sudah tampil
-          markAsShown();
-        });
-      }
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: 'Revisi berhasil dikirim. Silakan klik tombol "Kirim WA" untuk menghubungi pemohon.',
+        confirmButtonText: "OK",
+      }).then(() => {
+        markAsShown();
+      });
     } else {
-      // fallback tanpa Swal
-      if (waLinks.length === 1 && confirm("Kirim WhatsApp sekarang?")) {
-        markAsShown();
-        window.open(waLinks[0], "_blank");
-      } else if (waLinks.length > 1) {
-        markAsShown();
-        waLinks.forEach((l) => window.open(l, "_blank"));
-      } else {
-        markAsShown();
-      }
+      alert('Revisi berhasil dikirim. Silakan klik tombol "Kirim WA" untuk menghubungi pemohon.');
+      markAsShown();
     }
   }
 }
-
   // =========================
   // HELPER: refresh tombol Simpan & Kirim
   // =========================
-  const refreshCanSend = () => {
-    const btn = document.getElementById("btnSendRevisi");
-    if (!btn) return;
+const refreshCanSend = () => {
+  const btn = document.getElementById("btnSendRevisi");
+  if (!btn) return;
 
-    const badges = document.querySelectorAll("[data-doc-badge]");
-    const canSend = Array.from(badges).some((b) => {
-      const st = (b.textContent || "").trim().toLowerCase();
-      return st === "ok" || st === "revisi";
-    });
+  const badges = document.querySelectorAll("[data-doc-badge]");
+  const canSend = Array.from(badges).some((b) => {
+    const st = (b.textContent || "").trim().toLowerCase();
+    return st === "revisi";
+  });
 
-    btn.disabled = !canSend;
-  };
+  btn.disabled = !canSend;
+};
 
   // =========================
   // HELPER: update badge dokumen
@@ -150,6 +111,112 @@ if (waEl) {
     badge.className = `badge badge-${st}`;
     badge.textContent = st.toUpperCase();
   };
+
+  const setDocStatus = (docKey, status) => {
+  const docWrap = document.querySelector(`[data-doc-wrap][data-doc-key="${docKey}"]`);
+  if (!docWrap) return;
+  docWrap.dataset.docStatus = String(status || "pending").toLowerCase();
+};
+
+const applyDocActionLock = (docKey, status) => {
+  const st = String(status || "pending").toLowerCase();
+
+  const okBtn = document.querySelector(`[data-doc-ok-btn][data-doc-key="${docKey}"]`);
+  const revisiBtn = document.querySelector(`[data-doc-revisi-btn][data-doc-key="${docKey}"]`);
+
+  if (okBtn) okBtn.disabled = false;
+
+  if (revisiBtn) {
+    const canRevisi = revisiBtn.dataset.canRevisi === "1";
+    revisiBtn.disabled = (st === "ok") || !canRevisi;
+  }
+
+  if (st === "ok") {
+    const pop = revisiBtn?.closest("[data-rev]")?.querySelector("[data-rev-pop]");
+    if (pop) pop.hidden = true;
+  }
+};
+
+const getAllDocStatuses = () => {
+  return Array.from(document.querySelectorAll("[data-doc-wrap]"))
+    .map((el) => (el.dataset.docStatus || "pending").toLowerCase());
+};
+
+const refreshFooterButtons = () => {
+  const btnSend = document.getElementById("btnSendRevisi");
+  const btnApprove = document.getElementById("btnApprove");
+
+  const statuses = getAllDocStatuses();
+  const hasRevisi = statuses.some((st) => st === "revisi");
+  const allOk = statuses.length > 0 && statuses.every((st) => st === "ok");
+
+  if (btnSend) btnSend.disabled = !hasRevisi;
+  if (btnApprove) btnApprove.disabled = !(allOk && !hasRevisi);
+};
+
+document.querySelectorAll("[data-doc-badge]").forEach((badge) => {
+  const docKey = badge.dataset.docKey;
+  const status = (badge.textContent || "").trim().toLowerCase();
+  if (!docKey) return;
+
+  setDocStatus(docKey, status);
+  applyDocActionLock(docKey, status);
+});
+
+refreshFooterButtons();
+
+const showWaLinksModal = async (waLinks, title = "Kirim WhatsApp") => {
+  const links = Array.isArray(waLinks) ? waLinks.filter(Boolean) : [];
+
+  if (!links.length) {
+    if (window.Swal) {
+      await Swal.fire({
+        icon: "info",
+        title: "Info",
+        text: "Nomor WhatsApp belum tersedia untuk status ini.",
+      });
+    } else {
+      alert("Nomor WhatsApp belum tersedia untuk status ini.");
+    }
+    return;
+  }
+
+  if (window.Swal) {
+    if (links.length === 1) {
+      const waLink = links[0];
+      await Swal.fire({
+        icon: "success",
+        title,
+        text: "Klik tombol di bawah untuk membuka WhatsApp.",
+        showCancelButton: true,
+        confirmButtonText: "Buka WhatsApp",
+        cancelButtonText: "Tutup",
+      }).then((r) => {
+        if (r.isConfirmed && waLink) window.open(waLink, "_blank");
+      });
+    } else {
+      const listHtml = links
+        .map(
+          (l, i) =>
+            `<div style="margin:6px 0;"><a href="${l}" target="_blank">Kirim ke nomor #${i + 1}</a></div>`
+        )
+        .join("");
+
+      await Swal.fire({
+        icon: "success",
+        title,
+        html: `Pilih nomor tujuan WhatsApp:<br><br>${listHtml}`,
+        confirmButtonText: "OK",
+      });
+    }
+  } else {
+    if (links.length === 1) {
+      window.open(links[0], "_blank");
+    } else {
+      alert("Ada beberapa nomor WhatsApp. Silakan gunakan versi dengan SweetAlert.");
+    }
+  }
+};
 
   // =========================
 // ✅ TRACK DOKUMEN TERBARU YANG DIUBAH (dirty doc_keys)
@@ -233,7 +300,12 @@ const updateRevisiUI = (docKey, doc) => {
   const note   = String(doc?.note || "").trim();
 
   // box revisi muncul kalau status revisi / note ada
-  const showRevisi = status === "revisi" || note.length > 0;
+  const hasExistingArchive =
+  !!docWrap.querySelector(".incoming-table .incoming-row:not(.incoming-head)") ||
+  !!docWrap.querySelector("[data-empty-cycle-row]") ||
+  !!docWrap.querySelector(".doc-dot");
+
+const showRevisi = status === "revisi" || note.length > 0 || hasExistingArchive;
 
   // tampilkan wrap revisi
   if (incomingWrap) incomingWrap.hidden = !showRevisi;
@@ -302,17 +374,19 @@ if (table) {
     const shouldShowMoreByText = (s, limit = NOTE_LIMIT) =>
       oneLine(s).length > limit || newlineCount(s) >= 2;
 
-    const fullNote = (note && note.trim()) ? note.trim() : "-";
-    const previewLine = oneLine(fullNote);
-    const preview = previewLine.length > NOTE_LIMIT ? (previewLine.slice(0, NOTE_LIMIT) + "…") : previewLine;
+    const fullNote = (note && note.trim()) ? note.trim() : "";
+const previewLine = oneLine(fullNote);
+const preview = previewLine.length > NOTE_LIMIT ? (previewLine.slice(0, NOTE_LIMIT) + "…") : previewLine;
 
-    const more = fullNote !== "-" && shouldShowMoreByText(fullNote, NOTE_LIMIT);
+const more = fullNote !== "" && shouldShowMoreByText(fullNote, NOTE_LIMIT);
 
-    // ✅ signature anti dobel (pakai timestamp + note)
-    const sig = `${docKey}::${dtRaw}::${fullNote}`;
+// ✅ hanya bikin row baru kalau memang status revisi + ada note
+const shouldInsertAdminRow = status === "revisi" && fullNote !== "";
 
-    // kalau udah ada row sama, jangan insert lagi
-    if (!table.querySelector(`[data-rev-sig="${CSS.escape(sig)}"]`)) {
+// ✅ anti dobel: cukup pakai docKey + note, jangan pakai timestamp
+const sig = `${docKey}::${fullNote}`;
+
+if (shouldInsertAdminRow && !table.querySelector(`[data-rev-sig="${CSS.escape(sig)}"]`)) {
       const adminRow = document.createElement("div");
       adminRow.className = "incoming-row";
       adminRow.setAttribute("data-js-admin-row", "1");
@@ -377,50 +451,112 @@ if (table) {
 };
 
 
-  // =========================
-  // TOGGLE POPOVER REVISI (delegation)
-  // =========================
-  document.addEventListener(
-    "click",
-    (e) => {
-      const btn = e.target.closest("[data-rev-btn]");
-      const popInside = e.target.closest("[data-rev-pop]");
-      const wrapRev = e.target.closest("[data-rev]");
+// =========================
+// TOGGLE POPOVER REVISI (delegation)
+// =========================
+document.addEventListener("click", (e) => {
+  const popInside = e.target.closest("[data-rev-pop]");
+  const swalInside = e.target.closest(".swal2-container");
+  const revBtnNew = e.target.closest("[data-doc-revisi-btn]");
 
-      // klik tombol revisi
-      // klik tombol revisi
-if (btn && wrapRev) {
+  if (swalInside) return;
+  if (revBtnNew) return;
+  if (popInside) return;
+
+  document.querySelectorAll("[data-rev-pop]").forEach((p) => (p.hidden = true));
+  document.body.classList.remove("modal-rev-open");
+});
+
+  document.addEventListener("click", async (e) => {
+  const okBtn = e.target.closest("[data-doc-ok-btn]");
+  if (!okBtn) return;
+
+  e.preventDefault();
+
+  const form = okBtn.closest("form");
+  if (!form) return;
+
+  const actionInput = form.querySelector('input[name="action"]');
+  if (!actionInput) return;
+
+  const docKey = okBtn.dataset.docKey;
+  const docWrap = document.querySelector(`[data-doc-wrap][data-doc-key="${docKey}"]`);
+  const currentStatus = (docWrap?.dataset.docStatus || "pending").toLowerCase();
+
+  if (window.Swal) {
+    const result = await Swal.fire({
+      icon: "question",
+      title: "Konfirmasi Dokumen",
+      text: "Apakah dokumen ini sudah benar?",
+      showCancelButton: true,
+      confirmButtonText: "Sudah",
+      cancelButtonText: "Belum",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      actionInput.value = "ok";
+      form.requestSubmit();
+      return;
+    }
+
+    if (result.dismiss === Swal.DismissReason.cancel) {
+      actionInput.value = currentStatus === "revisi" ? "revisi" : "pending";
+      form.requestSubmit();
+      return;
+    }
+  } else {
+    const yes = confirm("Apakah dokumen ini sudah benar?");
+    actionInput.value = yes ? "ok" : (currentStatus === "revisi" ? "revisi" : "pending");
+    form.requestSubmit();
+  }
+});
+
+ document.addEventListener("click", async (e) => {
+  const revBtn = e.target.closest("[data-doc-revisi-btn]");
+  if (!revBtn) return;
+
+  if (revBtn.disabled) {
+    e.preventDefault();
+    return;
+  }
+
+  const wrapRev = revBtn.closest("[data-rev]");
+  const myPop = wrapRev?.querySelector("[data-rev-pop]");
+  if (!myPop) return;
+
   e.preventDefault();
   e.stopPropagation();
 
-  const myPop = wrapRev.querySelector("[data-rev-pop]");
-  if (!myPop) return;
+  if (window.Swal) {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Konfirmasi Revisi",
+      text: "Apakah dokumen ini benar perlu revisi?",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Revisi",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    });
 
-  // tutup popup lain
-  document.querySelectorAll("[data-rev-pop]").forEach((p) => {
-    if (p !== myPop) p.hidden = true;
-  });
+    if (!result.isConfirmed) return;
+  } else {
+    const yes = confirm("Apakah dokumen ini benar perlu revisi?");
+    if (!yes) return;
+  }
 
-  // toggle popup ini
-  myPop.hidden = !myPop.hidden;
+  setTimeout(() => {
+    document.querySelectorAll("[data-rev-pop]").forEach((p) => {
+      if (p !== myPop) p.hidden = true;
+    });
 
-  // ✅ KUNCI: sync class body
-  if (!myPop.hidden) document.body.classList.add("modal-rev-open");
-  else document.body.classList.remove("modal-rev-open");
+    myPop.hidden = false;
+    document.body.classList.add("modal-rev-open");
 
-  return;
-}
-
-      // klik di dalam pop -> jangan nutup
-      if (popInside) return;
-
-      // klik di luar -> tutup semua
-      // klik di luar -> tutup semua
-      document.querySelectorAll("[data-rev-pop]").forEach((p) => (p.hidden = true));
-      document.body.classList.remove("modal-rev-open"); // ✅ KUNCI
-    },
-    true
-  );
+    const ta = myPop.querySelector("textarea[name='note']");
+    if (ta) ta.focus();
+  }, 120);
+});
 
   // =========================
   // SUBMIT OK/REVISI (AJAX) - SINGLE HANDLER
@@ -476,11 +612,16 @@ if (btn && wrapRev) {
 
       if (docKey) {
         applyBadge(docKey, status);
+        setDocStatus(docKey, status);
+        applyDocActionLock(docKey, status);
 
-        // ✅ TAMBAHAN: langsung update box revisi tanpa reload
         updateRevisiUI(docKey, data?.doc);
-        addDirty(docKey); // ✅ tandai revisi TERBARU
 
+        if (String(status).toLowerCase() === "revisi") {
+          addDirty(docKey);
+        }
+
+        refreshFooterButtons();
       }
       
       
@@ -511,94 +652,178 @@ if (btn && wrapRev) {
   });
 
   // =========================
-  // APPROVE (AJAX)
-  // =========================
-  const btnApprove = document.getElementById("btnApprove");
-  if (btnApprove) {
-    btnApprove.addEventListener("click", async () => {
-      const url = btnApprove.dataset.url;
-      if (!url) return;
+// APPROVE (AJAX)
+// =========================
+const btnApprove = document.getElementById("btnApprove");
+if (btnApprove) {
+  btnApprove.addEventListener("click", async () => {
+    if (btnApprove.dataset.approved === "1") return;
 
-      const oldText = btnApprove.textContent;
-      btnApprove.disabled = true;
-      btnApprove.textContent = "Menyimpan...";
+    const statuses = getAllDocStatuses();
+    const hasRevisi = statuses.some((st) => st === "revisi");
+    const allOk = statuses.length > 0 && statuses.every((st) => st === "ok");
 
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "X-CSRF-TOKEN": csrf,
-            "X-Requested-With": "XMLHttpRequest",
-            Accept: "application/json",
-          },
+    if (hasRevisi) {
+      if (window.Swal) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Approve Ditolak",
+          text: "Pengajuan ini masih ada dokumen revisi, jadi belum bisa di-approve.",
         });
+      } else {
+        alert("Pengajuan ini masih ada dokumen revisi, jadi belum bisa di-approve.");
+      }
+      return;
+    }
 
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok)
-          throw new Error(data?.message || `Gagal approve (${res.status})`);
+    if (!allOk) {
+      if (window.Swal) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Dokumen Belum Lengkap Dicek",
+          text: "Semua dokumen harus berstatus OK terlebih dahulu sebelum approve.",
+        });
+      } else {
+        alert("Semua dokumen harus berstatus OK terlebih dahulu sebelum approve.");
+      }
+      return;
+    }
 
-        const statusEl = document.getElementById("statusPengajuanBadge");
-        const newStatus = data?.status || "approve";
-        if (statusEl) {
-          statusEl.textContent = String(newStatus).toUpperCase();
-          statusEl.className = `status-badge s-${String(newStatus).toLowerCase()}`;
-        }
+    const confirmApprove = window.Swal
+      ? await Swal.fire({
+          icon: "question",
+          title: "Konfirmasi Approve",
+          text: "Apakah yakin pengajuan ini siap di-approve?",
+          showCancelButton: true,
+          confirmButtonText: "Ya, Approve",
+          cancelButtonText: "Batal",
+          reverseButtons: true,
+        })
+      : { isConfirmed: confirm("Apakah yakin pengajuan ini siap di-approve?") };
 
-        const waLinks = data?.wa_links || (data?.wa_link ? [data.wa_link] : []);
-        document.getElementById("waPayload")?.remove();
+    if (!confirmApprove.isConfirmed) return;
 
-        clearDirty(); 
+    const url = btnApprove.dataset.url;
+    if (!url) return;
 
-        if (window.Swal) {
-          if (waLinks.length) {
-            const listHtml = waLinks
-              .map(
-                (l, i) =>
-                  `<div style="margin:6px 0;"><a href="${l}" target="_blank">Kirim ke nomor #${i + 1}</a></div>`
-              )
-              .join("");
+    const oldText = btnApprove.textContent;
+    btnApprove.disabled = true;
+    btnApprove.textContent = "Menyimpan...";
 
-            await Swal.fire({
-              icon: "success",
-              title: "Approved",
-              html: `Status berhasil diubah.<br><br>${listHtml}`,
-              confirmButtonText: "OK",
-            });
-          } else {
-            await Swal.fire({
-              icon: "success",
-              title: "Approved",
-              text: data?.message || "Status berhasil diubah.",
-            });
-          }
-        } else {
-          alert(data?.message || "Approved");
-        }
-      } catch (err) {
-        console.error(err);
-        if (window.Swal) {
-          await Swal.fire({
-            icon: "error",
-            title: "Gagal",
-            text: err.message || "Terjadi kesalahan.",
-          });
-        } else {
-          alert(err.message || "Terjadi kesalahan.");
-        }
-      } finally {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "X-CSRF-TOKEN": csrf,
+          "X-Requested-With": "XMLHttpRequest",
+          Accept: "application/json",
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.message || `Gagal approve (${res.status})`);
+      }
+
+      const statusEl = document.getElementById("statusPengajuanBadge");
+      const newStatus = data?.status || "approve";
+
+      if (statusEl) {
+        statusEl.textContent = String(newStatus).toUpperCase();
+        statusEl.className = `status-badge s-${String(newStatus).toLowerCase()}`;
+      }
+
+      clearDirty();
+
+      const btnSend = document.getElementById("btnSendRevisi");
+      if (btnSend) {
+        btnSend.disabled = true;
+        btnSend.classList.add("is-disabled-state");
+      }
+
+      btnApprove.disabled = true;
+      btnApprove.textContent = "Sudah Approve";
+      btnApprove.dataset.approved = "1";
+      btnApprove.classList.add("is-approved");
+
+      document.getElementById("waPayload")?.remove();
+
+      if (window.Swal) {
+        await Swal.fire({
+          icon: "success",
+          title: "Approved",
+          text: 'Pengajuan berhasil di-approve. Silakan klik tombol "Kirim WA" untuk menghubungi pemohon.',
+          confirmButtonText: "OK",
+        });
+      } else {
+        alert('Pengajuan berhasil di-approve. Silakan klik tombol "Kirim WA" untuk menghubungi pemohon.');
+      }
+    } catch (err) {
+      console.error(err);
+      if (window.Swal) {
+        await Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: err.message || "Terjadi kesalahan.",
+        });
+      } else {
+        alert(err.message || "Terjadi kesalahan.");
+      }
+    } finally {
+      if (btnApprove.dataset.approved !== "1") {
         btnApprove.disabled = false;
         btnApprove.textContent = oldText;
       }
-    });
-  }
+    }
+  });
+}
 
-  // =========================
-// ✅ SIMPAN & KIRIM (AJAX) - BIAR WA LIST MULTI & TANPA POPUP GLOBAL
-// =========================
-// =========================
-// ✅ SIMPAN & KIRIM (AJAX) - BIAR WA LIST MULTI & TANPA POPUP GLOBAL
-// =========================
+
+const btnSendWA = document.getElementById("btnSendWA");
+if (btnSendWA) {
+  btnSendWA.addEventListener("click", async () => {
+    const url = btnSendWA.dataset.url;
+    if (!url) return;
+
+    const oldText = btnSendWA.textContent;
+    btnSendWA.disabled = true;
+    btnSendWA.textContent = "Memuat...";
+
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Accept: "application/json",
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.message || `Gagal memuat WA (${res.status})`);
+      }
+
+      await showWaLinksModal(data?.wa_links || [], data?.title || "Kirim WhatsApp");
+    } catch (err) {
+      console.error(err);
+      if (window.Swal) {
+        await Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: err.message || "Gagal memuat daftar WhatsApp.",
+        });
+      } else {
+        alert(err.message || "Gagal memuat daftar WhatsApp.");
+      }
+    } finally {
+      btnSendWA.disabled = false;
+      btnSendWA.textContent = oldText;
+    }
+  });
+}
+
 // =========================
 // ✅ SIMPAN & KIRIM (AJAX) - ANTI DOBEL SUBMIT + KIRIM HANYA DIRTY DOC
 // =========================
@@ -671,54 +896,21 @@ if (sendRevisiForm && btnSendRevisi) {
             throw new Error(data?.message || `Gagal kirim revisi (${res.status})`);
           }
 
-          // ✅ IMPORTANT: setelah sukses -> bersihin dirty biar gak kekirim ulang
+          // ✅ setelah sukses -> bersihin dirty biar gak kekirim ulang
           clearDirty();
 
-          // ✅ BONUS: bunuh trigger swal lama dari session (kalau ada)
+          // ✅ bunuh trigger swal lama dari session (kalau ada)
           document.getElementById("waPayload")?.remove();
 
-          const waLinks = data?.wa_links || (data?.wa_link ? [data.wa_link] : []);
-          const waLabel = data?.wa_label || "Kirim WA";
-
           if (window.Swal) {
-            if (waLinks.length <= 1) {
-              const waLink = waLinks[0] || null;
-
-              await Swal.fire({
-                icon: "success",
-                title: "Berhasil",
-                text: data?.message || "Revisi berhasil dikirim.",
-                showCancelButton: true,
-                confirmButtonText: waLabel,
-                cancelButtonText: "Tutup",
-              }).then((r) => {
-                if (r.isConfirmed && waLink) window.open(waLink, "_blank");
-              });
-            } else {
-              const listHtml = waLinks
-                .map(
-                  (l, i) =>
-                    `<div style="margin:6px 0;">
-                      <a href="${l}" target="_blank">Kirim ke nomor #${i + 1}</a>
-                    </div>`
-                )
-                .join("");
-
-              await Swal.fire({
-                icon: "success",
-                title: "Berhasil",
-                html: `
-                  ${data?.message || "Revisi berhasil dikirim."}
-                  <br><br>
-                  Pilih nomor tujuan WhatsApp:
-                  <br><br>
-                  ${listHtml}
-                `,
-                confirmButtonText: "OK",
-              });
-            }
+            await Swal.fire({
+              icon: "success",
+              title: "Berhasil",
+              text: 'Revisi berhasil dikirim. Silakan klik tombol "Kirim WA" untuk menghubungi pemohon.',
+              confirmButtonText: "OK",
+            });
           } else {
-            alert(data?.message || "Revisi berhasil dikirim.");
+            alert('Revisi berhasil dikirim. Silakan klik tombol "Kirim WA" untuk menghubungi pemohon.');
           }
         } catch (err) {
           console.error(err);
@@ -738,7 +930,7 @@ if (sendRevisiForm && btnSendRevisi) {
           btnSendRevisi.textContent = oldText;
         }
       },
-      true // ✅ capture biar handler ini yang paling dulu jalan
+      true
     );
   }
 }

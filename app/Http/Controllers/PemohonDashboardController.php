@@ -136,7 +136,10 @@ if ($status === 'revisi') {
             ->whereColumn('s.doc_key', 'r.doc_key')
             ->where('s.from_role', 'pemohon')
             ->where('s.state', 'submitted')
-            ->whereNotNull('s.pemohon_file_path')
+            ->where(function ($qq) {
+                $qq->whereNotNull('s.pemohon_file_path')
+                    ->orWhereNotNull('s.pemohon_text');
+            })
             ->whereColumn('s.id', '>', 'r.id');
         })
         ->orderByDesc('r.id')
@@ -144,10 +147,19 @@ if ($status === 'revisi') {
         ->groupBy('doc_key')
         ->map(fn($rows) => $rows->first())
         ->values()
-        ->map(function($req){
+        ->map(function($req) use ($source){
+            $isTextDoc = ($req->doc_key ?? null) === 'deskripsi_singkat_prototipe';
+
             $req->pemohon_uploaded = 0;
             $req->admin_note       = $req->note ?? null;
             $req->admin_file_path  = $req->file_path ?? null;
+
+            if ($isTextDoc) {
+                $req->pemohon_text = trim((string) data_get($source, 'deskripsi_singkat_prototipe', ''));
+            } else {
+                $req->pemohon_text = null;
+            }
+
             return $req;
         });
 }
@@ -190,7 +202,8 @@ if (in_array($status, ['revisi', 'approve'])) {
 
         $doc = $r->doc_key ?? null;
 
-        $r->pemohon_uploaded = !empty($r->pemohon_file_path) ? 1 : 0;
+        $r->pemohon_uploaded = (!empty($r->pemohon_file_path) || !empty($r->pemohon_text)) ? 1 : 0;
+        $r->pemohon_text = $r->pemohon_text ?? null;
 
         // ✅ kalau row pemohon note kosong -> ambil ADMIN NOTE yang posisinya TEPAT SEBELUM row ini
         $noteRaw = trim((string)($r->note ?? ''));
@@ -349,6 +362,7 @@ if (in_array($status, ['revisi', 'approve'])) {
 
 public function editRevisi(Request $request)
 {
+    
     $pemohon = Auth::guard('pemohon')->user();
     if (!$pemohon) {
         return redirect()->route('pemohon.login.form');
@@ -366,37 +380,21 @@ public function editRevisi(Request $request)
     $row = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
     if (!$row) abort(404);
     
-    $inventors = !empty($row->inventors) ? (is_string($row->inventors) ? json_decode($row->inventors, true) : (array)$row->inventors) : [];
-
     $sessionKeySpecific = "hakcipta.form.$ref";
     $sessionKeyGlobal   = "hakcipta.form";
 
-    $existingSession = session($sessionKeySpecific) ?? session($sessionKeyGlobal, []);
+    // Ambil data dari saku pendaftaran awal (Global)
+    $globalData = session($sessionKeyGlobal, []);
+    
+    // 🔥 Ambil data revisi yang sudah ada (kalau pernah save sebelumnya)
+    $existingSpecific = session($sessionKeySpecific, []);
 
-    $dbData = [
-        'jumlah_inventor'     => count($inventors) ?: 1,
-        'judul_ciptaan'       => $row->judul_cipta ?? '',
-        'jenis_cipta'         => $row->jenis_cipta ?? '',
-        'jenis_cipta_lainnya' => $row->jenis_lainnya ?? '',
-        'link_ciptaan'        => $row->link_ciptaan ?? '',
-        'tanggal_pengisian'   => now()->format('Y-m-d'),
-        'inventor' => [
-            'nama'      => collect($inventors)->pluck('nama')->all(),
-            'NIK'       => collect($inventors)->pluck('NIK')->all(), // ✅ Pake NIK (Besar) biar sama ama Blade
-            'nip_nim'   => collect($inventors)->pluck('nip_nim')->all(),
-            'fakultas'  => collect($inventors)->pluck('fakultas')->all(),
-            'status'    => collect($inventors)->pluck('status')->all(),
-            'no_hp'     => collect($inventors)->pluck('no_hp')->all(),
-            'email'     => collect($inventors)->pluck('email')->all(),
-            'tlp_rumah' => collect($inventors)->pluck('tlp_rumah')->all(),
-            'alamat'    => collect($inventors)->pluck('alamat')->all(),
-            'kode_pos'  => collect($inventors)->pluck('kode_pos')->all(),
-            'nidn'      => collect($inventors)->pluck('nidn')->all(),
-        ],
-    ];
+    // 🔥 GABUNGKAN: Prioritas data revisi, tapi kalau kosong ambil dari global
+    // Ini gunanya biar 'berupa', 'tempat', 'uraian' dari pendaftaran awal terbawa ke halaman edit
+    $finalPayload = array_merge($globalData, $existingSpecific);
 
-    $finalData = array_merge($dbData, $existingSession);
-    session([$sessionKeySpecific => $finalData]);
+    // Simpan ke saku spesifik revisi
+    session()->put($sessionKeySpecific, $finalPayload);
     session(['edit_ref_id' => $ref]);
 
     return redirect()->route('dup.hakcipta.isiform.formpendaftaran', ['ref' => $ref]);
@@ -427,6 +425,7 @@ public function editRevisi(Request $request)
         $dbData = [
             'jenis_paten'     => $row->jenis_paten ?? '',
             'judul_invensi'   => $row->judul_paten ?? '',
+            'deskripsi_singkat_prototipe'  => $row->deskripsi_singkat_prototipe ?? '',
             'jumlah_inventor' => count($inventors) ?: 1,
             'inventor' => [
                 'nama'            => collect($inventors)->pluck('nama')->all(),
@@ -449,12 +448,158 @@ public function editRevisi(Request $request)
         // 5. Simpan ke saku spesifik ID biar kedepannya nempel terus di ID ini
         session([$sessionKeySpecific => $finalData]);
         session(['edit_ref_id' => $ref]);
+        if ($doc === 'deskripsi_singkat_prototipe') {
+            $dbData = [
+                'deskripsi_singkat_prototipe' => $row->deskripsi_singkat_prototipe ?? '',
+            ];
 
+            $finalData = array_merge($dbData, $existingSession);
+            session([$sessionKeySpecific => $finalData]);
+            session(['edit_ref_id' => $ref]);
+
+            return redirect()->route('pemohon.paten.edit_deskripsi', ['ref' => $ref]);
+        }
         return redirect()->route('dup.hakpaten.isiformulir.isiform', ['ref' => $ref]);
     }
     abort(404);
 }
 
+    public function editDeskripsiSingkat(Request $request)
+{
+    $pemohon = Auth::guard('pemohon')->user();
+    if (!$pemohon) {
+        return redirect()->route('pemohon.login.form');
+    }
+
+    $ref = (int) $request->query('ref');
+    if (!$ref) {
+        abort(404, 'Ref pengajuan tidak valid.');
+    }
+
+    $row = DB::table('paten_verifs')->where('id', $ref)->first();
+    if (!$row) {
+        abort(404, 'Data paten tidak ditemukan.');
+    }
+
+    // pakai session yang sama dengan flow paten lama
+    $sessionKeySpecific = "hakpaten.isiform.$ref";
+    $sessionKeyGlobal   = "hakpaten.isiform";
+
+    $existingSession = session($sessionKeySpecific);
+    if (!$existingSession) {
+        $existingSession = session($sessionKeyGlobal, []);
+    }
+
+    $deskripsi = $existingSession['deskripsi_singkat_prototipe']
+        ?? $row->deskripsi_singkat_prototipe
+        ?? '';
+
+    // simpan lagi biar session spesifik tetap kebentuk
+    $existingSession['deskripsi_singkat_prototipe'] = $deskripsi;
+    session([$sessionKeySpecific => $existingSession]);
+    session(['edit_ref_id' => $ref]);
+
+    return view('pemohon.edit_deskripsi_singkat', [
+        'ref' => $ref,
+        'deskripsi' => $deskripsi,
+        'judul' => $row->judul_paten ?? '-',
+    ]);
+}
+
+public function updateDeskripsiSingkat(Request $request)
+{
+    $pemohon = Auth::guard('pemohon')->user();
+    if (!$pemohon) {
+        return redirect()->route('pemohon.login.form');
+    }
+
+    $data = $request->validate([
+        'ref' => 'required|integer',
+        'deskripsi_singkat_prototipe' => 'nullable|string|max:5000',
+    ]);
+
+    $ref = (int) $data['ref'];
+    $text = trim((string) ($data['deskripsi_singkat_prototipe'] ?? ''));
+
+    $row = DB::table('paten_verifs')->where('id', $ref)->first();
+    if (!$row) {
+        abort(404, 'Data paten tidak ditemukan.');
+    }
+
+    DB::beginTransaction();
+
+    try {
+        DB::table('paten_verifs')
+            ->where('id', $ref)
+            ->update([
+                'deskripsi_singkat_prototipe' => $text,
+                'updated_at' => now(),
+            ]);
+
+        // update session lama yang sama
+        $sessionKeySpecific = "hakpaten.isiform.$ref";
+        $sessionKeyGlobal   = "hakpaten.isiform";
+
+        $existingSession = session($sessionKeySpecific);
+        if (!$existingSession) {
+            $existingSession = session($sessionKeyGlobal, []);
+        }
+
+        $existingSession['deskripsi_singkat_prototipe'] = $text;
+        session([$sessionKeySpecific => $existingSession]);
+        session(['edit_ref_id' => $ref]);
+
+        // cari revisi aktif admin untuk deskripsi singkat
+        $activeReq = DB::table('revisions')
+            ->where('type', 'paten')
+            ->where('ref_id', $ref)
+            ->where('doc_key', 'deskripsi_singkat_prototipe')
+            ->where('from_role', 'admin')
+            ->where('state', 'requested')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($activeReq) {
+            // tutup request admin
+            DB::table('revisions')
+                ->where('id', $activeReq->id)
+                ->update([
+                    'state' => 'closed',
+                    'is_read_admin' => 1,
+                    'is_read_pemohon' => 1,
+                    'updated_at' => now(),
+                ]);
+
+            // insert riwayat submitted dari pemohon
+            DB::table('revisions')->insert([
+                'type' => 'paten',
+                'ref_id' => $ref,
+                'doc_key' => 'deskripsi_singkat_prototipe',
+                'from_role' => 'pemohon',
+                'state' => 'submitted',
+                'note' => null,
+                'file_path' => null,
+                'pemohon_file_path' => null,
+                'pemohon_file_name' => null,
+                'pemohon_uploaded_at' => now(),
+                'pemohon_text' => $text,
+                'is_read_admin' => 0,
+                'is_read_pemohon' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route('pemohon.dashboard')
+            ->with('success', 'Deskripsi Singkat Prototipe berhasil diperbarui.');
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        throw $e;
+    }
+}
     public function downloadTandaTerima(Request $request)
     {
         $pemohon = Auth::guard('pemohon')->user();

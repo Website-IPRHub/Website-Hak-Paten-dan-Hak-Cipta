@@ -43,18 +43,15 @@ if (!$isKeyedByDoc) {
 }
 
 
-  /**
-   * RULE tombol:
-   * - canSend: admin boleh klik "Simpan & Kirim" kalau minimal ada 1 dokumen statusnya ok/revisi
-   * - canApprove: boleh approve kalau ada minimal 1 upload revisi dari pemohon (di dokumen mana pun)
-   */
-  $allDocStatuses = collect($docKeys)->map(fn($k) => optional($row->docs[$k] ?? null)->status ?? 'pending');
-  $canSend = $allDocStatuses->contains(fn($st) => in_array($st, ['ok','revisi']));
+$allDocStatuses = collect($docKeys)->map(
+  fn($k) => strtolower((string) data_get(data_get($row,'docs'), "$k.status", 'pending'))
+);
 
-  $canApprove = collect($docKeys)->contains(function($k) use ($incomingByDoc){
-      $cycles = collect($incomingByDoc->get($k) ?? []);
-      return $cycles->contains(fn($cy) => !empty($cy->pemohon_file_path));
-  });
+$hasAnyRevisi = $allDocStatuses->contains(fn($st) => $st === 'revisi');
+$allCheckedOk = $allDocStatuses->every(fn($st) => $st === 'ok');
+
+$canSend = $hasAnyRevisi;
+$canApprove = $allCheckedOk && !$hasAnyRevisi;
 
 
 @endphp
@@ -335,6 +332,9 @@ if (!$isKeyedByDoc) {
                     $statusDoc = optional($doc)->status ?? 'pending';
                     $note      = optional($doc)->note;
 
+                    $hasSourceValue = !empty($filePath);
+                    $canRevisi = $hasSourceValue;
+
                     // ambil bucket cycles untuk doc ini
                     $bucket = null;
 
@@ -389,53 +389,36 @@ if (!$isKeyedByDoc) {
                     $displayTimeRaw = data_get($lastPemohonSub,'pemohon_uploaded_at')
                         ?: data_get($lastPemohonSub,'created_at');
                     // =======================
-                    // DOT STATUS = LAST ACTION WINS
-                    // =======================
+// ✅ DOT STATUS
+// merah = admin sudah minta revisi tapi pemohon belum upload
+// hijau = pemohon sudah pernah upload revisi
+// tetap hijau walaupun setelah itu admin klik OK
+// =======================
+$showDot  = false;
+$dotClass = null;
 
-                    // pastiin urut paling baru dulu (kamu udah ada, ini aman kalau tetap)
-                    $cyclesSorted = $cycles->sortByDesc(fn($x) => data_get($x,'id') ?? 0)->values();
+// ✅ PRIORITAS TERTINGGI: kalau status sudah OK → pasti hijau
+if ($statusDoc === 'ok') {
+  $showDot = true;
+  $dotClass = 'green';
+}
 
-                    // cari event terakhir yang ngaruh indikator:
-                    // - admin minta revisi (requested/closed)
-                    // - pemohon upload revisi (submitted/uploaded + ada file)
-                    $lastSignal = $cyclesSorted->first(function($x){
-                      $role  = data_get($x,'from_role');
-                      $state = data_get($x,'state');
+// ✅ kalau belum OK, lihat histori revisi
+elseif ($hasAdminRevisi) {
+  $showDot = true;
+  $dotClass = $hasPemohonUpload ? 'green' : 'red';
+}
 
-                      if ($role === 'admin' && in_array($state, ['requested','closed'], true)) return true;
-
-                      if ($role === 'pemohon'
-                          && in_array($state, ['submitted','uploaded'], true)
-                          && !empty(data_get($x,'pemohon_file_path'))) return true;
-
-                      return false;
-                    });
-
-                    // default: ga ada dot
-                    $showDot  = false;
-                    $dotClass = null;
-
-                    // kalau ada signal, warnanya ikut siapa yang terakhir
-                    if ($lastSignal) {
-                      $showDot = true;
-                      $dotClass = (data_get($lastSignal,'from_role') === 'pemohon') ? 'green' : 'red';
-                    }
-
-                    // ✅ FALLBACK: kalau admin revisi ada tapi cycles kosong / ga ada signal,
-                    // tetap tampil dot merah (menunggu pemohon)
-                    if (!$showDot && $hasAdminRevisi && !$hasPemohonUpload) {
-                      $showDot = true;
-                      $dotClass = 'red';
-                    }
-
-                    // tooltip
-                    $dotTitle = ($dotClass === 'green')
-                      ? 'Pemohon sudah upload revisi'
-                      : 'Menunggu upload revisi pemohon';
+$dotTitle = ($dotClass === 'green')
+  ? 'Pemohon sudah upload revisi'
+  : 'Menunggu upload revisi pemohon';
                   @endphp
 
 
-                <div class="doc-item" data-doc-wrap data-doc-key="{{ $k }}">
+                <div class="doc-item"
+                  data-doc-wrap
+                  data-doc-key="{{ $k }}"
+                  data-doc-status="{{ strtolower($statusDoc) }}">
                   <div class="doc-top">
                     <div>
                       <div class="doc-name">
@@ -474,11 +457,29 @@ if (!$isKeyedByDoc) {
                       @csrf
                       <input type="hidden" name="doc_key" value="{{ $k }}">
                       <input type="hidden" name="action" value="ok">
-                      <button class="btn-mini" type="submit">OK</button>
+                      <button
+                        class="btn-mini"
+                        type="submit"
+                        data-doc-ok-btn
+                        data-doc-key="{{ $k }}"
+                      >
+                        OK
+                      </button>
                     </form>
 
                     <div class="rev-dd" data-rev>
-                      <button type="button" class="btn-mini rev-btn" data-rev-btn>Revisi</button>
+                      <button
+                        type="button"
+                        class="btn-mini rev-btn"
+                        data-rev-btn
+                        data-doc-revisi-btn
+                        data-doc-key="{{ $k }}"
+                        data-can-revisi="{{ $canRevisi ? '1' : '0' }}"
+                        {{ (strtolower($statusDoc) === 'ok' || !$canRevisi) ? 'disabled' : '' }}
+                        title="{{ $canRevisi ? 'Revisi dokumen' : 'Tidak ada dokumen' }}"
+                      >
+                        Revisi
+                      </button>
 
                       <div class="rev-pop" data-rev-pop hidden>
                         <form class="js-doc-form" method="POST" enctype="multipart/form-data"
@@ -487,7 +488,7 @@ if (!$isKeyedByDoc) {
                           <input type="hidden" name="doc_key" value="{{ $k }}">
                           <input type="hidden" name="action" value="revisi">
 
-                          <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)">{{ $note }}</textarea>
+                          <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)" required>{{ $note }}</textarea>
 
                           <div style="margin-top:6px;">
                             <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
@@ -700,29 +701,44 @@ if (!$isKeyedByDoc) {
 
             {{-- FOOTER BUTTONS (samain paten) --}}
             <div class="docs-footer-actions">
-              <form id="sendRevisiForm"
-                    class="js-send-revisi-form"
-                    method="POST"
-                    action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'cipta','id'=>$row->id]) }}">
-                @csrf
-                <button id="btnSendRevisi"
-                        type="submit"
-                        class="btn-send-right"
-                        {{ $canSend ? '' : 'disabled' }}>
-                  Simpan & Kirim ke Pemohon
-                </button>
-              </form>
 
-              <button
-                type="button"
-                id="btnApprove"
-                class="btn-approve-right"
-                data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'cipta','id'=>$row->id]) }}"
-                {{ $canApprove ? '' : 'disabled' }}
-              >
-                Approve
-              </button>
-            </div>
+  <form id="sendRevisiForm"
+        class="js-send-revisi-form"
+        method="POST"
+        action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'cipta','id'=>$row->id]) }}">
+    @csrf
+    <button id="btnSendRevisi"
+            type="submit"
+            class="btn-send-right"
+            {{ $canSend ? '' : 'disabled' }}>
+      Simpan & Kirim ke Pemohon
+    </button>
+  </form>
+
+  <button
+    type="button"
+    id="btnSendWA"
+    class="btn-wa-right"
+    data-url="{{ route('admin.verifikasi_dokumen.waLinks', ['type'=>'cipta','id'=>$row->id]) }}"
+  >
+    Kirim WA
+  </button>
+
+  @php
+    $isApproved = strtolower((string)($row->status ?? 'pending')) === 'approve';
+  @endphp
+
+  <button
+    type="button"
+    id="btnApprove"
+    class="btn-approve-right {{ $isApproved ? 'is-approved' : '' }}"
+    data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'cipta','id'=>$row->id]) }}"
+    data-approved="{{ $isApproved ? '1' : '0' }}"
+    {{ ($canApprove && !$isApproved) ? '' : 'disabled' }}
+  >
+    {{ $isApproved ? 'Sudah Approve' : 'Approve' }}
+  </button>
+</div>
 
           </div>
         </div>

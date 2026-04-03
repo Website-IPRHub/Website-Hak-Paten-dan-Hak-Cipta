@@ -59,21 +59,32 @@ class DuplicateHakCiptaVerifController extends Controller
     'nilai_perolehan'      => ['required', 'string', 'max:255'],
     'sumber_dana'          => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
     'skema_penelitian'     => ['required', 'string', 'max:255'],
-], $messages);
-$existingForm = session('hakcipta.form', []);
+    'link_ciptaan'       => ['required', 'url'],
+    'berupa'             => ['required', 'string', 'max:255'],
+    'tanggal_pengisian'  => ['required', 'date'],
+    'tempat'             => ['required', 'string', 'max:100'],
+    'uraian'             => ['required', 'string', 'max:350'],
+    ], $messages);
+$formPayload = [
+            'jumlah_inventor'      => $validated['jumlah_inventor'],
+            'jenis_cipta'          => $validated['jenis_cipta'],
+            'jenis_cipta_lainnya'  => $validated['jenis_cipta_lainnya'] ?? '',
+            'link_ciptaan'         => $validated['link_ciptaan'] ?? '',
+            'judul_ciptaan'        => $validated['judul_ciptaan'] ?? '',
+            'berupa'               => $validated['berupa'] ?? '',
+            'tanggal_pengisian'    => $validated['tanggal_pengisian'] ?? now()->format('Y-m-d'),
+            'tempat'               => $validated['tempat'] ?? '',
+            'uraian'               => $validated['uraian'] ?? '',
+            'inventor'             => $validated['inventor'] ?? [],
+        ];
 
-session()->put('hakcipta.form', array_merge($existingForm, [
-    'jumlah_inventor'      => $request->jumlah_inventor,
-    'jenis_cipta'          => $request->jenis_cipta,
-    'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
-    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
-    'judul_ciptaan'        => $request->judul_ciptaan,
-    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
-    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
-    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
-    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
-    'inventor'             => $request->inventor,
-]));
+        // 🔥 UBAH BAGIAN INI (Baris 82-an):
+        session()->put('hakcipta.form', $formPayload);
+        // Tambahkan baris ini biar masuk ke saku ID revisi
+        if (isset($verif->id)) {
+            session()->put("hakcipta.form.{$verif->id}", $formPayload);
+        }
+
 
     session([
         'hakcipta.verif' => [
@@ -140,28 +151,34 @@ for ($i = 0; $i < $jumlah; $i++) {
         'status'            => 'Draft',
     ];
 
-    if (!session()->has('cipta_id')) {
-        $payload['no_pendaftaran'] = $this->generateNoPendaftaranVerif();
+   $refId = $request->input('ref') ?? session('edit_ref_id') ?? session('cipta_id');
 
-        foreach ([
-            'surat_permohonan',
-            'surat_pernyataan',
-            'surat_pengalihan',
-            'tanda_terima',
-            'scan_ktp',
-            'hasil_ciptaan',
-            'link_ciptaan',
-            'skema_tkt_template_path',
-        ] as $field) {
-            $payload[$field] = null;
-        }
+if ($refId) {
+    $verif = HakCiptaVerif::findOrFail($refId);
+    $verif->update($payload);
+} else {
+    $payload['no_pendaftaran'] = $this->generateNoPendaftaranVerif();
 
-        $verif = HakCiptaVerif::create($payload);
-        session(['cipta_id' => $verif->id]);
-    } else {
-        $verif = HakCiptaVerif::findOrFail(session('cipta_id'));
-        $verif->update($payload);
+    foreach ([
+        'surat_permohonan',
+        'surat_pernyataan',
+        'surat_pengalihan',
+        'tanda_terima',
+        'scan_ktp',
+        'hasil_ciptaan',
+        'link_ciptaan',
+        'skema_tkt_template_path',
+    ] as $field) {
+        $payload[$field] = null;
     }
+
+    $verif = HakCiptaVerif::create($payload);
+}
+
+session(['cipta_id' => $verif->id]);
+session(['edit_ref_id' => $verif->id]);
+
+session()->put("hakcipta.form.{$verif->id}", $formPayload);
 
     $nextRoute = route('ciptaverif.all', ['verif' => $verif->id]);
 
@@ -181,6 +198,7 @@ for ($i = 0; $i < $jumlah; $i++) {
      */
     public function store(Request $request)
 {
+    
     $enumFakultas   = $this->getEnumValues(self::TABLE, 'fakultas');
     $enumSumberDana = $this->getEnumValues(self::TABLE, 'sumber_dana');
 
@@ -224,22 +242,32 @@ for ($i = 0; $i < $jumlah; $i++) {
     'nilai_perolehan'      => ['required', 'string', 'max:255'],
     'sumber_dana'          => empty($enumSumberDana) ? ['required', 'string'] : ['required', Rule::in($enumSumberDana)],
     'skema_penelitian'     => ['required', 'string', 'max:255'],
+    'link_ciptaan'       => ['required', 'url'],
+    'berupa'             => ['required', 'string', 'max:255'],
+    'tanggal_pengisian'  => ['required', 'date'],
+    'tempat'             => ['required', 'string', 'max:100'],
+    'uraian'             => ['required', 'string', 'max:350'],
 ], $messages);
 
-    $existingForm = session('hakcipta.form', []);
+    $formPayload = [
+            'jumlah_inventor'      => $validated['jumlah_inventor'],
+            'jenis_cipta'          => $validated['jenis_cipta'],
+            'jenis_cipta_lainnya'  => $validated['jenis_cipta_lainnya'] ?? '',
+            'link_ciptaan'         => $validated['link_ciptaan'] ?? '',
+            'judul_ciptaan'        => $validated['judul_ciptaan'] ?? '',
+            'berupa'               => $validated['berupa'] ?? '',
+            'tanggal_pengisian'    => $validated['tanggal_pengisian'] ?? now()->format('Y-m-d'),
+            'tempat'               => $validated['tempat'] ?? '',
+            'uraian'               => $validated['uraian'] ?? '',
+            'inventor'             => $validated['inventor'] ?? [],
+        ];
 
-session()->put('hakcipta.form', array_merge($existingForm, [
-    'jumlah_inventor'      => $request->jumlah_inventor,
-    'jenis_cipta'          => $request->jenis_cipta,
-    'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
-    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
-    'judul_ciptaan'        => $request->judul_ciptaan,
-    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
-    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
-    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
-    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
-    'inventor'             => $request->inventor,
-]));
+        // 🔥 UBAH BAGIAN INI (Baris 172-an):
+        session()->put('hakcipta.form', $formPayload);
+        // Tambahkan baris ini biar masuk ke saku ID revisi
+        if (isset($verif->id)) {
+            session()->put("hakcipta.form.{$verif->id}", $formPayload);
+        }
 
     foreach ($validated['inventor']['status'] as $i => $status) {
         $nidn = trim((string) ($validated['inventor']['nidn'][$i] ?? ''));
@@ -274,20 +302,27 @@ for ($i = 0; $i < $jumlah; $i++) {
         : $validated['jenis_cipta'];
 
     $payload = [
-        'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
-        'jenis_cipta'      => $jenisCipta,
-        'judul_cipta'      => $validated['judul_ciptaan'],
-        'inventors'        => $inventors,
-        'nama_pencipta'    => $inventors[0]['nama'] ?? '',
-        'nip_nim'          => $inventors[0]['nip_nim'] ?? '',
-        'fakultas'         => $inventors[0]['fakultas'] ?? '',
-        'no_hp'            => $inventors[0]['no_hp'] ?? '',
-        'email'            => $inventors[0]['email'] ?? '',
-        'nilai_perolehan'  => $validated['nilai_perolehan'],
-        'sumber_dana'      => $validated['sumber_dana'],
-        'skema_penelitian' => $validated['skema_penelitian'],
-        'status'           => 'Draft',
-    ];
+    'jenis_cipta'      => $jenisCipta,
+    'judul_cipta'      => $validated['judul_ciptaan'],
+    'inventors'        => $inventors,
+    'nama_pencipta'    => $inventors[0]['nama'] ?? '',
+    'nip_nim'          => $inventors[0]['nip_nim'] ?? '',
+    'fakultas'         => $inventors[0]['fakultas'] ?? '',
+    'no_hp'            => $inventors[0]['no_hp'] ?? '',
+    'email'            => $inventors[0]['email'] ?? '',
+    'nilai_perolehan'  => $validated['nilai_perolehan'],
+    'sumber_dana'      => $validated['sumber_dana'],
+    'skema_penelitian' => $validated['skema_penelitian'],
+    'status'           => 'Draft',
+];
+
+$refId = $request->input('ref') ?? session('edit_ref_id') ?? session('cipta_id');
+
+if ($refId) {
+    $verif = HakCiptaVerif::findOrFail($refId);
+    $verif->update($payload);
+} else {
+    $payload['no_pendaftaran'] = $this->generateNoPendaftaranVerif();
 
     foreach ([
         'surat_permohonan',
@@ -303,7 +338,12 @@ for ($i = 0; $i < $jumlah; $i++) {
     }
 
     $verif = HakCiptaVerif::create($payload);
+}
 
+session(['cipta_id' => $verif->id]);
+session(['edit_ref_id' => $verif->id]);
+
+session()->put("hakcipta.form.{$verif->id}", $formPayload);
 
     return response()->json([
         'message'        => 'Pengajuan verifikasi hak cipta berhasil',
@@ -518,9 +558,23 @@ for ($i = 0; $i < $jumlah; $i++) {
         'submitted_at' => now(),
     ]);
 
+    session()->put('edit_ref_id', $verif->id);
+
+    $global = session('hakcipta.form', []);
+    $specific = session("hakcipta.form.{$verif->id}", []);
+
+    if (empty($specific) && !empty($global)) {
+        session()->put("hakcipta.form.{$verif->id}", $global);
+        $specific = $global;
+    }
+
+    if (!empty($specific)) {
+        session()->put('hakcipta.form', $specific);
+    }
+
     session()->forget('cipta_id');
     session()->forget('hakcipta.verif');
-    session()->forget('hakcipta.form');
+    // session()->forget('hakcipta.form');
 
     return redirect()->route('ciptaverif.hasil', ['verif' => $verif->id]);
 }
