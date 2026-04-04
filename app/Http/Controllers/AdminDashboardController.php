@@ -1923,7 +1923,11 @@ if ($action === 'revisi') {
         $finalDir = storage_path('app/public/tanda_terima');
         if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
 
-        $finalName = "tanda_terima_{$type}_{$id}_" . now()->format('Ymd_His') . ".pdf";
+        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($meta['no'] ?? ''));
+
+        $finalName = $type === 'paten'
+            ? "Tanda_Terima_Paten_{$safeNo}.pdf"
+            : "Tanda_Terima_Hak_Cipta_{$safeNo}.pdf";
         $finalPath = $finalDir . DIRECTORY_SEPARATOR . $finalName;
 
         // move (rename) kalau bisa, kalau beda drive fallback copy+unlink

@@ -648,8 +648,16 @@ public function updateDeskripsiSingkat(Request $request)
             abort(404, 'File tanda terima tidak ditemukan di storage/public.');
         }
 
+        $noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
+        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
+
+        $downloadName = $type === 'paten'
+            ? "Tanda Terima Paten {$safeNo}.pdf"
+            : "Tanda Terima Hak Cipta {$safeNo}.pdf";
+
         return response()->download(
-            storage_path('app/public/' . $sv->tanda_terima_pdf)
+            storage_path('app/public/' . $sv->tanda_terima_pdf),
+            $downloadName
         );
     }
 
