@@ -1813,10 +1813,13 @@ if ($action === 'revisi') {
     {
         $meta = $this->getRowByType($type, $id);
 
-        $template = storage_path('app/templates/tanda_terima.docx');
-        if (!file_exists($template)) {
-            throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
-        }
+       $template = $type === 'paten'
+    ? storage_path('app/templates/tanda_terima_paten.docx')
+    : storage_path('app/templates/tanda_terima_hakcipta.docx');
+
+    if (!file_exists($template)) {
+        throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
+    }
 
         $doc = new TemplateProcessor($template);
 
@@ -1923,7 +1926,11 @@ if ($action === 'revisi') {
         $finalDir = storage_path('app/public/tanda_terima');
         if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
 
-        $finalName = "tanda_terima_{$type}_{$id}_" . now()->format('Ymd_His') . ".pdf";
+        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($meta['no'] ?? ''));
+
+        $finalName = $type === 'paten'
+            ? "Tanda_Terima_Paten_{$safeNo}.pdf"
+            : "Tanda_Terima_Hak_Cipta_{$safeNo}.pdf";
         $finalPath = $finalDir . DIRECTORY_SEPARATOR . $finalName;
 
         // move (rename) kalau bisa, kalau beda drive fallback copy+unlink
