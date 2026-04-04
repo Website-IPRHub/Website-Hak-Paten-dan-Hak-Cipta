@@ -223,25 +223,30 @@
                 @else
   {{-- FILE --}}
   @php
-    // 🔥 KUNCINYA DI SINI TIK!
-    // Kita cek: kalau key-nya skema_tkt, ambil dari kolom skema_tkt_template_path
-    $realValue = $d->value; 
+  $realValue = $d->value; 
+  if ($d->key === 'skema_tkt') {
+      $realValue = $source->skema_tkt_template_path;
+  }
+@endphp
+
+@if(!empty($realValue))
+  @php
     if ($d->key === 'skema_tkt') {
-        $realValue = $source->skema_tkt_template_path;
+        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
+        $ext = pathinfo($realValue, PATHINFO_EXTENSION);
+        $shownName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
+    } else {
+        $shownName = $prettyName($realValue, $d->label);
     }
   @endphp
-
-  @if(!empty($realValue))
-    {{-- ✅ Gunakan $realValue untuk dapet path filenya --}}
-    @php $shownName = $prettyName($realValue, $d->label); @endphp
     
-    <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
-       class="pd-file-link">
-       {{ $shownName }}
-    </a>
-  @else
-    <span class="pd-muted">Belum diupload</span>
-  @endif
+  <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
+     class="pd-file-link">
+     {{ $shownName }}
+  </a>
+@else
+  <span class="pd-muted">Belum diupload</span>
+@endif
 @endif
 
               </td>
@@ -338,7 +343,7 @@
 
       $revId = $req->id ?? null;
       $isTextDoc = in_array($docKey, ['deskripsi_singkat_prototipe'], true);
-      $currentText = $isTextDoc ? trim((string) data_get($source, 'deskripsi_singkat_prototipe', '')) : '';
+      $currentText = $isTextDoc ? trim((string) ($req->pemohon_text ?? '')) : '';
     @endphp
 
     <tr>
@@ -584,7 +589,9 @@
 
                 <div class="pd-approve-actions" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
                   @if($isApprove && $tt)
-                    <a class="pd-mini-btn primary" target="_blank" href="{{ route('pemohon.tanda_terima.download') }}">
+                    <a class="pd-mini-btn primary"
+                      target="_blank"
+                      href="{{ route('pemohon.tanda_terima.download', ['type' => $pengajuan->type, 'ref' => $pengajuan->id]) }}">
                       Download Tanda Terima
                     </a>
                   @else

@@ -330,112 +330,111 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
 
    @foreach($docKeys as $k)
   @php
-  // ✅ tandai apakah ini field TEKS
-  $isText = ($k === 'deskripsi_singkat_prototipe');
+    // ✅ tandai apakah ini field TEKS
+    $isText = ($k === 'deskripsi_singkat_prototipe');
 
-  // ✅ ambil data docs status/note
-  $doc       = data_get($row->docs, $k);
-  $statusDoc = data_get($doc, 'status', 'pending');
-  $note      = data_get($doc, 'note');
+    // ✅ ambil data docs status/note
+    $doc       = data_get($row->docs, $k);
+    $statusDoc = data_get($doc, 'status', 'pending');
+    $note      = data_get($doc, 'note');
 
-  // ✅ tampil utama: TEKS vs FILE
- // ✅ tampil utama: TEKS vs FILE
-  if($isText){
-    $textValue = trim((string) data_get($row, $k, ''));
-    $filePath  = null;
-    $shownName = null;
-  } else {
-    // 🔥 DISINI KUNCINYA TIK!
-    if ($k === 'skema_tkt') {
-        // Ambil dari kolom khusus skema TKT
-        $filePath = $row->skema_tkt_template_path;
+    // ✅ tampil utama: TEKS vs FILE
+    if ($isText) {
+        $textValue = trim((string) data_get($row, $k, ''));
+        $filePath  = null;
+        $shownName = null;
     } else {
-        // Ambil reguler (draft_paten, scan_ktp, dll)
-        $filePath = data_get($row, $k);
+        // ✅ isi filePath dulu
+        if ($k === 'skema_tkt') {
+            $filePath = $row->skema_tkt_template_path ?? null;
+        } else {
+            $filePath = data_get($row, $k);
+        }
+
+        $nameField    = $k . '_name';
+        $labelForName = $docLabels[$k] ?? $k;
+
+        // ✅ baru setelah filePath ada, bikin shownName
+        if ($k === 'skema_tkt' && $filePath) {
+            $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($row->no_pendaftaran ?? ''));
+            $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            $shownName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
+        } else {
+            $shownName = data_get($row, $nameField)
+                ?: ($filePath ? $prettyName($filePath, $labelForName) : null);
+        }
+
+        $textValue = '';
     }
 
-    $nameField = $k.'_name';
-    $labelForName = $docLabels[$k] ?? $k;
-    
-    // Untuk shownName, kalau TKT ambil manual aja namanya
-    $shownName = data_get($row, $nameField)
-      ?: ($filePath ? $prettyName($filePath, $labelForName) : null);
+    // ✅ apakah dokumen ini benar-benar ada isi dari pemohon?
+    $hasSourceValue = $isText
+      ? ($textValue !== '')
+      : !empty($filePath);
 
-    $textValue = '';
-  }
+    // ✅ hanya boleh revisi kalau ADA isi/file dari pemohon
+    $canRevisi = $hasSourceValue;
 
-// ✅ apakah dokumen ini benar-benar ada isi dari pemohon?
-$hasSourceValue = $isText
-  ? ($textValue !== '')
-  : !empty($filePath);
+    // ==========================
+    // ✅ CIPTA STYLE: build cycles per doc_key
+    // ==========================
+    $bucket = null;
 
-// ✅ hanya boleh revisi kalau ADA isi/file dari pemohon
-$canRevisi = $hasSourceValue;
-
-  // ==========================
-  // ✅ CIPTA STYLE: build cycles per doc_key
-  // ==========================
-  $bucket = null;
-
-  if ($incomingByDoc instanceof \Illuminate\Support\Collection && $incomingByDoc->has($k)) {
-      $bucket = $incomingByDoc->get($k);
-  } elseif (is_array($incomingByDoc) && array_key_exists($k, $incomingByDoc)) {
-      $bucket = $incomingByDoc[$k];
-  }
-
-  $cycles = $bucket !== null
-      ? collect($bucket)
-      : collect($incomingByDoc ?? [])->flatten(1)->filter(fn($x) => data_get($x, 'doc_key') === $k);
-
-  $cycles = $cycles->map(fn($x) => is_array($x) ? (object)$x : $x)
-                   ->sortByDesc(fn($x) => data_get($x,'id') ?? 0)
-                   ->values();
-
-  $cyclesSorted = $cycles;
-
-  // flag untuk show/hide revisi box
-  $hasPemohonUpload = $cyclesSorted->contains(function($x) use ($isText){
-    if($isText){
-      $t = data_get($x,'pemohon_text')
-        ?? data_get($x,'text')
-        ?? data_get($x,'deskripsi')
-        ?? data_get($x,'value');
-      return trim((string)$t) !== '';
+    if ($incomingByDoc instanceof \Illuminate\Support\Collection && $incomingByDoc->has($k)) {
+        $bucket = $incomingByDoc->get($k);
+    } elseif (is_array($incomingByDoc) && array_key_exists($k, $incomingByDoc)) {
+        $bucket = $incomingByDoc[$k];
     }
 
-    return data_get($x,'from_role') === 'pemohon'
-      && in_array(data_get($x,'state'), ['submitted','uploaded'], true)
-      && !empty(data_get($x,'pemohon_file_path'));
-  });
+    $cycles = $bucket !== null
+        ? collect($bucket)
+        : collect($incomingByDoc ?? [])->flatten(1)->filter(fn($x) => data_get($x, 'doc_key') === $k);
 
-  // admin revisi = status dokumen revisi ATAU note admin ada
-  $hasAdminRevisi =
-    ($statusDoc === 'revisi') ||
-    (trim((string)$note) !== '') ||
-    ($cycles->count() > 0);
+    $cycles = $cycles->map(fn($x) => is_array($x) ? (object)$x : $x)
+                     ->sortByDesc(fn($x) => data_get($x,'id') ?? 0)
+                     ->values();
 
-// =======================
-// ✅ DOT STATUS FINAL (FIX)
-// =======================
-$showDot  = false;
-$dotClass = null;
+    $cyclesSorted = $cycles;
 
-// ✅ kalau sudah OK → hijau (walaupun sebelumnya revisi)
-if ($statusDoc === 'ok') {
-  $showDot = true;
-  $dotClass = 'green';
-}
+    // flag untuk show/hide revisi box
+    $hasPemohonUpload = $cyclesSorted->contains(function($x) use ($isText){
+      if($isText){
+        $t = data_get($x,'pemohon_text')
+          ?? data_get($x,'text')
+          ?? data_get($x,'deskripsi')
+          ?? data_get($x,'value');
+        return trim((string)$t) !== '';
+      }
 
-// ✅ kalau ada revisi
-elseif ($hasAdminRevisi) {
-  $showDot = true;
-  $dotClass = $hasPemohonUpload ? 'green' : 'red';
-}
+      return data_get($x,'from_role') === 'pemohon'
+        && in_array(data_get($x,'state'), ['submitted','uploaded'], true)
+        && !empty(data_get($x,'pemohon_file_path'));
+    });
 
-$dotTitle = ($dotClass === 'green')
-  ? 'Pemohon sudah upload revisi'
-  : 'Menunggu upload revisi pemohon';
-@endphp
+    // admin revisi = status dokumen revisi ATAU note admin ada
+    $hasAdminRevisi =
+      ($statusDoc === 'revisi') ||
+      (trim((string)$note) !== '') ||
+      ($cycles->count() > 0);
+
+    // =======================
+    // ✅ DOT STATUS FINAL
+    // =======================
+    $showDot  = false;
+    $dotClass = null;
+
+    if ($statusDoc === 'ok') {
+      $showDot = true;
+      $dotClass = 'green';
+    } elseif ($hasAdminRevisi) {
+      $showDot = true;
+      $dotClass = $hasPemohonUpload ? 'green' : 'red';
+    }
+
+    $dotTitle = ($dotClass === 'green')
+      ? 'Pemohon sudah upload revisi'
+      : 'Menunggu upload revisi pemohon';
+  @endphp
 
       <div class="doc-item"
         data-doc-wrap
