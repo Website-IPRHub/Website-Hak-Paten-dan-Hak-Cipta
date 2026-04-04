@@ -121,7 +121,7 @@ Route::middleware('auth:pemohon')->prefix('pemohon')->name('pemohon.')->group(fu
     Route::get('/dashboard', [PemohonDashboardController::class, 'index'])->name('dashboard');
 });
 
-Route::get('/pemohon/tanda-terima', [PemohonDashboardController::class, 'downloadTandaTerima'])
+Route::get('/pemohon/tanda-terima/download/{type}/{ref}', [PemohonDashboardController::class, 'downloadTandaTerima'])
     ->name('pemohon.tanda_terima.download');
 
 Route::post('/revisi/{type}/{id}', [AdminDashboardController::class, 'setRevisi'])

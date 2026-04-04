@@ -147,21 +147,33 @@ if ($status === 'revisi') {
         ->groupBy('doc_key')
         ->map(fn($rows) => $rows->first())
         ->values()
-        ->map(function($req) use ($source){
-            $isTextDoc = ($req->doc_key ?? null) === 'deskripsi_singkat_prototipe';
+        ->map(function($req){
+    $isTextDoc = ($req->doc_key ?? null) === 'deskripsi_singkat_prototipe';
 
-            $req->pemohon_uploaded = 0;
-            $req->admin_note       = $req->note ?? null;
-            $req->admin_file_path  = $req->file_path ?? null;
+    $req->pemohon_uploaded = 0;
+    $req->admin_note       = $req->note ?? null;
+    $req->admin_file_path  = $req->file_path ?? null;
 
-            if ($isTextDoc) {
-                $req->pemohon_text = trim((string) data_get($source, 'deskripsi_singkat_prototipe', ''));
-            } else {
-                $req->pemohon_text = null;
-            }
+    if ($isTextDoc) {
+        $lastPemohon = DB::table('revisions')
+            ->where('type', $req->type)
+            ->where('ref_id', $req->ref_id)
+            ->where('doc_key', $req->doc_key)
+            ->where('from_role', 'pemohon')
+            ->where('state', 'submitted')
+            ->whereNotNull('pemohon_text')
+            ->where('id', '>', $req->id)
+            ->orderByDesc('id')
+            ->first();
 
-            return $req;
-        });
+        $req->pemohon_text = trim((string)($lastPemohon->pemohon_text ?? ''));
+        $req->pemohon_uploaded = $req->pemohon_text !== '' ? 1 : 0;
+    } else {
+        $req->pemohon_text = null;
+    }
+
+    return $req;
+});
 }
 
 // ✅ RIWAYAT harus tetap ada di REVISI & APPROVE
@@ -600,66 +612,57 @@ public function updateDeskripsiSingkat(Request $request)
         throw $e;
     }
 }
-    public function downloadTandaTerima(Request $request)
-    {
-        $pemohon = Auth::guard('pemohon')->user();
-        if (!$pemohon) return redirect()->route('pemohon.login.form');
-
-        $kode = $pemohon->kode_unik
-            ?? $pemohon->no_pendaftaran
-            ?? $pemohon->kode
-            ?? null;
-
-        if (!$kode) abort(403, 'Kode unik pemohon tidak ditemukan.');
-
-        // ✅ konsisten ambil TERBARU
-        $paten = PatenVerif::where('no_pendaftaran', $kode)->latest('id')->first();
-        $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
-
-        if (!$paten) {
-            $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
-        }
-
-        if (!$paten && !$cipta) {
-            abort(404, 'Data pengajuan tidak ditemukan.');
-        }
-
-        $type  = $paten ? 'paten' : 'cipta';
-        $refId = $paten ? $paten->id : $cipta->id;
-        $source = $paten ?: $cipta;
-
-        $sv = DB::table('status_verifikasi')
-            ->where('ref_type', $type)
-            ->where('ref_id', $refId)
-            ->orderByDesc('id')
-            ->first();
-
-
-        $status = strtolower($sv->status ?? 'terkirim');
-        if ($status !== 'approve') {
-            abort(403, 'Tanda terima hanya bisa didownload setelah status APPROVE.');
-        }
-
-        if (!$sv || empty($sv->tanda_terima_pdf)) {
-            abort(404, 'File tanda terima belum tersedia (kolom tanda_terima_pdf masih kosong).');
-        }
-
-        if (!Storage::disk('public')->exists($sv->tanda_terima_pdf)) {
-            abort(404, 'File tanda terima tidak ditemukan di storage/public.');
-        }
-
-        $noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
-        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
-
-        $downloadName = $type === 'paten'
-            ? "Tanda Terima Paten {$safeNo}.pdf"
-            : "Tanda Terima Hak Cipta {$safeNo}.pdf";
-
-        return response()->download(
-            storage_path('app/public/' . $sv->tanda_terima_pdf),
-            $downloadName
-        );
+    public function downloadTandaTerima(Request $request, string $type, int $ref)
+{
+    $pemohon = Auth::guard('pemohon')->user();
+    if (!$pemohon) {
+        return redirect()->route('pemohon.login.form');
     }
+
+    if (!in_array($type, ['paten', 'cipta'], true)) {
+        abort(404);
+    }
+
+    // ambil pengajuan yang sedang dibuka, BUKAN nebak dari kode akun
+    $source = $type === 'paten'
+        ? PatenVerif::where('id', $ref)->first()
+        : DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+
+    if (!$source) {
+        abort(404, 'Data pengajuan tidak ditemukan.');
+    }
+
+    $sv = DB::table('status_verifikasi')
+        ->where('ref_type', $type)
+        ->where('ref_id', $ref)
+        ->orderByDesc('id')
+        ->first();
+
+    $status = strtolower((string)($sv->status ?? 'terkirim'));
+    if ($status !== 'approve') {
+        abort(403, 'Tanda terima hanya bisa didownload setelah status APPROVE.');
+    }
+
+    if (!$sv || empty($sv->tanda_terima_pdf)) {
+        abort(404, 'File tanda terima belum tersedia.');
+    }
+
+    if (!Storage::disk('public')->exists($sv->tanda_terima_pdf)) {
+        abort(404, 'File tanda terima tidak ditemukan di storage/public.');
+    }
+
+    $noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
+    $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
+
+    $downloadName = $type === 'paten'
+        ? "Tanda Terima Paten {$safeNo}.pdf"
+        : "Tanda Terima Hak Cipta {$safeNo}.pdf";
+
+    return response()->download(
+        storage_path('app/public/' . $sv->tanda_terima_pdf),
+        $downloadName
+    );
+}
 
 public function downloadDokumenAwal(Request $request, string $type, int $ref, string $key)
 {
@@ -674,6 +677,13 @@ public function downloadDokumenAwal(Request $request, string $type, int $ref, st
     $path = null;
     $downloadName = null;
 
+    // source selalu diambil dulu biar bisa dipakai naming custom
+    $source = $type === 'cipta'
+        ? DB::table('hak_cipta_verifs')->where('id', $ref)->first()
+        : PatenVerif::where('id', $ref)->first();
+
+    if (!$source) abort(404, 'Data pengajuan tidak ditemukan.');
+
     // 1) coba dari verifikasi_dokumens dulu
     $doc = VerifikasiDokumen::where([
         'ref_type' => $type,
@@ -685,14 +695,13 @@ public function downloadDokumenAwal(Request $request, string $type, int $ref, st
         $path = $doc->pemohon_file_path;
         $downloadName = $doc->pemohon_file_name ?: basename($path);
     } else {
-        // 2) fallback: ambil dari tabel sumber (hak_cipta_verifs / paten_verifs)
-        $source = $type === 'cipta'
-            ? DB::table('hak_cipta_verifs')->where('id', $ref)->first()
-            : PatenVerif::where('id', $ref)->first();
+        // 2) fallback: ambil dari tabel sumber
+        if ($type === 'paten' && $key === 'skema_tkt') {
+            $path = data_get($source, 'skema_tkt_template_path');
+        } else {
+            $path = data_get($source, $key);
+        }
 
-        if (!$source) abort(404, 'Data pengajuan tidak ditemukan.');
-
-        $path = data_get($source, $key);
         if (!$path) abort(404, 'File tidak ditemukan.');
 
         $downloadName = basename($path);
@@ -702,14 +711,22 @@ public function downloadDokumenAwal(Request $request, string $type, int $ref, st
     $path = ltrim((string)$path, '/');
     $path = preg_replace('#^storage/#', '', $path);
 
-    if (!Storage::disk('public')->exists($path)) abort(404, 'File tidak ada di storage.');
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404, 'File tidak ada di storage.');
+    }
+
+    // ✅ khusus TKT: paksa nama download rapi sesuai kode pengajuan
+    if ($type === 'paten' && $key === 'skema_tkt') {
+        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        $downloadName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
+    }
 
     // amanin nama file
     $downloadName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', (string)$downloadName);
 
     $full = Storage::disk('public')->path($path);
 
-    // paksa attachment biar download (PDF gak kebuka inline)
     return response()->download($full, $downloadName, [
         'Content-Disposition' => 'attachment; filename="'.$downloadName.'"',
     ]);

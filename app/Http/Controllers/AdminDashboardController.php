@@ -1707,24 +1707,37 @@ if ($action === 'revisi') {
         try {
         $file = $request->file('file');
 
-            $original = $file->getClientOriginalName();
-            $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
+$tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
 
-            $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
+$source = DB::table($tableName)
+    ->where('id', $reqRow->ref_id)
+    ->first();
 
-            // Hindari bentrok nama
-            $finalName = $safeName;
-            $counter = 1;
+$noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
+$safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
 
-            $base = pathinfo($finalName, PATHINFO_FILENAME);
-            $ext  = pathinfo($finalName, PATHINFO_EXTENSION);
+$dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
 
-            while (Storage::disk('public')->exists($dir.'/'.$finalName)) {
-                $finalName = "{$base}_{$counter}" . ($ext ? ".{$ext}" : "");
-                $counter++;
-            }
+$originalExt = $file->getClientOriginalExtension();
 
-            $path = $file->storeAs($dir, $finalName, 'public');
+if ($reqRow->doc_key === 'skema_tkt') {
+    $finalName = $safeNo . '_skema_tkt_7-9.' . $originalExt;
+} else {
+    $original = $file->getClientOriginalName();
+    $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
+    $finalName = $safeName;
+}
+
+$counter = 1;
+$base = pathinfo($finalName, PATHINFO_FILENAME);
+$ext  = pathinfo($finalName, PATHINFO_EXTENSION);
+
+while (Storage::disk('public')->exists($dir . '/' . $finalName)) {
+    $finalName = "{$base}_{$counter}" . ($ext ? ".{$ext}" : "");
+    $counter++;
+}
+
+$path = $file->storeAs($dir, $finalName, 'public');
 
             // 1) TUTUP request admin (biar active list bersih, dan history tetap ada)
             DB::table('revisions')->where('id', $revisionId)->update([
@@ -1927,10 +1940,11 @@ if ($action === 'revisi') {
         if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
 
         $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($meta['no'] ?? ''));
+            $safeId = (int) $id;
 
-        $finalName = $type === 'paten'
-            ? "Tanda_Terima_Paten_{$safeNo}.pdf"
-            : "Tanda_Terima_Hak_Cipta_{$safeNo}.pdf";
+            $finalName = $type === 'paten'
+                ? "Tanda_Terima_Paten_{$safeNo}_{$safeId}.pdf"
+                : "Tanda_Terima_Hak_Cipta_{$safeNo}_{$safeId}.pdf";
         $finalPath = $finalDir . DIRECTORY_SEPARATOR . $finalName;
 
         // move (rename) kalau bisa, kalau beda drive fallback copy+unlink
