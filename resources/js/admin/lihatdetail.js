@@ -302,10 +302,9 @@ const updateRevisiUI = (docKey, doc) => {
   // box revisi muncul kalau status revisi / note ada
   const hasExistingArchive =
   !!docWrap.querySelector(".incoming-table .incoming-row:not(.incoming-head)") ||
-  !!docWrap.querySelector("[data-empty-cycle-row]") ||
-  !!docWrap.querySelector(".doc-dot");
+  !!docWrap.querySelector("[data-empty-cycle-row]");
 
-const showRevisi = status === "revisi" || note.length > 0 || hasExistingArchive;
+const showRevisi = status === "revisi" || note.length > 0 || (status === "ok" && hasExistingArchive);
 
   // tampilkan wrap revisi
   if (incomingWrap) incomingWrap.hidden = !showRevisi;
@@ -327,27 +326,36 @@ const showRevisi = status === "revisi" || note.length > 0 || hasExistingArchive;
   adminDateEl.textContent = new Date(dtRaw).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 }
 
-  // pemohon empty selalu tampil (karena belum upload)
-  if (pemohonEmpty) pemohonEmpty.hidden = false;
+if (pemohonEmpty) {
+  pemohonEmpty.hidden = !showRevisi || status === "ok";
+}
 
   // dot indikator -> merah kalau belum ada upload pemohon
-  if (showRevisi) {
     let dot = docWrap.querySelector(".doc-dot");
-    if (!dot) {
-      const nameEl = docWrap.querySelector(".doc-name");
-      if (nameEl) {
-        dot = document.createElement("span");
-        dot.className = "doc-dot red";
-        dot.title = "Menunggu upload revisi dari pemohon";
-        nameEl.prepend(dot);
-      }
-    } else {
-      dot.classList.remove("green");
-      dot.classList.add("red");
+  const nameEl = docWrap.querySelector(".doc-name");
+
+  if (status === "ok") {
+    if (!dot && nameEl) {
+      dot = document.createElement("span");
+      nameEl.prepend(dot);
+    }
+
+    if (dot) {
+      dot.className = "doc-dot green";
+      dot.title = "Pemohon sudah upload revisi";
+    }
+  } else if (showRevisi) {
+    if (!dot && nameEl) {
+      dot = document.createElement("span");
+      nameEl.prepend(dot);
+    }
+
+    if (dot) {
+      dot.className = "doc-dot red";
       dot.title = "Menunggu upload revisi dari pemohon";
     }
   } else {
-    docWrap.querySelector(".doc-dot")?.remove();
+    dot?.remove();
   }
 
   // =========================

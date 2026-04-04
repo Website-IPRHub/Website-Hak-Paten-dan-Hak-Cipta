@@ -363,26 +363,34 @@
       </td>
 
       <td class="pd-td-center">
-        @if($adminFile)
-          <a href="{{ asset('storage/'.$adminFile) }}" target="_blank" class="pd-action-link">
-            Download
-          </a>
-        @else
-          <span class="pd-dash">-</span>
-        @endif
-      </td>
+  @if($adminFile)
+    <a href="{{ asset('storage/'.$adminFile) }}" target="_blank" class="pd-action-link">
+      Download
+    </a>
+  @else
+    <span class="pd-dash">-</span>
+  @endif
+</td> {{-- ✅ tutup dengan benar --}}
 
-      <td class="pd-td-center">
-        @if($isTextDoc)
-          <span class="pd-pill todo">Belum diperbarui</span>
-        @else
-          @if($pemohonUploaded)
-            <span class="pd-pill done">Sudah upload</span>
-          @else
-            <span class="pd-pill todo">Belum upload</span>
-          @endif
-        @endif
-      </td>
+<td class="pd-td-center">
+  @if($isTextDoc)
+    @if($currentText !== '')
+      <span class="pd-pill done">
+        Sudah<br>diperbarui
+      </span>
+    @else
+      <span class="pd-pill todo">
+        Belum<br>diperbarui
+      </span>
+    @endif
+  @else
+    @if($pemohonUploaded)
+      <span class="pd-pill done">Sudah upload</span>
+    @else
+      <span class="pd-pill todo">Belum upload</span>
+    @endif
+  @endif
+</td>
 
       {{-- EDIT --}}
     {{-- REVISI TOMBOL EDIT DI DASHBOARD --}}
@@ -514,8 +522,16 @@
               </td>
 
               <td class="pd-td-center">
-                <span class="pd-pill done">Sudah upload</span>
-              </td>
+  @php
+    $isTextHistory = in_array($docKey2, ['deskripsi_singkat_prototipe'], true);
+  @endphp
+
+  @if($isTextHistory)
+    <span class="pd-pill done">Sudah<br>diperbarui</span>
+  @else
+    <span class="pd-pill done">Sudah upload</span>
+  @endif
+</td>
 
               <td class="pd-td-center">
                 @php
