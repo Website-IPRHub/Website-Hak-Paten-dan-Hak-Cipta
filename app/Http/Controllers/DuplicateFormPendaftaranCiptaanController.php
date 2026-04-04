@@ -77,18 +77,56 @@ public function index(Request $request)
 
         // 1. Validasi (Sama persis dengan file asli agar konsisten)
         $validated = $request->validate([
-            'jumlah_inventor'     => ['required', 'integer', 'min:1', 'max:20'],
-            'jenis_cipta'         => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-            'jenis_cipta_lainnya' => ['nullable', 'string', 'max:255'],
-            'judul_ciptaan'       => ['required', 'string', 'max:255'],
-            'link_ciptaan'        => ['required', 'url'],
-            'berupa'              => ['required', 'string', 'max:255'],
-            'tanggal_pengisian'   => ['required', 'date'],
-            'tempat'              => ['required', 'string', 'max:100'],
-            'uraian'              => ['required', 'string', 'max:350'],
-            'inventor'            => ['required', 'array'],
-            'download_format'     => ['nullable', 'in:pdf,docx'],
-        ]);
+    'jumlah_inventor'        => ['required', 'integer', 'min:1', 'max:20'],
+    'jenis_cipta'            => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+    'jenis_cipta_lainnya'    => ['nullable', 'string', 'max:255'],
+    'judul_ciptaan'          => ['required', 'string', 'max:255'],
+    'link_ciptaan'           => ['required', 'url'],
+    'berupa'                 => ['required', 'string', 'max:255'],
+    'tanggal_pengisian'      => ['required', 'date'],
+    'tempat'                 => ['required', 'string', 'max:100'],
+    'uraian'                 => ['required', 'string', 'max:350'],
+
+    'inventor'               => ['required', 'array'],
+
+    'inventor.nama'          => ['required', 'array'],
+    'inventor.nama.*'        => ['required', 'string'],
+
+    'inventor.nik'           => ['required', 'array'],
+    'inventor.nik.*'         => ['required', 'string'],
+
+    'inventor.nip_nim'       => ['required', 'array'],
+    'inventor.nip_nim.*'     => ['required', 'string'],
+
+    'inventor.fakultas'      => ['required', 'array'],
+    'inventor.fakultas.*'    => ['required', 'string'],
+
+    'inventor.status'        => ['required', 'array'],
+    'inventor.status.*'      => ['required', 'string'],
+
+    'inventor.no_hp'         => ['required', 'array'],
+    'inventor.no_hp.*'       => ['required', 'string'],
+
+    'inventor.email'         => ['required', 'array'],
+    'inventor.email.*'       => ['required', 'email'],
+
+    'inventor.alamat'        => ['required', 'array'],
+    'inventor.alamat.*'      => ['required', 'string'],
+
+    'inventor.kode_pos'      => ['required', 'array'],
+    'inventor.kode_pos.*'    => ['required', 'string'],
+
+    'download_format'        => ['nullable', 'in:pdf,docx'],
+]);
+
+    $jumlah = (int) $request->jumlah_inventor;
+$actual = count($request->inventor['nama'] ?? []);
+
+if ($actual !== $jumlah) {
+    return back()->withErrors([
+        'inventor' => 'Jumlah inventor tidak sesuai.'
+    ])->withInput();
+}
 
         // 2. Simpan ke Session (Logika array_merge seperti file asli)
      $newPayload = [

@@ -733,22 +733,39 @@ public function uploadRevisi(Request $request, int $revisionId)
     DB::beginTransaction();
     try {
         $file = $request->file('file');
-        $original = $file->getClientOriginalName();
-        $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
 
-        $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
+$tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
 
-        $finalName = $safeName;
-        $counter = 1;
-        $base = pathinfo($finalName, PATHINFO_FILENAME);
-        $ext  = pathinfo($finalName, PATHINFO_EXTENSION);
+$source = DB::table($tableName)
+    ->where('id', $reqRow->ref_id)
+    ->first();
 
-        while (Storage::disk('public')->exists($dir.'/'.$finalName)) {
-            $finalName = "{$base}_{$counter}" . ($ext ? ".{$ext}" : "");
-            $counter++;
-        }
+$noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
+$safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
 
-        $path = $file->storeAs($dir, $finalName, 'public');
+// folder simpan file
+$dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
+
+$originalExt = $file->getClientOriginalExtension();
+
+if ($reqRow->doc_key === 'skema_tkt') {
+    $finalName = $safeNo . '_skema_tkt_7-9.' . $originalExt;
+} else {
+    $original = $file->getClientOriginalName();
+    $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
+    $finalName = $safeName;
+}
+
+$counter = 1;
+$base = pathinfo($finalName, PATHINFO_FILENAME);
+$ext  = pathinfo($finalName, PATHINFO_EXTENSION);
+
+while (Storage::disk('public')->exists($dir . '/' . $finalName)) {
+    $finalName = "{$base}_{$counter}" . ($ext ? ".{$ext}" : "");
+    $counter++;
+}
+
+$path = $file->storeAs($dir, $finalName, 'public');
         $fullPathForDb = 'storage/' . $path; // ✅ Path lengkap untuk tabel pendaftaran
 // 🚀 LOGIC REPLACING (SINKRONISASI KE TABEL UTAMA)
 $tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';

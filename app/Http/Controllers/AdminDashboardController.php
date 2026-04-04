@@ -1844,7 +1844,7 @@ if ($action === 'revisi') {
         $doc->saveAs($tmpDocx);
 
         // LibreOffice path
-        $soffice = 'D:\\Program Files\\LibreOffice\\program\\soffice.exe';;
+        $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';;
         if (!file_exists($soffice)) {
             @unlink($tmpDocx);
             throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");

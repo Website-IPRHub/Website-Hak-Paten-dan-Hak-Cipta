@@ -80,8 +80,16 @@ class DuplicateIsiFormController extends Controller
     'gambar_sampai'   => ['required','integer','gte:gambar_dari'],
 
     'download_format' => ['required','in:pdf,docx'],
+    'lampiran' => ['nullable', 'array'],
+'lampiran.*' => ['in:surat_kuasa,pengalihan,bukti_pemilikan,do_eo,dok_prioritas,dok_pct,jasad_renik,dok_lain'],
+'lampiran_lainnya' => ['nullable', 'string', 'max:1000'],
 ]);
 
+    if (count($data['inventor']['nama'] ?? []) !== (int)$data['jumlah_inventor']) {
+    return back()->withErrors([
+        'inventor' => 'Jumlah inventor tidak sesuai.'
+    ])->withInput();
+}
         // 2. SIMPAN KE SESSION (Agar data tidak hilang pas refresh)
         if ($refId) {
             session()->put($sessionKey, $data);
