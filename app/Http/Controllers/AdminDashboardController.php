@@ -1472,9 +1472,9 @@ if ($action === 'revisi') {
 
         // kirim email revisi
         try {
-            foreach ($emails as $to) {
-                Mail::to($to)->send(new RevisiMail($kategori, $judul, $no, $items));
-            }
+            // foreach ($emails as $to) {
+            //     Mail::to($to)->send(new RevisiMail($kategori, $judul, $no, $items));
+            // }
 
             // =====================================================
             // ✅ WA: MULTI NOMOR + PESAN LEBIH SOPAN + LINK LOGIN

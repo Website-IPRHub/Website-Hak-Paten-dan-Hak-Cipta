@@ -166,6 +166,29 @@ for ($i = 0; $i < $jumlah; $i++) {
         $verif->update($payload);
     }
 
+    $existingSpecific = session("hakcipta.form.{$verif->id}", []);
+
+session()->put("hakcipta.form.{$verif->id}", array_merge(
+    $existingSpecific,
+    [
+        'jumlah_inventor'      => $request->jumlah_inventor,
+        'jenis_cipta'          => $request->jenis_cipta,
+        'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya ?? ($existingSpecific['jenis_cipta_lainnya'] ?? ''),
+        'judul_ciptaan'        => $request->judul_ciptaan,
+        'link_ciptaan'         => $request->link_ciptaan ?? ($existingSpecific['link_ciptaan'] ?? ''),
+        'berupa'               => $request->berupa ?? ($existingSpecific['berupa'] ?? ''),
+        'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingSpecific['tanggal_pengisian'] ?? null),
+        'tempat'               => $request->tempat ?? ($existingSpecific['tempat'] ?? ''),
+        'uraian'               => $request->uraian ?? ($existingSpecific['uraian'] ?? ''),
+        'inventor'             => $request->inventor,
+        'nilai_perolehan'      => $request->nilai_perolehan ?? ($existingSpecific['nilai_perolehan'] ?? ''),
+        'sumber_dana'          => $request->sumber_dana ?? ($existingSpecific['sumber_dana'] ?? ''),
+        'skema_penelitian'     => $request->skema_penelitian ?? ($existingSpecific['skema_penelitian'] ?? ''),
+    ]
+));
+
+    session(['edit_ref_id' => $verif->id]);
+
     $nextRoute = route('ciptaverif.all', ['verif' => $verif->id]);
 
     if ($request->ajax() || $request->wantsJson()) {
@@ -307,6 +330,28 @@ for ($i = 0; $i < $jumlah; $i++) {
 
     $verif = HakCiptaVerif::create($payload);
 
+    session(['cipta_id' => $verif->id]);
+    session(['edit_ref_id' => $verif->id]);
+
+    $existingSpecific = session("hakcipta.form.{$verif->id}", []);
+
+session()->put("hakcipta.form.{$verif->id}", array_merge(
+    $existingSpecific,
+    [
+        'jumlah_inventor'      => $request->jumlah_inventor,
+        'jenis_cipta'          => $request->jenis_cipta,
+        'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya ?? ($existingSpecific['jenis_cipta_lainnya'] ?? ''),
+        'judul_ciptaan'        => $request->judul_ciptaan,
+        'link_ciptaan'         => $request->link_ciptaan ?? ($existingSpecific['link_ciptaan'] ?? ''),
+        'berupa'               => $request->berupa ?? ($existingSpecific['berupa'] ?? ''),
+        'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingSpecific['tanggal_pengisian'] ?? null),
+        'tempat'               => $request->tempat ?? ($existingSpecific['tempat'] ?? ''),
+        'uraian'               => $request->uraian ?? ($existingSpecific['uraian'] ?? ''),
+        'inventor'             => $request->inventor,
+    ]
+));
+
+    session(['edit_ref_id' => $verif->id]);
 
     return response()->json([
         'message'        => 'Pengajuan verifikasi hak cipta berhasil',
@@ -521,9 +566,30 @@ for ($i = 0; $i < $jumlah; $i++) {
         'submitted_at' => now(),
     ]);
 
+    session()->put('edit_ref_id', $verif->id);
+
+    $existingSpecific = session("hakcipta.form.{$verif->id}", []);
+$globalForm = session('hakcipta.form', []);
+
+session()->put("hakcipta.form.{$verif->id}", array_merge(
+    $existingSpecific,
+    [
+        'jumlah_inventor'      => $globalForm['jumlah_inventor'] ?? ($existingSpecific['jumlah_inventor'] ?? null),
+        'jenis_cipta'          => $globalForm['jenis_cipta'] ?? ($existingSpecific['jenis_cipta'] ?? null),
+        'jenis_cipta_lainnya'  => $globalForm['jenis_cipta_lainnya'] ?? ($existingSpecific['jenis_cipta_lainnya'] ?? ''),
+        'judul_ciptaan'        => $globalForm['judul_ciptaan'] ?? ($existingSpecific['judul_ciptaan'] ?? $verif->judul_cipta),
+        'link_ciptaan'         => $globalForm['link_ciptaan'] ?? ($existingSpecific['link_ciptaan'] ?? $verif->link_ciptaan),
+        'berupa'               => $globalForm['berupa'] ?? ($existingSpecific['berupa'] ?? ''),
+        'tanggal_pengisian'    => $globalForm['tanggal_pengisian'] ?? ($existingSpecific['tanggal_pengisian'] ?? null),
+        'tempat'               => $globalForm['tempat'] ?? ($existingSpecific['tempat'] ?? ''),
+        'uraian'               => $globalForm['uraian'] ?? ($existingSpecific['uraian'] ?? ''),
+        'inventor'             => $globalForm['inventor'] ?? ($existingSpecific['inventor'] ?? []),
+    ]
+));
+
     session()->forget('cipta_id');
     session()->forget('hakcipta.verif');
-    session()->forget('hakcipta.form');
+    //session()->forget('hakcipta.form');
 
     return redirect()->route('ciptaverif.hasil', ['verif' => $verif->id]);
 }

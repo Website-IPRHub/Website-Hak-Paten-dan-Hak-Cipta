@@ -104,8 +104,29 @@ public function index(Request $request)
     'inventor'            => $request->input('inventor', []),
 ];
 
-session()->put("hakcipta.form.$refId", $newPayload);
-session()->put('hakcipta.form', $newPayload);
+$existingSpecific = session("hakcipta.form.$refId", []);
+$existingGlobal   = session('hakcipta.form', []);
+
+session()->put("hakcipta.form.$refId", array_merge(
+    $existingSpecific,
+    [
+        'berupa' => $request->berupa ?? '',
+        'tempat' => $request->tempat ?? '',
+        'uraian' => $request->uraian ?? '',
+        'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+    ]
+));
+
+session()->put('hakcipta.form', array_merge(
+    $existingGlobal,
+    [
+        'berupa' => $request->berupa ?? '',
+        'tempat' => $request->tempat ?? '',
+        'uraian' => $request->uraian ?? '',
+        'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+    ]
+));
+
 session()->put('edit_ref_id', $refId);
 
 
