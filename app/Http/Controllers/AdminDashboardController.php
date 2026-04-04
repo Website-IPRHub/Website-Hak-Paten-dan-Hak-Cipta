@@ -1813,10 +1813,13 @@ if ($action === 'revisi') {
     {
         $meta = $this->getRowByType($type, $id);
 
-        $template = storage_path('app/templates/tanda_terima.docx');
-        if (!file_exists($template)) {
-            throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
-        }
+       $template = $type === 'paten'
+    ? storage_path('app/templates/tanda_terima_paten.docx')
+    : storage_path('app/templates/tanda_terima_hakcipta.docx');
+
+    if (!file_exists($template)) {
+        throw new \Exception("Template tanda terima tidak ditemukan: {$template}");
+    }
 
         $doc = new TemplateProcessor($template);
 
