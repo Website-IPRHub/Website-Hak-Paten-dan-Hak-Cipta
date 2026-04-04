@@ -25,7 +25,8 @@ html, body{
 
 .nip-warning,
 .nidn-warning,
-.hp-warning,
+.hp-warning, 
+.nik-warning,
 .email-warning {
   color: #e3342f;
   font-size: 12px;

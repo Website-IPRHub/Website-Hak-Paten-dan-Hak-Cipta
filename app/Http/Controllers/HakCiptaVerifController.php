@@ -24,6 +24,9 @@ class HakCiptaVerifController extends Controller
 
     $messages = [
         'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
+        'inventor.no_hp.*.regex'   => 'Nomor HP harus diawali 08 dan minimal 10 digit',
+        'inventor.email.*.email'   => 'Format email tidak valid',
+        'inventor.nik.*.regex'     => 'NIK harus terdiri dari 16 digit angka',
     ];
 
     $validated = $request->validate([
@@ -46,10 +49,10 @@ class HakCiptaVerifController extends Controller
     'inventor.nidn'        => ['nullable', 'array'],
 
     'inventor.nama.*'      => ['required', 'string', 'max:255'],
-    'inventor.nik.*'       => ['required', 'string', 'max:50'],
+    'inventor.nik.*' => ['required', 'regex:/^\d{16}$/'],
     'inventor.nip_nim.*'   => ['required', 'regex:/^.{14}$|^.{18}$/'],
     'inventor.fakultas.*'  => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
-    'inventor.no_hp.*'     => ['required', 'string', 'max:255'],
+    'inventor.no_hp.*' => ['required', 'regex:/^08[0-9]{8,13}$/'],
     'inventor.tlp_rumah.*' => ['nullable', 'string', 'max:50'],
     'inventor.email.*'     => ['required', 'email', 'max:255'],
     'inventor.alamat.*'    => ['required', 'string'],
@@ -215,6 +218,9 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
 
     $messages = [
         'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
+        'inventor.no_hp.*.regex'   => 'Nomor HP harus diawali 08 dan minimal 10 digit',
+        'inventor.email.*.email'   => 'Format email tidak valid',
+        'inventor.nik.*.regex'     => 'NIK harus terdiri dari 16 digit angka',
     ];
 
     $validated = $request->validate([
@@ -237,10 +243,10 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
     'inventor.nidn'        => ['nullable', 'array'],
 
     'inventor.nama.*'      => ['required', 'string', 'max:255'],
-    'inventor.nik.*'       => ['required', 'string', 'max:50'],
+    'inventor.nik.*' => ['required', 'regex:/^\d{16}$/'],
     'inventor.nip_nim.*'   => ['required', 'regex:/^.{14}$|^.{18}$/'],
     'inventor.fakultas.*'  => empty($enumFakultas) ? ['required', 'string'] : ['required', Rule::in($enumFakultas)],
-    'inventor.no_hp.*'     => ['required', 'string', 'max:255'],
+    'inventor.no_hp.*' => ['required', 'regex:/^08[0-9]{8,13}$/'],
     'inventor.tlp_rumah.*' => ['nullable', 'string', 'max:50'],
     'inventor.email.*'     => ['required', 'email', 'max:255'],
     'inventor.alamat.*'    => ['required', 'string'],

@@ -257,12 +257,28 @@
               <div class="inventor-col">
                 <div class="field">
                   <label class="label">No. HP <span class="req">*</span></label>
-                  <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required>
+                  <input type="text"
+                    class="input hp-input"
+                    name="inventor[no_hp][]"
+                    placeholder="Contoh: 081234567890"
+                    required>
+
+                  <small class="hp-warning">
+                    Nomor HP harus diawali 08 dan minimal 10 digit
+                  </small>
                 </div>
 
                 <div class="field">
                   <label class="label">Email <span class="req">*</span></label>
-                  <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required>
+                  <input type="email"
+                    class="input email-input"
+                    name="inventor[email][]"
+                    placeholder="nama@email.com"
+                    required>
+
+                  <small class="email-warning">
+                    Format email tidak valid
+                  </small>
                 </div>
 
                 <div class="field nidn-wrap" style="display:none;">
@@ -404,6 +420,58 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+});
+</script>
+
+<script>
+document.addEventListener("input", function (e) {
+  if (e.target.matches(".hp-input")) {
+    const value = e.target.value.trim();
+    const warning = e.target.parentElement.querySelector(".hp-warning");
+    const valid = /^08[0-9]{8,13}$/.test(value);
+
+    if (warning) {
+      warning.style.display = value === "" || valid ? "none" : "block";
+    }
+  }
+
+  if (e.target.matches(".email-input")) {
+    const value = e.target.value.trim();
+    const warning = e.target.parentElement.querySelector(".email-warning");
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+    if (warning) {
+      warning.style.display = value === "" || valid ? "none" : "block";
+    }
+  }
+
+  if (e.target.matches(".nip-input")) {
+    const value = e.target.value.trim();
+    const warning = e.target.parentElement.querySelector(".nip-warning");
+    const valid = /^\d{14}$|^\d{18}$/.test(value);
+
+    if (warning) {
+      warning.style.display = value === "" || valid ? "none" : "block";
+    }
+  }
+
+  if (e.target.matches(".nidn-input")) {
+    const value = e.target.value.trim();
+    const warning = e.target.parentElement.querySelector(".nidn-warning");
+    const valid = /^\d{8}$/.test(value);
+
+    if (warning) {
+      warning.style.display = value === "" || valid ? "none" : "block";
+    }
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(
+    ".nik-warning, .hp-warning, .email-warning, .nip-warning, .nidn-warning"
+  ).forEach(el => {
+    el.style.display = "none";
+  });
 });
 </script>
 
