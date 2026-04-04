@@ -23,6 +23,18 @@ html, body{
 
 }
 
+.nip-warning,
+.nidn-warning,
+.hp-warning,
+.email-warning {
+  color: #e3342f;
+  font-size: 12px;
+  display: none; /* default hidden */
+  margin-top: 4px;
+  font-weight: 500;
+  font-family: 'inter', sans-serif;
+}
+
 .judul p{
   font-size: 15px;
   font-family: 'Inter', sans-serif;

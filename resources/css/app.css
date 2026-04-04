@@ -321,6 +321,7 @@ html, body{
   text-align: justify;
   overflow-wrap: anywhere;
   margin-bottom: 20px;
+  font-family: 'inter', sans-serif;
 }
 
 .hero-card h1{

@@ -21,7 +21,11 @@ class PatenVerifController extends Controller
         $jumlah = (int) $request->input('jumlah_inventor', 1);
         $jumlah = max(1, min(20, $jumlah));
                 //eror
-        $messages = ['inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',];
+        $messages = [
+            'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
+            'inventor.no_hp.*.regex'   => 'Nomor HP harus diawali 08 dan hanya angka',
+            'inventor.email.*.email'   => 'Format email tidak valid',
+        ];
 
         $validated = $request->validate([
             'jumlah_inventor'  => ['required', 'integer', 'min:1', 'max:20'],
@@ -39,8 +43,8 @@ class PatenVerifController extends Controller
             'inventor.nama.*'        => ['required', 'string', 'max:255'],
             'inventor.nip_nim.*'     => ['required', 'regex:/^.{14}$|^.{18}$/'],
             'inventor.fakultas.*'    => empty($enumFakultas) ? ['required','string'] : ['required', Rule::in($enumFakultas)],
-            'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
-            'inventor.email.*'       => ['required', 'email', 'max:255'],
+            'inventor.no_hp.*'  => ['required', 'regex:/^08[0-9]{8,13}$/'],
+            'inventor.email.*'  => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
             'inventor.nidn'   => ['required', 'array', "size:$jumlah"],
             'inventor.nidn.*' => ['nullable', 'string', 'max:255'],
@@ -210,8 +214,10 @@ if ($action === 'prev') {
         $jumlah = (int) $request->input('jumlah_inventor', 1);
         $jumlah = max(1, min(20, $jumlah));
         $messages = [
-    'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
-];
+            'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
+            'inventor.no_hp.*.regex'   => 'Nomor HP harus diawali 08 dan hanya angka',
+            'inventor.email.*.email'   => 'Format email tidak valid',
+        ];
 
         $validated = $request->validate([
             'jumlah_inventor'  => ['required', 'integer', 'min:1', 'max:20'],
@@ -229,8 +235,8 @@ if ($action === 'prev') {
             'inventor.nama.*'        => ['required', 'string', 'max:255'],
             'inventor.nip_nim.*'     => ['required', 'regex:/^.{14}$|^.{18}$/'],
             'inventor.fakultas.*'    => empty($enumFakultas) ? ['required','string'] : ['required', Rule::in($enumFakultas)],
-            'inventor.no_hp.*'       => ['required', 'string', 'max:255'],
-            'inventor.email.*'       => ['required', 'email', 'max:255'],
+            'inventor.no_hp.*' => ['required', 'regex:/^08[0-9]{8,13}$/'],
+            'inventor.email.*' => ['required', 'email', 'max:255'],
             'inventor.status.*'      => ['required', 'in:Dosen,Mahasiswa'],
             'inventor.nidn'   => ['required', 'array', "size:$jumlah"],
             'inventor.nidn.*' => ['nullable', 'string', 'max:255'],
