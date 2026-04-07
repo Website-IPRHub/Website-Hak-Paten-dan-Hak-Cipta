@@ -13,10 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
         oldInventor = {};
     }
 
-    // 1. NORMALISASI DATA (Biar sinkron Gede/Kecil)
-    // 1. NORMALISASI DATA (Biar sinkron Gede/Kecil)
-// 1. NORMALISASI DATA (FIX: Sinkronisasi NIK Gede/Kecil)
-// 1. NORMALISASI DATA (FIX: Sinkronisasi NIK Gede/Kecil)
    const normalizeOldInventor = (raw) => {
     if (!raw || Array.isArray(raw)) return {};
     if (raw.nama && Array.isArray(raw.nama)) {
@@ -29,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return raw;
 };
 
-    // 2. FUNGSI PENGISI DATA (LENGKAP DENGAN FIX NIK ILANG)
    const fillFromOld = (root, idx, snap) => {
     // Daftar kunci (pake nik kecil sesuai Blade lo)
     const keys = ["nama", "nik", "nip_nim", "fakultas", "status", "no_hp", "email", "alamat", "kode_pos", "tlp_rumah"];
@@ -38,9 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const el = root.querySelector(`[name="inventor[${k}][]"]`);
         if (!el) return;
 
-        // ✅ LOGIKA SAKTI PATEN: 
-        // 1. Cek apa yang baru diketik di layar (snap)
-        // 2. Kalau layar kosong, baru ambil dari gudang (oldInventor)
         const snapVal = snap[`inventor[${k}][]`]?.[idx];
         const sessionVal = oldInventor?.[k]?.[idx];
         
@@ -48,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (val) el.value = val;
     });
 };
-    // 3. LOGIC STATUS (DOSEN/MAHASISWA)
+
     const applyStatusLogic = (card) => {
         const statusSelect = card.querySelector('[name="inventor[status][]"]');
         const nidnField = card.querySelector(".nidn-wrap") || card.querySelector(".nidn-field");
@@ -72,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 4. SNAPSHOT (Penting buat nangkep Alamat/Textarea)
     const snapshotCurrent = () => {
         const snap = {};
         if (!container) return snap;
@@ -85,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return snap;
     };
 
-    // 5. RENDERER UTAMA
    function renderInventors(count) {
         if (!container || !tpl) return;
 
@@ -97,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const card = node.querySelector(".inventor-card");
             if (node.querySelector(".inv-no")) node.querySelector(".inv-no").textContent = (i + 1);
 
-            // ✅ Kirim 'snap' ke sini biar data ketikan gak ilang!
             fillFromOld(node, i, snap);
 
             if (card) applyStatusLogic(card);

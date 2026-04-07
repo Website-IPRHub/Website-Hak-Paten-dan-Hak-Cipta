@@ -16,10 +16,10 @@
     @vite(['resources/css/admin.css', 'resources/js/app.js', 'resources/js/admin/dashboard.js'])
 
     {{-- daterangepicker --}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1/daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1/daterangepicker.min.js"></script>
 
 
 </head>
@@ -76,7 +76,6 @@
 @php
     $tab = $tab ?? 'stats';
 
-    // LABEL untuk verifikasi dokumen (dipakai PATEN & CIPTA)
     $docLabels = [
         // PATEN
         'draft_paten' => 'Draft Paten',
@@ -130,7 +129,7 @@
 
     <main class="dash-content">
 
-        {{-- ================= TAB: STATS (statistik kamu tetap) ================= --}}
+        {{-- ================= TAB: STATISTIK ================= --}}
         @if($tab === 'stats')
             <section class="stats-wrap">
 
@@ -187,7 +186,6 @@
                   </div>
                 </div>
 
-                {{-- ✅ BARU: horizontal bar fakultas (kayak contoh) --}}
                 <div class="stats-charts">
                   <div class="chart-card" style="grid-column: 1 / -1;">
                     <div class="chart-title">Fakultas Pengajuan (Total / Paten / Cipta)</div>
@@ -198,199 +196,196 @@
         @endif
 
         {{-- ================= TAB: DATA HAK CIPTA (STYLE = PATEN) ================= --}}
-@if($tab === 'cipta')
-  <div class="page-head page-head--cipta">
-    <h2 class="page-title">Data Hak Cipta</h2>
+        @if($tab === 'cipta')
+          <div class="page-head page-head--cipta">
+            <h2 class="page-title">Data Hak Cipta</h2>
 
-    <div class="page-actions page-actions--cipta">
+            <div class="page-actions page-actions--cipta">
 
-      {{-- ===== FILTER BAR (sama kayak PATEN) ===== --}}
-      <form method="GET" action="{{ url()->current() }}" class="filters-bar" id="ciptaFilters">
-        <input type="hidden" name="tab" value="{{ request('tab','cipta') }}">
-        <input type="hidden" name="sub" value="{{ request('sub') }}">
+              {{-- ===== FILTER BAR (sama kayak PATEN) ===== --}}
+              <form method="GET" action="{{ url()->current() }}" class="filters-bar" id="ciptaFilters">
+                <input type="hidden" name="tab" value="{{ request('tab','cipta') }}">
+                <input type="hidden" name="sub" value="{{ request('sub') }}">
 
-        <div class="filters-label">FILTERS</div>
+                <div class="filters-label">FILTERS</div>
 
-        {{-- STATUS --}}
-        <div class="filter-item">
-          <label>Status</label>
-          <select name="status" class="input">
-            <option value="">Semua</option>
-            @foreach(['terkirim','proses','revisi','approve'] as $st)
-              <option value="{{ $st }}" {{ request('status')===$st ? 'selected' : '' }}>
-                {{ strtoupper($st) }}
-              </option>
-            @endforeach
-          </select>
-        </div>
+                {{-- STATUS --}}
+                <div class="filter-item">
+                  <label>Status</label>
+                  <select name="status" class="input">
+                    <option value="">Semua</option>
+                    @foreach(['terkirim','proses','revisi','approve'] as $st)
+                      <option value="{{ $st }}" {{ request('status')===$st ? 'selected' : '' }}>
+                        {{ strtoupper($st) }}
+                      </option>
+                    @endforeach
+                  </select>
+                </div>
 
-        {{-- JENIS (ambil dari $jenisCiptaList kalau ada, kalau belum ada -> aku kasih fallback kosong) --}}
-        <div class="filter-item">
-          <label>Jenis</label>
-          <select name="jenis" class="input">
-            <option value="">Semua</option>
-            @foreach(($jenisList ?? []) as $j)
-              <option value="{{ $j }}" {{ request('jenis')===$j ? 'selected' : '' }}>
-                {{ $j }}
-              </option>
-            @endforeach
-          </select>
-        </div>
+                <div class="filter-item">
+                  <label>Jenis</label>
+                  <select name="jenis" class="input">
+                    <option value="">Semua</option>
+                    @foreach(($jenisList ?? []) as $j)
+                      <option value="{{ $j }}" {{ request('jenis')===$j ? 'selected' : '' }}>
+                        {{ $j }}
+                      </option>
+                    @endforeach
+                  </select>
+                </div>
 
-        {{-- DATE RANGE --}}
-        <div class="filter-item">
-          <label>Tanggal</label>
+                {{-- DATE RANGE --}}
+                <div class="filter-item">
+                  <label>Tanggal</label>
 
-          <div class="date-range-wrap">
-            <span class="date-ic">📅</span>
-            <input type="text"
-              id="dateRangeCipta"
-              class="input date-range-input"
-              placeholder="YYYY-MM-DD - YYYY-MM-DD"
-              value="{{ request('from') && request('to') ? request('from').' - '.request('to') : '' }}"
-              autocomplete="off"
-            >
-            <button type="button" class="date-clear" id="clearDateRangeCipta" title="Clear">×</button>
+                  <div class="date-range-wrap">
+                    <span class="date-ic">📅</span>
+                    <input type="text"
+                      id="dateRangeCipta"
+                      class="input date-range-input"
+                      placeholder="YYYY-MM-DD - YYYY-MM-DD"
+                      value="{{ request('from') && request('to') ? request('from').' - '.request('to') : '' }}"
+                      autocomplete="off"
+                    >
+                    <button type="button" class="date-clear" id="clearDateRangeCipta" title="Clear">×</button>
+                  </div>
+
+                  <input type="hidden" name="from" id="fromDateCipta" value="{{ request('from') }}">
+                  <input type="hidden" name="to" id="toDateCipta" value="{{ request('to') }}">
+                </div>
+
+                <div class="filter-actions">
+                  <button type="submit" class="btn-apply">Apply</button>
+                  <a href="{{ route('admin.dashboard',['tab'=>'cipta']) }}" class="btn-remove">Remove</a>
+                </div>
+              </form>
+
+              {{-- ===== EXPORT BUTTONS ===== --}}
+              <a class="btn-mini" href="{{ route('admin.cipta.export_excel') }}" title="Download Excel">
+                <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:32px;height:32px;vertical-align:middle;">
+                Excel
+              </a>
+
+              <a class="btn-mini" href="{{ route('admin.cipta.export_pdf') }}" title="Download PDF">
+                <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:32px;height:32px;">
+                PDF
+              </a>
+
+              <a class="btn-mini" href="{{ route('admin.cipta.export_csv') }}" title="Download CSV">
+                <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:32px;height:32px;">
+                CSV
+              </a>
+
+              <input id="searchCipta" class="search-input search-input--cipta" type="text" placeholder="Cari..." />
+            </div>
           </div>
 
-          <input type="hidden" name="from" id="fromDateCipta" value="{{ request('from') }}">
-          <input type="hidden" name="to" id="toDateCipta" value="{{ request('to') }}">
-        </div>
+          {{-- SUCCESS ALERT --}}
+          @if(session('admin_success'))
+            <div class="alert-success">
+              <div>{{ session('success') }}</div>
 
-        <div class="filter-actions">
-          <button type="submit" class="btn-apply">Apply</button>
-          <a href="{{ route('admin.dashboard',['tab'=>'cipta']) }}" class="btn-remove">Remove</a>
-        </div>
-      </form>
+              @if(session('wa_link'))
+                <div style="margin-top:10px;">
+                  <a class="btn-mini" target="_blank" href="{{ session('wa_link') }}">
+                    {{ session('wa_label') ?? 'Kirim WhatsApp' }}
+                  </a>
+                </div>
+              @endif
+            </div>
+          @endif
 
-      {{-- ===== EXPORT BUTTONS ===== --}}
-      <a class="btn-mini" href="{{ route('admin.cipta.export_excel') }}" title="Download Excel">
-        <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:32px;height:32px;vertical-align:middle;">
-        Excel
-      </a>
+          {{-- TABLE --}}
+          <div class="table-card table-scroll">
+            <table class="data-table table-wide" id="ciptaTable">
+              <thead>
+                <tr>
+                  <th style="width:60px;">No</th>
+                    <th style="width:110px;">Tanggal</th>
+                    <th style="width:160px;">No Pendaftaran</th>
+                    <th>Judul</th>
+                    <th style="width:170px;">Jenis</th>
+                    <th style="width:130px;">Status</th>
+                    <th style="width:140px;">Aksi</th>
+                  </tr>
+                </thead>
 
-      <a class="btn-mini" href="{{ route('admin.cipta.export_pdf') }}" title="Download PDF">
-        <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:32px;height:32px;">
-        PDF
-      </a>
+              <tbody>
+          @forelse($dataCipta as $i => $row)
+            @php
+              $ciptaKey = strtolower(implode(' ', array_filter([
+                $row->no_pendaftaran ?? '',
+                $row->judul_cipta ?? '',
+                $row->jenis_cipta ?? '',
+                $row->status ?? '',
+              ])));
+            @endphp
 
-      <a class="btn-mini" href="{{ route('admin.cipta.export_csv') }}" title="Download CSV">
-        <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:32px;height:32px;">
-        CSV
-      </a>
+            <tr data-key="{{ $ciptaKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
+              <td>{{ $i+1 }}</td>
 
-      <input id="searchCipta" class="search-input search-input--cipta" type="text" placeholder="Cari..." />
-    </div>
-  </div>
+              {{-- TANGGAL --}}
+              <td style="white-space:nowrap;">
+                {{ \Carbon\Carbon::parse($row->created_at)->format('d M Y') }}
+              </td>
 
-  {{-- SUCCESS ALERT --}}
-  @if(session('admin_success'))
-    <div class="alert-success">
-      <div>{{ session('success') }}</div>
+              <td>{{ $row->no_pendaftaran ?? '-' }}</td>
 
-      @if(session('wa_link'))
-        <div style="margin-top:10px;">
-          <a class="btn-mini" target="_blank" href="{{ session('wa_link') }}">
-            {{ session('wa_label') ?? 'Kirim WhatsApp' }}
-          </a>
-        </div>
-      @endif
-    </div>
-  @endif
+              {{-- JUDUL --}}
+              <td>
+                <div class="title-main">{{ $row->judul_cipta ?? '-' }}</div>
+              </td>
 
-  {{-- TABLE --}}
-  <div class="table-card table-scroll">
-    <table class="data-table table-wide" id="ciptaTable">
-      <thead>
-        <tr>
-          <th style="width:60px;">No</th>
-            <th style="width:110px;">Tanggal</th>
-            <th style="width:160px;">No Pendaftaran</th>
-            <th>Judul</th>
-            <th style="width:170px;">Jenis</th>
-            <th style="width:130px;">Status</th>
-            <th style="width:140px;">Aksi</th>
-          </tr>
-        </thead>
+              {{-- JENIS --}}
+              <td>
+                @php
+                  $jenis = $row->jenis_cipta ?? '-';
+                  if (strtolower($jenis) === 'lainnya') $jenis = $row->jenis_lainnya ?? 'Lainnya';
+                @endphp
+                {{ $jenis }}
+              </td>
 
-      <tbody>
-  @forelse($dataCipta as $i => $row)
-    @php
-      $ciptaKey = strtolower(implode(' ', array_filter([
-        $row->no_pendaftaran ?? '',
-        $row->judul_cipta ?? '',
-        $row->jenis_cipta ?? '',
-        $row->status ?? '',
-      ])));
-    @endphp
+              {{-- STATUS --}}
+              <td>
+                <span class="status-pill s-{{ strtolower($row->status) }}">
+                  {{ strtoupper($row->status) }}
+                </span>
+              </td>
 
-    <tr data-key="{{ $ciptaKey }}" data-nop="{{ strtolower($row->no_pendaftaran ?? '') }}">
-      <td>{{ $i+1 }}</td>
+              {{-- AKSI --}}
+              <td class="cell-actions">
+                <a class="btn-mini" href="{{ route('admin.cipta.detail', $row->id) }}">Lihat Detail</a>
+              </td>
+            </tr>
+          @empty
+            <tr><td colspan="7" class="center muted">Belum ada data cipta</td></tr>
+          @endforelse
+        </tbody>
 
-      {{-- TANGGAL --}}
-      <td style="white-space:nowrap;">
-        {{ \Carbon\Carbon::parse($row->created_at)->format('d M Y') }}
-      </td>
+            </table>
+          </div>
 
-      <td>{{ $row->no_pendaftaran ?? '-' }}</td>
+          <div class="table-footer" data-pager="cipta">
+            <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
 
-      {{-- JUDUL --}}
-      <td>
-        <div class="title-main">{{ $row->judul_cipta ?? '-' }}</div>
-      </td>
+            <div class="table-controls">
+              <label class="entries-wrap">
+                Show
+                <select class="entries-select" data-entries>
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="200">200</option>
+                </select>
+                entries
+              </label>
 
-      {{-- JENIS --}}
-      <td>
-        @php
-          $jenis = $row->jenis_cipta ?? '-';
-          if (strtolower($jenis) === 'lainnya') $jenis = $row->jenis_lainnya ?? 'Lainnya';
-        @endphp
-        {{ $jenis }}
-      </td>
-
-      {{-- STATUS --}}
-      <td>
-        <span class="status-pill s-{{ strtolower($row->status) }}">
-          {{ strtoupper($row->status) }}
-        </span>
-      </td>
-
-      {{-- AKSI --}}
-      <td class="cell-actions">
-        <a class="btn-mini" href="{{ route('admin.cipta.detail', $row->id) }}">Lihat Detail</a>
-      </td>
-    </tr>
-  @empty
-    <tr><td colspan="7" class="center muted">Belum ada data cipta</td></tr>
-  @endforelse
-</tbody>
-
-    </table>
-  </div>
-
-  <div class="table-footer" data-pager="cipta">
-    <div class="table-info" data-info>Showing 0 to 0 of 0 entries</div>
-
-    <div class="table-controls">
-      <label class="entries-wrap">
-        Show
-        <select class="entries-select" data-entries>
-          <option value="10">10</option>
-          <option value="20" selected>20</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="200">200</option>
-        </select>
-        entries
-      </label>
-
-      <div class="pagination" data-pagination></div>
-    </div>
-  </div>
-@endif
-
-
+              <div class="pagination" data-pagination></div>
+            </div>
+          </div>
+        @endif
 
        {{-- ================= TAB: DATA PATEN ================= --}}
         @if($tab === 'paten')
@@ -456,27 +451,27 @@
           <button type="submit" class="btn-apply">Apply</button>
           <a href="{{ route('admin.dashboard',['tab'=>'paten']) }}" class="btn-remove">Remove</a>
         </div>
-      </form>  {{-- ✅ WAJIB DI SINI, JANGAN LUPA --}}
+      </form>  
 
-    {{-- ===== EXPORT BUTTONS (tetep pakai gambar) ===== --}}
-    <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
-      <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:32px;height:32px;vertical-align:middle;">
-      Excel
-    </a>
+      {{-- ===== EXPORT BUTTONS (tetep pakai gambar) ===== --}}
+      <a class="btn-mini" href="{{ route('admin.paten.export_excel') }}" title="Download Excel">
+        <img src="{{ asset('images/excel.png') }}" alt="Excel" style="width:32px;height:32px;vertical-align:middle;">
+        Excel
+      </a>
 
-    <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
-      <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:32px;height:32px;">
-      PDF
-    </a>
+      <a class="btn-mini" href="{{ route('admin.paten.export_pdf') }}" title="Download PDF">
+        <img src="{{ asset('images/pdf.png') }}" alt="PDF" style="width:32px;height:32px;">
+        PDF
+      </a>
 
-    <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
-      <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:32px;height:32px;">
-      CSV
-    </a>
+      <a class="btn-mini" href="{{ route('admin.paten.export_csv') }}" title="Download CSV">
+        <img src="{{ asset('images/csv.png') }}" alt="CSV" style="width:32px;height:32px;">
+        CSV
+      </a>
 
-    <input id="searchPaten" class="search-input search-input--paten" type="text" placeholder="Cari..." />
+      <input id="searchPaten" class="search-input search-input--paten" type="text" placeholder="Cari..." />
+    </div>
   </div>
-</div>
 
 
         @if(session('success'))
@@ -707,7 +702,7 @@
         <p class="muted page-desc">
           Daftar dokumen revisi yang sudah diupload pemohon (siap dicek admin).
         </p>
-      </div> {{-- ✅ tutup title --}}
+      </div> 
     </div>
 
     {{-- ROW 2: FILTER + SEARCH --}}
@@ -761,7 +756,6 @@
         </div>
       </form>
 
-      {{-- ✅ SEARCH: taruh di luar form biar ga ikut submit filter --}}
       <input id="searchRevisi" class="search-input search-input--revisi"
              type="text" placeholder="Cari..." />
     </div>
@@ -789,7 +783,6 @@
               // ini dari controller: $row->revisi_masuk (rows dari table revisions)
               $items = collect($row->revisi_masuk ?? []);
 
-              // ✅ gabung semua isi revisi biar search bisa "apa saja"
               $itemsBlob = $items->map(function($rv) use ($docLabels) {
                 return implode(' ', array_filter([
                   $rv->doc_key ?? '',
@@ -982,7 +975,6 @@
   </div>
 </div>
 
-{{-- ✅ Data chart dipindah ke JSON (JS yang render) --}}
 @if($tab === 'stats')
   @php
     $fLabels = array_keys($allFakultasMap);
@@ -1009,7 +1001,6 @@
         'dosen'     => [(int)$patenDosen, (int)$ciptaDosen],
       ],
 
-      // ✅ fakultas (sejajar urutan label)
       'fakultas' => [
         'labels' => $fLabels,
         'all'    => $fAll,

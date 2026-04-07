@@ -5,7 +5,7 @@
   $name = $name ?? 'Admin';
   $notifCount = $notifCount ?? 0;
 
-  // arah lonceng
+  // lonceng
   $notifUrl = route('admin.dashboard', ['tab' => 'status', 'sub' => 'revisi']);
 
   $docLabels = [
@@ -16,43 +16,34 @@
     'hasil_ciptaan'    => 'Hasil Ciptaan',
   ];
   $docKeys = array_keys($docLabels);
-
-  // ✅ dokumen revisi yang punya inputan dari isi formulir (jadi boleh Edit)
   $editableDocKeysByType = [
     'cipta' => ['surat_permohonan','surat_pernyataan','surat_pengalihan'],
     'paten' => ['form_permohonan','surat_kepemilikan','surat_pengalihan'],
   ];
 
-  // ✅ karena ini file cipta detail
   $editableDocKeys = $editableDocKeysByType['cipta'];
-
   // pencipta
   $inventors = $row->inventors_arr ?? [];
-
-  // incoming revisi (wajib ada biar mirip paten)
   $incomingByDoc = collect($incomingByDoc ?? []);
 
-// kalau dari controller ternyata masih flat list (bukan keyed by doc_key),
-// kita group di sini biar aman.
-$isKeyedByDoc = $incomingByDoc->keys()->contains(fn($kk) => in_array($kk, $docKeys, true));
+  $isKeyedByDoc = $incomingByDoc->keys()->contains(fn($kk) => in_array($kk, $docKeys, true));
 
-if (!$isKeyedByDoc) {
-  $incomingByDoc = $incomingByDoc->groupBy(function ($x) {
-    return data_get($x, 'doc_key'); // aman buat array/object/collection
-  });
-}
+  if (!$isKeyedByDoc) {
+    $incomingByDoc = $incomingByDoc->groupBy(function ($x) {
+      return data_get($x, 'doc_key'); // aman buat array/object/collection
+    });
+  }
 
 
-$allDocStatuses = collect($docKeys)->map(
-  fn($k) => strtolower((string) data_get(data_get($row,'docs'), "$k.status", 'pending'))
-);
+    $allDocStatuses = collect($docKeys)->map(
+      fn($k) => strtolower((string) data_get(data_get($row,'docs'), "$k.status", 'pending'))
+    );
 
-$hasAnyRevisi = $allDocStatuses->contains(fn($st) => $st === 'revisi');
-$allCheckedOk = $allDocStatuses->every(fn($st) => $st === 'ok');
+    $hasAnyRevisi = $allDocStatuses->contains(fn($st) => $st === 'revisi');
+    $allCheckedOk = $allDocStatuses->every(fn($st) => $st === 'ok');
 
-$canSend = $hasAnyRevisi;
-$canApprove = $allCheckedOk && !$hasAnyRevisi;
-
+    $canSend = $hasAnyRevisi;
+    $canApprove = $allCheckedOk && !$hasAnyRevisi;
 
 @endphp
 
@@ -65,11 +56,7 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
   <title>Detail Hak Cipta</title>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  {{-- base --}}
   @vite(['resources/css/admin.css', 'resources/js/app.js'])
-
-  {{-- pake css & js yang sama dengan paten --}}
   @vite([
     'resources/css/lihatdetail.css',
     'resources/js/admin/lihatdetail.js'
@@ -335,7 +322,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
                     $hasSourceValue = !empty($filePath);
                     $canRevisi = $hasSourceValue;
 
-                    // ambil bucket cycles untuk doc ini
                     $bucket = null;
 
                     if ($incomingByDoc instanceof \Illuminate\Support\Collection && $incomingByDoc->has($k)) {
@@ -352,7 +338,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
 
                     $cyclesSorted = $cycles;
 
-                  // flag untuk show/hide revisi box (dipakai di incoming-wrap)
                     $hasPemohonUpload = $cyclesSorted->contains(function($x){
                       return data_get($x,'from_role') === 'pemohon'
                         && in_array(data_get($x,'state'), ['submitted','uploaded'], true)
@@ -362,13 +347,11 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
                     // admin revisi = status dokumen revisi ATAU note admin ada
                     $hasAdminRevisi = ($statusDoc === 'revisi') || (trim((string)$note) !== '');
 
-                    // ✅ ambil ADMIN request terakhir (paling baru)
                     $lastAdminReq = $cycles->first(function($x){
                       return data_get($x,'from_role') === 'admin'
                         && in_array(data_get($x,'state'), ['requested','closed'], true);
                     });
 
-                    // ✅ ambil SUBMITTED pemohon terakhir SETELAH request admin tsb
                     $lastPemohonSub = null;
                     if ($lastAdminReq) {
                       $lastPemohonSub = $cycles->first(function($x) use ($lastAdminReq){
@@ -379,7 +362,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
                       });
                     }
 
-                    // ✅ yang dipakai tampilan (1 baris saja)
                     $displayNote = trim((string) data_get($lastAdminReq,'note','')) ?: '-';
 
                     $displayFilePath = data_get($lastPemohonSub,'pemohon_file_path');
@@ -389,29 +371,29 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
                     $displayTimeRaw = data_get($lastPemohonSub,'pemohon_uploaded_at')
                         ?: data_get($lastPemohonSub,'created_at');
                     // =======================
-// ✅ DOT STATUS
-// merah = admin sudah minta revisi tapi pemohon belum upload
-// hijau = pemohon sudah pernah upload revisi
-// tetap hijau walaupun setelah itu admin klik OK
-// =======================
-$showDot  = false;
-$dotClass = null;
+                    // DOT STATUS
+                    // merah = admin sudah minta revisi tapi pemohon belum upload
+                    // hijau = pemohon sudah pernah upload revisi
+                    // tetap hijau walaupun setelah itu admin klik OK
+                    // =======================
+                    $showDot  = false;
+                    $dotClass = null;
 
-// ✅ PRIORITAS TERTINGGI: kalau status sudah OK → pasti hijau
-if ($statusDoc === 'ok') {
-  $showDot = true;
-  $dotClass = 'green';
-}
+                    // kalau status sudah OK → pasti hijau
+                    if ($statusDoc === 'ok') {
+                      $showDot = true;
+                      $dotClass = 'green';
+                    }
 
-// ✅ kalau belum OK, lihat histori revisi
-elseif ($hasAdminRevisi) {
-  $showDot = true;
-  $dotClass = $hasPemohonUpload ? 'green' : 'red';
-}
+                    // ✅ kalau belum OK, lihat histori revisi
+                    elseif ($hasAdminRevisi) {
+                      $showDot = true;
+                      $dotClass = $hasPemohonUpload ? 'green' : 'red';
+                    }
 
-$dotTitle = ($dotClass === 'green')
-  ? 'Pemohon sudah upload revisi'
-  : 'Menunggu upload revisi pemohon';
+                    $dotTitle = ($dotClass === 'green')
+                      ? 'Pemohon sudah upload revisi'
+                      : 'Menunggu upload revisi pemohon';
                   @endphp
 
 
@@ -430,7 +412,6 @@ $dotTitle = ($dotClass === 'green')
 
                       @if($filePath)
                         @php
-                          // kalau mau tampil nama aslinya (kalau ada di docs), fallback ke basename
                           $displayName = optional($doc)->pemohon_file_name
                             ?: (optional($doc)->pemohon_file_name_display ?: basename($filePath));
                         @endphp
@@ -510,7 +491,6 @@ $dotTitle = ($dotClass === 'green')
                     </div>
                   </div>
 
-                {{-- REVISI box hanya muncul kalau admin revisi atau pemohon sudah upload --}}
               <div class="incoming-wrap" data-incoming-wrap {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
                 <div class="incoming-title">Revisi</div>
 
@@ -534,7 +514,7 @@ $dotTitle = ($dotClass === 'green')
                   // cycles hasil buildRevisionCycles()
                   $adminNote = trim((string)($note ?? ''));
 
-                  // ✅ jumlah row yang tampil di "Detail Revisi"
+                  // jumlah row yang tampil di "Detail Revisi"
                   $displayCount = $cycles->count();
                   if ($displayCount === 0 && $adminNote !== '') {
                     $displayCount = 1;
@@ -556,7 +536,6 @@ $dotTitle = ($dotClass === 'green')
             {{-- fallback: kalau belum ada cycle (admin belum kirim), tapi ada note --}}
             @if($cycles->count() === 0 && $adminNote !== '')
               @php
-                // fallback note (pasti ada)
                 $raw = trim((string) $adminNote);
               @endphp
 
@@ -583,7 +562,6 @@ $dotTitle = ($dotClass === 'green')
 
               <div class="note-long">{{ $full }}</div>
 
-              {{-- ✅ tombol tutup di bawah isi --}}
               <button type="button" class="note-close">Tutup</button>
             </details>
             @else
@@ -601,39 +579,28 @@ $dotTitle = ($dotClass === 'green')
               @php
                 $hasFile = !empty(data_get($cy,'pemohon_file_path'));
 
-                // 1) default dari cycle row (kalau ada)
                 $noteTextRaw = trim((string) data_get($cy, 'note', ''));
+                if ($noteTextRaw === '' && $hasFile) {
 
-              // 2) kalau row ini submitted pemohon (punya file) tapi note kosong,
-            //    ambil note ADMIN yang paling dekat SEBELUM row pemohon ini (biar ga ke-replace)
-            if ($noteTextRaw === '' && $hasFile) {
+                  // admin request terdekat SEBELUM pemohon upload ini
+                  $pairedAdmin = $cycles->first(function($x) use ($cy) {
+                    return data_get($x,'from_role') === 'admin'
+                      && in_array(data_get($x,'state'), ['requested','closed'], true)
+                      && (data_get($x,'id') < data_get($cy,'id'));
+                  });
 
-              // admin request terdekat SEBELUM pemohon upload ini
-              $pairedAdmin = $cycles->first(function($x) use ($cy) {
-                return data_get($x,'from_role') === 'admin'
-                  && in_array(data_get($x,'state'), ['requested','closed'], true)
-                  && (data_get($x,'id') < data_get($cy,'id'));
-              });
+                  $noteTextRaw = trim((string) data_get($pairedAdmin, 'note', ''));
+                  if ($noteTextRaw === '' && $lastAdminReq && (data_get($lastAdminReq,'id') < data_get($cy,'id'))) {
+                    $noteTextRaw = trim((string) data_get($lastAdminReq, 'note', ''));
+                  }
 
-              // coba ambil note dari cycle admin (kalau ada)
-              $noteTextRaw = trim((string) data_get($pairedAdmin, 'note', ''));
+                  // terakhir: kalau masih kosong, baru '-'
+                  if ($noteTextRaw === '') {
+                    $noteTextRaw = '-';
+                  }
+                }
 
-              // ✅ fallback aman:
-              // pakai lastAdminReq HANYA kalau lastAdminReq itu memang sebelum row pemohon ini
-              if ($noteTextRaw === '' && $lastAdminReq && (data_get($lastAdminReq,'id') < data_get($cy,'id'))) {
-                $noteTextRaw = trim((string) data_get($lastAdminReq, 'note', ''));
-              }
-
-              // terakhir: kalau masih kosong, baru '-'
-              if ($noteTextRaw === '') {
-                $noteTextRaw = '-';
-              }
-            }
-
-                // 3) final
                 $noteText = ($noteTextRaw !== '') ? $noteTextRaw : '-';
-
-                // waktu update pemohon valid hanya kalau ada file pemohon
                 $timeRaw = $hasFile
                   ? (data_get($cy,'pemohon_uploaded_at') ?? data_get($cy,'created_at') ?? null)
                   : null;
@@ -643,13 +610,12 @@ $dotTitle = ($dotClass === 'green')
                 {{-- CATATAN --}}
                 <div class="incoming-cell">
                   @php
-              $full = trim((string) $noteText);                 // atau $raw / $adminNote
+              $full = trim((string) $noteText);                
               $preview = \Illuminate\Support\Str::limit(
                 preg_replace("/\r\n|\r|\n/", " ", $full),
                 80
               );
 
-              // tampilkan tombol kalau memang kepotong (server-side) ATAU ada newline banyak
               $more = mb_strlen(preg_replace("/\r\n|\r|\n/", " ", $full)) > 80
                     || preg_match("/\r\n|\r|\n/", $full);
             @endphp
@@ -702,44 +668,43 @@ $dotTitle = ($dotClass === 'green')
             {{-- FOOTER BUTTONS (samain paten) --}}
             <div class="docs-footer-actions">
 
-  <form id="sendRevisiForm"
-        class="js-send-revisi-form"
-        method="POST"
-        action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'cipta','id'=>$row->id]) }}">
-    @csrf
-    <button id="btnSendRevisi"
-            type="submit"
-            class="btn-send-right"
-            {{ $canSend ? '' : 'disabled' }}>
-      Simpan & Kirim ke Pemohon
-    </button>
-  </form>
+              <form id="sendRevisiForm"
+                    class="js-send-revisi-form"
+                    method="POST"
+                    action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'cipta','id'=>$row->id]) }}">
+                @csrf
+                <button id="btnSendRevisi"
+                        type="submit"
+                        class="btn-send-right"
+                        {{ $canSend ? '' : 'disabled' }}>
+                  Simpan & Kirim ke Pemohon
+                </button>
+              </form>
 
-  <button
-    type="button"
-    id="btnSendWA"
-    class="btn-wa-right"
-    data-url="{{ route('admin.verifikasi_dokumen.waLinks', ['type'=>'cipta','id'=>$row->id]) }}"
-  >
-    Kirim WA
-  </button>
+              <button
+                type="button"
+                id="btnSendWA"
+                class="btn-wa-right"
+                data-url="{{ route('admin.verifikasi_dokumen.waLinks', ['type'=>'cipta','id'=>$row->id]) }}"
+              >
+                Kirim WA
+              </button>
 
-  @php
-    $isApproved = strtolower((string)($row->status ?? 'pending')) === 'approve';
-  @endphp
+              @php
+                $isApproved = strtolower((string)($row->status ?? 'pending')) === 'approve';
+              @endphp
 
-  <button
-    type="button"
-    id="btnApprove"
-    class="btn-approve-right {{ $isApproved ? 'is-approved' : '' }}"
-    data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'cipta','id'=>$row->id]) }}"
-    data-approved="{{ $isApproved ? '1' : '0' }}"
-    {{ ($canApprove && !$isApproved) ? '' : 'disabled' }}
-  >
-    {{ $isApproved ? 'Sudah Approve' : 'Approve' }}
-  </button>
-</div>
-
+              <button
+                type="button"
+                id="btnApprove"
+                class="btn-approve-right {{ $isApproved ? 'is-approved' : '' }}"
+                data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'cipta','id'=>$row->id]) }}"
+                data-approved="{{ $isApproved ? '1' : '0' }}"
+                {{ ($canApprove && !$isApproved) ? '' : 'disabled' }}
+              >
+                {{ $isApproved ? 'Sudah Approve' : 'Approve' }}
+              </button>
+            </div>
           </div>
         </div>
 

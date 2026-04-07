@@ -59,10 +59,7 @@ function initTrackerHighlight() {
   });
 }
 
-/**
- * ✅ cek overflow clamp, munculkan tombol Selengkapnya
- * NOTE: hanya valid kalau elemnya sedang terlihat (display != none)
- */
+
 function refreshSelengkapnya(root = document) {
   root.querySelectorAll('.pd-note-cell').forEach((cell) => {
     const clamp = cell.querySelector('.pd-note-clamp');
@@ -70,14 +67,10 @@ function refreshSelengkapnya(root = document) {
     const btn   = cell.querySelector('.jsNoteToggle');
     if (!clamp || !full || !btn) return;
 
-    // kalau lagi mode full, jangan diubah
     const isOpen = !full.hasAttribute('hidden');
     if (isOpen) return;
-
-    // kalau parent display none, ukurannya 0 -> skip dulu
     const rect = clamp.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) {
-      // tetap hidden, nanti pas visible kita refresh lagi
       btn.hidden = true;
       return;
     }
@@ -85,7 +78,6 @@ function refreshSelengkapnya(root = document) {
     const overflow = clamp.scrollHeight > clamp.clientHeight + 1;
     btn.hidden = !overflow;
 
-    // safety: kalau ternyata gak overflow, pastiin full hidden
     if (!overflow) {
       full.setAttribute('hidden', 'hidden');
       clamp.removeAttribute('hidden');
@@ -131,7 +123,6 @@ function initPemohonDashboardUI() {
           const willOpen = (box.style.display === 'none' || box.style.display === '');
           box.style.display = willOpen ? 'block' : 'none';
 
-          // ✅ setelah terbuka, refresh
           if (willOpen) {
             requestAnimationFrame(() => refreshSelengkapnya(box));
           }
@@ -148,7 +139,6 @@ function initPemohonDashboardUI() {
           const willOpen = (box.style.display === 'none' || box.style.display === '');
           box.style.display = willOpen ? 'block' : 'none';
 
-          // ✅ KUNCI: refresh setelah box jadi visible
           if (willOpen) {
             requestAnimationFrame(() => refreshSelengkapnya(box));
           }
@@ -197,7 +187,6 @@ function initPemohonDashboardUI() {
     if (e.key === 'Escape') closeNote();
   });
 
-  // ✅ initial refresh setelah semua handler siap
   requestAnimationFrame(() => refreshSelengkapnya(document));
 }
 
@@ -209,8 +198,35 @@ function boot() {
   initTrackerHighlight();
   initPemohonDashboardUI();
 
-  // ✅ resize refresh
   window.addEventListener('resize', () => refreshSelengkapnya(document));
 }
 
 onReady(boot);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnLogout = document.getElementById("btnLogout");
+  const form = document.getElementById("logoutForm");
+
+  if (!btnLogout || !form) return;
+
+  btnLogout.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    Swal.fire({
+      title: "Logout?",
+      text: "Kamu yakin mau logout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, logout",
+      cancelButtonText: "Batal",
+      focusCancel: true,
+      allowEnterKey: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        form.submit();
+      }
+    });
+  });
+});

@@ -84,9 +84,6 @@ async function setupChartsIfAny() {
   grid:  'rgba(15,32,67,0.10)',
 };
 
-
-
-
 const countTooltip = {
   filter(ctx) {
     let v = 0;
@@ -123,7 +120,6 @@ const countTooltip = {
   }
 };
 
-  // helper: destroy chart lama kalau function dipanggil ulang
   const CHARTS = window.__DASH_CHARTS__ || (window.__DASH_CHARTS__ = {});
   const mount = (key, el, config) => {
     if (!el) return;
@@ -155,7 +151,7 @@ const countTooltip = {
        interaction: {
           mode: 'nearest',
           intersect: false,
-          axis: 'x', // ✅ karena bar vertikal
+          axis: 'x', 
         },
 
         plugins: {
@@ -195,7 +191,7 @@ const countTooltip = {
         interaction: {
           mode: 'nearest',
           intersect: false,
-          axis: 'x', // ✅ karena bar vertikal
+          axis: 'x', 
         },
 
         plugins: {
@@ -223,7 +219,7 @@ const countTooltip = {
         datasets: [{
           label: 'Total',
           data: payload.roleAll.data || [0, 0],
-          backgroundColor: [THEME.paten, THEME.gold], // ✅ beda jelas
+          backgroundColor: [THEME.paten, THEME.gold],
           borderColor: '#fff',
           borderWidth: 2,
           hoverOffset: 6,
@@ -272,7 +268,7 @@ const countTooltip = {
         interaction: {
           mode: 'nearest',
           intersect: false,
-          axis: 'x', // ✅ karena bar vertikal
+          axis: 'x', 
         },
 
         scales: {
@@ -289,10 +285,7 @@ const countTooltip = {
   }
 
   /* =========================
-     HORIZONTAL BAR: TOP FAKULTAS (dibeda-bedain kebawah)
-  ========================= */
-  /* =========================
-   HORIZONTAL BAR: TOP FAKULTAS (3 WARNA SAJA)
+   HORIZONTAL BAR: TOP FAKULTAS
 ========================= */
   const cFak = document.getElementById('chartFakultas');
   if (cFak && payload.fakultas && (payload.fakultas.labels || []).length) {
@@ -335,7 +328,6 @@ const countTooltip = {
             axis: 'y',
           },
 
-        // ✅ jangan stacked biar 3 bar muncul berdampingan
         scales: {
           x: {
             stacked: false,
@@ -420,7 +412,6 @@ function setupTableSearch(inputId, tableId) {
       return;
     }
 
-    // ✅ aturan global: angka pendek = fokus no pendaftaran
     const isShortNumber = /^\d{1,2}$/.test(q);
 
     rows.forEach(tr => {
@@ -435,8 +426,6 @@ function setupTableSearch(inputId, tableId) {
   input.addEventListener('input', apply);
   apply();
 }
-
-
 
 /* =========================
    CUSTOM DROPDOWNS (data-dd)
@@ -490,7 +479,6 @@ function setupAllCustomDropdowns() {
     });
   });
 
-  // ✅ FIX: jangan close kalau klik masih di dalam dropdown manapun
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-dd]')) return;
     closeAll();
@@ -569,7 +557,6 @@ function setupUserDropdown() {
     btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
   });
 
-  // ✅ FIX: klik di luar user dropdown baru nutup
   document.addEventListener('click', (e) => {
     if (e.target.closest('#userDD')) return;
     close();
@@ -684,7 +671,6 @@ function setupDetailDrawer() {
 
     const inventorHtml = renderInventors(payload.inventors || []);
 
-    // fallback kalau paten lama belum punya inventors array
     bodyEl.innerHTML = `
       ${fields.map(([k, v]) => `
         <div class="detail-row">
@@ -717,7 +703,6 @@ function setupDetailDrawer() {
 
     let inventors = safeParseInventors(btn.dataset.inventors);
 
-    // ✅ kalau inventors kosong (cipta/paten lama), bikin 1 item inventor dari data single
     if (!inventors || inventors.length === 0) {
       inventors = [{
         nama: btn.dataset.nama || '-',
@@ -742,8 +727,6 @@ function setupDetailDrawer() {
       nilai_perolehan: btn.dataset.nilai,
       sumber_dana: btn.dataset.sumber,
       skema_penelitian: btn.dataset.skema,
-
-      // ✅ sekarang selalu ada inventors (minimal 1)
       inventors: inventors,
     };
 
@@ -758,10 +741,6 @@ function setupDetailDrawer() {
     if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
   });
 }
-
-
-
-// resources/js/admin/dashboard.js
 
 function csrfToken() {
   const el = document.querySelector('meta[name="csrf-token"]');
@@ -780,7 +759,7 @@ async function postFormJson(actionUrl, formData) {
     headers: {
       'X-CSRF-TOKEN': csrfToken(),
       'Accept': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest', // ✅ penting biar expectsJson() true
+      'X-Requested-With': 'XMLHttpRequest', 
     },
     body: formData
   });
@@ -831,7 +810,6 @@ document.addEventListener('submit', async (e) => {
     const actionUrl = form.getAttribute('action');
     const fd = new FormData(form);
 
-    // 🔥 loading state
     setFormLoading(form, true, 'Menyimpan...');
 
     try {
@@ -855,7 +833,6 @@ document.addEventListener('submit', async (e) => {
       toast(err.message || 'Error', 'error');
       alert(err.message || 'Terjadi error');
     } finally {
-      // ✅ balikin tombol normal walau error
       setFormLoading(form, false);
     }
   }
@@ -874,14 +851,14 @@ function setFormLoading(form, loading, labelWhenLoading = 'Menyimpan...') {
       submitBtn.disabled = true;
       submitBtn.textContent = labelWhenLoading;
     }
-    if (ddBtn) ddBtn.disabled = true; // dropdown dimatiin sementara
-    form.classList.add('is-loading');  // opsional styling
+    if (ddBtn) ddBtn.disabled = true; 
+    form.classList.add('is-loading');  
   } else {
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.textContent = submitBtn.dataset.originalText || 'Simpan';
     }
-    if (ddBtn) ddBtn.disabled = false; // dropdown balik normal
+    if (ddBtn) ddBtn.disabled = false; 
     form.classList.remove('is-loading');
   }
 }
@@ -925,7 +902,6 @@ document.addEventListener('submit', async (e) => {
             if (r.isConfirmed) window.open(json.wa_link, '_blank');
           });
         } else {
-          // fallback kalau sweetalert belum di-include
           const ok = confirm('Revisi terkirim. Kirim WA sekarang?');
           if (ok) window.open(json.wa_link, '_blank');
         }
@@ -942,7 +918,6 @@ document.addEventListener('submit', async (e) => {
   }
 });
 
-
 // ============================
 // 3) AJAX untuk update status (TAB STATUS)
 // ============================
@@ -957,10 +932,7 @@ document.addEventListener('submit', async (e) => {
     const tr = form.closest('tr');
     const fd = new FormData(form);
 
-    // Laravel spoof PUT
     if (!fd.get('_method')) fd.append('_method', 'PUT');
-
-    // ✅ loading state
     setFormLoading(form, true, 'Menyimpan...');
 
     const msgEl = form.querySelector('[data-inline-msg]');
@@ -999,8 +971,6 @@ document.addEventListener('submit', async (e) => {
       if (msgEl) {
         msgEl.textContent = json.message || 'Tersimpan ✅';
         msgEl.style.color = 'green';
-
-        // auto hilang 2 detik
         setTimeout(() => { msgEl.textContent = ''; }, 2000);
       }
 
@@ -1028,8 +998,6 @@ function setupPager(tableId, searchInputId, pagerKey) {
   const paginationEl = footer.querySelector('[data-pagination]');
 
   const allRows = Array.from(tbody.querySelectorAll('tr'));
-
-  // simpan pilihan entries per tab
   const lsKey = `entriesPerPage:${pagerKey}`;
   let perPage = parseInt(localStorage.getItem(lsKey) || (entriesEl?.value || '20'), 10);
   if (entriesEl) entriesEl.value = String(perPage);
@@ -1037,7 +1005,6 @@ function setupPager(tableId, searchInputId, pagerKey) {
   let currentPage = 1;
 
   const getVisibleRows = () => {
-    // ambil row yang sedang tampil (tidak display:none)
     return allRows.filter(tr => tr.style.display !== 'none');
   };
 
@@ -1048,7 +1015,6 @@ function setupPager(tableId, searchInputId, pagerKey) {
     const totalPages = Math.max(1, Math.ceil(total / perPage));
     if (currentPage > totalPages) currentPage = totalPages;
 
-    // hide semua dulu
     allRows.forEach(r => (r.hidden = true));
 
     const start = (currentPage - 1) * perPage;
@@ -1102,17 +1068,14 @@ function setupPager(tableId, searchInputId, pagerKey) {
     });
   }
 
-  // hook ke search input: tiap search berubah -> reset page dan render ulang
   const searchInput = document.getElementById(searchInputId);
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       currentPage = 1;
-      // tunggu filter/search kamu jalan dulu
       requestAnimationFrame(render);
     });
   }
 
-  // hook tambahan untuk status filter dropdown (karena status pakai filterType)
   if (pagerKey === 'status') {
     const filterType = document.getElementById('filterType');
     if (filterType) {
@@ -1136,7 +1099,6 @@ function setupRevisiPopup() {
       const pop = wrap?.querySelector('[data-rev-pop]');
       if (!pop) return;
 
-      // tutup yang lain dulu
       document.querySelectorAll('[data-rev-pop]').forEach(p => {
         if (p !== pop) p.hidden = true;
       });
@@ -1171,7 +1133,6 @@ function setupPatenDateRangeFilter() {
   const input = document.getElementById('dateRangePaten');
   if (!input) return;
 
-  // pastikan jquery + plugin ke-load
   if (!window.jQuery || !jQuery.fn.daterangepicker || !window.moment) {
     console.warn('daterangepicker belum loaded');
     return;
@@ -1212,7 +1173,6 @@ function setupPatenDateRangeFilter() {
     }
   });
 
-  // kalau ada value dari server
   const fromVal = fromEl?.value;
   const toVal = toEl?.value;
   if (fromVal && toVal) {

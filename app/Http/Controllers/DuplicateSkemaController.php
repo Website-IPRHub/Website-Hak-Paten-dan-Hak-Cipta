@@ -101,8 +101,8 @@ class DuplicateSkemaController extends Controller
         }
 
         // PDF Conversion logic (Sesuaikan path LibreOffice lo Tik)
-        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
-        if (!file_exists($soffice)) $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        $soffice = ':\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
         
         $outDir = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);

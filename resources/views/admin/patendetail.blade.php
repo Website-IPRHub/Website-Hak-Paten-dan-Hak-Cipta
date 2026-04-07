@@ -179,28 +179,26 @@
       $inventors = $row->inventors_arr ?? [];
       $incomingByDoc = collect($incomingByDoc ?? []);
 
-// kalau dari controller ternyata masih flat list (bukan keyed by doc_key),
-// kita group di sini biar aman.
-$isKeyedByDoc = $incomingByDoc->keys()->contains(fn($kk) => in_array($kk, $docKeys, true));
+      $isKeyedByDoc = $incomingByDoc->keys()->contains(fn($kk) => in_array($kk, $docKeys, true));
 
-if (!$isKeyedByDoc) {
-  $incomingByDoc = $incomingByDoc->groupBy(function ($x) {
-    return data_get($x, 'doc_key');
-  });
-}
+      if (!$isKeyedByDoc) {
+        $incomingByDoc = $incomingByDoc->groupBy(function ($x) {
+          return data_get($x, 'doc_key');
+        });
+      }
 
       /**
- * RULE tombol:
- * - canSend: aktif kalau ada minimal 1 dokumen status revisi
- * - canApprove: aktif kalau semua dokumen sudah OK dan tidak ada yang revisi
- */
-$allDocStatuses = collect($docKeys)->map(fn($k) => strtolower((string) data_get(data_get($row,'docs'), "$k.status", 'pending')));
+      * RULE tombol:
+      * - canSend: aktif kalau ada minimal 1 dokumen status revisi
+      * - canApprove: aktif kalau semua dokumen sudah OK dan tidak ada yang revisi
+      */
+      $allDocStatuses = collect($docKeys)->map(fn($k) => strtolower((string) data_get(data_get($row,'docs'), "$k.status", 'pending')));
 
-$hasAnyRevisi = $allDocStatuses->contains(fn($st) => $st === 'revisi');
-$allCheckedOk = $allDocStatuses->every(fn($st) => $st === 'ok');
+      $hasAnyRevisi = $allDocStatuses->contains(fn($st) => $st === 'revisi');
+      $allCheckedOk = $allDocStatuses->every(fn($st) => $st === 'ok');
 
-$canSend = $hasAnyRevisi;
-$canApprove = $allCheckedOk && !$hasAnyRevisi;
+      $canSend = $hasAnyRevisi;
+      $canApprove = $allCheckedOk && !$hasAnyRevisi;
 
     @endphp
 
@@ -330,21 +328,17 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
 
    @foreach($docKeys as $k)
   @php
-    // ✅ tandai apakah ini field TEKS
     $isText = ($k === 'deskripsi_singkat_prototipe');
 
-    // ✅ ambil data docs status/note
     $doc       = data_get($row->docs, $k);
     $statusDoc = data_get($doc, 'status', 'pending');
     $note      = data_get($doc, 'note');
 
-    // ✅ tampil utama: TEKS vs FILE
     if ($isText) {
         $textValue = trim((string) data_get($row, $k, ''));
         $filePath  = null;
         $shownName = null;
     } else {
-        // ✅ isi filePath dulu
         if ($k === 'skema_tkt') {
             $filePath = $row->skema_tkt_template_path ?? null;
         } else {
@@ -354,7 +348,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
         $nameField    = $k . '_name';
         $labelForName = $docLabels[$k] ?? $k;
 
-        // ✅ baru setelah filePath ada, bikin shownName
         if ($k === 'skema_tkt' && $filePath) {
             $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($row->no_pendaftaran ?? ''));
             $ext = pathinfo($filePath, PATHINFO_EXTENSION);
@@ -367,16 +360,13 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
         $textValue = '';
     }
 
-    // ✅ apakah dokumen ini benar-benar ada isi dari pemohon?
     $hasSourceValue = $isText
       ? ($textValue !== '')
       : !empty($filePath);
-
-    // ✅ hanya boleh revisi kalau ADA isi/file dari pemohon
     $canRevisi = $hasSourceValue;
 
     // ==========================
-    // ✅ CIPTA STYLE: build cycles per doc_key
+    // ✅ CIPTA STYLE
     // ==========================
     $bucket = null;
 
@@ -554,8 +544,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
           </div>
 @php
   $adminNote = trim((string)($note ?? ''));
-
-  // ✅ jumlah row yang tampil di "Detail Revisi" (CIPTA STYLE)
   $displayCount = $cycles->count();
   if ($displayCount === 0 && $adminNote !== '') {
     $displayCount = 1;
@@ -614,7 +602,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
     {{-- LIST CYCLES --}}
     @foreach($cycles as $cy)
       @php
-        // ---- pemohon value (file / text) ----
         $pemohonText = null;
         $pemohonFilePath = null;
 
@@ -631,8 +618,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
         $hasPemohonValue = $isText
           ? ($pemohonText !== '')
           : (!empty($pemohonFilePath));
-
-        // ---- note pairing (CIPTA STYLE, tapi aman utk text/file) ----
         $noteTextRaw = trim((string) data_get($cy, 'note', ''));
 
         if ($noteTextRaw === '' && $hasPemohonValue) {
@@ -650,8 +635,6 @@ $canApprove = $allCheckedOk && !$hasAnyRevisi;
         }
 
         $noteText = ($noteTextRaw !== '') ? $noteTextRaw : '-';
-
-        // ---- waktu update pemohon ----
         $timeRaw = $hasPemohonValue
           ? (data_get($cy,'pemohon_uploaded_at') ?? data_get($cy,'created_at') ?? null)
           : null;
