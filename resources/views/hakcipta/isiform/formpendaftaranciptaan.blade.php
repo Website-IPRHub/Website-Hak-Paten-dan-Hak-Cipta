@@ -231,6 +231,7 @@
               const form = nextBtn.closest('form');
               if (!form) { console.error('Form tidak ketemu'); return; }
 
+              // optional: validasi HTML5
               if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
@@ -257,7 +258,7 @@
               });
 
               if (!result.isConfirmed) {
-                return; 
+                return; // kalau klik "Belum" tetap di halaman
               }
 
               const saveUrl = nextBtn.dataset.saveUrl;
