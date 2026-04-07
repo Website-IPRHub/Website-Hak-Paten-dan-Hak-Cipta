@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <div class="upload-page">
   <div class="upload-wrap">
-
     <div class="upload-head">
       <div>
         <h1 class="upload-title">Upload Berkas Verifikasi Hak Cipta</h1>
@@ -46,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 
     <div class="grid">
-
       {{-- 1) Draft --}}
       <div class="card">
         <div class="card-top">
@@ -72,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         Belum pilih file
                     @endif
                   </div>
-
                   @if($verif->surat_permohonan )
                       <div style="margin-top:6px;">
                           <a href="{{ Storage::url($verif->surat_permohonan ) }}" target="_blank" class="lihat-file-link">
