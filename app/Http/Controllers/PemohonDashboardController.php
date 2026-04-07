@@ -28,7 +28,7 @@ class PemohonDashboardController extends Controller
             ->with('error', 'Kode unik pemohon tidak ditemukan di akun.');
     }
 
-        // ✅ ambil pengajuan TERBARU
+        // pengajuan TERBARU
     $paten = PatenVerif::where('no_pendaftaran', $kode)
         ->orderByDesc('id')
         ->first();
@@ -62,7 +62,6 @@ class PemohonDashboardController extends Controller
 
     $refId = $source->id;
 
-    // ✅ status_verifikasi: ambil row TERBARU
     $sv = DB::table('status_verifikasi')
         ->where('ref_type', $type)
         ->where('ref_id', $refId)
@@ -72,7 +71,7 @@ class PemohonDashboardController extends Controller
     $status = strtolower($sv->status ?? 'terkirim');
     $activeStatus = $status;
 
-    // ✅ ambil waktu update beneran (pakai time)
+    // ambil waktu update
     $updatedAt = $sv?->updated_at
         ? Carbon::parse($sv->updated_at)
         : (isset($source->created_at) ? Carbon::parse($source->created_at) : Carbon::now());
@@ -116,365 +115,347 @@ class PemohonDashboardController extends Controller
             ->get();
     }
 
-    // ✅ DEFAULT harus ada (biar view gak error)
-   // ✅ DEFAULT harus ada (biar view gak error)
-$revActiveByDoc = collect();
-$revHistory = collect();
+    $revActiveByDoc = collect();
+    $revHistory = collect();
 
-// ✅ ACTIVE revisi cuma saat status = revisi (tetap seperti kamu)
-if ($status === 'revisi') {
-    $revActiveByDoc = DB::table('revisions as r')
-        ->where('r.type', $type)
-        ->where('r.ref_id', $refId)
-        ->where('r.from_role', 'admin')
-        ->where('r.state', 'requested')
-        ->whereNotExists(function ($q) {
-            $q->select(DB::raw(1))
-            ->from('revisions as s')
-            ->whereColumn('s.type', 'r.type')
-            ->whereColumn('s.ref_id', 'r.ref_id')
-            ->whereColumn('s.doc_key', 'r.doc_key')
-            ->where('s.from_role', 'pemohon')
-            ->where('s.state', 'submitted')
-            ->where(function ($qq) {
-                $qq->whereNotNull('s.pemohon_file_path')
-                    ->orWhereNotNull('s.pemohon_text');
+    // status revisi = revisi 
+    if ($status === 'revisi') {
+        $revActiveByDoc = DB::table('revisions as r')
+            ->where('r.type', $type)
+            ->where('r.ref_id', $refId)
+            ->where('r.from_role', 'admin')
+            ->where('r.state', 'requested')
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                ->from('revisions as s')
+                ->whereColumn('s.type', 'r.type')
+                ->whereColumn('s.ref_id', 'r.ref_id')
+                ->whereColumn('s.doc_key', 'r.doc_key')
+                ->where('s.from_role', 'pemohon')
+                ->where('s.state', 'submitted')
+                ->where(function ($qq) {
+                    $qq->whereNotNull('s.pemohon_file_path')
+                        ->orWhereNotNull('s.pemohon_text');
+                })
+                ->whereColumn('s.id', '>', 'r.id');
             })
-            ->whereColumn('s.id', '>', 'r.id');
-        })
-        ->orderByDesc('r.id')
-        ->get()
-        ->groupBy('doc_key')
-        ->map(fn($rows) => $rows->first())
-        ->values()
-        ->map(function($req){
-    $isTextDoc = ($req->doc_key ?? null) === 'deskripsi_singkat_prototipe';
+            ->orderByDesc('r.id')
+            ->get()
+            ->groupBy('doc_key')
+            ->map(fn($rows) => $rows->first())
+            ->values()
+            ->map(function($req){
+        $isTextDoc = ($req->doc_key ?? null) === 'deskripsi_singkat_prototipe';
 
-    $req->pemohon_uploaded = 0;
-    $req->admin_note       = $req->note ?? null;
-    $req->admin_file_path  = $req->file_path ?? null;
+        $req->pemohon_uploaded = 0;
+        $req->admin_note       = $req->note ?? null;
+        $req->admin_file_path  = $req->file_path ?? null;
 
-    if ($isTextDoc) {
-        $lastPemohon = DB::table('revisions')
-            ->where('type', $req->type)
-            ->where('ref_id', $req->ref_id)
-            ->where('doc_key', $req->doc_key)
-            ->where('from_role', 'pemohon')
-            ->where('state', 'submitted')
-            ->whereNotNull('pemohon_text')
-            ->where('id', '>', $req->id)
-            ->orderByDesc('id')
-            ->first();
-
-        $req->pemohon_text = trim((string)($lastPemohon->pemohon_text ?? ''));
-        $req->pemohon_uploaded = $req->pemohon_text !== '' ? 1 : 0;
-    } else {
-        $req->pemohon_text = null;
-    }
-
-    return $req;
-});
-}
-
-// ✅ RIWAYAT harus tetap ada di REVISI & APPROVE
-if (in_array($status, ['revisi', 'approve'])) {
-
-    // ambil SEMUA row yang relevan biar bisa nyari note admin terakhir
-    $all = DB::table('revisions')
-        ->where('type', $type)
-        ->where('ref_id', $refId)
-        ->whereIn('state', ['requested','submitted','closed'])
-        ->orderBy('id') // penting: ASC supaya "last admin note" kebentuk urut
-        ->get();
-
-    $lastAdminNoteByDoc = [];
-    $lastAdminFileByDoc = [];
-
-    foreach ($all as $r) {
-        $doc = $r->doc_key ?? null;
-        if (!$doc) continue;
-
-        // simpan note/file admin terakhir
-        if (($r->from_role ?? null) === 'admin' && in_array(($r->state ?? null), ['requested','closed'], true)) {
-            if (!empty(trim((string)($r->note ?? '')))) {
-                $lastAdminNoteByDoc[$doc] = $r->note;
-            }
-            if (!empty($r->file_path)) {
-                $lastAdminFileByDoc[$doc] = $r->file_path;
-            }
-        }
-    }
-
-    // history yang ditampilkan: submitted + closed (sesuai logic kamu)
-   $revHistory = $all
-    ->filter(fn($r) => in_array(($r->state ?? null), ['submitted','closed'], true))
-    ->sortByDesc('id')
-    ->values()
-    ->map(function($r) use ($all, $lastAdminNoteByDoc, $lastAdminFileByDoc){
-
-        $doc = $r->doc_key ?? null;
-
-        $r->pemohon_uploaded = (!empty($r->pemohon_file_path) || !empty($r->pemohon_text)) ? 1 : 0;
-        $r->pemohon_text = $r->pemohon_text ?? null;
-
-        // ✅ kalau row pemohon note kosong -> ambil ADMIN NOTE yang posisinya TEPAT SEBELUM row ini
-        $noteRaw = trim((string)($r->note ?? ''));
-        if ($noteRaw === '' && ($r->from_role ?? null) === 'pemohon' && $doc) {
-
-            $prevAdmin = $all->where('doc_key', $doc)
-                ->where('id', '<', $r->id)
-                ->filter(fn($x) => ($x->from_role ?? null) === 'admin' && in_array(($x->state ?? null), ['requested','closed'], true))
-                ->sortByDesc('id')
+        if ($isTextDoc) {
+            $lastPemohon = DB::table('revisions')
+                ->where('type', $req->type)
+                ->where('ref_id', $req->ref_id)
+                ->where('doc_key', $req->doc_key)
+                ->where('from_role', 'pemohon')
+                ->where('state', 'submitted')
+                ->whereNotNull('pemohon_text')
+                ->where('id', '>', $req->id)
+                ->orderByDesc('id')
                 ->first();
 
-            $noteRaw = trim((string)(($prevAdmin->note ?? '') ?: ''));
-            if ($noteRaw === '') {
-                // fallback terakhir kalau memang gak nemu (jarang)
-                $noteRaw = trim((string)($lastAdminNoteByDoc[$doc] ?? ''));
+            $req->pemohon_text = trim((string)($lastPemohon->pemohon_text ?? ''));
+            $req->pemohon_uploaded = $req->pemohon_text !== '' ? 1 : 0;
+        } else {
+            $req->pemohon_text = null;
+        }
+
+        return $req;
+    });
+    }
+
+    if (in_array($status, ['revisi', 'approve'])) {
+        $all = DB::table('revisions')
+            ->where('type', $type)
+            ->where('ref_id', $refId)
+            ->whereIn('state', ['requested','submitted','closed'])
+            ->orderBy('id') 
+            ->get();
+
+        $lastAdminNoteByDoc = [];
+        $lastAdminFileByDoc = [];
+
+        foreach ($all as $r) {
+            $doc = $r->doc_key ?? null;
+            if (!$doc) continue;
+
+            if (($r->from_role ?? null) === 'admin' && in_array(($r->state ?? null), ['requested','closed'], true)) {
+                if (!empty(trim((string)($r->note ?? '')))) {
+                    $lastAdminNoteByDoc[$doc] = $r->note;
+                }
+                if (!empty($r->file_path)) {
+                    $lastAdminFileByDoc[$doc] = $r->file_path;
+                }
             }
         }
 
-        $r->admin_note = ($noteRaw !== '') ? $noteRaw : null;
+    $revHistory = $all
+        ->filter(fn($r) => in_array(($r->state ?? null), ['submitted','closed'], true))
+        ->sortByDesc('id')
+        ->values()
+        ->map(function($r) use ($all, $lastAdminNoteByDoc, $lastAdminFileByDoc){
 
-        // ✅ file admin: kalau row ini gak punya file_path, ambil ADMIN FILE sebelum row ini
-        $r->admin_file_path = $r->file_path ?? ($doc ? ($lastAdminFileByDoc[$doc] ?? null) : null);
+            $doc = $r->doc_key ?? null;
 
-        return $r;
-    });
-}
+            $r->pemohon_uploaded = (!empty($r->pemohon_file_path) || !empty($r->pemohon_text)) ? 1 : 0;
+            $r->pemohon_text = $r->pemohon_text ?? null;
 
-    // helper pick
-    $pick = function ($obj, array $keys, $default = '-') {
-        foreach ($keys as $k) {
-            if (is_object($obj) && isset($obj->$k) && $obj->$k !== null && $obj->$k !== '') return $obj->$k;
-            if (is_array($obj) && isset($obj[$k]) && $obj[$k] !== null && $obj[$k] !== '') return $obj[$k];
+            $noteRaw = trim((string)($r->note ?? ''));
+            if ($noteRaw === '' && ($r->from_role ?? null) === 'pemohon' && $doc) {
+
+                $prevAdmin = $all->where('doc_key', $doc)
+                    ->where('id', '<', $r->id)
+                    ->filter(fn($x) => ($x->from_role ?? null) === 'admin' && in_array(($x->state ?? null), ['requested','closed'], true))
+                    ->sortByDesc('id')
+                    ->first();
+
+                $noteRaw = trim((string)(($prevAdmin->note ?? '') ?: ''));
+                if ($noteRaw === '') {
+                    $noteRaw = trim((string)($lastAdminNoteByDoc[$doc] ?? ''));
+                }
+            }
+
+            $r->admin_note = ($noteRaw !== '') ? $noteRaw : null;
+            $r->admin_file_path = $r->file_path ?? ($doc ? ($lastAdminFileByDoc[$doc] ?? null) : null);
+
+            return $r;
+        });
+    }
+
+        // helper pick
+        $pick = function ($obj, array $keys, $default = '-') {
+            foreach ($keys as $k) {
+                if (is_object($obj) && isset($obj->$k) && $obj->$k !== null && $obj->$k !== '') return $obj->$k;
+                if (is_array($obj) && isset($obj[$k]) && $obj[$k] !== null && $obj[$k] !== '') return $obj[$k];
+            }
+            return $default;
+        };
+
+        $pengajuan = (object) [
+            'kode'     => $kode,
+            'kategori' => $type === 'paten' ? 'Paten' : 'Hak Cipta',
+
+            'judul'    => $type === 'paten'
+                ? $pick($source, ['judul_paten'])
+                : $pick($source, ['judul_cipta', 'judul', 'judul_pengajuan']),
+
+            'jenis'    => $type === 'paten'
+                ? $pick($source, ['jenis_paten'])
+                : $pick($source, ['jenis_cipta', 'jenis', 'jenis_lainnya']),
+
+            'email'    => $pick($source, ['email'], $pick($pemohon, ['email'])),
+            'no_hp'    => $pick($source, ['no_hp'], $pick($pemohon, ['no_hp', 'hp', 'nomor_hp'])),
+            'id'       => $refId,
+            'type'     => $type,
+        ];
+
+        // inventors
+        $inventorsArr = [];
+        $inventorList = '-';
+
+        if ($type === 'paten') {
+            $inventorsRaw = $source->inventors ?? null;
+            $inventorsArr = is_string($inventorsRaw) ? (json_decode($inventorsRaw, true) ?? []) : ($inventorsRaw ?? []);
+            $inventorList = collect($inventorsArr)
+                ->map(fn($i) => trim(($i['nama'] ?? '-').' ('.($i['status'] ?? '-').')'))
+                ->filter()->implode(', ');
+        } else {
+            $inventorsRaw = $source->inventors ?? $source->pencipta ?? $source->inventor ?? null;
+            $inventorsArr = is_string($inventorsRaw) ? (json_decode($inventorsRaw, true) ?? []) : ($inventorsRaw ?? []);
+            $inventorList = collect($inventorsArr)
+                ->map(fn($i) => trim(($i['nama'] ?? '-').' ('.($i['status'] ?? ($i['kategori'] ?? '-')).')'))
+                ->filter()->implode(', ');
+            if ($inventorList === '') $inventorList = '-';
         }
-        return $default;
-    };
 
-    // ✅ pengajuan (untuk view)
-    $pengajuan = (object) [
-        'kode'     => $kode,
-        'kategori' => $type === 'paten' ? 'Paten' : 'Hak Cipta',
+        $akun = (object) [
+            'nama'     => $type === 'paten'
+                ? $pick($source, ['nama_pencipta', 'nama'])
+                : $pick($source, ['nama_pencipta', 'nama_pemohon', 'nama']),
 
-        'judul'    => $type === 'paten'
-            ? $pick($source, ['judul_paten'])
-            : $pick($source, ['judul_cipta', 'judul', 'judul_pengajuan']),
+            'kode'     => $kode,
+            'fakultas' => $pick($source, ['fakultas']),
+            'inventor_list' => $inventorList,
+            'inventors_arr' => $inventorsArr,
 
-        'jenis'    => $type === 'paten'
-            ? $pick($source, ['jenis_paten'])
-            : $pick($source, ['jenis_cipta', 'jenis', 'jenis_lainnya']),
-
-        'email'    => $pick($source, ['email'], $pick($pemohon, ['email'])),
-        'no_hp'    => $pick($source, ['no_hp'], $pick($pemohon, ['no_hp', 'hp', 'nomor_hp'])),
-        'id'       => $refId,
-        'type'     => $type,
-    ];
-
-    // inventors
-    $inventorsArr = [];
-    $inventorList = '-';
-
-    if ($type === 'paten') {
-        $inventorsRaw = $source->inventors ?? null;
-        $inventorsArr = is_string($inventorsRaw) ? (json_decode($inventorsRaw, true) ?? []) : ($inventorsRaw ?? []);
-        $inventorList = collect($inventorsArr)
-            ->map(fn($i) => trim(($i['nama'] ?? '-').' ('.($i['status'] ?? '-').')'))
-            ->filter()->implode(', ');
-    } else {
-        $inventorsRaw = $source->inventors ?? $source->pencipta ?? $source->inventor ?? null;
-        $inventorsArr = is_string($inventorsRaw) ? (json_decode($inventorsRaw, true) ?? []) : ($inventorsRaw ?? []);
-        $inventorList = collect($inventorsArr)
-            ->map(fn($i) => trim(($i['nama'] ?? '-').' ('.($i['status'] ?? ($i['kategori'] ?? '-')).')'))
-            ->filter()->implode(', ');
-        if ($inventorList === '') $inventorList = '-';
-    }
-
-    $akun = (object) [
-        'nama'     => $type === 'paten'
-            ? $pick($source, ['nama_pencipta', 'nama'])
-            : $pick($source, ['nama_pencipta', 'nama_pemohon', 'nama']),
-
-        'kode'     => $kode,
-        'fakultas' => $pick($source, ['fakultas']),
-        'inventor_list' => $inventorList,
-        'inventors_arr' => $inventorsArr,
-
-        'kategori' => $pengajuan->kategori ?? '-',
-        'jenis'    => $pengajuan->jenis ?? '-',
-        'judul'    => $pengajuan->judul ?? '-',
-        'email'    => $pengajuan->email ?? '-',
-        'no_hp'    => $pengajuan->no_hp ?? '-',
-    ];
-
-    // =============================
-    // DETAIL DOKUMEN TERKIRIM
-    // =============================
-    $submittedDocs = collect();
-
-    if (in_array($status, ['terkirim', 'proses', 'revisi', 'approve'])) {
-
-        // mapping label beda paten & cipta
-       $labelsPaten = [
-        'draft_paten'       => 'Draft Paten',
-        'form_permohonan'   => 'Form Permohonan',
-        'surat_kepemilikan' => 'Surat Kepemilikan',
-        'surat_pengalihan'  => 'Surat Pengalihan',
-        'scan_ktp'          => 'Scan KTP',
-        'tanda_terima'      => 'Tanda Terima',
-        'gambar_prototipe'  => 'Gambar Prototipe',
+            'kategori' => $pengajuan->kategori ?? '-',
+            'jenis'    => $pengajuan->jenis ?? '-',
+            'judul'    => $pengajuan->judul ?? '-',
+            'email'    => $pengajuan->email ?? '-',
+            'no_hp'    => $pengajuan->no_hp ?? '-',
         ];
 
-        $labelsCipta = [
-        'surat_permohonan' => 'Surat Permohonan',
-        'surat_pernyataan' => 'Surat Pernyataan',
-        'surat_pengalihan' => 'Surat Pengalihan',
-        'tanda_terima'     => 'Tanda Terima',
-        'scan_ktp'         => 'Scan KTP',
-        'hasil_ciptaan'    => 'Hasil Ciptaan',
-        ];
+        // =============================
+        // DETAIL DOKUMEN TERKIRIM
+        // =============================
+        $submittedDocs = collect();
 
-        $labels = $type === 'paten' ? $labelsPaten : $labelsCipta;
+        if (in_array($status, ['terkirim', 'proses', 'revisi', 'approve'])) {
 
-        $submittedDocs = VerifikasiDokumen::where([
-            'ref_type' => $type,
-            'ref_id'   => $refId,
-        ])
-        ->whereIn('doc_key', array_keys($labels))
-        ->get()
-        ->map(function($d) use ($labels) {
-            return (object)[
-                'doc_key' => $d->doc_key,
-                'label'   => $labels[$d->doc_key] ?? $d->doc_key,
-                'file'    => $d->pemohon_file_path ?? null,
-                'status'  => $d->status ?? 'pending',
-                'note'    => $d->note ?? null,
+            // mapping label beda paten & cipta
+        $labelsPaten = [
+            'draft_paten'       => 'Draft Paten',
+            'form_permohonan'   => 'Form Permohonan',
+            'surat_kepemilikan' => 'Surat Kepemilikan',
+            'surat_pengalihan'  => 'Surat Pengalihan',
+            'scan_ktp'          => 'Scan KTP',
+            'tanda_terima'      => 'Tanda Terima',
+            'gambar_prototipe'  => 'Gambar Prototipe',
             ];
-        })
-        ->filter(fn($x) => !empty($x->file))
-        ->values();
+
+            $labelsCipta = [
+            'surat_permohonan' => 'Surat Permohonan',
+            'surat_pernyataan' => 'Surat Pernyataan',
+            'surat_pengalihan' => 'Surat Pengalihan',
+            'tanda_terima'     => 'Tanda Terima',
+            'scan_ktp'         => 'Scan KTP',
+            'hasil_ciptaan'    => 'Hasil Ciptaan',
+            ];
+
+            $labels = $type === 'paten' ? $labelsPaten : $labelsCipta;
+
+            $submittedDocs = VerifikasiDokumen::where([
+                'ref_type' => $type,
+                'ref_id'   => $refId,
+            ])
+            ->whereIn('doc_key', array_keys($labels))
+            ->get()
+            ->map(function($d) use ($labels) {
+                return (object)[
+                    'doc_key' => $d->doc_key,
+                    'label'   => $labels[$d->doc_key] ?? $d->doc_key,
+                    'file'    => $d->pemohon_file_path ?? null,
+                    'status'  => $d->status ?? 'pending',
+                    'note'    => $d->note ?? null,
+                ];
+            })
+            ->filter(fn($x) => !empty($x->file))
+            ->values();
+        }
+
+        return view('pemohon.dashboard', compact(
+            'pemohon',
+            'pengajuan',
+            'akun',
+            'sv',
+            'status',
+            'steps',
+            'activeStatus',
+            'revisiDocs',
+            'source',
+            'revActiveByDoc',
+            'revHistory',
+            'submittedDocs'
+        ));
     }
 
-    // ✅ INI WAJIB: RETURN VIEW SELALU
-    return view('pemohon.dashboard', compact(
-        'pemohon',
-        'pengajuan',
-        'akun',
-        'sv',
-        'status',
-        'steps',
-        'activeStatus',
-        'revisiDocs',
-        'source',
-        'revActiveByDoc',
-        'revHistory',
-        'submittedDocs'
-    ));
-}
+    public function editRevisi(Request $request)
+    {
+        
+        $pemohon = Auth::guard('pemohon')->user();
+        if (!$pemohon) {
+            return redirect()->route('pemohon.login.form');
+        }
 
-public function editRevisi(Request $request)
-{
-    
-    $pemohon = Auth::guard('pemohon')->user();
-    if (!$pemohon) {
-        return redirect()->route('pemohon.login.form');
-    }
+        $type = $request->query('type');
+        $ref  = (int) $request->query('ref');
+        $doc  = $request->query('doc');
 
-    $type = $request->query('type');
-    $ref  = (int) $request->query('ref');
-    $doc  = $request->query('doc');
+        if (!in_array($type, ['cipta', 'paten'], true) || !$ref || !$doc) {
+            abort(404, 'Parameter revisi tidak valid.');
+        }
 
-    if (!in_array($type, ['cipta', 'paten'], true) || !$ref || !$doc) {
-        abort(404, 'Parameter revisi tidak valid.');
-    }
-
-   if ($type === 'cipta') {
-    $row = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
-    if (!$row) abort(404);
-    
-    $sessionKeySpecific = "hakcipta.form.$ref";
-    $sessionKeyGlobal   = "hakcipta.form";
-
-    // Ambil data dari saku pendaftaran awal (Global)
-    $globalData = session($sessionKeyGlobal, []);
-    
-    // 🔥 Ambil data revisi yang sudah ada (kalau pernah save sebelumnya)
-    $existingSpecific = session($sessionKeySpecific, []);
-
-    // 🔥 GABUNGKAN: Prioritas data revisi, tapi kalau kosong ambil dari global
-    // Ini gunanya biar 'berupa', 'tempat', 'uraian' dari pendaftaran awal terbawa ke halaman edit
-    $finalPayload = array_merge($globalData, $existingSpecific);
-
-    // Simpan ke saku spesifik revisi
-    session()->put($sessionKeySpecific, $finalPayload);
-    session(['edit_ref_id' => $ref]);
-
-    return redirect()->route('dup.hakcipta.isiform.formpendaftaran', ['ref' => $ref]);
-}
-
-    // --- LOGIC UNTUK HAK PATEN (Perbaikan di Sini) ---
-   // --- LOGIC UNTUK HAK PATEN (DIBENARKAN) ---
-    // --- LOGIC UNTUK HAK PATEN (DIPERBAIKI TOTAL) ---
-   // --- LOGIC UNTUK HAK PATEN (PASTI MUNCUL) ---
-    if ($type === 'paten') {
-        $row = DB::table('paten_verifs')->where('id', $ref)->first();
+    if ($type === 'cipta') {
+        $row = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
         if (!$row) abort(404);
         
-        $inventors = !empty($row->inventors) ? (is_string($row->inventors) ? json_decode($row->inventors, true) : (array)$row->inventors) : [];
+        $sessionKeySpecific = "hakcipta.form.$ref";
+        $sessionKeyGlobal   = "hakcipta.form";
 
-        $sessionKeySpecific = "hakpaten.isiform.$ref";
-        $sessionKeyGlobal   = "hakpaten.isiform";
-
-        // 1. Ambil data dari saku spesifik (hasil edit/revisi sebelumnya)
-        $existingSession = session($sessionKeySpecific);
+        // Ambil data dari saku pendaftaran awal (Global)
+        $globalData = session($sessionKeyGlobal, []);
         
-        if (!$existingSession) {
-            // 2. KALO KOSONG (Pas pertama kali klik EDIT), ambil dari saku pendaftaran awal
-            $existingSession = session($sessionKeyGlobal, []);
-        }
+        // Ambil data revisi yang sudah ada (kalau pernah save sebelumnya)
+        $existingSpecific = session($sessionKeySpecific, []);
 
-        // 3. Data dari Database
-        $dbData = [
-            'jenis_paten'     => $row->jenis_paten ?? '',
-            'judul_invensi'   => $row->judul_paten ?? '',
-            'deskripsi_singkat_prototipe'  => $row->deskripsi_singkat_prototipe ?? '',
-            'jumlah_inventor' => count($inventors) ?: 1,
-            'inventor' => [
-                'nama'            => collect($inventors)->pluck('nama')->all(),
-                'nip_nim'         => collect($inventors)->pluck('nip_nim')->all(),
-                'alamat'          => collect($inventors)->pluck('alamat')->all(),
-                'kode_pos'        => collect($inventors)->pluck('kode_pos')->all(),
-                'pekerjaan'       => collect($inventors)->pluck('pekerjaan')->all(),
-                'kewarganegaraan' => collect($inventors)->pluck('kewarganegaraan')->all(),
-                'fakultas'        => collect($inventors)->pluck('fakultas')->all(),
-                'no_hp'           => collect($inventors)->pluck('no_hp')->all(),
-                'email'           => collect($inventors)->pluck('email')->all(),
-                'status'          => collect($inventors)->pluck('status')->all(),
-                'nidn'            => collect($inventors)->pluck('nidn')->all(),
-            ],
-        ];
+        // GABUNGKAN: Prioritas data revisi, tapi kalau kosong ambil dari global
+        $finalPayload = array_merge($globalData, $existingSpecific);
 
-        // 4. GABUNGKAN: Data dari session (Uraian, Klaim, dll) mengisi bagian yang kosong di DB
-        $finalData = array_merge($dbData, $existingSession);
-
-        // 5. Simpan ke saku spesifik ID biar kedepannya nempel terus di ID ini
-        session([$sessionKeySpecific => $finalData]);
+        // Simpan ke saku spesifik revisi
+        session()->put($sessionKeySpecific, $finalPayload);
         session(['edit_ref_id' => $ref]);
-        if ($doc === 'deskripsi_singkat_prototipe') {
+
+        return redirect()->route('dup.hakcipta.isiform.formpendaftaran', ['ref' => $ref]);
+    }
+
+        if ($type === 'paten') {
+            $row = DB::table('paten_verifs')->where('id', $ref)->first();
+            if (!$row) abort(404);
+            
+            $inventors = !empty($row->inventors) ? (is_string($row->inventors) ? json_decode($row->inventors, true) : (array)$row->inventors) : [];
+
+            $sessionKeySpecific = "hakpaten.isiform.$ref";
+            $sessionKeyGlobal   = "hakpaten.isiform";
+
+            // 1. Ambil data dari saku spesifik (hasil edit/revisi sebelumnya)
+            $existingSession = session($sessionKeySpecific);
+            
+            if (!$existingSession) {
+                // 2. KALO KOSONG (Pas pertama kali klik EDIT), ambil dari saku pendaftaran awal
+                $existingSession = session($sessionKeyGlobal, []);
+            }
+
+            // 3. Data dari Database
             $dbData = [
-                'deskripsi_singkat_prototipe' => $row->deskripsi_singkat_prototipe ?? '',
+                'jenis_paten'     => $row->jenis_paten ?? '',
+                'judul_invensi'   => $row->judul_paten ?? '',
+                'deskripsi_singkat_prototipe'  => $row->deskripsi_singkat_prototipe ?? '',
+                'jumlah_inventor' => count($inventors) ?: 1,
+                'inventor' => [
+                    'nama'            => collect($inventors)->pluck('nama')->all(),
+                    'nip_nim'         => collect($inventors)->pluck('nip_nim')->all(),
+                    'alamat'          => collect($inventors)->pluck('alamat')->all(),
+                    'kode_pos'        => collect($inventors)->pluck('kode_pos')->all(),
+                    'pekerjaan'       => collect($inventors)->pluck('pekerjaan')->all(),
+                    'kewarganegaraan' => collect($inventors)->pluck('kewarganegaraan')->all(),
+                    'fakultas'        => collect($inventors)->pluck('fakultas')->all(),
+                    'no_hp'           => collect($inventors)->pluck('no_hp')->all(),
+                    'email'           => collect($inventors)->pluck('email')->all(),
+                    'status'          => collect($inventors)->pluck('status')->all(),
+                    'nidn'            => collect($inventors)->pluck('nidn')->all(),
+                ],
             ];
 
+            // 4. GABUNGKAN: Data dari session (Uraian, Klaim, dll) mengisi bagian yang kosong di DB
             $finalData = array_merge($dbData, $existingSession);
+
+            // 5. Simpan ke saku spesifik ID biar kedepannya nempel terus di ID ini
             session([$sessionKeySpecific => $finalData]);
             session(['edit_ref_id' => $ref]);
+            if ($doc === 'deskripsi_singkat_prototipe') {
+                $dbData = [
+                    'deskripsi_singkat_prototipe' => $row->deskripsi_singkat_prototipe ?? '',
+                ];
 
-            return redirect()->route('pemohon.paten.edit_deskripsi', ['ref' => $ref]);
+                $finalData = array_merge($dbData, $existingSession);
+                session([$sessionKeySpecific => $finalData]);
+                session(['edit_ref_id' => $ref]);
+
+                return redirect()->route('pemohon.paten.edit_deskripsi', ['ref' => $ref]);
+            }
+            return redirect()->route('dup.hakpaten.isiformulir.isiform', ['ref' => $ref]);
         }
-        return redirect()->route('dup.hakpaten.isiformulir.isiform', ['ref' => $ref]);
+        abort(404);
     }
-    abort(404);
-}
 
     public function editDeskripsiSingkat(Request $request)
 {
@@ -572,7 +553,6 @@ public function updateDeskripsiSingkat(Request $request)
             ->first();
 
         if ($activeReq) {
-            // tutup request admin
             DB::table('revisions')
                 ->where('id', $activeReq->id)
                 ->update([
@@ -581,8 +561,6 @@ public function updateDeskripsiSingkat(Request $request)
                     'is_read_pemohon' => 1,
                     'updated_at' => now(),
                 ]);
-
-            // insert riwayat submitted dari pemohon
             DB::table('revisions')->insert([
                 'type' => 'paten',
                 'ref_id' => $ref,
@@ -613,227 +591,208 @@ public function updateDeskripsiSingkat(Request $request)
     }
 }
     public function downloadTandaTerima(Request $request, string $type, int $ref)
-{
-    $pemohon = Auth::guard('pemohon')->user();
-    if (!$pemohon) {
-        return redirect()->route('pemohon.login.form');
+    {
+        $pemohon = Auth::guard('pemohon')->user();
+        if (!$pemohon) {
+            return redirect()->route('pemohon.login.form');
+        }
+
+        if (!in_array($type, ['paten', 'cipta'], true)) {
+            abort(404);
+        }
+
+        $source = $type === 'paten'
+            ? PatenVerif::where('id', $ref)->first()
+            : DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+
+        if (!$source) {
+            abort(404, 'Data pengajuan tidak ditemukan.');
+        }
+
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', $type)
+            ->where('ref_id', $ref)
+            ->orderByDesc('id')
+            ->first();
+
+        $status = strtolower((string)($sv->status ?? 'terkirim'));
+        if ($status !== 'approve') {
+            abort(403, 'Tanda terima hanya bisa didownload setelah status APPROVE.');
+        }
+
+        if (!$sv || empty($sv->tanda_terima_pdf)) {
+            abort(404, 'File tanda terima belum tersedia.');
+        }
+
+        if (!Storage::disk('public')->exists($sv->tanda_terima_pdf)) {
+            abort(404, 'File tanda terima tidak ditemukan di storage/public.');
+        }
+
+        $noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
+        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
+
+        $downloadName = $type === 'paten'
+            ? "Tanda Terima Paten {$safeNo}.pdf"
+            : "Tanda Terima Hak Cipta {$safeNo}.pdf";
+
+        return response()->download(
+            storage_path('app/public/' . $sv->tanda_terima_pdf),
+            $downloadName
+        );
     }
 
-    if (!in_array($type, ['paten', 'cipta'], true)) {
-        abort(404);
+    public function downloadDokumenAwal(Request $request, string $type, int $ref, string $key)
+    {
+        $pemohon = Auth::guard('pemohon')->user();
+        if (!$pemohon) abort(403);
+
+        if (!in_array($type, ['paten','cipta'], true)) abort(404);
+
+        if ($key === 'link_ciptaan') abort(404);
+
+        $path = null;
+        $downloadName = null;
+        $source = $type === 'cipta'
+            ? DB::table('hak_cipta_verifs')->where('id', $ref)->first()
+            : PatenVerif::where('id', $ref)->first();
+
+        if (!$source) abort(404, 'Data pengajuan tidak ditemukan.');
+
+        $doc = VerifikasiDokumen::where([
+            'ref_type' => $type,
+            'ref_id'   => $ref,
+            'doc_key'  => $key,
+        ])->orderByDesc('id')->first();
+
+        if ($doc && !empty($doc->pemohon_file_path)) {
+            $path = $doc->pemohon_file_path;
+            $downloadName = $doc->pemohon_file_name ?: basename($path);
+        } else {
+            if ($type === 'paten' && $key === 'skema_tkt') {
+                $path = data_get($source, 'skema_tkt_template_path');
+            } else {
+                $path = data_get($source, $key);
+            }
+
+            if (!$path) abort(404, 'File tidak ditemukan.');
+
+            $downloadName = basename($path);
+        }
+        $path = ltrim((string)$path, '/');
+        $path = preg_replace('#^storage/#', '', $path);
+
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404, 'File tidak ada di storage.');
+        }
+
+        if ($type === 'paten' && $key === 'skema_tkt') {
+            $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
+            $ext = pathinfo($path, PATHINFO_EXTENSION);
+            $downloadName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
+        }
+        $downloadName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', (string)$downloadName);
+        $full = Storage::disk('public')->path($path);
+
+        return response()->download($full, $downloadName, [
+            'Content-Disposition' => 'attachment; filename="'.$downloadName.'"',
+        ]);
     }
+    public function uploadRevisi(Request $request, int $revisionId)
+    {
+        $pemohon = Auth::guard('pemohon')->user();
+        if (!$pemohon) return redirect()->route('pemohon.login.form');
 
-    // ambil pengajuan yang sedang dibuka, BUKAN nebak dari kode akun
-    $source = $type === 'paten'
-        ? PatenVerif::where('id', $ref)->first()
-        : DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+        $request->validate([
+            'file' => 'required|file|max:5120',
+        ]);
 
-    if (!$source) {
-        abort(404, 'Data pengajuan tidak ditemukan.');
-    }
+        $reqRow = DB::table('revisions')->where('id', $revisionId)->first();
+        if (!$reqRow) abort(404, 'Revisi tidak ditemukan.');
 
-    $sv = DB::table('status_verifikasi')
-        ->where('ref_type', $type)
-        ->where('ref_id', $ref)
-        ->orderByDesc('id')
+        if (($reqRow->from_role ?? null) !== 'admin' || ($reqRow->state ?? null) !== 'requested') {
+            return back()->with('success', 'Revisi ini sudah ditutup / tidak valid untuk upload.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $file = $request->file('file');
+
+    $tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
+
+    $source = DB::table($tableName)
+        ->where('id', $reqRow->ref_id)
         ->first();
-
-    $status = strtolower((string)($sv->status ?? 'terkirim'));
-    if ($status !== 'approve') {
-        abort(403, 'Tanda terima hanya bisa didownload setelah status APPROVE.');
-    }
-
-    if (!$sv || empty($sv->tanda_terima_pdf)) {
-        abort(404, 'File tanda terima belum tersedia.');
-    }
-
-    if (!Storage::disk('public')->exists($sv->tanda_terima_pdf)) {
-        abort(404, 'File tanda terima tidak ditemukan di storage/public.');
-    }
 
     $noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
     $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
 
-    $downloadName = $type === 'paten'
-        ? "Tanda Terima Paten {$safeNo}.pdf"
-        : "Tanda Terima Hak Cipta {$safeNo}.pdf";
+    // folder simpan file
+    $dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
 
-    return response()->download(
-        storage_path('app/public/' . $sv->tanda_terima_pdf),
-        $downloadName
-    );
-}
+    $originalExt = $file->getClientOriginalExtension();
 
-public function downloadDokumenAwal(Request $request, string $type, int $ref, string $key)
-{
-    $pemohon = Auth::guard('pemohon')->user();
-    if (!$pemohon) abort(403);
-
-    if (!in_array($type, ['paten','cipta'], true)) abort(404);
-
-    // jangan izinin download untuk field link (bukan file)
-    if ($key === 'link_ciptaan') abort(404);
-
-    $path = null;
-    $downloadName = null;
-
-    // source selalu diambil dulu biar bisa dipakai naming custom
-    $source = $type === 'cipta'
-        ? DB::table('hak_cipta_verifs')->where('id', $ref)->first()
-        : PatenVerif::where('id', $ref)->first();
-
-    if (!$source) abort(404, 'Data pengajuan tidak ditemukan.');
-
-    // 1) coba dari verifikasi_dokumens dulu
-    $doc = VerifikasiDokumen::where([
-        'ref_type' => $type,
-        'ref_id'   => $ref,
-        'doc_key'  => $key,
-    ])->orderByDesc('id')->first();
-
-    if ($doc && !empty($doc->pemohon_file_path)) {
-        $path = $doc->pemohon_file_path;
-        $downloadName = $doc->pemohon_file_name ?: basename($path);
+    if ($reqRow->doc_key === 'skema_tkt') {
+        $finalName = $safeNo . '_skema_tkt_7-9.' . $originalExt;
     } else {
-        // 2) fallback: ambil dari tabel sumber
-        if ($type === 'paten' && $key === 'skema_tkt') {
-            $path = data_get($source, 'skema_tkt_template_path');
-        } else {
-            $path = data_get($source, $key);
+        $original = $file->getClientOriginalName();
+        $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
+        $finalName = $safeName;
+    }
+
+    $counter = 1;
+    $base = pathinfo($finalName, PATHINFO_FILENAME);
+    $ext  = pathinfo($finalName, PATHINFO_EXTENSION);
+
+    while (Storage::disk('public')->exists($dir . '/' . $finalName)) {
+        $finalName = "{$base}_{$counter}" . ($ext ? ".{$ext}" : "");
+        $counter++;
+    }
+
+    $path = $file->storeAs($dir, $finalName, 'public');
+            $fullPathForDb = 'storage/' . $path; 
+    $tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
+
+    $targetColumn = $reqRow->doc_key;
+
+    if ($reqRow->type === 'paten' && $reqRow->doc_key === 'skema_tkt') {
+        $targetColumn = 'skema_tkt_template_path';
+    }
+
+    DB::table($tableName)->where('id', $reqRow->ref_id)->update([
+        $targetColumn => $fullPathForDb, // ✅ Sekarang pake targetColumn yang pinter
+        'updated_at'  => now(),
+    ]);
+            // 1) tutup request admin
+            DB::table('revisions')->where('id', $revisionId)->update([
+                'state'          => 'closed',
+                'is_read_admin'  => 1,
+                'is_read_pemohon'=> 1,
+                'updated_at'     => now(),
+            ]);
+
+            // 2) insert submitted pemohon (History)
+            DB::table('revisions')->insert([
+                'type'               => $reqRow->type,
+                'ref_id'             => $reqRow->ref_id,
+                'doc_key'            => $reqRow->doc_key,
+                'from_role'          => 'pemohon',
+                'state'              => 'submitted',
+                'note'               => null,
+                'file_path'          => null,
+                'pemohon_file_path'  => $path,
+                'pemohon_file_name'  => $finalName,
+                'pemohon_uploaded_at'=> now(),
+                'is_read_admin'      => 0,
+                'is_read_pemohon'    => 1,
+                'created_at'         => now(),
+                'updated_at'         => now(),
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'File revisi berhasil diupload dan dokumen pendaftaran telah diperbarui.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        if (!$path) abort(404, 'File tidak ditemukan.');
-
-        $downloadName = basename($path);
     }
-
-    // normalisasi path kalau ada "storage/"
-    $path = ltrim((string)$path, '/');
-    $path = preg_replace('#^storage/#', '', $path);
-
-    if (!Storage::disk('public')->exists($path)) {
-        abort(404, 'File tidak ada di storage.');
-    }
-
-    // ✅ khusus TKT: paksa nama download rapi sesuai kode pengajuan
-    if ($type === 'paten' && $key === 'skema_tkt') {
-        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
-        $ext = pathinfo($path, PATHINFO_EXTENSION);
-        $downloadName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
-    }
-
-    // amanin nama file
-    $downloadName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', (string)$downloadName);
-
-    $full = Storage::disk('public')->path($path);
-
-    return response()->download($full, $downloadName, [
-        'Content-Disposition' => 'attachment; filename="'.$downloadName.'"',
-    ]);
-}
-public function uploadRevisi(Request $request, int $revisionId)
-{
-    $pemohon = Auth::guard('pemohon')->user();
-    if (!$pemohon) return redirect()->route('pemohon.login.form');
-
-    $request->validate([
-        'file' => 'required|file|max:5120',
-    ]);
-
-    $reqRow = DB::table('revisions')->where('id', $revisionId)->first();
-    if (!$reqRow) abort(404, 'Revisi tidak ditemukan.');
-
-    if (($reqRow->from_role ?? null) !== 'admin' || ($reqRow->state ?? null) !== 'requested') {
-        return back()->with('success', 'Revisi ini sudah ditutup / tidak valid untuk upload.');
-    }
-
-    DB::beginTransaction();
-    try {
-        $file = $request->file('file');
-
-$tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
-
-$source = DB::table($tableName)
-    ->where('id', $reqRow->ref_id)
-    ->first();
-
-$noPendaftaran = trim((string)($source->no_pendaftaran ?? ''));
-$safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', $noPendaftaran);
-
-// folder simpan file
-$dir = "revisi/{$reqRow->type}/{$reqRow->ref_id}/{$reqRow->doc_key}";
-
-$originalExt = $file->getClientOriginalExtension();
-
-if ($reqRow->doc_key === 'skema_tkt') {
-    $finalName = $safeNo . '_skema_tkt_7-9.' . $originalExt;
-} else {
-    $original = $file->getClientOriginalName();
-    $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
-    $finalName = $safeName;
-}
-
-$counter = 1;
-$base = pathinfo($finalName, PATHINFO_FILENAME);
-$ext  = pathinfo($finalName, PATHINFO_EXTENSION);
-
-while (Storage::disk('public')->exists($dir . '/' . $finalName)) {
-    $finalName = "{$base}_{$counter}" . ($ext ? ".{$ext}" : "");
-    $counter++;
-}
-
-$path = $file->storeAs($dir, $finalName, 'public');
-        $fullPathForDb = 'storage/' . $path; // ✅ Path lengkap untuk tabel pendaftaran
-// 🚀 LOGIC REPLACING (SINKRONISASI KE TABEL UTAMA)
-$tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
-
-// ✅ TENTUKAN NAMA KOLOM ASLI DI DATABASE
-$targetColumn = $reqRow->doc_key;
-
-// 🔥 KUNCINYA DI SINI TIK:
-// Kalau doc_key adalah 'skema_tkt', belokkan ke kolom 'skema_tkt_template_path'
-if ($reqRow->type === 'paten' && $reqRow->doc_key === 'skema_tkt') {
-    $targetColumn = 'skema_tkt_template_path';
-}
-
-// Menimpa kolom file lama di tabel pendaftaran dengan file baru hasil revisi
-DB::table($tableName)->where('id', $reqRow->ref_id)->update([
-    $targetColumn => $fullPathForDb, // ✅ Sekarang pake targetColumn yang pinter
-    'updated_at'  => now(),
-]);
-        // ========================================================
-
-        // 1) tutup request admin
-        DB::table('revisions')->where('id', $revisionId)->update([
-            'state'          => 'closed',
-            'is_read_admin'  => 1,
-            'is_read_pemohon'=> 1,
-            'updated_at'     => now(),
-        ]);
-
-        // 2) insert submitted pemohon (History)
-        DB::table('revisions')->insert([
-            'type'               => $reqRow->type,
-            'ref_id'             => $reqRow->ref_id,
-            'doc_key'            => $reqRow->doc_key,
-            'from_role'          => 'pemohon',
-            'state'              => 'submitted',
-            'note'               => null,
-            'file_path'          => null,
-            'pemohon_file_path'  => $path,
-            'pemohon_file_name'  => $finalName,
-            'pemohon_uploaded_at'=> now(),
-            'is_read_admin'      => 0,
-            'is_read_pemohon'    => 1,
-            'created_at'         => now(),
-            'updated_at'         => now(),
-        ]);
-
-        DB::commit();
-        return back()->with('success', 'File revisi berhasil diupload dan dokumen pendaftaran telah diperbarui.');
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        throw $e;
-    }
-}
 }

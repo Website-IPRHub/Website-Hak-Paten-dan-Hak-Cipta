@@ -417,9 +417,9 @@ $uraianData = old('uraian',
             title: 'Data Disimpan Sementara',
             html: `
               <p>Data perubahan Anda sudah tersimpan di sistem (Sesi).</p>
-              <hr style="margin:15px 0;">
-              <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru</p>
-              <ul style="text-align:left; margin-top:10px; list-style:none; font-size:16px;">
+            <hr style="margin:15px 0;">
+            <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru sebelum melanjutkan ke tahap berikutnya:</p>
+            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:17px;">
                 <li>• Formulir Permohonan Pendaftaran Cipta</li>
                 <li>• Surat Pernyataan</li>
                 <li>• Surat Pengalihan Hak Cipta</li>
@@ -427,8 +427,8 @@ $uraianData = old('uraian',
             `,
             icon: 'success',
             showCancelButton: true,
-            confirmButtonText: 'Sudah Download',
-            cancelButtonText: 'Belum, Download Dulu',
+            confirmButtonText: 'Sudah',
+            cancelButtonText: 'Belum',
             confirmButtonColor: '#2F5C9E',
             cancelButtonColor: '#6c757d',
             reverseButtons: true

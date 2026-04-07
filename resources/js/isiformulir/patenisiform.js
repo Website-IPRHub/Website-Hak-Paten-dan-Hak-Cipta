@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         el.setAttribute('required', 'required');
       } else {
         el.removeAttribute('required');
-        // JANGAN hapus value kalau lagi inisialisasi awal (agar prefill session tidak hilang)
         if (!isInit) el.value = ''; 
       }
     });
@@ -151,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderInventors();
     });
 
-    renderInventors(); // Jalankan pertama kali
+    renderInventors(); 
   }
 
   /* =====================================================

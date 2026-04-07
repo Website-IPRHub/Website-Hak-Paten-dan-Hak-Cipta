@@ -605,8 +605,8 @@ document.addEventListener('DOMContentLoaded', () => {
           html: `
             <p>Data perubahan Anda sudah tersimpan di sistem (Sesi).</p>
             <hr style="margin:15px 0;">
-            <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru sebelum melanjutkan ke tahap verifikasi:</p>
-            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:15px;">
+            <p><b>Penting:</b> Pastikan Anda mendownload ulang dokumen dengan data terbaru sebelum melanjutkan ke tahap berikutnya:</p>
+            <ul style="text-align:left; margin-top:10px; list-style:none; font-size:17px;">
               <li>• Form Paten</li>
               <li>• Surat Pengalihan Hak</li>
               <li>• Kepemilikan Invensi</li>
@@ -614,8 +614,8 @@ document.addEventListener('DOMContentLoaded', () => {
           `,
           icon: 'success',
           showCancelButton: true,
-          confirmButtonText: 'Sudah Download',
-          cancelButtonText: 'Belum, Download Dulu',
+          confirmButtonText: 'Sudah',
+          cancelButtonText: 'Belum',
           confirmButtonColor: '#2F5C9E',
           cancelButtonColor: '#6c757d',
           reverseButtons: true

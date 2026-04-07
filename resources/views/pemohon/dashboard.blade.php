@@ -17,7 +17,6 @@
   $notePreview = function($text, $limit = 90){
     $t = (string) $text;
 
-    // untuk PREVIEW: jadikan 1 baris
     $oneLine = preg_replace("/\r\n|\r|\n/", " ", $t);
     $oneLine = trim($oneLine);
 
@@ -63,11 +62,11 @@
         </button>
 
         <form method="POST"
-              action="{{ route('pemohon.logout') }}"
-              onsubmit="return confirm('Kamu yakin mau logout?')">
-          @csrf
-          <button class="pd-logout" type="submit">Logout</button>
-        </form>
+            action="{{ route('pemohon.logout') }}"
+            id="logoutForm">
+        @csrf
+        <button class="pd-logout" type="button" id="btnLogout">Logout</button>
+      </form>
       </div>
     </div>
 
@@ -112,10 +111,6 @@
                 }}
               </div>
 
-              {{-- =========================
-                  TERKIRIM - DETAIL DOKUMEN PEMOHON (BARU)
-                  Muncul di step TERKIRIM, dan tetap kelihatan walau status sudah PROSES/REVISI/APPROVE
-                  ========================= --}}
               @if($s['key'] === 'terkirim')
                 @php
                   $labelsTerkirim = $pengajuan->type === 'paten'
@@ -139,9 +134,8 @@
                       ];
 
                   $sentDocs = collect($labelsTerkirim)->map(function($label, $key) use ($source){
-                    $isText = in_array($key, ['deskripsi_singkat_prototipe'], true); // ✅ TEKS field
+                    $isText = in_array($key, ['deskripsi_singkat_prototipe'], true);
 
-                    // kalau TEKS ambil dari kolom aslinya, BUKAN dianggap path storage
                     $val = $isText ? data_get($source, $key) : data_get($source, $key);
 
                     return (object)[
@@ -221,23 +215,23 @@
                   @endif
 
                 @else
-  {{-- FILE --}}
-  @php
-  $realValue = $d->value; 
-  if ($d->key === 'skema_tkt') {
-      $realValue = $source->skema_tkt_template_path;
-  }
-@endphp
+                {{-- FILE --}}
+                @php
+                $realValue = $d->value; 
+                if ($d->key === 'skema_tkt') {
+                    $realValue = $source->skema_tkt_template_path;
+                }
+              @endphp
 
-@if(!empty($realValue))
-  @php
-    if ($d->key === 'skema_tkt') {
-        $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
-        $ext = pathinfo($realValue, PATHINFO_EXTENSION);
-        $shownName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
-    } else {
-        $shownName = $prettyName($realValue, $d->label);
-    }
+              @if(!empty($realValue))
+                @php
+                  if ($d->key === 'skema_tkt') {
+                      $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
+                      $ext = pathinfo($realValue, PATHINFO_EXTENSION);
+                      $shownName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
+                  } else {
+                      $shownName = $prettyName($realValue, $d->label);
+                  }
   @endphp
     
   <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
@@ -248,7 +242,6 @@
   <span class="pd-muted">Belum diupload</span>
 @endif
 @endif
-
               </td>
             </tr>
           @endforeach
@@ -298,177 +291,175 @@
             Detail Revisi
           </button>
 
-  <div id="boxRevisi" class="pd-revisi-box" style="display:none; margin-top:10px;">
+          <div id="boxRevisi" class="pd-revisi-box" style="display:none; margin-top:10px;">
 
-    {{-- ✅ TABEL AKTIF CUMA PAS STATUS = REVISI --}}
-    @if(($status ?? '') === 'revisi')
-      <div class="pd-revisi-title">Dokumen yang Perlu Direvisi</div>
+            {{-- ✅ TABEL AKTIF CUMA PAS STATUS = REVISI --}}
+            @if(($status ?? '') === 'revisi')
+              <div class="pd-revisi-title">Dokumen yang Perlu Direvisi</div>
 
-      <p style="
-    margin:10px 0 16px 0;
-    padding:12px 14px;
-    background:#eef4ff;
-    border-left:4px solid #2563eb;
-    color:#1e3a8a;
-    font-size:15px;
-    font-weight:500;
-    border-radius:6px;
-">
-  ℹ️ Jika tersedia tombol <b>Edit</b>, silakan perbaiki data pada formulir terlebih dahulu, 
-  kemudian <b>download ulang dokumen</b> dan <b>upload kembali</b> file revisi pada kolom 
-  <b>Upload Revisi</b>.
-</p>
-      <div class="pd-table-shell">
-        <table class="pd-revisi-table revisi">
-         <thead>
-  <tr>
-    <th>Dokumen</th>
-    <th>Catatan</th>
-    <th>File Resivi</th>
-    <th>Status</th>
-    <th>Aksi</th>
-    <th>Upload Revisi</th>
-  </tr>
-</thead>
+              <p style="
+            margin:10px 0 16px 0;
+            padding:12px 14px;
+            background:#eef4ff;
+            border-left:4px solid #2563eb;
+            color:#1e3a8a;
+            font-size:15px;
+            font-weight:500;
+            border-radius:6px;
+        ">
+          ℹ️ Jika tersedia tombol <b>Edit</b>, silakan perbaiki data pada formulir terlebih dahulu, 
+          kemudian <b>download ulang dokumen</b> dan <b>upload kembali</b> file revisi pada kolom 
+          <b>Upload Revisi</b>.
+        </p>
+              <div class="pd-table-shell">
+                <table class="pd-revisi-table revisi">
+                <thead>
+          <tr>
+            <th>Dokumen</th>
+            <th>Catatan</th>
+            <th>File Resivi</th>
+            <th>Status</th>
+            <th>Aksi</th>
+            <th>Upload Revisi</th>
+          </tr>
+        </thead>
 
-<tbody>
-  @forelse(($revActiveByDoc ?? []) as $req)
-    @php
-      $docKey = $req->doc_key ?? '-';
-      $docLabel = $labels[$docKey] ?? $docKey;
+        <tbody>
+          @forelse(($revActiveByDoc ?? []) as $req)
+            @php
+              $docKey = $req->doc_key ?? '-';
+              $docLabel = $labels[$docKey] ?? $docKey;
 
-      $pemohonUploaded = !empty($req->pemohon_uploaded);
-      $adminNote = $req->admin_note ?? '-';
-      $adminFile = $req->admin_file_path ?? null;
+              $pemohonUploaded = !empty($req->pemohon_uploaded);
+              $adminNote = $req->admin_note ?? '-';
+              $adminFile = $req->admin_file_path ?? null;
 
-      $revId = $req->id ?? null;
-      $isTextDoc = in_array($docKey, ['deskripsi_singkat_prototipe'], true);
-      $currentText = $isTextDoc ? trim((string) ($req->pemohon_text ?? '')) : '';
-    @endphp
+              $revId = $req->id ?? null;
+              $isTextDoc = in_array($docKey, ['deskripsi_singkat_prototipe'], true);
+              $currentText = $isTextDoc ? trim((string) ($req->pemohon_text ?? '')) : '';
+            @endphp
 
-    <tr>
-      <td>{{ $docLabel }}</td>
+            <tr>
+              <td>{{ $docLabel }}</td>
 
-      <td>
-        @php
-          $noteText = trim((string)($adminNote ?? ''));
-          $noteText = ($noteText === '' ? '-' : $noteText);
-          $noteClamp = trim(preg_replace("/\r\n|\r|\n/", " ", (string)$noteText));
-        @endphp
+              <td>
+                @php
+                  $noteText = trim((string)($adminNote ?? ''));
+                  $noteText = ($noteText === '' ? '-' : $noteText);
+                  $noteClamp = trim(preg_replace("/\r\n|\r|\n/", " ", (string)$noteText));
+                @endphp
 
-        <div class="pd-note-cell">
-          @if($noteText === '-')
-            <span class="pd-dash">-</span>
+                <div class="pd-note-cell">
+                  @if($noteText === '-')
+                    <span class="pd-dash">-</span>
+                  @else
+                    <div class="pd-note-clamp">{{ $noteClamp }}</div>
+                    <div class="pd-note-full" hidden>{{ $noteText }}</div>
+                    <button type="button" class="pd-note-toggle jsNoteToggle" hidden>Selengkapnya</button>
+                  @endif
+                </div>
+              </td>
+
+              <td class="pd-td-center">
+          @if($adminFile)
+            <a href="{{ asset('storage/'.$adminFile) }}" target="_blank" class="pd-action-link">
+              Download
+            </a>
           @else
-            <div class="pd-note-clamp">{{ $noteClamp }}</div>
-            <div class="pd-note-full" hidden>{{ $noteText }}</div>
-            <button type="button" class="pd-note-toggle jsNoteToggle" hidden>Selengkapnya</button>
+            <span class="pd-dash">-</span>
           @endif
-        </div>
-      </td>
+        </td> {{-- ✅ tutup dengan benar --}}
 
-      <td class="pd-td-center">
-  @if($adminFile)
-    <a href="{{ asset('storage/'.$adminFile) }}" target="_blank" class="pd-action-link">
-      Download
-    </a>
-  @else
-    <span class="pd-dash">-</span>
-  @endif
-</td> {{-- ✅ tutup dengan benar --}}
-
-<td class="pd-td-center">
-  @if($isTextDoc)
-    @if($currentText !== '')
-      <span class="pd-pill done">
-        Sudah<br>diperbarui
-      </span>
-    @else
-      <span class="pd-pill todo">
-        Belum<br>diperbarui
-      </span>
-    @endif
-  @else
-    @if($pemohonUploaded)
-      <span class="pd-pill done">Sudah upload</span>
-    @else
-      <span class="pd-pill todo">Belum upload</span>
-    @endif
-  @endif
-</td>
-
-      {{-- EDIT --}}
-    {{-- REVISI TOMBOL EDIT DI DASHBOARD --}}
-{{-- LOGIKA 2 KONDISI TOMBOL EDIT TIK --}}
-<td class="pd-td-center">
- @if(in_array($docKey, $editableDocKeys))
-  @php
-    if ($docKey === 'skema_tkt') {
-        $urlEdit = route('dup.skema.form', ['verif' => $pengajuan->id]);
-    } elseif ($docKey === 'deskripsi_singkat_prototipe') {
-        $urlEdit = route('pemohon.paten.edit_deskripsi', ['ref' => $pengajuan->id]);
-    } else {
-        $urlEdit = route('pemohon.revisi.edit', [
-            'type' => $pengajuan->type,
-            'ref'  => $pengajuan->id,
-            'doc'  => $docKey,
-        ]);
-    }
-  @endphp
-
-  <a href="{{ $urlEdit }}" class="pd-mini-btn">
-    Edit
-  </a>
-  @else
-    <span class="pd-muted">-</span>
-  @endif
-</td>
-
-      {{-- UPLOAD REVISI --}}
-      <td>
-        @if($isTextDoc)
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div class="pd-muted" style="font-size:13px;">
-              Perbaiki lewat tombol <b>Edit</b>.
-            </div>
-
-            <div style="padding:10px 12px; background:#f8fafc; border:1px solid #dbe5f0; border-radius:10px;">
-              @if($currentText !== '')
-                <div style="white-space:pre-wrap;">{{ $currentText }}</div>
-              @else
-                <span class="pd-muted">Teks belum diisi.</span>
-              @endif
-            </div>
-          </div>
-        @else
-          @if($revId)
-            @if(!$pemohonUploaded)
-              <form method="POST"
-                    action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
-                    enctype="multipart/form-data"
-                    class="pd-upload-form">
-                @csrf
-                <input type="file" name="file" required>
-                <button type="submit" class="pd-mini-btn">Upload</button>
-              </form>
+        <td class="pd-td-center">
+          @if($isTextDoc)
+            @if($currentText !== '')
+              <span class="pd-pill done">
+                Sudah<br>diperbarui
+              </span>
             @else
-              <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
+              <span class="pd-pill todo">
+                Belum<br>diperbarui
+              </span>
             @endif
           @else
-            <span class="pd-muted">Data revisi belum valid (id kosong).</span>
+            @if($pemohonUploaded)
+              <span class="pd-pill done">Sudah upload</span>
+            @else
+              <span class="pd-pill todo">Belum upload</span>
+            @endif
           @endif
-        @endif
-      </td>
-    </tr>
-  @empty
-    <tr><td colspan="6">Belum ada dokumen revisi.</td></tr>
-  @endforelse
-</tbody>
+        </td>
+
+              {{-- EDIT --}}
+            {{-- REVISI TOMBOL EDIT DI DASHBOARD --}}
+        <td class="pd-td-center">
+        @if(in_array($docKey, $editableDocKeys))
+          @php
+            if ($docKey === 'skema_tkt') {
+                $urlEdit = route('dup.skema.form', ['verif' => $pengajuan->id]);
+            } elseif ($docKey === 'deskripsi_singkat_prototipe') {
+                $urlEdit = route('pemohon.paten.edit_deskripsi', ['ref' => $pengajuan->id]);
+            } else {
+                $urlEdit = route('pemohon.revisi.edit', [
+                    'type' => $pengajuan->type,
+                    'ref'  => $pengajuan->id,
+                    'doc'  => $docKey,
+                ]);
+            }
+          @endphp
+
+          <a href="{{ $urlEdit }}" class="pd-mini-btn">
+            Edit
+          </a>
+          @else
+            <span class="pd-muted">-</span>
+          @endif
+        </td>
+
+              {{-- UPLOAD REVISI --}}
+              <td>
+                @if($isTextDoc)
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div class="pd-muted" style="font-size:13px;">
+                      Perbaiki melalui tombol <b>Edit</b>.
+                    </div>
+
+                    <div style="padding:10px 12px; background:#f8fafc; border:1px solid #dbe5f0; border-radius:10px;">
+                      @if($currentText !== '')
+                        <div style="white-space:pre-wrap;">{{ $currentText }}</div>
+                      @else
+                        <span class="pd-muted">Teks belum diisi.</span>
+                      @endif
+                    </div>
+                  </div>
+                @else
+                  @if($revId)
+                    @if(!$pemohonUploaded)
+                      <form method="POST"
+                            action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
+                            enctype="multipart/form-data"
+                            class="pd-upload-form">
+                        @csrf
+                        <input type="file" name="file" required>
+                        <button type="submit" class="pd-mini-btn">Upload</button>
+                      </form>
+                    @else
+                      <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
+                    @endif
+                  @else
+                    <span class="pd-muted">Data revisi belum valid (id kosong).</span>
+                  @endif
+                @endif
+              </td>
+            </tr>
+          @empty
+            <tr><td colspan="6">Belum ada dokumen revisi.</td></tr>
+          @endforelse
+        </tbody>
         </table>
       </div>
     @endif
 
-    {{-- ✅ RIWAYAT: TAMPIL DI REVISI & APPROVE --}}
     <div class="pd-revisi-title" style="margin-top:16px;">
       Riwayat Revisi (Sudah Diupload)
     </div>
@@ -509,9 +500,9 @@
                     <span class="pd-dash">-</span>
                   @else
                     @php
-  $noteClamp = trim(preg_replace("/\r\n|\r|\n/", " ", (string)$noteText));
-@endphp
-<div class="pd-note-clamp">{{ $noteClamp }}</div>
+                      $noteClamp = trim(preg_replace("/\r\n|\r|\n/", " ", (string)$noteText));
+                    @endphp
+                    <div class="pd-note-clamp">{{ $noteClamp }}</div>
                     <div class="pd-note-full" hidden style="white-space:pre-wrap;">{{ $noteText }}</div>
                     <button type="button" class="pd-note-toggle jsNoteToggle" hidden>Selengkapnya</button>
                   @endif
@@ -527,16 +518,16 @@
               </td>
 
               <td class="pd-td-center">
-  @php
-    $isTextHistory = in_array($docKey2, ['deskripsi_singkat_prototipe'], true);
-  @endphp
+                @php
+                  $isTextHistory = in_array($docKey2, ['deskripsi_singkat_prototipe'], true);
+                @endphp
 
-  @if($isTextHistory)
-    <span class="pd-pill done">Sudah<br>diperbarui</span>
-  @else
-    <span class="pd-pill done">Sudah upload</span>
-  @endif
-</td>
+                @if($isTextHistory)
+                  <span class="pd-pill done">Sudah<br>diperbarui</span>
+                @else
+                  <span class="pd-pill done">Sudah upload</span>
+                @endif
+              </td>
 
               <td class="pd-td-center">
                 @php
@@ -650,8 +641,6 @@
 
       <div class="pa-kv">
 
-      {{-- Ringkasan Pengajuan (di atas) --}}
-
       <div class="pa-wide">
         <div class="pa-label">Judul</div>
         <div class="pa-value">{{ $akun->judul ?? '-' }}</div>
@@ -667,9 +656,6 @@
         <div class="pa-value">{{ $akun->jenis ?? '-' }}</div>
       </div>
 
-      
-
-      {{-- INVENTOR (detail per inventor) taruh PALING BAWAH --}}
       <div class="pa-wide" style="margin-top:10px;">
         <div class="pa-label">Inventor</div>
 
@@ -694,7 +680,6 @@
             @endforeach
           </div>
         @else
-          {{-- fallback buat hak cipta / data non-array --}}
           <div class="pa-value">{{ $akun->inventor_list ?? '-' }}</div>
         @endif
       </div>
