@@ -78,10 +78,7 @@
           @enderror
           </div>
 
-<<<<<<< HEAD
-=======
           {{-- Jenis Cipta (radio) --}}
->>>>>>> 2d9ad1d1e27ce926124c45114209c714ebbf59d2
         @php
           $jenisOld = old('jenis_cipta', data_get($data,'jenis_cipta'));
           $jenisLainnyaOld = old('jenis_cipta_lainnya', data_get($data,'jenis_cipta_lainnya'));
@@ -395,6 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const key = `${keyPrefix}_${name}`;
 
+    // restore dari sessionStorage kalau value blade kosong
     if (!el.value) {
       const saved = sessionStorage.getItem(key);
       if (saved !== null) {
@@ -409,6 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // kalau form page 2 berhasil submit, hapus draft browser
   const form = document.getElementById('draftForm');
   if (form) {
     form.addEventListener('submit', () => {

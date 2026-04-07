@@ -283,6 +283,8 @@ $verifSession = session('hakpaten.verif', []);
               </div>
             </template>
 
+
+
             <template id="inventor-template-verif">
               <div class="inventor-card">
                 <p class="inventor-head">Inventor <span class="inv-no"></span></p>
@@ -531,108 +533,6 @@ $verifSession = session('hakpaten.verif', []);
         }
       });
 
-<<<<<<< HEAD
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        console.error('HTTP error');
-        return;
-      }
-
-      if (data?.redirect) {
-        window.location.href = data.redirect;
-        return;
-      }
-
-      if (data?.ok) {
-        window.location.href = data.redirect;
-        return;
-      }
-
-      window.location.href = data.redirect;
-
-    } catch (err) {
-      console.error(err);
-    }
-  });
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const select = document.querySelector('.prototipe-select');
-  if (!select) return;
-
-  function updateColor() {
-    select.classList.remove('sudah', 'belum');
-
-    if (select.value === 'Sudah') {
-      select.classList.add('sudah');
-    } else if (select.value === 'Belum') {
-      select.classList.add('belum');
-    }
-  }
-
-  updateColor();
-  select.addEventListener('change', updateColor);
-});
-</script>
-  <script>
-document.addEventListener("input", function (e) {
-  if (e.target.matches(".nip-input")) {
-    const value = e.target.value.trim();
-    const warning = e.target.parentElement.querySelector(".nip-warning");
-    const valid = /^\d{14}$|^\d{18}$/.test(value);
-
-    if (warning) {
-      warning.style.display = value === "" || valid ? "none" : "block";
-      warning.style.color = "red";
-    }
-  }
-
-  if (e.target.matches(".nidn-input")) {
-    const value = e.target.value.trim();
-    const warning = e.target.parentElement.querySelector(".nidn-warning");
-    const valid = /^\d{8}$/.test(value);
-
-    if (warning) {
-      warning.style.display = value === "" || valid ? "none" : "block";
-      warning.style.color = "red";
-    }
-  }
-
-  if (e.target.matches(".hp-input")) {
-    const value = e.target.value.trim();
-    const warning = e.target.parentElement.querySelector(".hp-warning");
-    const valid = /^08[0-9]{8,13}$/.test(value);
-
-    if (warning) {
-      warning.style.display = value === "" || valid ? "none" : "block";
-      warning.style.color = "red";
-    }
-  }
-
-  if (e.target.matches(".email-input")) {
-    const value = e.target.value.trim();
-    const warning = e.target.parentElement.querySelector(".email-warning");
-    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-    if (warning) {
-      warning.style.display = value === "" || valid ? "none" : "block";
-      warning.style.color = "red";
-    }
-  }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(
-    ".nip-warning, .nidn-warning, .hp-warning, .email-warning"
-  ).forEach(el => {
-    el.style.display = "none";
-  });
-});
-</script>
-=======
       document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(
           ".nip-warning, .nidn-warning, .hp-warning, .email-warning"
@@ -641,7 +541,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
       </script>
->>>>>>> 2d9ad1d1e27ce926124c45114209c714ebbf59d2
   </div>
 </section>
 @endsection
