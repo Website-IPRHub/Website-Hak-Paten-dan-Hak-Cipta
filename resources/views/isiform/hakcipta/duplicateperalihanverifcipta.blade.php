@@ -23,10 +23,8 @@
         <h1>Catatan: Mohon rapikan kembali dokumen sebelum dikirimkan ke proses verifikasi.</h1>
       </div>
         <a href="{{ route('isiform.hakcipta.duplicateformpendaftaran')}}" class="btn-verif">
-  Mulai Proses 
-</a>
-
-
+          Mulai Proses 
+        </a>
     </div>
   </div>
 </section>

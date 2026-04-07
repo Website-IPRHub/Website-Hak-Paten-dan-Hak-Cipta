@@ -11,13 +11,10 @@ use Illuminate\Support\Facades\Storage;
 
 class DuplicateSkemaController extends Controller
 {
-    // ✅ 1. FUNGSI UNTUK TAMPILIN HALAMAN EDIT (GET)
+    // FUNGSI UNTUK TAMPILIN HALAMAN EDIT
     public function showDuplicate(PatenVerif $verif)
     {
-        // Ambil dari session biar data gak ilang pas refresh
         $sessionKey = "patenverif.{$verif->id}.skema";
-        
-        // Ambil data session, kalau kosong ambil default dari Inventor 1
         $draft = session($sessionKey, [
             'nama_lengkap' => $verif->inventors_arr[0]['nama'] ?? '',
             'program_studi' => '',
@@ -29,7 +26,7 @@ class DuplicateSkemaController extends Controller
         return view('duplicateskemarevisi', compact('verif', 'draft'));
     }
 
-    // ✅ 2. FUNGSI UNTUK DOWNLOAD & SIMPAN SESSION (POST)
+    // FUNGSI UNTUK DOWNLOAD & SIMPAN SESSION 
     public function downloadDuplicate(Request $request, PatenVerif $verif)
     {
         $sessionKey = "patenverif.{$verif->id}.skema";
@@ -42,7 +39,7 @@ class DuplicateSkemaController extends Controller
         return $this->downloadDocx($request);
     }
 
-    // ✅ 3. FUNGSI UNTUK UPLOAD REVISI (POST)
+    //FUNGSI UNTUK UPLOAD REVISI 
     public function uploadDuplicate(Request $request, PatenVerif $verif)
     {
         return $this->handleUpload(
@@ -50,7 +47,6 @@ class DuplicateSkemaController extends Controller
             noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
             storeDir: 'paten-verif/skema',
             updateModel: function(string $path) use ($verif) {
-                // Update kolom path utama DAN daftarin ke daftar dokumen Admin
                 $docs = $verif->docs ?? [];
                 $docs['skema_tkt'] = [
                     'status' => 'pending',
@@ -67,8 +63,6 @@ class DuplicateSkemaController extends Controller
             sessionKey: "patenverif.{$verif->id}.skema",
         );
     }
-
-    // --- HELPERS (TIDAK PERLU DIUBAH) ---
 
     private function downloadDocx(Request $request)
     {
@@ -100,8 +94,7 @@ class DuplicateSkemaController extends Controller
             return response()->download($out, 'Surat Pernyataan TKT 7-9.docx')->deleteFileAfterSend(true);
         }
 
-        // PDF Conversion logic (Sesuaikan path LibreOffice lo Tik)
-        $soffice = ':\Program Files\LibreOffice\program\soffice.exe';
+        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
         if (!file_exists($soffice)) $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
         
         $outDir = dirname($out);

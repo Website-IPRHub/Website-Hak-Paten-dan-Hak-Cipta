@@ -10,24 +10,20 @@ class InvensiController extends Controller
 {
     private function pickTemplate(int $jumlah): string
     {
-        // Ganti nama file sesuai punyamu
         if ($jumlah >= 1 && $jumlah <= 4)  return public_path('templates/1-4 invensi.docx');
         if ($jumlah >= 5 && $jumlah <= 14)  return public_path('templates/5-8 invensi.docx');
-        // if ($jumlah >= 9 && $jumlah <= 14) return public_path('templates/9-14 invensi.docx');
-
         abort(422, 'Jumlah inventor tidak didukung template.');
     }
 
     private function val($v): string
     {
         $s = trim((string)($v ?? ''));
-        return $s === '' ? '' : $s; // kosongin aja kalau kosong
+        return $s === '' ? '' : $s; 
     }
 
     private function softWrap($text): string
 {
     $text = (string) $text;
-    // sisip ZWSP tiap 30 char untuk kata panjang tanpa spasi
     return preg_replace('/(\S{30})(?=\S)/u', "$1\u{200B}", $text);
 }
 
@@ -59,14 +55,12 @@ class InvensiController extends Controller
 
     session(['hakpaten.invensi' => $data]);
 
-    // kalau klik tombol Next
     if ($request->input('action') === 'next') {
         return redirect()
             ->route('hakpaten.pengalihanhakformulir')
             ->with('success', 'Data invensi tersimpan.');
     }
 
-    // selain itu: download docx
     $templatePath = $this->pickTemplate($jumlah);
     if (!file_exists($templatePath)) {
         abort(500, 'Template DOCX tidak ditemukan: ' . $templatePath);
@@ -125,7 +119,7 @@ class InvensiController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command 
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 
@@ -141,7 +135,7 @@ class InvensiController extends Controller
             ->download($pdfPath, 'Surat Pernyataan Kepemilikan Invensi oleh Inventor.pdf')
             ->deleteFileAfterSend(true);
 
-        session()->put('hakpaten.invensi', $validated); // atau payload invensi
+        session()->put('hakpaten.invensi', $validated); 
 
     }
     

@@ -304,14 +304,14 @@ const countTooltip = {
           {
             label: 'Paten',
             data: payload.fakultas.paten || [],
-            backgroundColor: THEME.paten,    // ✅ 1 warna
+            backgroundColor: THEME.paten,   
             borderRadius: 8,
             barThickness: 10,
           },
           {
             label: 'Hak Cipta',
             data: payload.fakultas.cipta || [],
-            backgroundColor: THEME.cipta,    // ✅ 1 warna
+            backgroundColor: THEME.cipta,   
             borderRadius: 8,
             barThickness: 10,
           },
@@ -347,7 +347,6 @@ const countTooltip = {
           legend: { position: 'bottom' },
         },
 
-        // ✅ biar 3 bar per fakultas kebaca jelas
         datasets: {
           bar: {
             categoryPercentage: 0.7,
@@ -706,7 +705,7 @@ function setupDetailDrawer() {
     if (!inventors || inventors.length === 0) {
       inventors = [{
         nama: btn.dataset.nama || '-',
-        status: btn.dataset.statusInventor || btn.dataset.role || '-', // kalau ga ada ya '-'
+        status: btn.dataset.statusInventor || btn.dataset.role || '-', 
         nip_nim: btn.dataset.nip || '-',
         fakultas: btn.dataset.fakultas || '-',
         email: btn.dataset.email || '-',
@@ -748,8 +747,6 @@ function csrfToken() {
 }
 
 function toast(msg, type = 'success') {
-  // simpel: pakai alert dulu biar cepat jalan
-  // kalau kamu punya toast UI sendiri, ganti fungsi ini
   console.log(`[${type}]`, msg);
 }
 
@@ -776,7 +773,6 @@ async function postFormJson(actionUrl, formData) {
 
 function setBadge(badgeEl, status) {
   if (!badgeEl) return;
-  // hapus class badge-xxx lama
   badgeEl.className = badgeEl.className
     .split(' ')
     .filter(c => !c.startsWith('badge-'))
@@ -967,7 +963,7 @@ document.addEventListener('submit', async (e) => {
         }
       }
 
-      // ✅ sukses message
+      // sukses message
       if (msgEl) {
         msgEl.textContent = json.message || 'Tersimpan ✅';
         msgEl.style.color = 'green';

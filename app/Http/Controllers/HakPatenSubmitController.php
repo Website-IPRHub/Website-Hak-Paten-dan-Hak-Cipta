@@ -22,6 +22,4 @@ class HakPatenSubmitController extends Controller
         return redirect()->route('patenverif.deskripsi', $verif->id)
             ->with('success', 'Tersimpan');
     }
-
-
 }

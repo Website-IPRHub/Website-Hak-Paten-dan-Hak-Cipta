@@ -102,7 +102,6 @@ select.input{
   text-align: center;
 }
 
-/* List inventor rapi dan ditengah */
 #inventor-container{
   display: flex;
   flex-direction: column;
@@ -111,7 +110,6 @@ select.input{
   width: 100%;
 }
 
-/* Row inventor ditengah dengan lebar konsisten */
 .inventor-row{
   width: 100%;
   max-width: 720px;
@@ -151,7 +149,6 @@ select.input{
   flex-wrap: wrap;
 }
 
-/* pastiin kanan bener2 nempel kanan */
 .actions-right{
   margin-left: auto;
 }
@@ -178,7 +175,7 @@ select.input{
   align-items: center;
   gap: 10px;
 
-  text-decoration: none;     /* penting utk <a> */
+  text-decoration: none;    
   cursor: pointer;
   transition: 0.2s;
 
@@ -220,7 +217,6 @@ select.input{
     justify-content: flex-start;
   }
 
-  /* tombol kecil konsisten untuk semua (bukan cuma button) */
   .actions-bar .btn-prev,
   .actions-bar .btn-selanjutnya,
   .actions-bar .unduh{
@@ -229,9 +225,8 @@ select.input{
   }
 }
 
-/* Kalau ada CSS reset yang bikin button jadi teks, ini balikin tampilannya */
 .actions-bar .actions-right .unduh{
-  all: unset;                /* reset semua style aneh */
+  all: unset;         
   box-sizing: border-box;
 
   background: #344c7b;
@@ -300,10 +295,9 @@ select.input{
     text-align: left;
   }
 
-  /* FIX: biar gak perlu geser kanan */
   .actions-bar{
-    flex-wrap: wrap;             /* boleh turun baris */
-    justify-content: flex-start; /* biar rapi */
+    flex-wrap: wrap;             
+    justify-content: flex-start; 
     gap: 10px;
   }
 
@@ -313,15 +307,13 @@ select.input{
     justify-content: flex-start;
   }
 
-  /* tombol tetap kecil (auto), tapi rapih dan gak overflow */
   .actions-bar button{
-    padding: 10px 14px;          /* sedikit lebih kecil biar muat */
+    padding: 10px 14px;         
     font-size: 13px;
     gap: 10px;
   }
 }
 
-/* FIX FINAL: paksa tombol unduh jadi tombol biru */
 .actions-bar .actions-right > button.unduh{
   background: #344c7b !important;
   color: #fff !important;
@@ -342,7 +334,6 @@ select.input{
   text-decoration: none !important;
   line-height: 1 !important;
 
-  /* ini penting kalau ada reset aneh */
   appearance: none !important;
   -webkit-appearance: none !important;
 }
@@ -379,26 +370,21 @@ select.input{
   transform: translateY(-1px);
 }
 
-
-/* kecilin jarak antar field dalam card */
 .inventor-card .field{
   margin-bottom: 3px; 
   gap: 4px;
 }
 
-/* kecilin jarak grid kiri-kanan */
 .inventor-card .inventor-grid{
   gap: 12px;
 }
 
-/* kecilin jarak vertikal antar field dalam kolom */
 .inventor-card .inventor-col{
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-/* kecilin jarak judul inventor */
 .inventor-card .inventor-head{
   margin-bottom: 3px;
 }

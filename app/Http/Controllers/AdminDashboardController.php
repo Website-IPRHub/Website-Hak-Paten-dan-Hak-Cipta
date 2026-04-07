@@ -429,10 +429,10 @@ class AdminDashboardController extends Controller
                 return $r;
             });
 
-              $revType   = $request->query('rev_type');    // paten | cipta | null
-                $revState  = $request->query('rev_state');   // requested | submitted | null
-                $revDoc    = $request->query('rev_doc');     // doc_key atau null
-                $revUnread = $request->query('rev_unread');  // 1 atau null
+              $revType   = $request->query('rev_type');  
+                $revState  = $request->query('rev_state');  
+                $revDoc    = $request->query('rev_doc');    
+                $revUnread = $request->query('rev_unread'); 
                 $from      = $request->query('from');
                 $to        = $request->query('to');
 
@@ -592,7 +592,6 @@ class AdminDashboardController extends Controller
     {
         if ($rows->count() === 0) return $rows;
 
-        // ambil id (works for stdClass & model)
         $ids = $rows->pluck('id')->filter()->values()->all();
         if (count($ids) === 0) return $rows;
 
@@ -642,12 +641,12 @@ class AdminDashboardController extends Controller
 
         if (!$num) return null;
 
-        // kalau mulai 0 → ganti jadi 62
+        // kalau mulai 0 maka ganti jadi 62
         if (str_starts_with($num, '0')) {
             $num = '62' . substr($num, 1);
         }
 
-        // kalau mulai 8 (user ngetik 812...) → tambahin 62
+        // kalau mulai 8 (user ngetik 812...) tambah 62
         if (str_starts_with($num, '8')) {
             $num = '62' . $num;
         }
@@ -663,7 +662,6 @@ class AdminDashboardController extends Controller
         $phone = $this->normalizeWaNumber($phone);
         if (!$phone) return null;
 
-        // wa.me butuh URL encoded message
         $text = rawurlencode($message);
 
         return "https://wa.me/{$phone}?text={$text}";
@@ -671,13 +669,11 @@ class AdminDashboardController extends Controller
 
     private function getPemohonPhone($row): ?string
     {
-        // dukung dua kemungkinan kolom
         return $row->nomor_hp ?? $row->no_hp ?? null;
     }
 
     private function getPemohonName($row): string
     {
-        // ambil nama yang paling mungkin ada
         return $row->nama_pencipta
             ?? $row->nama
             ?? $row->username
@@ -1082,7 +1078,6 @@ class AdminDashboardController extends Controller
 
         $currentStatus = strtolower((string)($existing->status ?? 'pending'));
 
-        // dokumen opsional yang belum ada isi/file dari pemohon tidak boleh direvisi
         if ($action === 'revisi') {
             $meta = $this->getRowByType($type, $id);
             $row  = $meta['row'];
@@ -1139,17 +1134,14 @@ class AdminDashboardController extends Controller
             $data['requested_at'] = now();
             $data['updated_at'] = now();
         } elseif ($action === 'ok') {
-            // ✅ status jadi OK, tapi arsip revisi JANGAN dihapus
             $data['updated_at'] = now();
-        } else { // pending
-            // ✅ kalau balik pending, arsip revisi juga tetap ada
+        } else { 
             $data['updated_at'] = now();
         }
 
     if ($request->hasFile('admin_attachment')) {
         $file = $request->file('admin_attachment');
 
-        // ✅ ambil nama asli
         $original = $file->getClientOriginalName();
         $safeName = preg_replace('/[^a-zA-Z0-9.\-_ ()]/', '_', $original);
 
@@ -1166,11 +1158,10 @@ class AdminDashboardController extends Controller
             $counter++;
         }
 
-        // ✅ simpan pakai nama asli (bukan random)
         $path = $file->storeAs($dir, $finalName, 'public');
 
         $data['admin_attachment_path'] = $path;
-        $data['admin_attachment_name'] = $finalName; // simpan nama final yang dipakai
+        $data['admin_attachment_name'] = $finalName; 
 
         if ($action === 'revisi' && empty($data['requested_at'])) {
             $data['requested_at'] = now();
@@ -1181,7 +1172,6 @@ class AdminDashboardController extends Controller
         ['ref_type' => $type, 'ref_id' => $id, 'doc_key' => $docKey],
         $data
     );
-        
 
         if ($request->expectsJson()) {
             $doc = VerifikasiDokumen::where([
@@ -1211,7 +1201,6 @@ class AdminDashboardController extends Controller
         return redirect()->back()->with('success', 'Status dokumen berhasil disimpan.');
     }
 
-
         // ========= kirim email revisi  =========
     public function sendRevisiEmail(Request $request, string $type, int $id)
     {
@@ -1223,7 +1212,7 @@ class AdminDashboardController extends Controller
         // ambil meta pengajuan
         $meta = $this->getRowByType($type, $id);
         $row = $meta['row'];
-        $kategori = $meta['kategori']; // biasanya PATEN / HAK CIPTA (atau format kamu)
+        $kategori = $meta['kategori'];
         $judul = $meta['judul'];
         $no = $meta['no'];
 
@@ -1303,7 +1292,6 @@ class AdminDashboardController extends Controller
             'hasil_ciptaan' => 'Hasil Ciptaan',
         ];
 
-        // build item email (dengan file admin)
         $items = [];
         foreach ($docsToSend as $d) {
             $adminFull = null;
@@ -1339,16 +1327,11 @@ class AdminDashboardController extends Controller
                 ]
             );
         
-
-        // INSERT REQUEST BARU (HANYA kalau memang ada revisi admin BARU)
         foreach ($docsToSend as $d) {
-
-            // safety
             if (empty($d->requested_at)) {
                 continue;
             }
 
-            // 1) kalau masih ada request admin yang OPEN, jangan bikin baru
             $hasOpen = DB::table('revisions')
                 ->where('type', $type)
                 ->where('ref_id', $id)
@@ -1361,7 +1344,6 @@ class AdminDashboardController extends Controller
                 continue;
             }
 
-            // 2) ambil LAST request admin (apapun state: requested / closed)
             $lastAdmin = DB::table('revisions')
                 ->where('type', $type)
                 ->where('ref_id', $id)
@@ -1399,11 +1381,8 @@ class AdminDashboardController extends Controller
     }
 
 
-        // kirim email revisi
+        // kirim email revisi (hold)
         try {
-            // =====================================================
-            // ✅ WA: MULTI NOMOR + PESAN LEBIH SOPAN + LINK LOGIN
-            // =====================================================
             $kategoriUpper = strtoupper($type === 'paten' ? 'PATEN' : 'HAK CIPTA');
             $loginUrl = url('/pemohon/login');
 
@@ -1422,8 +1401,8 @@ class AdminDashboardController extends Controller
             . "Hormat kami,\n"
             . "Admin KIHub";
 
-            $phones  = $this->getPemohonPhones($row);        // array nomor (sudah dinormalize & unique)
-            $waLinks = $this->makeWaLinks($phones, $waMsg);  // array link
+            $phones  = $this->getPemohonPhones($row);      
+            $waLinks = $this->makeWaLinks($phones, $waMsg);  
 
             $waLink = $waLinks[0] ?? null;
 
@@ -1432,15 +1411,15 @@ class AdminDashboardController extends Controller
                     'ok' => true,
                     'message' => 'Revisi berhasil dikirim.',
                     'emails' => $emails,
-                    'wa_links' => $waLinks,  // ✅ utama
-                    'wa_link'  => $waLink,   // ✅ cadangan
+                    'wa_links' => $waLinks, 
+                    'wa_link'  => $waLink,   
                     'wa_label' => 'Kirim WA (Announce Revisi)',
                 ]);
             }
 
             return redirect()->back()
                 ->with('success', 'Email revisi terkirim ke: '.implode(', ', $emails))
-                ->with('wa_links', $waLinks) // ✅ tetap array
+                ->with('wa_links', $waLinks)
                 ->with('wa_label', 'Kirim WA (Announce Revisi)');
 
 
@@ -1658,7 +1637,6 @@ class AdminDashboardController extends Controller
 
         $path = $file->storeAs($dir, $finalName, 'public');
 
-            // 1) TUTUP request admin (biar active list bersih, dan history tetap ada)
             DB::table('revisions')->where('id', $revisionId)->update([
                 'state'         => 'closed',
                 'is_read_admin' => 1,
@@ -1666,7 +1644,6 @@ class AdminDashboardController extends Controller
                 'updated_at'    => now(),
             ]);
 
-            // 2) INSERT row baru sebagai SUBMITTED (ini yang jadi notif admin + history)
             DB::table('revisions')->insert([
                 'type'              => $reqRow->type,
                 'ref_id'            => $reqRow->ref_id,
@@ -1675,14 +1652,12 @@ class AdminDashboardController extends Controller
                 'state'             => 'submitted',
                 'note'              => $reqRow->note,
 
-                // admin file tetap nyangkut di request row yg closed, JANGAN dipindah
                 'file_path'         => null,
-
                 'pemohon_file_path' => $path,
                 'pemohon_file_name' => $finalName,
                 'pemohon_uploaded_at' => now(),
 
-                'is_read_admin'     => 0, // ✅ bikin notif admin muncul
+                'is_read_admin'     => 0, 
                 'is_read_pemohon'   => 1,
 
                 'created_at'        => now(),
@@ -1706,7 +1681,7 @@ class AdminDashboardController extends Controller
                     'row'      => $row,
                     'kategori' => 'PATEN',
                     'judul'    => $row->judul_paten ?? '-',
-                    'jenis'    => $row->jenis_paten ?? '-',   // ✅ sudah benar
+                    'jenis'    => $row->jenis_paten ?? '-',  
                     'email'    => $row->email,
                     'no'       => $row->no_pendaftaran ?? '-',
                 ];
@@ -1753,8 +1728,6 @@ class AdminDashboardController extends Controller
     }
 
         $doc = new TemplateProcessor($template);
-
-        // ambil jenis + judul dari getRowByType()
         $judul = trim((string)($meta['judul'] ?? '-')) ?: '-';
         $jenis = trim((string)($meta['jenis'] ?? '-')) ?: '-';
 
@@ -1766,8 +1739,6 @@ class AdminDashboardController extends Controller
 
         $doc->setValue('jenis', $jenis);
         $doc->setValue('judul', $judul);
-
-        // tmp dir + tmp docx
         $tmpDir = storage_path('app/tmp');
         if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
 
@@ -2040,7 +2011,7 @@ class AdminDashboardController extends Controller
 
             $this->markAsProsesWhenViewed('paten', $id);
 
-            // ✅ notifCount
+            // notifCount
             $notifCount = DB::table('revisions as r')
             ->whereIn('r.type', ['paten', 'cipta'])
             ->where('r.from_role', 'pemohon')
@@ -2153,7 +2124,7 @@ class AdminDashboardController extends Controller
 
             $this->markAsProsesWhenViewed('cipta', $id);
 
-            // ✅ notifCount
+            // notifCount
             $notifCount = DB::table('revisions as r')
             ->whereIn('r.type', ['paten', 'cipta'])
             ->where('r.from_role', 'pemohon')
@@ -2194,7 +2165,7 @@ class AdminDashboardController extends Controller
                 ];
             })->values()->all();
 
-            // ✅ attach docs
+            // attach docs
             $docKeys = [
                 'surat_permohonan',
                 'surat_pernyataan',
@@ -2216,7 +2187,6 @@ class AdminDashboardController extends Controller
                 ->get()
                 ->map(function($r) use ($id) {
 
-            // kalau submitted pemohon tapi note kosong -> ambil note admin terakhir sebelum row ini
             if (($r->from_role ?? null) === 'pemohon'
                 && ($r->state ?? null) === 'submitted'
                 && empty(trim((string)($r->note ?? '')))) {
@@ -2251,7 +2221,7 @@ class AdminDashboardController extends Controller
                 'row' => $row,
                 'incomingByDoc' =>  $incomingByDoc,
                 'tab' => 'cipta',
-                'notifCount' => $notifCount ?? 0, // ✅ biar header lonceng aman
+                'notifCount' => $notifCount ?? 0,
             ]);
         }
 
@@ -2310,7 +2280,7 @@ class AdminDashboardController extends Controller
                     $sv->tanda_terima_pdf = $path;
                 }
 
-                // 5) WA message (isi tetap, tidak diubah)
+                // 5) WA message 
                 $kategori = strtoupper($type === 'paten' ? 'PATEN' : 'HAK CIPTA');
                 $noPendaftaran = $row->no_pendaftaran ?? '-';
 
@@ -2346,7 +2316,7 @@ class AdminDashboardController extends Controller
 
                     'status'  => 'approve',
 
-                    // ✅ MULTI WA
+                    // MULTI WA
                     'wa_links' => $waLinks,
 
                     'tanda_terima_pdf' => $sv->tanda_terima_pdf,

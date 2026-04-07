@@ -122,7 +122,7 @@
                         'surat_pengalihan'  => 'Surat Pernyataan Pengalihan Hak Atas Invensi',
                         'scan_ktp'          => 'Scan KTP',
                         'gambar_prototipe'  => 'Gambar Prototipe',
-                        'deskripsi_singkat_prototipe' => 'Deskripsi Singkat Prototipe', // ✅ TEKS
+                        'deskripsi_singkat_prototipe' => 'Deskripsi Singkat Prototipe', //TEKS
                       ]
                     : [
                         'surat_permohonan' => 'Surat Permohonan Pendaftaraan Ciptaan',
@@ -217,31 +217,34 @@
                 @else
                 {{-- FILE --}}
                 @php
-                $realValue = $d->value; 
+                $realValue = $d->value;
+                $shownName = null;
+
                 if ($d->key === 'skema_tkt') {
                     $realValue = $source->skema_tkt_template_path;
+
+                    if ($realValue) {
+                        $ext = pathinfo($realValue, PATHINFO_EXTENSION);
+
+                        $shownName = ($source->no_pendaftaran ?? 'file') . '_skema_tkt_7-9'
+                            . ($ext ? '.' . $ext : '');
+                    }
                 }
               @endphp
 
               @if(!empty($realValue))
                 @php
-                  if ($d->key === 'skema_tkt') {
-                      $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($source->no_pendaftaran ?? ''));
-                      $ext = pathinfo($realValue, PATHINFO_EXTENSION);
-                      $shownName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
-                  } else {
-                      $shownName = $prettyName($realValue, $d->label);
-                  }
-  @endphp
-    
-  <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
-     class="pd-file-link">
-     {{ $shownName }}
-  </a>
-@else
-  <span class="pd-muted">Belum diupload</span>
-@endif
-@endif
+                  $shownName = $shownName ?: $prettyName($realValue, $d->label);
+                @endphp
+
+                <a href="{{ route('pemohon.dokumen.download', ['type'=>$pengajuan->type, 'ref'=>$pengajuan->id, 'key'=>$d->key]) }}"
+                  class="pd-file-link">
+                  {{ $shownName }}
+                </a>
+              @else
+                <span class="pd-muted">Belum diupload</span>
+              @endif
+            @endif
               </td>
             </tr>
           @endforeach
@@ -436,13 +439,27 @@
                   @if($revId)
                     @if(!$pemohonUploaded)
                       <form method="POST"
-                            action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
-                            enctype="multipart/form-data"
-                            class="pd-upload-form">
-                        @csrf
-                        <input type="file" name="file" required>
-                        <button type="submit" class="pd-mini-btn">Upload</button>
-                      </form>
+                          action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
+                          enctype="multipart/form-data"
+                          class="pd-upload-form">
+                      @csrf
+
+                      <input
+                        type="file"
+                        name="file"
+                        required
+                        class="js-file-input hidden-input"
+                        id="file-{{ $revId }}"
+                      >
+
+                      <button type="button" class="btn-choose-file">
+                        Pilih File
+                      </button>
+
+                      <div class="pd-file-name">Belum pilih file</div>
+
+                      <button type="submit" class="pd-mini-btn">Upload</button>
+                    </form>
                     @else
                       <span class="pd-muted">Sudah diupload untuk revisi ini.</span>
                     @endif
@@ -570,7 +587,7 @@
               @if($s['key'] === 'approve')
                 @php
                   $isApprove = ($status === 'approve');
-                  $tt = $sv->tanda_terima_pdf ?? null; // ✅ ambil dari status_verifikasi
+                  $tt = $sv->tanda_terima_pdf ?? null; 
                 @endphp
 
                 @php

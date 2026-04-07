@@ -10,9 +10,7 @@ class DuplicatePengalihanHakController extends Controller
 {
     private function pickTemplate(int $jumlah): string
     {
-        // Ganti nama file sesuai punyamu
         if ($jumlah >= 1 && $jumlah <= 7)  return public_path('templates/pengalihan hak 1-4.docx');
-        // if ($jumlah >= 5 && $jumlah <= 8)  return public_path('templates/pengalihan hak 5-8.docx');
         if ($jumlah >= 8 && $jumlah <= 14) return public_path('templates/pengalihan hak 9-14.docx');
 
         abort(422, 'Jumlah inventor tidak didukung template.');
@@ -21,7 +19,7 @@ class DuplicatePengalihanHakController extends Controller
     private function val($v): string
     {
         $s = trim((string)($v ?? ''));
-        return $s === '' ? '' : $s; // kosongin aja kalau kosong
+        return $s === '' ? '' : $s; 
     }
 
     public function store(Request $request)
@@ -41,8 +39,6 @@ class DuplicatePengalihanHakController extends Controller
             'download_format' => ['required', 'in:pdf,docx'],
         ]);
 
-        
-
         $jumlah = (int) $data['jumlah_inventor'];
         $actual = count($data['inventor']['nama'] ?? []);
         if ($actual !== $jumlah) {
@@ -60,11 +56,8 @@ class DuplicatePengalihanHakController extends Controller
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id');
         $tp->setValue('tanggal_pengisian', $tgl->translatedFormat('d F Y'));
 
-        /**
-         * === 1) CLONE tabel inventor ===
-         */
-
-        // === CLONE IDENTITAS INVENTOR (atas) pakai BLOCK ===
+    
+        // === CLONE IDENTITAS INVENTOR ===
         $tp->cloneBlock('inventor_block', $jumlah, true, true);
 
         for ($i = 1; $i <= $jumlah; $i++) {
@@ -77,18 +70,12 @@ class DuplicatePengalihanHakController extends Controller
             $tp->setValue("kode_pos#{$i}", $this->val($data['inventor']['kode_pos'][$idx] ?? ''));
         }
 
-
-
-        // CLONE daftar bawah 
         $tp->cloneBlock('list_inventor', $jumlah, true, true);
-
         for ($i = 1; $i <= $jumlah; $i++) {
             $idx = $i - 1;
-
             $tp->setValue("no_list#{$i}", $i);
             $tp->setValue("nama_list#{$i}", $this->val($data['inventor']['nama'][$idx] ?? ''));
         }
-
 
         $out = tempnam(sys_get_temp_dir(), 'invensi_') . '.docx';
         $tp->saveAs($out);
@@ -113,7 +100,7 @@ class DuplicatePengalihanHakController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command 
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 

@@ -556,74 +556,72 @@
           Selanjutnya &raquo;
         </a>
         <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const nextBtn = document.getElementById('nextLinkIsiform');
-          if (!nextBtn) return;
+          document.addEventListener('DOMContentLoaded', () => {
+            const nextBtn = document.getElementById('nextLinkIsiform');
+            if (!nextBtn) return;
 
-          nextBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
+            nextBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
 
-            const form = nextBtn.closest('form');
-            if (!form) return;
+              const form = nextBtn.closest('form');
+              if (!form) return;
 
-            if (!form.checkValidity()) {
-              form.reportValidity();
-              return;
-            }
-
-            // SWEET ALERT 
-            const result = await Swal.fire({
-              title: 'Konfirmasi Download',
-              html: `
-                <p>Apakah Anda sudah mendownload 3 file berikut?</p>
-                <ul style="text-align:left; margin-top:10px;">
-                  <li>• Form Paten</li>
-                  <li>• Surat Pengalihan Hak</li>
-                  <li>• Kepemilikan Invensi</li>
-                </ul>
-              `,
-              icon: 'question',
-              showCancelButton: true,
-              confirmButtonText: 'Sudah',
-              cancelButtonText: 'Belum',
-              confirmButtonColor: '#2F5C9E',
-              cancelButtonColor: '#6c757d',
-              reverseButtons: true
-            });
-
-            if (!result.isConfirmed) {
-              return; // kalau klik "Belum" bakal tetap di halaman
-            }
-
-            // Kalau klik SUDAH → lanjut save & redirect
-            const saveUrl = nextBtn.dataset.saveUrl;
-            const nextUrl = nextBtn.dataset.nextUrl;
-
-            const fd = new FormData(form);
-            fd.set('action', 'next');
-
-            try {
-              const res = await fetch(saveUrl, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: fd
-              });
-
-              if (!res.ok) {
-                console.error('Save gagal', res.status);
+              if (!form.checkValidity()) {
+                form.reportValidity();
                 return;
               }
 
-              window.location.href = nextUrl;
+              // SWEET ALERT 
+              const result = await Swal.fire({
+                title: 'Konfirmasi Download',
+                html: `
+                  <p>Apakah Anda sudah mendownload 3 file berikut?</p>
+                  <ul style="text-align:left; margin-top:10px;">
+                    <li>• Form Paten</li>
+                    <li>• Surat Pengalihan Hak</li>
+                    <li>• Kepemilikan Invensi</li>
+                  </ul>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sudah',
+                cancelButtonText: 'Belum',
+                confirmButtonColor: '#2F5C9E',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true
+              });
 
-            } catch (err) {
-              console.error(err);
-            }
+              if (!result.isConfirmed) {
+                return;
+              }
+
+              const saveUrl = nextBtn.dataset.saveUrl;
+              const nextUrl = nextBtn.dataset.nextUrl;
+
+              const fd = new FormData(form);
+              fd.set('action', 'next');
+
+              try {
+                const res = await fetch(saveUrl, {
+                  method: 'POST',
+                  headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                  body: fd
+                });
+
+                if (!res.ok) {
+                  console.error('Save gagal', res.status);
+                  return;
+                }
+
+                window.location.href = nextUrl;
+
+              } catch (err) {
+                console.error(err);
+              }
+            });
           });
-        });
         </script>
       </div>
-
       <div class="actions-download">
         <select id="doc_type" class="input" style="width:220px;">
           <option value="" selected disabled>-- Pilih Dokumen --</option>
@@ -801,7 +799,6 @@
         updateKonsultanUI();
       }
 
-      // Hak prioritas show/hide + required toggle
       const hak = document.getElementById("hak_prioritas");
       const hakFollow = document.getElementById("hak-prioritas-followup");
       const hakReqIds = ["negara","nomor_prioritas","tgl_penerimaan"];
@@ -825,10 +822,7 @@
         hak.addEventListener("change", updateHakUI);
         updateHakUI();
       }
-
-      // jumlah inventor dihitung dari inventor[nama][]
       document.querySelector("form").addEventListener("submit", () => {
-        // hitung dari jumlah kartu inventor yang dirender
         const cards = document.querySelectorAll("#inventor-container-verif .inventor-card");
         document.getElementById("jumlah_inventor_verif").value = cards.length || 1;
       });

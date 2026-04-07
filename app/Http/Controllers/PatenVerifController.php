@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PatenVerifController extends Controller
 {
-    // =========================
-    // WEB FLOW (redirect + session) - SAMA SEPERTI PATENCONTROLLER
-    // =========================
+
     public function start(Request $request)
     {
         $enumFakultas   = $this->getEnumValues('paten_verifs', 'fakultas');
@@ -20,7 +18,6 @@ class PatenVerifController extends Controller
 
         $jumlah = (int) $request->input('jumlah_inventor', 1);
         $jumlah = max(1, min(20, $jumlah));
-                //eror
         $messages = [
             'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
             'inventor.no_hp.*.regex'   => 'Nomor HP harus diawali 08 dan hanya angka',
@@ -56,7 +53,6 @@ class PatenVerifController extends Controller
             'skema_penelitian' => ['required', 'string', 'max:255'],
         ], $messages);
 
-        // SIMPAN DATA PAGE 2 KE SESSION
         session([
             'hakpaten.verif' => [
                 'jumlah_inventor'  => $validated['jumlah_inventor'],
@@ -110,9 +106,6 @@ if ($action === 'prev') {
 
         $validated['inventor']['status'][0] = 'Dosen';
 
-
-
-        // build inventors JSON
         $inventors = [];
         for ($i = 0; $i < $jumlah; $i++) {
             $inventors[] = [
@@ -138,7 +131,6 @@ if ($action === 'prev') {
 
             'inventors'        => $inventors,
 
-            // kalau kolom single ini memang ada di tabel, ini oke
             'nama_pencipta'    => $inventors[0]['nama'] ?? '',
             'nip_nim'          => $inventors[0]['nip_nim'] ?? '',
             'fakultas'         => $fakultas,
@@ -153,7 +145,6 @@ if ($action === 'prev') {
             'status_verif'     => 'Terkirim',
         ];
 
-        // default dokumen kalau belum ada (biar sama seperti controller sebelumnya)
         if (!session()->has('verif_id')) {
 
     foreach ([
@@ -174,8 +165,6 @@ if ($action === 'prev') {
 } else {
 
     $verif = PatenVerif::findOrFail(session('verif_id'));
-
-    // update hanya data form
     $verif->update($payload);
 
 }
@@ -195,16 +184,12 @@ if ($action === 'prev') {
                 'redirect' => $nextRoute,
             ]);
         }
-
-        // kalau normal form submit
         return redirect($nextRoute);
 
     }
 
-    
-
     // =========================
-    // API FLOW (JSON) - kalau kamu butuh versi API
+    // API FLOW 
     // =========================
     public function store(Request $request)
     {
@@ -300,9 +285,6 @@ if ($action === 'prev') {
             ];
         }
 
-        
-
-
         $payload = [
             'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
             'jenis_paten'      => $validated['jenis_paten'],
@@ -381,8 +363,6 @@ private function getPrevRouteForUpload(PatenVerif $verif): string
 
         $original = $file->getClientOriginalName();
         $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
-
-        // simpan pakai nama asli (tanpa prefix)
         return $file->storeAs($dir, $safeName, 'public');
     }
 
@@ -447,8 +427,6 @@ private function getPrevRouteForUpload(PatenVerif $verif): string
         return [];
     }
 
-    // views
-    // views
 public function draft(PatenVerif $verif){
     $draft = $this->getDraft($verif, 'draft');
     return view('hakpaten.verifikasidokumen.draftpatenverif', compact('verif','draft'));
@@ -610,7 +588,6 @@ public function deskripsiprodukverif(PatenVerif $verif){
         'submitted_at' => now(),
     ]);
 
-    // HAPUS SESSION BIAR GA BISA RESUBMIT
     session()->forget('verif_id');
 
     return redirect()
@@ -645,8 +622,5 @@ private function getDraft(PatenVerif $verif, string $step): array
 {
     return session("draft.{$verif->id}.{$step}", []);
 }
-
-
-
 
 }

@@ -29,7 +29,6 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
             ->get();
 
         foreach ($items as $c) {
-            // inventors disimpan JSON? (kalau kolomnya ada)
             $inventors = [];
 
             if (!empty($c->inventors) && is_string($c->inventors)) {
@@ -39,7 +38,6 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
                 $inventors = $c->inventors;
             }
 
-            // fallback: kalau cipta ga punya inventors, bikin 1 inventor dari data pencipta
             if (count($inventors) === 0) {
                 $inventors = [[
                     'urut'     => 1,
@@ -52,7 +50,6 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
                 ]];
             }
 
-            // normalisasi key biar konsisten
             $inventors = collect($inventors)->map(function ($i) {
                 return [
                     'urut'     => $i['urut'] ?? $i['inventor_ke'] ?? 1,
@@ -107,12 +104,12 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
     {
         return [
             $row->no_pendaftaran ?? '-',
-            $this->cleanText($row->judul ?? '-'), // ✅ tanpa "
+            $this->cleanText($row->judul ?? '-'), 
             $this->cleanText($row->jenis ?? '-'),
             $row->inventor_ke ?? 1,
             $this->cleanText($row->nama ?? '-'),
             $this->cleanText($row->status ?? '-'),
-            (string)($row->nip_nim ?? '-'),        // ✅ tanpa apostrophe
+            (string)($row->nip_nim ?? '-'),       
             $this->cleanText($row->fakultas ?? '-'),
             $this->cleanText($row->no_hp ?? '-'),
             $this->cleanText($row->email ?? '-'),
@@ -122,7 +119,6 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
 
     public function columnWidths(): array
     {
-        // ✅ biar nggak “geser-geser” parah, kita set lebar lumayan
         return [
             'A' => 16, // no pendaftaran
             'B' => 60, // judul
@@ -139,16 +135,13 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
 
     public function styles(Worksheet $sheet)
     {
-        // header bold + center
         $sheet->getStyle('A1:J1')->getFont()->setBold(true);
         $sheet->getStyle('A1:J1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-
-        // wrap judul biar gak kepanjangan
         $sheet->getStyle('B:B')->getAlignment()->setWrapText(true);
 
         return [];
     }
-    // tambahin ini di dalam class
+
     private function cleanText($v): string
     {
         $s = trim((string)($v ?? ''));
@@ -163,26 +156,18 @@ class HakCiptaInventorExport implements FromCollection, WithHeadings, WithMappin
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
 
-                // Freeze header
                 $sheet->freezePane('A2');
-
-                // Auto filter header
                 $sheet->setAutoFilter("A1:J1");
-
-                // Align semua vertical center
                 $sheet->getStyle("A1:J{$highestRow}")
                     ->getAlignment()
                     ->setVertical(Alignment::VERTICAL_CENTER);
 
-                // ✅ Format kolom NIP/NIM jadi TEXT (G)
                 $sheet->getStyle("G2:G{$highestRow}")
                     ->getNumberFormat()
                     ->setFormatCode(NumberFormat::FORMAT_TEXT);
 
-                // Biar email gak wrap
                 $sheet->getStyle("J:J")->getAlignment()->setWrapText(false);
 
-                // di AfterSheet::
                 for ($r = 2; $r <= $highestRow; $r++) {
                     $cell = $sheet->getCell("G{$r}");
                     $val  = (string)$cell->getValue();

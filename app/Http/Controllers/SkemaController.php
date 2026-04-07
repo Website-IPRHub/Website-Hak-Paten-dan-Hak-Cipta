@@ -63,19 +63,17 @@ class SkemaController extends Controller
             noPendaftaran: $verif->no_pendaftaran ?? ('VP_'.$verif->id),
             storeDir: 'paten-verif/skema',
             updateModel: function(string $path) use ($verif) {
-                // Kita simpan ke kolom skema_tkt_template_path (untuk internal sistem)
-                // DAN kita daftarin ke JSON 'docs' supaya muncul di list dokumen Admin
                 $docs = $verif->docs ?? [];
                 $docs['skema_tkt'] = [
-                    'status' => 'pending', // atau 'ok' kalau mau langsung dianggap aman
+                    'status' => 'pending', 
                     'path'   => $path,
                     'note'   => null,
                     'updated_at' => now(),
                 ];
 
                 $verif->update([
-                    'skema_tkt_template_path' => $path, // kolom lama tetep diupdate
-                    'docs' => $docs // Masukin ke array docs
+                    'skema_tkt_template_path' => $path, 
+                    'docs' => $docs 
                 ]);
             },
             fallbackRedirect: route('patenverif.skema.form', ['verif' => $verif->id]),
@@ -203,8 +201,6 @@ class SkemaController extends Controller
     ]);
 
     $file = $request->file('file');
-
-    // guard anti double submit
     $uploadSignature = md5(
         $noPendaftaran . '|' .
         $file->getClientOriginalName() . '|' .

@@ -144,7 +144,6 @@ Route::get('/hak-cipta/pendaftaran', function () {
 
 
 Route::prefix('admin')->group(function () {
-    // ... route admin lain
 
     Route::get('/paten/export-excel', [AdminDashboardController::class, 'exportPatenExcel'])
         ->name('admin.paten.export_excel');
@@ -569,7 +568,6 @@ Route::get('/pemohon/revisi/edit', [PemohonDashboardController::class, 'editRevi
 |--------------------------------------------------------------------------
 */
 Route::prefix('dup/hak-cipta')->name('dup.hakcipta.isiform.')->group(function () {
-    // ✅ GANTI SEMUA Route::view JADI Route::get KE CONTROLLER
     Route::get('/pendaftaranCiptaan', [DuplicateFormPendaftaranCiptaanController::class, 'index'])
         ->name('formpendaftaran');
 
@@ -583,7 +581,6 @@ Route::prefix('dup/hak-cipta')->name('dup.hakcipta.isiform.')->group(function ()
         ->name('peralihanverifcipta');
 });
 
-// POST tetap sama
 Route::post('/dup/isiform', [DuplicateFormPendaftaranCiptaanController::class, 'store'])->name('dup.isiformCipta.store');
 Route::post('/dup/pernyataan', [DuplicatePernyataanCiptaController::class, 'store'])->name('dup.pernyataanCipta.store');
 Route::post('/dup/pengalihan', [DuplicatePengalihanHakCiptaController::class, 'store'])->name('dup.pengalihanhakCipta.store');

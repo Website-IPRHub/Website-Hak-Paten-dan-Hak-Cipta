@@ -1,17 +1,6 @@
-/* =========================
-   PATEN DETAIL ONLY
-========================= */
-/* =========================
-   LAYOUT FIX: NGISI KANAN, TIDAK CENTER
-========================= */
-/* =========================
-   LAYOUT FINAL: RATA KIRI-KANAN
-========================= */
 body.paten-detail-page .dash-layout{
   gap: 0 !important;
 }
-
-
 
 /* ===== HEADER BACK BUTTON ===== */
 body.paten-detail-page .page-head-left{ margin-bottom: 14px; }
@@ -65,7 +54,6 @@ body.paten-detail-page .p-value{ font-weight:500; color:#111; line-height:1.5; w
 
 /* =========================
    STATUS BADGE (DOKUMEN)
-   blade: <span class="badge badge-{{ $statusDoc }}">
 ========================= */
 body.paten-detail-page .doc-item .badge{
   display:inline-flex;
@@ -89,7 +77,6 @@ body.paten-detail-page .doc-item .badge::before{
   opacity:.55;
 }
 
-/* default fallback kalau ada status lain */
 body.paten-detail-page .doc-item .badge{
   background: rgba(11,44,95,.08);
   color:#0b2c5f;
@@ -139,7 +126,7 @@ body.paten-detail-page .acc-head{
   justify-content:space-between;
   gap:16px;
   padding:26px 20px;
-  min-height: unset; /* 🔥 ini penting */
+  min-height: unset; 
   cursor:pointer;
   user-select:none;
   background:#fff;
@@ -164,10 +151,10 @@ body.paten-detail-page .acc-sub{
 /* ===== DOKUMEN ===== */
 body.paten-detail-page .doc-top{
   display:flex !important;
-  flex-wrap:wrap !important;              /* ✅ biar item bisa turun baris */
+  flex-wrap:wrap !important;             
   align-items:flex-start;
-  justify-content:space-between !important;/* ✅ badge tetep kanan atas */
-  gap:6px 14px !important;                /* row-gap kecil */
+  justify-content:space-between !important;
+  gap:6px 14px !important;             
   width:100%;
 }
 
@@ -188,7 +175,7 @@ body.paten-detail-page .incoming-wrap{
   margin-top:14px;
   padding:14px 14px 12px;
   border-top: 0;
-  background: rgba(11,44,95,.03); /* kuning lembut */
+  background: rgba(11,44,95,.03);
   border: 1px solid rgba(11,44,95,.10);
   border-radius: 14px;
 }
@@ -200,7 +187,6 @@ body.paten-detail-page .incoming-title{
   margin-bottom: 8px;
 }
 
-/* details/summary biar jelas bisa dibuka */
 body.paten-detail-page .incoming-details{
   margin-top: 10px;
 }
@@ -217,10 +203,8 @@ body.paten-detail-page .incoming-summary{
   list-style:none;
 }
 
-/* hilangkan marker default di beberapa browser */
 body.paten-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
 
-/* catatan panjang */
 body.paten-detail-page .cell-note{
   white-space: normal;
   word-break: break-word;
@@ -230,7 +214,6 @@ body.paten-detail-page .cell-note{
   padding-right: 6px;
 }
 
-/* mobile */
 @media (max-width: 900px){
   body.paten-detail-page .doc-link{ max-width: 70vw; }
 }
@@ -239,14 +222,12 @@ body.paten-detail-page .cell-note{
    DETAIL DOKUMEN - UI IMPROVE
 ========================= */
 
-/* section content biar tidak "flat" */
 body.paten-detail-page .acc-body{
   border-top:1px solid rgba(11,44,95,.10);
   background: #fbfcff;
   padding: 16px 18px 18px;
 }
 
-/* doc item jadi lebih kebaca */
 body.paten-detail-page .doc-item{
   background: #fff;
   border: 1px solid rgba(11,44,95,.10);
@@ -256,7 +237,7 @@ body.paten-detail-page .doc-item{
 }
 
 /* =========================
-   TABEL REVISI (DIV GRID) - PEMBEDA JELAS
+   TABEL REVISI (DIV GRID) 
 ========================= */
 body.paten-detail-page .incoming-table{
   margin-top:10px;
@@ -266,7 +247,6 @@ body.paten-detail-page .incoming-table{
   background:#fff;
 }
 
-/* row jadi grid rapih */
 body.paten-detail-page .incoming-row{
   display:grid;
   grid-template-columns: 1.2fr 1fr 140px 1fr;
@@ -276,7 +256,6 @@ body.paten-detail-page .incoming-row{
   border-top:1px solid rgba(11,44,95,.08);
 }
 
-/* header beda tone */
 body.paten-detail-page .incoming-head{
   background: rgba(11,44,95,.06);
   border-top:0;
@@ -293,12 +272,10 @@ body.paten-detail-page .incoming-cell{
   word-break: break-word;
 }
 
-/* zebra untuk baris isi */
 body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):nth-child(even){
   background: rgba(11,44,95,.03);
 }
 
-/* hover UX */
 body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
   background: rgba(11,44,95,.06);
 }
@@ -318,21 +295,14 @@ body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
   }
 }
 
-
-
-/* ===== FIX RATA KIRI-KANAN (PADDING CUMA DI DASH-CONTENT) ===== */
-
 body.paten-detail-page .dash-layout{
   gap: 0 !important;
 }
-
-/* DETAIL PATEN: padding kiri-kanan sama, tapi tetap ada napas dari sidebar */
 
 body.paten-detail-page .dash-layout,
 body.paten-detail-page .admin-page{
   padding-right: 0 !important;
 }
-
 
 /* =========================
    INVENTOR - FIX SEJAJAR TITIK DUA
@@ -350,10 +320,9 @@ body.paten-detail-page .inv-card{
   width: 100%;
 }
 
-/* KUNCI: inv-row jadi GRID 3 kolom (label : value) */
 body.paten-detail-page .inv-row{
   display: grid !important;
-  grid-template-columns: 140px 14px 1fr;  /* label | : | value */
+  grid-template-columns: 140px 14px 1fr;  
   column-gap: 10px;
   align-items: start;
   margin-bottom: 10px;
@@ -377,7 +346,6 @@ body.paten-detail-page .inv-v{
   word-break: break-word;
 }
 
-/* mobile: 1 kolom card biar ga sempit */
 @media (max-width: 900px){
   body.paten-detail-page .inv-grid{
     grid-template-columns: 1fr;
@@ -388,40 +356,34 @@ body.paten-detail-page .inv-v{
 }
 
 /* =========================
-   INVENTOR - SPACING + GRID RESPONSIF
+   INVENTOR
 ========================= */
 
-/* 1) rapetin jarak judul accordion -> konten */
 body.paten-detail-page [data-acc-body="inv"]{
-  padding-top: 12px !important;  /* sebelumnya kebesaran */
+  padding-top: 12px !important;  
 }
 
-/* kalau ada wrapper lain yang kasih margin atas gede, rapetin juga */
 body.paten-detail-page [data-acc-body="inv"] .inv-grid{
-  margin-top: 10px; /* jarak dari garis header */
+  margin-top: 10px;
 }
 
-/* 2) bikin card inventor bisa sejajar kalau banyak */
 body.paten-detail-page .inv-grid{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); /* auto sejajar */
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); 
   gap: 14px;
   align-items: start;
 }
 
-/* card ngisi kolom */
 body.paten-detail-page .inv-card{
   width: 100%;
   max-width: none;
   margin: 0;
 }
 
-/* optional: biar card lebih “pas” */
 body.paten-detail-page .inv-name{
   margin-bottom: 10px;
 }
 
-/* titik dua tetap sejajar (kalau kamu pakai grid row yang kemarin) */
 body.paten-detail-page .inv-row{
   display: grid !important;
   grid-template-columns: 140px 14px 1fr;
@@ -430,7 +392,6 @@ body.paten-detail-page .inv-row{
   margin-bottom: 8px;
 }
 
-/* mobile: 1 kolom */
 @media (max-width: 900px){
   body.paten-detail-page .inv-grid{
     grid-template-columns: 1fr;
@@ -441,20 +402,16 @@ body.paten-detail-page .inv-row{
 }
 
 /* =========================
-   REVISI MASUK (PEMOHON) - lebih enak dilihat
+   REVISI MASUK (PEMOHON) 
 ========================= */
 
 /* wrapper revisi masuk */
 body.paten-detail-page .incoming-wrap{
   margin-top: 14px;
   padding: 14px 14px 12px;
-
-  /* warna soft, gak nusuk mata */
   background: linear-gradient(180deg, rgba(245,248,255,.95), rgba(255,255,255,.95));
   border: 1px solid rgba(11,44,95,.12);
   border-radius: 14px;
-
-  /* aksen kiri biar “ni area khusus” */
   border-left: 6px solid rgba(11,44,95,.18);
   box-shadow: 0 10px 22px rgba(0,0,0,.04);
 }
@@ -505,7 +462,7 @@ body.paten-detail-page .incoming-summary{
 
 body.paten-detail-page .incoming-summary::-webkit-details-marker{ display:none; }
 
-/* tabel revisi (kalau kamu pakai incoming-table & incoming-row) */
+/* tabel revisi */
 body.paten-detail-page .incoming-table{
   margin-top: 10px;
   border-radius: 12px;
@@ -542,24 +499,20 @@ body.paten-detail-page .incoming-cell{
   word-break: break-word;
 }
 
-/* zebra halus */
 body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):nth-child(even){
   background: rgba(11,44,95,.03);
 }
 
-/* hover biar interaktif */
 body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
   background: rgba(11,44,95,.06);
 }
 
-/* catatan panjang biar nyaman dibaca */
 body.paten-detail-page .cell-note{
   max-height: 4.2em;
   overflow: auto;
   padding-right: 6px;
 }
 
-/* link file di revisi biar lebih “klik-able” */
 body.paten-detail-page .incoming-table .doc-link{
   font-weight: 800;
   text-decoration: none;
@@ -569,7 +522,6 @@ body.paten-detail-page .incoming-table .doc-link:hover{
   border-bottom-style: solid;
 }
 
-/* mobile: jadi kartu-kartu */
 @media (max-width: 900px){
   body.paten-detail-page .incoming-row{
     grid-template-columns: 1fr;
@@ -591,7 +543,7 @@ body.paten-detail-page .incoming-table .doc-link:hover{
 /* card section */
 body.paten-detail-page .acc-card{
   border-radius: 16px;
-  overflow: hidden; /* biar header & body nyatu */
+  overflow: hidden; 
   border: 1px solid rgba(11,44,95,.14);
   box-shadow: 0 10px 25px rgba(0,0,0,.06);
 }
@@ -659,7 +611,7 @@ body.paten-detail-page .card-paten .paten-head{
     #123b7a
   );
   padding: 22px 26px;
-  margin: -26px -20px 20px; /* tarik keluar padding card */
+  margin: -26px -20px 20px; 
 }
 
 /* judul */
@@ -676,12 +628,6 @@ body.paten-detail-page .paten-sub{
   margin-top: 6px;
 }
 
-/* =========================================================
-   PATEN DETAIL - POLISHING (TARUH PALING BAWAH)
-========================================================= */
-
-
-/* Biar konten tidak nempel sidebar tapi kanan-kiri tetap seimbang */
 @media (min-width: 1100px){
   body.paten-detail-page [data-paten-detail]{
     margin-left: 24px !important;  /* napas dari sidebar */
@@ -694,7 +640,6 @@ body.paten-detail-page .paten-sub{
   }
 }
 
-/* ---------- 2) Theme vars biar konsisten ---------- */
 body.paten-detail-page{
   --navy: #0b2c5f;
   --navy2:#08306f;
@@ -714,8 +659,6 @@ body.paten-detail-page{
   --pend-tx: #334155;
 }
 
-/* ---------- 3) Header Accordion (Detail Dokumen / Inventor) lebih tegas ---------- */
-/* Ini buat area head-nya tetep berwarna walau di klik */
 body.paten-detail-page .acc-card{
   border: 1px solid var(--line);
   border-left: 6px solid var(--navy);
@@ -737,18 +680,15 @@ body.paten-detail-page .acc-sub{
   font-size: 15px;
 }
 
-/* hover biar “hidup” */
 body.paten-detail-page .acc-head:hover{
   background: linear-gradient(90deg, rgba(11,44,95,.18), rgba(11,44,95,.08));
 }
 
-/* body accordion tetap terang tapi ada depth */
 body.paten-detail-page .acc-body{
   background: #f8fbff;
   border-top: 1px solid var(--line);
 }
 
-/* ---------- 4) Badge status: lebih solid & enak ---------- */
 body.paten-detail-page .doc-item .badge{
   padding: 7px 12px;
   font-size: 12px;
@@ -775,7 +715,6 @@ body.paten-detail-page .doc-item .badge.badge-pending{
   border-color: rgba(148,163,184,.35);
 }
 
-/* ---------- 5) Tombol OK / Revisi biar keliatan "aksi utama" ---------- */
 body.paten-detail-page .doc-actions .btn-mini{
   padding: 6px 12px;
   border-radius: 999px;
@@ -790,7 +729,6 @@ body.paten-detail-page .doc-actions .btn-mini:last-child{
   border-color: rgba(245,158,11,.35);
 }
 
-/* ---------- 6) Revisi Masuk: premium, ga norak, tetap keliatan penting ---------- */
 body.paten-detail-page .incoming-wrap{
   background: linear-gradient(180deg, rgba(11,44,95,.05), rgba(11,44,95,.02));
   border: 1px solid rgba(11,44,95,.14);
@@ -806,7 +744,6 @@ body.paten-detail-page .incoming-title{
   margin-bottom: 8px;
 }
 
-/* summary "Detail Revisi (x)" */
 body.paten-detail-page .incoming-summary{
   background: rgba(255,255,255,.85);
   border: 1px solid rgba(11,44,95,.14);
@@ -817,7 +754,6 @@ body.paten-detail-page .incoming-summary{
   padding: 10px 12px;
 }
 
-/* tabel revisi biar lebih modern */
 body.paten-detail-page .incoming-table{
   border: 1px solid rgba(11,44,95,.14);
   border-radius: 14px;
@@ -840,13 +776,10 @@ body.paten-detail-page .incoming-table .incoming-row:not(.incoming-head):hover{
   background: rgba(11,44,95,.05);
 }
 
-/* ---------- 7) Inventor: jarak judul lebih rapet + card auto nyamping ---------- */
-/* rapetin jarak area atas */
 body.paten-detail-page .acc-body .inv-grid{
   margin-top: 10px;
 }
 
-/* auto-fit: kalau ada 2 inventor -> otomatis 2 kolom, 3 inventor -> bisa 3 kolom (kalau muat) */
 body.paten-detail-page .inv-grid{
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -866,7 +799,6 @@ body.paten-detail-page .inv-name{
   margin-bottom: 10px;
 }
 
-/* titik dua sejajar & lebih rapih */
 body.paten-detail-page .inv-row{
   display: grid;
   grid-template-columns: 120px 14px 1fr;
@@ -881,9 +813,7 @@ body.paten-detail-page .inv-row b{
   flex: unset !important;
 }
 
-body.paten-detail-page .inv-row b::after{ content: ""; } /* matiin yang auto ":" lama */
-
-/* kamu butuh span colon? kalau HTML gak ada, pakai pseudo */
+body.paten-detail-page .inv-row b::after{ content: ""; } 
 body.paten-detail-page .inv-row b{
   position: relative;
 }
@@ -896,28 +826,23 @@ body.paten-detail-page .inv-row b::after{
 }
 
 /* ===============================
-   CLEAN MODE: TANPA GARIS KIRI
    (Detail Dokumen & Inventor)
 =============================== */
 
-/* matiin border kiri card accordion */
 body.paten-detail-page .acc-card{
   border-left: none !important;
 }
 
-/* kalau sebelumnya ada pseudo / aksen kiri */
 body.paten-detail-page .acc-card::before,
 body.paten-detail-page .acc-head::before{
   display: none !important;
   content: none !important;
 }
 
-/* rapihin radius biar konsisten */
 body.paten-detail-page .acc-card{
   border-radius: 18px;
 }
 
-/* header tetap cakep tapi clean */
 body.paten-detail-page .acc-head{
   background: linear-gradient(
     90deg,
@@ -926,9 +851,6 @@ body.paten-detail-page .acc-head{
   );
 }
 
-/* =========================
-   ACCORDION HEADER (TEGAS & CLEAN)
-========================= */
 body.paten-detail-page .acc-head{
   background: linear-gradient(
     90deg,
@@ -953,10 +875,6 @@ body.paten-detail-page .acc-sub{
 }
 
 /* =========================
-   LAYOUT FINAL (SIMETRIS)
-========================= */
-/* =========================
-   FIX: HEADER ACCORDION HARUS BIRU PERMANEN
    (Detail Dokumen + Detail Inventor)
 ========================= */
 
@@ -968,7 +886,6 @@ body.paten-detail-page .acc-head:focus{
   background: linear-gradient(90deg,#0b2c5f,#123b7a) !important;
 }
 
-/* teksnya putih */
 body.paten-detail-page .acc-title{
   color: #fff !important;
   font-size: 22px;
@@ -980,14 +897,12 @@ body.paten-detail-page .acc-sub{
   font-size: 14px;
 }
 
-/* panah/ikon biar keliatan */
 body.paten-detail-page .acc-head svg,
 body.paten-detail-page .acc-head i{
   color: #fff !important;
   opacity: .9 !important;
 }
 
-/* optional: biar clean dan nyatu */
 body.paten-detail-page .acc-card{
   border-radius: 18px;
   overflow: hidden;
@@ -1026,7 +941,6 @@ body.paten-detail-page .acc-card{
   min-width:160px;
 }
 
-/* badge lebih kecil di tabel revisi */
 .incoming-table .badge-small{
   font-size: 11px;
   padding: 3px 10px;
@@ -1034,13 +948,11 @@ body.paten-detail-page .acc-card{
   line-height: 1.2;
 }
 
-/* kalau badge existing kamu masih kegedean */
 .incoming-table .badge{
   font-size: 11px;
   padding: 3px 10px;
 }
 
-/* ===== DOT STATUS UPLOAD PEMOHON (merah/hijau) ===== */
 body.paten-detail-page .doc-dot{
   display:inline-block;
   width:8px;height:8px;border-radius:999px;
@@ -1055,8 +967,6 @@ body.paten-detail-page .doc-dot.green{
   background:#2ecc71;
   box-shadow:0 0 0 3px rgba(46,204,113,.12);
 }
-
-
 
 .doc-dot{
   display:inline-block;
@@ -1077,7 +987,6 @@ body.paten-detail-page .doc-dot.green{
   box-shadow:0 0 0 3px rgba(34,197,94,.14);
 }
 
-/* dot indikator (muncul hanya kalau blade render) */
 .doc-dot{
   display:inline-block;
   width:8px;height:8px;border-radius:999px;
@@ -1092,7 +1001,6 @@ body.paten-detail-page .doc-dot.green{
   box-shadow:0 0 0 3px rgba(34,197,94,.14);
 }
 
-/* box catatan admin biar lebih gede & enak dibaca */
 .rev-admin-box{
   background:#f7f9fc;
   border:1px solid rgba(11,44,95,.10);
@@ -1103,7 +1011,6 @@ body.paten-detail-page .doc-dot.green{
 .rev-admin-box .ttl{ font-weight:900; margin-bottom:6px; color:#0b2c5f; }
 .rev-admin-box .meta{ font-size:12px; color:rgba(0,0,0,.55); margin-top:6px; }
 
-/* catatan panjang: "lihat detail" */
 .note-detail summary{
   cursor:pointer;
   font-weight:700;
@@ -1115,25 +1022,22 @@ body.paten-detail-page .doc-dot.green{
   line-height:1.45;
 }
 
-/* Biar tombol OK + Revisi selalu sejajar */
 body.paten-detail-page .doc-actions{
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap !important; /* jangan turun ke baris baru */
+  flex-wrap: nowrap !important; 
 }
 
-/* Samain tinggi tombol */
 body.paten-detail-page .doc-actions .btn-mini{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px;          /* boleh kamu sesuaikan */
+  height: 34px;        
   padding: 0 14px;
   line-height: 34px;
 }
 
-/* Kalau ada form bikin tombol jadi “ketarik” beda tinggi */
 body.paten-detail-page .doc-actions form{
   margin: 0;
 }
@@ -1141,8 +1045,6 @@ body.paten-detail-page .doc-actions form button{
   width: auto;
 }
 
-
-/* === FIX: tombol bawah sejajar & satu baris === */
 .docs-footer-actions{
   display:flex !important;
   justify-content:flex-end !important;
@@ -1150,12 +1052,10 @@ body.paten-detail-page .doc-actions form button{
   gap:14px !important;
 }
 
-/* kalau salah satu tombol dibungkus form */
 .docs-footer-actions form{
   margin:0 !important;
 }
 
-/* samain tinggi + style dasar kedua tombol */
 .docs-footer-actions .btn-send-right,
 .docs-footer-actions .btn-approve-right,
 .docs-footer-actions .btn-submit{
@@ -1169,32 +1069,25 @@ body.paten-detail-page .doc-actions form button{
   box-sizing:border-box !important;
 }
 
-
-/* FIX: overlay header jangan nangkap klik */
 .dash-hero-overlay{
   pointer-events: none !important;
 }
 
-/* 1) HEADER/HERO JANGAN NANGKEP KLIK (yang sering nutup area bawah) */
 body.paten-detail-page .dash-hero,
 body.paten-detail-page .dash-hero-overlay{
   pointer-events: none !important;
 }
 
-/* 2) BALIKIN POINTER UNTUK ELEMEN YANG EMANG BUTUH KLIK DI HERO (kalau ada) */
-/* kalau hero lu ga ada tombol, bagian ini boleh dihapus */
 body.paten-detail-page .dash-hero a,
 body.paten-detail-page .dash-hero button{
   pointer-events: auto !important;
 }
 
-/* 4) PASTIIN WRAPPER KONTEN IKUT DIATAS (BIAR STICKY KEHITUNG) */
 body.paten-detail-page .dash-content{
   position: relative !important;
   z-index: 10 !important;
 }
 
-/* 5) KASIH RUANG BAWAH BIAR KONTEN GA KETUTUP FOOTER */
 body.paten-detail-page .acc-body{
   padding-bottom: 120px !important;
 }
@@ -1239,21 +1132,16 @@ body.paten-detail-page .acc-body{
 }
 
 .btn-back-modern{
-  border: none !important;        /* 🔥 hilangin border */
-  outline: none !important;       /* 🔥 hilangin garis fokus */
-  box-shadow: 0 8px 20px rgba(245,158,11,.35) !important; /* glow cantik */
+  border: none !important;       
+  outline: none !important;      
+  box-shadow: 0 8px 20px rgba(245,158,11,.35) !important;
 }
 
 /* =========================================================
-   ALIAS: Samain tampilan CIPTA pake CSS PATEN
-   (tanpa ubah isi aturan paten yang sudah ada)
+   CIPTA
 ========================================================= */
 
-/* 1) Semua rule yang targetnya body.paten-detail-page
-      kita duplikasi untuk body.cipta-detail-page lewat :is()
-*/
 body.cipta-detail-page{
-  /* opsional: kalau ada variable theme di paten */
   --navy: #0b2c5f;
   --navy2:#08306f;
   --ink:  #0f172a;
@@ -1272,10 +1160,6 @@ body.cipta-detail-page{
   --pend-tx: #334155;
 }
 
-/* 2) DUPLIKASI selector paten -> cipta (tanpa edit 500 baris)
-      Ini trik: kita override dengan selector gabungan.
-      Tinggal copy beberapa rule “kunci” yang bikin beda.
-*/
 
 body.cipta-detail-page .dash-layout{ gap:0 !important; }
 
@@ -1373,7 +1257,7 @@ body.cipta-detail-page .acc-head i{
 body.cipta-detail-page .acc-body{
   background:#fbfcff;
   border-top:1px solid rgba(11,44,95,.12);
-  padding:18px 20px 120px; /* include space sticky footer */
+  padding:18px 20px 120px; 
 }
 
 /* doc item */
@@ -1530,7 +1414,6 @@ body.cipta-detail-page .docs-footer-actions{
   gap:14px !important;
 }
 
-/* hero overlay jangan nangkep klik */
 body.cipta-detail-page .dash-hero,
 body.cipta-detail-page .dash-hero-overlay{
   pointer-events:none !important;
@@ -1544,9 +1427,8 @@ body.cipta-detail-page .dash-content{
   z-index:10 !important;
 }
 
-/* FIX: Header accordion cipta jadi full (background biru gak setengah) */
 body.cipta-detail-page .acc-card{
-  padding: 0 !important; /* kalau ada padding bawaan yg bikin header mengecil */
+  padding: 0 !important;
 }
 
 body.cipta-detail-page .acc-head{
@@ -1554,8 +1436,6 @@ body.cipta-detail-page .acc-head{
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-
-  /* kalau button kadang shrink */
   box-sizing: border-box !important;
 }
 .rev-admin-box .ttl{font-weight:700;margin-bottom:6px}
@@ -1634,9 +1514,8 @@ body.cipta-detail-page .acc-head{
   transform: rotate(-135deg);
 }
 
-/* bikin teks deskripsi turun ke bawah, gak nabrak badge */
 .doc-text-block{
-  flex: 0 0 100% !important;   /* ✅ paksa full row sendiri */
+  flex: 0 0 100% !important; 
   width:100% !important;
   margin-top:6px !important;
 }
@@ -1644,14 +1523,14 @@ body.cipta-detail-page .acc-head{
 .note-cell { display:flex; flex-direction:column; gap:4px; }
 
 .note-full{
-  margin-top:0;          /* ✅ jangan tambah jarak lagi */
+  margin-top:0;      
   line-height:1.5;
   color:#111827;
 }
 
 .btn-note-more{
   align-self:flex-start;
-  margin-top:0;          /* ✅ jangan dobel jarak */
+  margin-top:0;        
   border:none;
   background:transparent;
   padding:0;
@@ -1672,7 +1551,6 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row{
   align-items: stretch !important;
 }
 
-/* Pastikan cell-nya yang dikasih padding + garis */
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > div,
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > span,
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > a{
@@ -1685,12 +1563,10 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row > :
   border-left: 1px solid rgba(11,44,95,.15) !important;
 }
 
-/* header biar tegas */
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-head{
   border-bottom: 1px solid rgba(11,44,95,.15) !important;
 }
 
-/* mobile: jadi 1 kolom + garis vertikal mati */
 @media (max-width: 900px){
   body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-row{
     grid-template-columns: 1fr !important;
@@ -1734,7 +1610,7 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
 }
 
 .note-cell{
-  position: relative;   /* 🔥 penting */
+  position: relative;   
   display: block;
 }
 
@@ -1755,7 +1631,7 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
 }
 
 .note-full[hidden]{
-  display: none !important;    /* yang bener-bener nyembunyiin */
+  display: none !important;  
 }
 
 .note-preview[hidden]{
@@ -1764,10 +1640,9 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
 
 /* ===== NOTE: SINGLE SOURCE OF TRUTH = [hidden] ===== */
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
-  display: none !important; /* default sembunyi */
+  display: none !important; 
 }
 
-/* yang tampil hanya kalau JS buka (hidden dicabut) */
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full:not([hidden]){
   display: block !important;
 }
@@ -1837,10 +1712,8 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-cell{
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
   display:-webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;   /* <-- mau 2 baris */
+  -webkit-line-clamp: 2; 
   overflow:hidden;
-
-  /* penting biar newline/list gak bikin jadi 3-10 baris */
   white-space: normal !important;
   word-break: break-word;
   overflow-wrap:anywhere;
@@ -1855,7 +1728,6 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
   word-break: break-word;
 }
 
-/* hidden MUST win (anti ada rule display:block !important dari tempat lain) */
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview[hidden],
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full[hidden],
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more[hidden]{
@@ -1863,61 +1735,51 @@ body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .btn-note-more[hi
 }
 
 .doc-link-full{
-  display:block;          /* biar ambil 1 baris sendiri */
-  white-space:nowrap;     /* jangan turun */
-  overflow-x:auto;        /* kalau kepanjangan -> scroll */
+  display:block;         
+  white-space:nowrap;     
+  overflow-x:auto;      
   overflow-y:hidden;
-  text-overflow:clip;     /* jangan ellipsis */
+  text-overflow:clip;    
   max-width:100%;
-  padding-bottom:2px;     /* biar scroll bar ga “nabrak” */
+  padding-bottom:2px;    
 }
 .doc-link-full::-webkit-scrollbar{
   height:6px;
 }
 
-/* =========================================================
-   FIX: "Selengkapnya" Catatan jangan overflow ke kolom sebelah
-   Penyebab: teks panjang tanpa spasi + pre-wrap => meluber nyamping
-   Solusi: paksa wrap untuk unbroken text + min-width:0 pada grid cell
-========================================================= */
+
 
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .incoming-cell{
-  min-width: 0 !important;          /* penting biar grid cell bisa menyusut */
+  min-width: 0 !important;          
 }
 
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full,
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
   max-width: 100% !important;
-  overflow-wrap: anywhere !important; /* KUNCI: string panjang tanpa spasi tetap turun */
-  word-break: break-word !important;  /* fallback untuk browser tertentu */
+  overflow-wrap: anywhere !important; 
+  word-break: break-word !important;  
 }
 
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-full{
-  white-space: pre-wrap !important;   /* tetap hormati newline */
+  white-space: pre-wrap !important;  
 }
 
-/* =========================================================
-   FIX CONSISTENCY: preview catatan harus 1 baris (sebelum & sesudah refresh sama)
-   Karena sebelumnya ada rule -webkit-line-clamp:2 yg bikin tombol "Selengkapnya" jadi salah deteksi
-========================================================= */
 body:is(.paten-detail-page,.cipta-detail-page) .incoming-table .note-preview{
-  display: block !important;         /* batalin -webkit-box */
+  display: block !important;         
   -webkit-line-clamp: unset !important;
   -webkit-box-orient: unset !important;
 
-  white-space: nowrap !important;    /* 1 baris */
+  white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 
   max-width: 100% !important;
 }
 
-/* summary selalu tampil, jadi kalau open: sembunyiin preview biar ga double */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] .note-short{
   display:none !important;
 }
 
-/* ✅ KUNCI: summary jadi layout kolom (teks dulu, tombol selalu di bawah) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum{
   display:flex !important;
   flex-direction:column !important;
@@ -1925,13 +1787,11 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-
   gap:6px !important;
 }
 
-/* note-short pastiin full width biar tombol ga ke samping */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-short{
   display:block !important;
   width:100% !important;
 }
 
-/* tombolnya JADI DI BAWAH teks (baik Selengkapnya maupun Tutup) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action{
   display:block !important;
   margin:0 !important;
@@ -1940,9 +1800,8 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-
   color:#2563eb;
 }
 
-/* ganti label Selengkapnya <-> Tutup (posisi tetap, ga gerak) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action{
-  font-size:0 !important; /* matiin teks aslinya */
+  font-size:0 !important; 
 }
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action::after{
   content:"Selengkapnya";
@@ -1962,13 +1821,11 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long{
   line-height:1.45;
 }
 
-/* OPEN: sembunyiin preview yang ada di summary (anti double) */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail[open] summary.note-sum .note-short{
   display:none !important;
 }
 
-/* pas open, sembunyiin tombol "Selengkapnya" di atas */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail[open] summary.note-sum .note-action{
   display:none !important;
@@ -1988,7 +1845,6 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close:h
   text-decoration: underline;
 }
 
-/* default: tombol tutup cuma muncul pas open */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
   display:none;
 }
@@ -1996,14 +1852,13 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] .note-c
   display:inline-block;
 }
 
-/* === STOP TRUNCATE / ELLIPSIS untuk nama file & link ciptaan === */
 body.cipta-detail-page a.doc-link,
 body.cipta-detail-page a.doc-link-full{
   max-width: none !important;
   overflow: visible !important;
   text-overflow: clip !important;
-  white-space: normal !important;   /* boleh turun baris kalau kepanjangan */
-  word-break: break-word !important; /* biar URL panjang ga nabrak */
+  white-space: normal !important;   
+  word-break: break-word !important; 
 }
 
 body.cipta-detail-page .paten-row .p-value a{
@@ -2016,10 +1871,7 @@ body.cipta-detail-page .paten-row .p-value a{
 
 /* =========================================================
    REVISION POPUP -> MODAL BESAR DI TENGAH (PATEN + CIPTA)
-   Tanpa ubah HTML: pakai :has()
 ========================================================= */
-
-/* 3) rev-pop jadi modal di tengah */
 body:is(.paten-detail-page,.cipta-detail-page) .rev-pop:not([hidden]){
   position: fixed;
   top: 50%;
@@ -2038,17 +1890,15 @@ body:is(.paten-detail-page,.cipta-detail-page) .rev-pop:not([hidden]){
   padding: 18px 18px 16px;
 }
 
-/* 4) rapihin form isi modal */
 body:is(.paten-detail-page,.cipta-detail-page) .rev-pop form{
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* 5) textarea lebih besar */
 body:is(.paten-detail-page,.cipta-detail-page) .rev-pop textarea.input{
   width: 100%;
-  min-height: 200px;      /* ✅ bikin besar */
+  min-height: 200px;     
   resize: vertical;
   line-height: 1.45;
   padding: 12px 12px;
@@ -2056,12 +1906,11 @@ body:is(.paten-detail-page,.cipta-detail-page) .rev-pop textarea.input{
   border: 1px solid rgba(11,44,95,.18);
 }
 
-/* 6) file input biar rapi */
+
 body:is(.paten-detail-page,.cipta-detail-page) .rev-pop input[type="file"]{
   width: 100%;
 }
 
-/* 7) tombol simpan revisi lebih “utama” */
 body:is(.paten-detail-page,.cipta-detail-page) .rev-pop .btn-mini{
   align-self: flex-start;
   height: 40px;
@@ -2070,26 +1919,22 @@ body:is(.paten-detail-page,.cipta-detail-page) .rev-pop .btn-mini{
   font-weight: 900;
 }
 
-/* 8) optional: biar popover kecil (rev-dd) ga ikut jadi container aneh */
 body:is(.paten-detail-page,.cipta-detail-page) .rev-dd{
   position: relative;
   z-index: 1;
 }
 
-/* modalnya yang boleh scroll */
 body:is(.paten-detail-page,.cipta-detail-page) .rev-pop{
   overflow: auto !important;
   max-height: min(82vh, 720px);
   -webkit-overflow-scrolling: touch;
 }
 
-/* popup selalu di atas */
 .rev-pop{
   position: fixed !important;
   z-index: 2147483647 !important;
 }
 
-/* saat popup buka: turunin layer area tombol di belakang */
 body.modal-rev-open .doc-actions,
 body.modal-rev-open .docs-footer-actions{
   position: relative !important;
@@ -2097,21 +1942,18 @@ body.modal-rev-open .docs-footer-actions{
 }
 
 /* =========================
-   REV POP OPEN (tanpa :has)
+   REV POP OPEN 
 ========================= */
 
-/* modal selalu di atas */
 .rev-pop{
   position: fixed !important;
   z-index: 2147483647 !important;
 }
 
-/* saat popup revisi terbuka -> sembunyikan footer actions */
 body.modal-rev-open .docs-footer-actions{
   display: none !important;
 }
 
-/* lock scroll halaman */
 html, body{
   height: auto;
 }
@@ -2122,31 +1964,25 @@ body.modal-rev-open{
   touch-action: none;
 }
 
-/* modalnya boleh scroll */
 body.modal-rev-open .rev-pop{
   overflow: auto !important;
   -webkit-overflow-scrolling: touch;
 }
 
-
-/* popup selalu di atas */
 .rev-pop{
   position: fixed !important;
   z-index: 2147483647 !important;
 }
 
-/* tombol footer belakang hilang */
 body.modal-rev-open .docs-footer-actions{
   display: none !important;
 }
 
-/* HANYA tombol OK/Revisi di belakang yang disembunyiin */
 body.modal-rev-open .doc-actions .btn-mini{
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-/* tapi tombol di DALAM popup jangan ikut hilang */
 body.modal-rev-open .rev-pop .btn-mini{
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -2160,26 +1996,22 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-
   gap:6px !important;
 }
 
-/* JANGAN HILANGKAN PREVIEW SAAT OPEN (biar gak kosong -> gak ada gap) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-short{
   display:block !important;
 }
 
-/* TOMBOL tetap tampil, cuma teksnya berubah via ::after */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-action{
   display:block !important;
 }
 
-/* matikan tombol tutup bawah (biar gak dobel) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
   display:none !important;
 }
 
-/* rapetin jarak isi panjang biar nempel */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long{
   margin-top:6px !important;
 }
-/* ===== FIX CATATAN JANGAN BOLD SETELAH REFRESH ===== */
+
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-short,
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long,
 body:is(.paten-detail-page,.cipta-detail-page) .note-plain{
@@ -2189,9 +2021,7 @@ body:is(.paten-detail-page,.cipta-detail-page) .note-plain{
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum .note-action{
   font-weight:800 !important;
 }
-/* ===== FIX: JANGAN DOUBLE SAAT SELENGKAPNYA ===== */
 
-/* summary tetap layout kolom */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-sum{
   display:flex !important;
   flex-direction:column !important;
@@ -2199,59 +2029,50 @@ body:is(.paten-detail-page,.cipta-detail-page) details.note-detail summary.note-
   gap:6px !important;
 }
 
-/* ✅ saat OPEN: sembunyikan preview biar gak double */
+
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-short{
   display:none !important;
 }
 
-/* ✅ saat OPEN: tombol tetap ada (jadi summary gak kosong) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail[open] summary.note-sum .note-action{
   display:block !important;
 }
 
-/* matikan tombol tutup bawah (biar gak dobel) */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-close{
   display:none !important;
 }
 
-/* rapetin jarak isi panjang */
 body:is(.paten-detail-page,.cipta-detail-page) details.note-detail .note-long{
   margin-top:6px !important;
 }
 /* ===== FIX: TUTUP HARUS DI BAWAH (BUKAN DI SUMMARY) ===== */
 
-/* pas open: preview di summary hilang (biar gak double) */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail[open] summary.note-sum .note-short{
   display:none !important;
 }
 
-/* pas open: sembunyikan tombol "Tutup" yang di summary */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail[open] summary.note-sum .note-action{
   display:none !important;
 }
 
-/* pas open: rapetin summary biar gak ada gap */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail[open] summary.note-sum{
   padding-bottom: 0 !important;
   margin-bottom: 0 !important;
 }
 
-/* full text nempel langsung */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail .note-long{
   margin-top: 6px !important;
 }
 
-/* tombol tutup bawah: default sembunyi */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail .note-close{
   display:none !important;
 }
 
-/* tombol tutup bawah: muncul hanya saat open */
 body:is(.paten-detail-page,.cipta-detail-page)
 details.note-detail[open] .note-close{
   display:inline-block !important;
@@ -2292,20 +2113,61 @@ details.note-detail[open] .note-close{
   color: #eff6ff;
 }
 
-/* tombol approve normal */
 #btnApprove {
   transition: all 0.2s ease;
 }
 
-/* tombol approve disabled */
 #btnApprove:disabled {
-  background-color: #cbd5e1 !important; /* abu-abu */
-  color: #64748b !important;           /* teks lebih pudar */
+  background-color: #cbd5e1 !important; 
+  color: #64748b !important;          
   cursor: not-allowed;
   opacity: 0.8;
 }
 
-/* opsional: hover jangan berubah */
 #btnApprove:disabled:hover {
   background-color: #cbd5e1 !important;
+}
+/* ===== CIPTA: WARNA TOMBOL OK & REVISI SAMA KAYAK PATEN ===== */
+body.cipta-detail-page .doc-actions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap !important;
+}
+
+body.cipta-detail-page .doc-actions .btn-mini{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  line-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  color: #0b2c5f;
+  box-shadow: none;
+}
+
+/* tombol OK */
+body.cipta-detail-page .doc-actions .btn-mini:first-child{
+  border-color: rgba(245,158,11,.55) !important;
+  color: #0b2c5f !important;
+  background: #fff !important;
+}
+
+/* tombol REVISI */
+body.cipta-detail-page .doc-actions .btn-mini:last-child{
+  border-color: rgba(34,197,94,.45) !important;
+  color: #0b2c5f !important;
+  background: #fff !important;
+}
+
+body.cipta-detail-page .doc-actions form{
+  margin: 0;
+}
+
+body.cipta-detail-page .doc-actions form button{
+  width: auto;
 }

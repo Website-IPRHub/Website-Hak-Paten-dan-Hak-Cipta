@@ -151,7 +151,6 @@
 
   $notePreview = function($text, $limit = 80){
     $t = (string) $text;
-    // preview 1 baris: newline dijadiin spasi
     $oneLine = preg_replace("/\r\n|\r|\n/", " ", $t);
     return Str::limit($oneLine, $limit);
   };
@@ -310,13 +309,11 @@
     if(!$path) return null;
     $base = basename($path);
 
-    // Detect nama random khas Laravel store(): 40 hex chars + .ext
     if (preg_match('/^[0-9a-f]{40}\.[A-Za-z0-9]+$/', $base)) {
       $ext = pathinfo($base, PATHINFO_EXTENSION);
       return $fallbackLabel . ($ext ? '.'.$ext : '');
     }
 
-    // Detect UUID-ish (kadang)
     if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[A-Za-z0-9]+$/i', $base)) {
       $ext = pathinfo($base, PATHINFO_EXTENSION);
       return $fallbackLabel . ($ext ? '.'.$ext : '');
@@ -349,14 +346,14 @@
         $labelForName = $docLabels[$k] ?? $k;
 
         if ($k === 'skema_tkt' && $filePath) {
-            $safeNo = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($row->no_pendaftaran ?? ''));
             $ext = pathinfo($filePath, PATHINFO_EXTENSION);
-            $shownName = $safeNo . '_skema_tkt_7-9' . ($ext ? '.' . $ext : '');
+
+            $shownName = ($row->no_pendaftaran ?? 'file') . '_skema_tkt_7-9'
+                . ($ext ? '.' . $ext : '');
         } else {
             $shownName = data_get($row, $nameField)
                 ?: ($filePath ? $prettyName($filePath, $labelForName) : null);
         }
-
         $textValue = '';
     }
 
@@ -366,7 +363,7 @@
     $canRevisi = $hasSourceValue;
 
     // ==========================
-    // ✅ CIPTA STYLE
+    // CIPTA STYLE
     // ==========================
     $bucket = null;
 
@@ -386,7 +383,6 @@
 
     $cyclesSorted = $cycles;
 
-    // flag untuk show/hide revisi box
     $hasPemohonUpload = $cyclesSorted->contains(function($x) use ($isText){
       if($isText){
         $t = data_get($x,'pemohon_text')
@@ -401,14 +397,13 @@
         && !empty(data_get($x,'pemohon_file_path'));
     });
 
-    // admin revisi = status dokumen revisi ATAU note admin ada
     $hasAdminRevisi =
       ($statusDoc === 'revisi') ||
       (trim((string)$note) !== '') ||
       ($cycles->count() > 0);
 
     // =======================
-    // ✅ DOT STATUS FINAL
+    // DOT STATUS FINAL
     // =======================
     $showDot  = false;
     $dotClass = null;
@@ -439,7 +434,7 @@
               {{ $docLabels[$k] ?? $k }}
             </div>
 
-            {{-- ✅ OUTPUT UTAMA --}}
+            {{--  OUTPUT UTAMA --}}
             @if($isText)
               @if($textValue !== '')
                 <div class="doc-text-block">
@@ -482,48 +477,48 @@
           </form>
 
           <div data-rev>
-  <button
-  type="button"
-  class="btn-mini rev-btn"
-  data-rev-btn
-  data-doc-revisi-btn
-  data-doc-key="{{ $k }}"
-  data-can-revisi="{{ $canRevisi ? '1' : '0' }}"
-  {{ $canRevisi ? '' : 'disabled' }}
-  title="{{ $canRevisi ? 'Revisi dokumen' : 'Tidak ada dokumen' }}"
->
-  Revisi
-</button>
+            <button
+            type="button"
+            class="btn-mini rev-btn"
+            data-rev-btn
+            data-doc-revisi-btn
+            data-doc-key="{{ $k }}"
+            data-can-revisi="{{ $canRevisi ? '1' : '0' }}"
+            {{ $canRevisi ? '' : 'disabled' }}
+            title="{{ $canRevisi ? 'Revisi dokumen' : 'Tidak ada dokumen' }}"
+          >
+            Revisi
+          </button>
 
-  <div class="rev-pop" data-rev-pop hidden>
-    <form class="js-doc-form" method="POST" enctype="multipart/form-data"
-          action="{{ route('admin.verifikasi_dokumen.set',['type'=>'paten','id'=>$row->id]) }}">
-      @csrf
-      <input type="hidden" name="doc_key" value="{{ $k }}">
-      <input type="hidden" name="action" value="revisi">
+      <div class="rev-pop" data-rev-pop hidden>
+        <form class="js-doc-form" method="POST" enctype="multipart/form-data"
+              action="{{ route('admin.verifikasi_dokumen.set',['type'=>'paten','id'=>$row->id]) }}">
+          @csrf
+          <input type="hidden" name="doc_key" value="{{ $k }}">
+          <input type="hidden" name="action" value="revisi">
 
-      <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)" required>{{ $note }}</textarea>
+          <textarea name="note" rows="3" class="input" placeholder="Catatan revisi (wajib)" required>{{ $note }}</textarea>
 
-      @if(!$isText)
-        <div style="margin-top:6px;">
-          <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
-          <input type="file" name="admin_attachment">
-        </div>
-      @endif
+          @if(!$isText)
+            <div style="margin-top:6px;">
+              <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
+              <input type="file" name="admin_attachment">
+            </div>
+          @endif
 
-      <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
-    </form>
+          <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
+        </form>
 
-    @if(!$isText && !empty(data_get($doc,'admin_attachment_path')))
-      <div style="margin-top:6px; font-size:12px;">
-        Lampiran admin:
-        <a href="{{ asset('storage/'.data_get($doc,'admin_attachment_path')) }}" target="_blank">
-          {{ basename(data_get($doc,'admin_attachment_path')) }}
-        </a>
+        @if(!$isText && !empty(data_get($doc,'admin_attachment_path')))
+          <div style="margin-top:6px; font-size:12px;">
+            Lampiran admin:
+            <a href="{{ asset('storage/'.data_get($doc,'admin_attachment_path')) }}" target="_blank">
+              {{ basename(data_get($doc,'admin_attachment_path')) }}
+            </a>
+          </div>
+        @endif
       </div>
-    @endif
-  </div>
-</div>
+    </div>
 </div>
 
         {{-- REVISI box --}}
@@ -551,16 +546,16 @@
 @endphp
 
           <details class="incoming-details" style="margin-top:10px;" {{ ($hasAdminRevisi || $hasPemohonUpload) ? '' : 'hidden' }}>
-  <summary class="incoming-summary">
-    Detail Revisi ({{ $displayCount }})
-  </summary>
+            <summary class="incoming-summary">
+              Detail Revisi ({{ $displayCount }})
+            </summary>
 
-  <div class="incoming-table">
-    <div class="incoming-row incoming-head">
-      <div>Catatan</div>
-      <div>{{ $isText ? 'Teks Pemohon' : 'File Pemohon' }}</div>
-      <div>Update Pemohon</div>
-    </div>
+            <div class="incoming-table">
+              <div class="incoming-row incoming-head">
+                <div>Catatan</div>
+                <div>{{ $isText ? 'Teks Pemohon' : 'File Pemohon' }}</div>
+                <div>Update Pemohon</div>
+              </div>
 
     {{-- fallback: kalau belum ada cycle tapi ada note admin --}}
     @if($cycles->count() === 0 && $adminNote !== '')
@@ -705,44 +700,43 @@
 
             {{-- FOOTER BUTTONS --}}
             <div class="docs-footer-actions">
+            <form id="sendRevisiForm"
+                  class="js-send-revisi-form"
+                  method="POST"
+                  action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'paten','id'=>$row->id]) }}">
+              @csrf
+              <button id="btnSendRevisi"
+                      type="submit"
+                      class="btn-send-right"
+                      {{ $canSend ? '' : 'disabled' }}>
+                Simpan & Kirim ke Pemohon
+              </button>
+              </form>
 
-  <form id="sendRevisiForm"
-        class="js-send-revisi-form"
-        method="POST"
-        action="{{ route('admin.verifikasi_dokumen.sendRevisi', ['type'=>'paten','id'=>$row->id]) }}">
-    @csrf
-    <button id="btnSendRevisi"
-            type="submit"
-            class="btn-send-right"
-            {{ $canSend ? '' : 'disabled' }}>
-      Simpan & Kirim ke Pemohon
-    </button>
-  </form>
+              <button
+                type="button"
+                id="btnSendWA"
+                class="btn-wa-right"
+                data-url="{{ route('admin.verifikasi_dokumen.waLinks', ['type'=>'paten','id'=>$row->id]) }}"
+              >
+                Kirim WA
+              </button>
 
-  <button
-    type="button"
-    id="btnSendWA"
-    class="btn-wa-right"
-    data-url="{{ route('admin.verifikasi_dokumen.waLinks', ['type'=>'paten','id'=>$row->id]) }}"
-  >
-    Kirim WA
-  </button>
+              @php
+              $isApproved = strtolower((string)($row->status ?? 'pending')) === 'approve';
+            @endphp
 
-  @php
-  $isApproved = strtolower((string)($row->status ?? 'pending')) === 'approve';
-@endphp
-
-<button
-  type="button"
-  id="btnApprove"
-  class="btn-approve-right {{ $isApproved ? 'is-approved' : '' }}"
-  data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'paten','id'=>$row->id]) }}"
-  data-approved="{{ $isApproved ? '1' : '0' }}"
-  {{ ($canApprove && !$isApproved) ? '' : 'disabled' }}
->
-  {{ $isApproved ? 'Sudah Approve' : 'Approve' }}
-</button>
-</div>
+            <button
+              type="button"
+              id="btnApprove"
+              class="btn-approve-right {{ $isApproved ? 'is-approved' : '' }}"
+              data-url="{{ route('admin.verifikasi_dokumen.approve', ['type'=>'paten','id'=>$row->id]) }}"
+              data-approved="{{ $isApproved ? '1' : '0' }}"
+              {{ ($canApprove && !$isApproved) ? '' : 'disabled' }}
+            >
+              {{ $isApproved ? 'Sudah Approve' : 'Approve' }}
+            </button>
+            </div>
           </div>
         </div>
 

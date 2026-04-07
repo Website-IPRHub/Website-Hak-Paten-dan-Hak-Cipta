@@ -33,7 +33,7 @@ class FileUploadCiptaController extends Controller
         return $file->storeAs($folder, $safeName, 'public');
     }
 
-    // STEP 2: Surat Permohonan (simpan ke kolom surat_permohonan)
+    // Surat Permohonan (simpan ke kolom surat_permohonan)
     public function suratPermohonan(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();
@@ -50,7 +50,7 @@ class FileUploadCiptaController extends Controller
                 ->with('success', 'Surat permohonan tersimpan');
     }
 
-    // STEP 3: Surat Pernyataan
+    // Surat Pernyataan
     public function suratPernyataan(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();
@@ -67,7 +67,7 @@ class FileUploadCiptaController extends Controller
             ->with('success', 'Surat pernyataan tersimpan');
     }
 
-    // STEP 4: Surat Pengalihan
+    // Surat Pengalihan
     public function suratPengalihan(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();
@@ -84,7 +84,7 @@ class FileUploadCiptaController extends Controller
             ->with('success', 'Surat pengalihan tersimpan');
     }
 
-    // STEP 5: Scan KTP
+    // Scan KTP
     public function scanKtp(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();
@@ -101,7 +101,7 @@ class FileUploadCiptaController extends Controller
             ->with('success', 'Scan KTP tersimpan');
     }
 
-    // STEP 6: Tanda Terima
+    // Tanda Terima
     public function tandaTerima(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();
@@ -118,7 +118,7 @@ class FileUploadCiptaController extends Controller
             ->with('success', 'Tanda terima tersimpan');
     }
 
-    // STEP 7: Hasil Ciptaan (silakan sesuaikan mimes & max)
+    // Hasil Ciptaan 
     public function hasilCiptaan(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();
@@ -135,7 +135,7 @@ class FileUploadCiptaController extends Controller
             ->with('success', 'Hasil ciptaan tersimpan');
     }
 
-    // STEP 8: Link Ciptaan (input URL)
+    // Link Ciptaan (input URL)
     public function linkCiptaan(Request $request)
     {
         $ciptaId = $this->ciptaIdOrAbort();

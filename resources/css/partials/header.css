@@ -61,7 +61,6 @@
   padding: 8px 14px; /* tadinya 6px 10px */
 }
 
-/* opsional: kalau masih kekecilan, naikin lagi */
 .brand-logo{
   transform: scale(1.05);
   transform-origin: center;
@@ -77,7 +76,7 @@
 /* ====== HURUF NAV DIGEDEIN ====== */
 .nav-link{
   font-size: 18px;  /* tadinya 13px */
-  padding: 10px 6px; /* biar area klik lebih enak */
+  padding: 10px 6px; 
 }
 
 .nav-button{
@@ -132,16 +131,15 @@
   white-space: nowrap;
 }
 
-/* khusus logo UNDIP berdampak (anjangin) */
+/* khusus logo UNDIP berdampak (panjangin) */
 .brand-logo-wrap--impact{
-  width: 240px;       /* bikin lebih panjang */
-  height: 64px;       /* samain dengan logo utama yang udah digedein */
+  width: 240px;   
+  height: 64px;    
   padding: 8px 16px;
 }
 
-/* biar gambar banner panjang kebaca, jangan terlalu nge-zoom */
 .brand-logo--impact{
-  transform: scale(1);      /* override dari transform 1.05 */
+  transform: scale(1);     
   object-fit: contain;
 }
 /* wrapper putih yang nyambung */
@@ -155,13 +153,11 @@
   padding: 6px 12px;
 }
 
-/* link brand jangan punya background lagi */
 .brand{
   display: flex;
   align-items: center;
 }
 
-/* pembatas tipis biar keliatan 2 logo tapi tetap nyambung */
 .brand-sep{
   width: 1px;
   height: 44px;

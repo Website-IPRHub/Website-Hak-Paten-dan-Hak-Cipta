@@ -26,7 +26,4 @@ class HakPatenSubmit2Controller extends Controller
             ->with('no_pendaftaran', $paten->no_pendaftaran ?? null);
     }
 
-
-
-
 }

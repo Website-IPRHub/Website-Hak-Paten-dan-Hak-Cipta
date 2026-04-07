@@ -24,13 +24,10 @@ class DuplicatePernyataanCiptaController extends Controller
             'download_format' => ['required', 'in:pdf,docx'],
         ]);
 
-        // simpan session kalau kamu masih butuh flow "Next"
         session(['hakcipta.form' => $data]);
-
-        // kalau klik tombol Next (sesuaikan route kamu)
         if ($request->input('action') === 'next') {
             return redirect()
-                ->route('hakcipta.pengalihanhak') // contoh: sesuaikan step berikutnya
+                ->route('hakcipta.pengalihanhak') 
                 ->with('success', 'Data tersimpan.');
         }
 
@@ -40,8 +37,6 @@ class DuplicatePernyataanCiptaController extends Controller
         }
 
         $tp = new TemplateProcessor($templatePath);
-
-
         $tp->setValue('judul_ciptaan', $this->val($data['judul_ciptaan']));
         $tp->setValue('berupa', $this->val($data['berupa']));
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id');
@@ -71,7 +66,7 @@ class DuplicatePernyataanCiptaController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 

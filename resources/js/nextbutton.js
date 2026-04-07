@@ -75,8 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       return;
     }
-
-    // kalau ada form upload di halaman ini, submit dulu
+    
     if (form) {
       e.preventDefault();
       form.submit();

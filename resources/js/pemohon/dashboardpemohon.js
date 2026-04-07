@@ -230,3 +230,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("btn-choose-file")) {
+    const form = e.target.closest(".pd-upload-form");
+    const input = form?.querySelector(".js-file-input");
+    if (input) input.click();
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.matches(".js-file-input")) {
+    const file = e.target.files[0];
+    const fileName = file ? file.name : "Belum pilih file";
+
+    const form = e.target.closest(".pd-upload-form");
+    const label = form?.querySelector(".pd-file-name");
+
+    if (label) {
+      label.textContent = fileName;
+    }
+  }
+});

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'nama_konsultan_paten',
     'alamat_konsultan_paten',
     'nomor_konsultan_paten',
-    'telepon_fax', // FIX id (tanpa slash)
+    'telepon_fax', 
   ];
 
   function toggleKonsultan() {
@@ -119,16 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* =====================================================
    * 5) JUMLAH INVENTOR + GENERATE FIELD
    * ===================================================== */
-  /**
-   * =========================
-   * 2) Generate Inventor Fields
-   * =========================
-   * Butuh elemen:
-   * - input#jumlah_inventor
-   * - div#inventor-container
-   * - template#inventor-template
-   * - script#old-inventor-data (JSON array) (opsional)
-   */
+  
   const jumlahEl = document.getElementById('jumlah_inventor');
   const container = document.getElementById('inventor-container');
   const tpl = document.getElementById('inventor-template');
@@ -160,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderInventors() {
         const raw = (jumlahEl.value || '').trim();
 
-        // ✅ kalau kosong, biarin kosong & kosongin field inventor
         if (raw === '') {
             container.innerHTML = '';
             return;
@@ -190,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
      }
 
-     // first render
 /**
  * =========================
  * 2) Generate Inventor Fields
@@ -201,9 +190,7 @@ const container = document.getElementById('inventor-container');
 const tpl = document.getElementById('inventor-template');
 
 if (jumlahEl && container && tpl) {
-  // ✅ auto-select biar dari "1" langsung ketimpa kalau ngetik "2"
   const selectAll = () => {
-    // delay dikit biar selection kebaca di semua browser
     setTimeout(() => jumlahEl.select(), 0);
   };
   jumlahEl.addEventListener('focus', selectAll);
@@ -249,7 +236,6 @@ if (jumlahEl && container && tpl) {
   function renderInventors() {
     const raw = (jumlahEl.value || '').trim();
 
-    // user lagi edit (kosong) → jangan reset, tapi juga jangan render aneh
     if (raw === '') {
       container.innerHTML = '';
       return;
@@ -270,7 +256,6 @@ if (jumlahEl && container && tpl) {
   // first render
   renderInventors();
 
-  // realtime pas ngetik (preserve value yang sudah diisi)
   let t;
   jumlahEl.addEventListener('input', () => {
     clearTimeout(t);
@@ -280,7 +265,6 @@ if (jumlahEl && container && tpl) {
     }, 150);
   });
 
-  // pas blur, kalau kosong → balikin ke 1
   jumlahEl.addEventListener('blur', () => {
     if (((jumlahEl.value || '').trim()) === '') {
       jumlahEl.value = 1;

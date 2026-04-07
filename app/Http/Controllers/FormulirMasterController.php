@@ -66,7 +66,7 @@ class FormulirMasterController extends Controller
     }
 
     // ======================================================
-    // INVENTOR → FORMAT SERAGAM
+    // INVENTOR (FORMAT SERAGAM)
     // ======================================================
     private function normalizeInventors(array $inventor)
     {
@@ -99,14 +99,12 @@ class FormulirMasterController extends Controller
             'inventor' => $inventors,
         ];
 
-        // contoh:
-        // return app(PatenDocumentService::class)->generate($payload, $format);
         return response()->json(['dokumen' => 'PATEN', 'data' => $payload]);
     }
 
     private function downloadInvensi($data, $inventors, $format)
     {
-        // INVENTOR UNTUK INVENSI (LEBIH SIMPLE)
+        // INVENTOR UNTUK INVENSI
         $payloadInventor = collect($inventors)->map(fn($i) => [
             'nama'  => $i['nama'],
             'email' => $i['email'],
@@ -126,7 +124,7 @@ class FormulirMasterController extends Controller
         // INVENTOR UNTUK PENGALIHAN
         $payloadInventor = collect($inventors)->map(fn($i) => [
             'nama'     => $i['nama'],
-            'alamat'  => $i['fakultas'], // contoh mapping
+            'alamat'  => $i['fakultas'], 
             'pekerjaan' => $i['status'],
         ])->toArray();
 

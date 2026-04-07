@@ -1,17 +1,12 @@
 /* =========================
-   INVENTOR — rapi & konsisten (se-style draft paten)
+   INVENTOR 
 ========================= */
 
-/* HAPUS aturan global ini kalau ada (bahaya nabrak halaman lain) */
-/* .form{ margin-left: 90px; } */
-
-/* Wrapper mengikuti layout draft paten */
 .inv-wrap{
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Form full lebar, no shifting aneh */
 .inv-form-full{
   width: 100%;
   margin: 0;
@@ -26,13 +21,11 @@
   margin: 0 0 18px 0;
 }
 
-/* Kalau kamu memang perlu geser sedikit (opsional) */
 .inv-shift-40{ margin-left: 40px; }
 @media (max-width: 768px){
   .inv-shift-40{ margin-left: 0; }
 }
 
-/* Card inventor: sama vibe content-isi */
 .inventor-card{
   width: 100%;
   background: #fff;
@@ -65,7 +58,6 @@
   margin-bottom: 12px;
 }
 
-/* Kalau kamu masih pakai .row-2 di dalam inventor, samakan juga */
 .inv-form-full .row-2{
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -88,7 +80,6 @@
 
 .req{ color:#E11D48 !important; }
 
-/* KECILIN + TIPISIN judul (khusus blok invensi ini) */
 .kepemilikan-invensi h2{
   font-family: 'Inter', sans-serif;
   font-weight: 700;
@@ -97,7 +88,6 @@
   margin: 0 0 18px 0;
 }
 
-/* opsional: kalau masih berat, turunin lagi */
 .kepemilikan-invensi h2 strong{ font-weight: 600 !important; }
 
 /* teks kecil bawah judul */
@@ -108,15 +98,13 @@
   margin: 0 0 12px;
 }
 
-/* Kalau tombol Upload juga kerasa terlalu bold */
 #uploadButton{
-  font-weight: 700 !important; /* coba 600 kalau masih tebel */
+  font-weight: 700 !important; 
   font-size: 15px !important;
 }
 
-/* Kalau "Belum pilih file" terlalu bold */
 #fileName{
-  font-weight: 600 !important; /* coba 500 */
+  font-weight: 600 !important; 
   font-size: 13px !important;
   opacity: .9;
 }

@@ -101,10 +101,6 @@
 {{-- ACTIONS BAR --}}
 <div class="skm-actions">
   <div class="skm-actions__left">
-    {{-- ✅ 1. Tipe ganti jadi 'button' (biar gak lari ke route next otomatis) --}}
-    {{-- ✅ 2. HAPUS atribut form="downloadForm" --}}
-    {{-- ✅ 3. Kasih ID 'btnSaveSkema' biar script lo nangkep --}}
-    {{-- ✅ 4. Kasih dataset biar JS tau harus nembak URL mana --}}
     <button type="button" 
             id="btnSaveSkema" 
             class="skm-btn skm-btn--prev"
@@ -115,24 +111,20 @@
   </div>
 
   <div class="actions-right">
-    {{-- tombol unduh submit ke form download --}}
-    
     <div class="actions-right2" style="display:flex; gap:10px; align-items:center;">
         <select form="downloadForm" name="download_format" class="input" style="width:160px;">
           @php
-  $downloadFormat = old('download_format', $draft['download_format'] ?? 'pdf');
-@endphp
+            $downloadFormat = old('download_format', $draft['download_format'] ?? 'pdf');
+          @endphp
 
-<option value="pdf"  {{ $downloadFormat == 'pdf' ? 'selected' : '' }}>PDF</option>
-<option value="docx" {{ $downloadFormat == 'docx' ? 'selected' : '' }}>DOCX</option>
+          <option value="pdf"  {{ $downloadFormat == 'pdf' ? 'selected' : '' }}>PDF</option>
+          <option value="docx" {{ $downloadFormat == 'docx' ? 'selected' : '' }}>DOCX</option>
         </select>
 
         <button form="downloadForm" class="unduh" type="submit" name="action" value="download">
           Unduh
         </button>
-
       </div>
-
   </div>
 </div>
 <script>
@@ -144,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadButtonLabel = document.getElementById('uploadButtonLabel');
     const btnSaveSkema = document.getElementById('btnSaveSkema');
 
-    // --- LOGIC 1: AUTO UPLOAD SAAT PILIH FILE ---
+    // AUTO UPLOAD SAAT PILIH FILE ---
     if (draftFile && draftForm && downloadForm) {
         draftFile.addEventListener('change', () => {
             const file = draftFile.files[0];
@@ -155,8 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 uploadButtonLabel.style.pointerEvents = 'none';
                 uploadButtonLabel.textContent = 'Mengupload...';
             }
-
-            // Copy data dari form input ke form upload biar session ke-update
             const fields = ['nama_lengkap','program_studi','judul_paten','nidn_nip','fakultas','tanggal_pengisian','download_format'];
             fields.forEach(name => {
                 const val = downloadForm.querySelector(`[name="${name}"]`).value;
@@ -173,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LOGIC 2: SWEETALERT SAAT KLIK SIMPAN ---
+    // --- SWEETALERT SAAT KLIK SIMPAN ---
     if (btnSaveSkema) {
         btnSaveSkema.addEventListener('click', async (e) => {
             e.preventDefault();

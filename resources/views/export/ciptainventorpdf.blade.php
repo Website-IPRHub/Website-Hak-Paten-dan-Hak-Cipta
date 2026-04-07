@@ -9,7 +9,6 @@
     th, td { border: 1px solid #000; padding: 4px; vertical-align: top; word-wrap: break-word; }
     th { text-align: center; font-weight: 700; }
 
-    /* width kolom biar mirip paten */
     .c-nop   { width: 11%; }
     .c-judul { width: 34%; }
     .c-jenis { width: 10%; }

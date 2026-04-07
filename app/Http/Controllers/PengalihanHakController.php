@@ -10,18 +10,15 @@ class PengalihanHakController extends Controller
 {
     private function pickTemplate(int $jumlah): string
     {
-        // Ganti nama file sesuai punyamu
         if ($jumlah >= 1 && $jumlah <= 7)  return public_path('templates/pengalihan hak 1-4.docx');
-        // if ($jumlah >= 5 && $jumlah <= 8)  return public_path('templates/pengalihan hak 5-8.docx');
         if ($jumlah >= 8 && $jumlah <= 14) return public_path('templates/pengalihan hak 9-14.docx');
-
         abort(422, 'Jumlah inventor tidak didukung template.');
     }
 
     private function val($v): string
     {
         $s = trim((string)($v ?? ''));
-        return $s === '' ? '' : $s; // kosongin aja kalau kosong
+        return $s === '' ? '' : $s; 
     }
 
     public function store(Request $request)
@@ -41,8 +38,6 @@ class PengalihanHakController extends Controller
             'download_format' => ['required', 'in:pdf,docx'],
         ]);
 
-        
-
         $jumlah = (int) $data['jumlah_inventor'];
         $actual = count($data['inventor']['nama'] ?? []);
         if ($actual !== $jumlah) {
@@ -60,11 +55,8 @@ class PengalihanHakController extends Controller
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id');
         $tp->setValue('tanggal_pengisian', $tgl->translatedFormat('d F Y'));
 
-        /**
-         * === 1) CLONE tabel inventor ===
-         */
 
-        // === CLONE IDENTITAS INVENTOR (atas) pakai BLOCK ===
+        // === CLONE IDENTITAS INVENTOR ===
         $tp->cloneBlock('inventor_block', $jumlah, true, true);
 
         for ($i = 1; $i <= $jumlah; $i++) {
@@ -76,8 +68,6 @@ class PengalihanHakController extends Controller
             $tp->setValue("alamat#{$i}", $this->val($data['inventor']['alamat'][$idx] ?? ''));
             $tp->setValue("kode_pos#{$i}", $this->val($data['inventor']['kode_pos'][$idx] ?? ''));
         }
-
-
 
         // CLONE daftar bawah 
         $tp->cloneBlock('list_inventor', $jumlah, true, true);

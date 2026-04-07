@@ -29,41 +29,41 @@ class FormPendaftaranCiptaanController extends Controller
 
     'inventor'               => ['required', 'array'],
 
-'inventor.nama'          => ['required', 'array'],
-'inventor.nama.*'        => ['required', 'string', 'max:200'],
+    'inventor.nama'          => ['required', 'array'],
+    'inventor.nama.*'        => ['required', 'string', 'max:200'],
 
-'inventor.nik'           => ['required', 'array'],
-'inventor.nik.*'         => ['required', 'string', 'max:50'],
+    'inventor.nik'           => ['required', 'array'],
+    'inventor.nik.*'         => ['required', 'string', 'max:50'],
 
-'inventor.nip_nim'       => ['required', 'array'],
-'inventor.nip_nim.*'     => ['required', 'string', 'max:50'],
+    'inventor.nip_nim'       => ['required', 'array'],
+    'inventor.nip_nim.*'     => ['required', 'string', 'max:50'],
 
-'inventor.fakultas'      => ['required', 'array'],
-'inventor.fakultas.*'    => ['required', 'string', 'max:255'],
+    'inventor.fakultas'      => ['required', 'array'],
+    'inventor.fakultas.*'    => ['required', 'string', 'max:255'],
 
-'inventor.nidn'          => ['nullable', 'array'],
-'inventor.nidn.*'        => ['nullable', 'string', 'max:20'],
+    'inventor.nidn'          => ['nullable', 'array'],
+    'inventor.nidn.*'        => ['nullable', 'string', 'max:20'],
 
-'inventor.status'        => ['required', 'array'],
-'inventor.status.*'      => ['required', 'string', 'max:50'],
+    'inventor.status'        => ['required', 'array'],
+    'inventor.status.*'      => ['required', 'string', 'max:50'],
 
-'inventor.no_hp'         => ['required', 'array'],
-'inventor.no_hp.*'       => ['required', 'string', 'max:50'],
+    'inventor.no_hp'         => ['required', 'array'],
+    'inventor.no_hp.*'       => ['required', 'string', 'max:50'],
 
-'inventor.tlp_rumah'     => ['nullable', 'array'],
-'inventor.tlp_rumah.*'   => ['nullable', 'string', 'max:50'],
+    'inventor.tlp_rumah'     => ['nullable', 'array'],
+    'inventor.tlp_rumah.*'   => ['nullable', 'string', 'max:50'],
 
-'inventor.email'         => ['required', 'array'],
-'inventor.email.*'       => ['required', 'email', 'max:100'],
+    'inventor.email'         => ['required', 'array'],
+    'inventor.email.*'       => ['required', 'email', 'max:100'],
 
-'inventor.alamat'        => ['required', 'array'],
-'inventor.alamat.*'      => ['required', 'string'],
+    'inventor.alamat'        => ['required', 'array'],
+    'inventor.alamat.*'      => ['required', 'string'],
 
-'inventor.kode_pos'      => ['required', 'array'],
-'inventor.kode_pos.*'    => ['required', 'string', 'max:20'],
+    'inventor.kode_pos'      => ['required', 'array'],
+    'inventor.kode_pos.*'    => ['required', 'string', 'max:20'],
 
-    'download_format'        => ['nullable', 'in:pdf,docx'],
-]);
+        'download_format'        => ['nullable', 'in:pdf,docx'],
+    ]);
 
         $jumlah = (int) $data['jumlah_inventor'];
         $actual = count($data['inventor']['nama'] ?? []);
@@ -71,23 +71,21 @@ class FormPendaftaranCiptaanController extends Controller
             return back()->withErrors(['inventor' => 'Jumlah inventor tidak sesuai.'])->withInput();
         }
 
-        // simpan session kalau kamu masih butuh flow "Next"
         $existingForm = session('hakcipta.form', []);
 
-session()->put('hakcipta.form', array_merge($existingForm, [
-    'jumlah_inventor'      => $request->jumlah_inventor,
-    'jenis_cipta'          => $request->jenis_cipta,
-    'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
-    'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
-    'judul_ciptaan'        => $request->judul_ciptaan,
-    'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
-    'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
-    'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
-    'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
-    'inventor'             => $request->inventor,
-]));
+        session()->put('hakcipta.form', array_merge($existingForm, [
+            'jumlah_inventor'      => $request->jumlah_inventor,
+            'jenis_cipta'          => $request->jenis_cipta,
+            'jenis_cipta_lainnya'  => $request->jenis_cipta_lainnya,
+            'link_ciptaan'         => $request->link_ciptaan ?? ($existingForm['link_ciptaan'] ?? null),
+            'judul_ciptaan'        => $request->judul_ciptaan,
+            'berupa'               => $request->berupa ?? ($existingForm['berupa'] ?? null),
+            'tanggal_pengisian'    => $request->tanggal_pengisian ?? ($existingForm['tanggal_pengisian'] ?? null),
+            'tempat'               => $request->tempat ?? ($existingForm['tempat'] ?? null),
+            'uraian'               => $request->uraian ?? ($existingForm['uraian'] ?? null),
+            'inventor'             => $request->inventor,
+        ]));
 
-        // kalau klik tombol Next (sesuaikan route kamu)
         if ($request->input('action') === 'next') {
             return response()->json(['ok' => true]);
         }
@@ -99,17 +97,15 @@ session()->put('hakcipta.form', array_merge($existingForm, [
 
         $tp = new TemplateProcessor($templatePath);
 
-        // === header / info umum
         $tp->setValue('judul_ciptaan', $this->val($data['judul_ciptaan']));
         $tp->setValue('link_ciptaan', $this->val($data['link_ciptaan']));
 
-        // tanggal + tempat (di template kamu: ${tempat}, ${tanggal_terbit})
+        // tanggal + tempat
         $tgl = Carbon::parse($data['tanggal_pengisian'])->locale('id')->translatedFormat('d F Y');
         $tp->setValue('tempat', $this->val($data['tempat']));
         $tp->setValue('tanggal_terbit', $tgl);
 
         // === inventor rows
-        // === ambil semua nama, gabung koma
         $names = array_map(
             fn($n) => $this->val($n),
             $data['inventor']['nama'] ?? []
@@ -117,20 +113,17 @@ session()->put('hakcipta.form', array_merge($existingForm, [
         $names = array_values(array_filter($names, fn($n) => $n !== ''));
         $namaGabung = implode(', ', $names);
 
-        // === ambil data dari inventor 1 (index 0)
         $alamat1 = $this->val($data['inventor']['alamat'][0] ?? '');
         $telp1   = $this->val($data['inventor']['tlp_rumah'][0] ?? ''); // sesuai input: tlp_rumah
         $hp1     = $this->val($data['inventor']['no_hp'][0] ?? '');
         $email1  = $this->val($data['inventor']['email'][0] ?? '');
 
-        // set ke template
         $tp->setValue('nama_lengkap', $namaGabung);
         $tp->setValue('alamat', $alamat1);
         $tp->setValue('tlp_rumah', $telp1);
         $tp->setValue('no_hp', $hp1);
         $tp->setValue('email', $email1);
 
-        // uraian kalau ada
         $tp->setValue('uraian', $this->val($request->input('uraian')));
 
         $out = tempnam(sys_get_temp_dir(), 'cipta_') . '.docx';
@@ -156,7 +149,7 @@ session()->put('hakcipta.form', array_merge($existingForm, [
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command 
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 

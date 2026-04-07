@@ -34,26 +34,21 @@ class FileUploadController extends Controller
     }
 
     public function draft(Request $request)
-{
-    
-    $request->validate([
-        'file' => 'required|mimes:doc,docx|max:10240',
-    ]);
+    {
+        
+        $request->validate([
+            'file' => 'required|mimes:doc,docx|max:10240',
+        ]);
 
-    $paten = Paten::findOrFail(session('paten_id'));
+        $paten = Paten::findOrFail(session('paten_id'));
+        $path = $request->file('file')->store('paten/draft', 'public');
+        $paten->update([
+            'draft_paten' => $path,
+        ]);
 
-    $path = $request->file('file')->store('paten/draft', 'public');
-
-    // ⬇️ INI WAJIB
-    $paten->update([
-        'draft_paten' => $path,
-    ]);
-
-    return redirect()->route('draftpaten')
-        ->with('success', 'Draft paten berhasil diupload.');
-}
-
-
+        return redirect()->route('draftpaten')
+            ->with('success', 'Draft paten berhasil diupload.');
+    }
 
     public function form(Request $request)
     {
@@ -80,7 +75,6 @@ class FileUploadController extends Controller
     ->route('kepemilikaninvensi')
     ->with('success', 'Formulir Permohonan berhasil diupload');
     }
-
 
     public function suratInvensi(Request $request)
     {
