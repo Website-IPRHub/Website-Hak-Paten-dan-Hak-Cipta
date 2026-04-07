@@ -31,7 +31,7 @@ $verifSession = session('hakpaten.verif', []);
       $norm['status'][] = $row['status'] ?? '';
     }
   } else {
-    $norm = $raw; // sudah per-field
+    $norm = $raw; // per-field
   }
 @endphp
 
@@ -62,7 +62,6 @@ $verifSession = session('hakpaten.verif', []);
 <section class="section-full section-isi">
   <div class="section-inner">
     <h1 class="datadiri-title">Data Pemohon <span class="req">*</span></h1>
-
     @if ($errors->any())
       <div class="alert alert-danger">
           <ul>
@@ -72,7 +71,6 @@ $verifSession = session('hakpaten.verif', []);
           </ul>
       </div>
   @endif
-
 
     <form id="draftForm"class="paten-form" action="{{ route('patenverif.start') }}" method="POST" novalidate>
       @csrf
@@ -129,7 +127,6 @@ $verifSession = session('hakpaten.verif', []);
               value="{{ old('judul_paten', data_get($isiform,'judul_invensi','')) }}"
               required
             >
-
           </div>
         </div>
 
@@ -138,25 +135,23 @@ $verifSession = session('hakpaten.verif', []);
           <div class="field">
             <label class="label">Prototipe <span class="req">*</span></label>
             <select class="input prototipe-select" name="prototipe" required>
-              {{ old('prototipe', data_get($verifSession,'prototipe')) ? '' : 'selected' }}>
-              -- Prototipe --
-            </option>
+                <option value="" disabled {{ old('prototipe', data_get($verifSession, 'prototipe')) ? '' : 'selected' }}>
+                    -- Prototipe --
+                </option>
 
-            <option value="Sudah"
-            {{ old('prototipe', data_get($verifSession,'prototipe')) == 'Sudah' ? 'selected' : '' }}>
-            Sudah
-            </option>
+                <option value="Sudah" {{ old('prototipe', data_get($verifSession, 'prototipe')) == 'Sudah' ? 'selected' : '' }}>
+                    Sudah
+                </option>
 
-            <option value="Belum"
-            {{ old('prototipe', data_get($verifSession,'prototipe')) == 'Belum' ? 'selected' : '' }}>
-            Belum
-            </option>
-          </select>
+                <option value="Belum" {{ old('prototipe', data_get($verifSession, 'prototipe')) == 'Belum' ? 'selected' : '' }}>
+                    Belum
+                </option>
+            </select>
           </div>
           <small class="hint prototipe-note">
-          Warna ungu menandakan <strong>prototipe sudah tersedia</strong>, 
-          sedangkan warna pink menandakan <strong>prototipe belum tersedia</strong>.
-        </small>
+            Warna ungu menandakan <strong>prototipe sudah tersedia</strong>, 
+            sedangkan warna pink menandakan <strong>prototipe belum tersedia</strong>.
+          </small>
 
           <div class="field">
             <label class="label">Nilai Perolehan <span class="req">*</span></label>
@@ -278,7 +273,6 @@ $verifSession = session('hakpaten.verif', []);
                       <small class="nidn-warning">NIDN harus 8 karakter</small>
                     </div>
 
-                    <!-- Status fix Dosen (pakai hidden biar terkirim) -->
                     <div class="field">
                       <label class="label">Status Inventor <span class="req">*</span></label>
                       <input type="text" class="input" value="Dosen" disabled>
@@ -398,47 +392,146 @@ $verifSession = session('hakpaten.verif', []);
       <div class="actions-bar">
         <div class="actions-left">
           <button type="submit" name="action" value="prev" class="btn-prev">
-  &laquo; Sebelumnya
-</button>
+            &laquo; Sebelumnya
+          </button>
 
-<button type="submit" name="action" value="next" class="btn-next">
-  Selanjutnya &raquo;
-</button>
+          <button type="submit" name="action" value="next" class="btn-next">
+            Selanjutnya &raquo;
+          </button>
         </div>
       </div>
-
     </form>
+    
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const nextBtn = document.getElementById('nextLink');
-  if (!nextBtn) return;
+    document.addEventListener('DOMContentLoaded', () => {
+      const nextBtn = document.getElementById('nextLink');
+      if (!nextBtn) return;
 
-  nextBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
+      nextBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
 
-    const form = document.getElementById('draftForm');
-    if (!form) return;
+        const form = document.getElementById('draftForm');
+        if (!form) return;
 
-    // validasi HTML5
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
+        // validasi HTML5
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
 
-    const saveUrl = nextBtn.dataset.saveUrl;
+        const saveUrl = nextBtn.dataset.saveUrl;
 
-    const fd = new FormData(form);
+        const fd = new FormData(form);
 
-    try {
-      const res = await fetch(saveUrl, {
-        method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Accept': 'application/json',
-        },
-        body: fd
+        try {
+          const res = await fetch(saveUrl, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+            body: fd
+          });
+
+          const data = await res.json().catch(() => null);
+
+          if (!res.ok) {
+            console.error('HTTP error');
+            return;
+          }
+
+          // kalau backend kirim redirect → tetap lanjut
+          if (data?.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
+
+          // fallback kalau ok true
+          if (data?.ok) {
+            window.location.href = data.redirect;
+            return;
+          }
+
+          window.location.href = data.redirect;
+
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const select = document.querySelector('.prototipe-select');
+      if (!select) return;
+
+      function updateColor() {
+        select.classList.remove('sudah', 'belum');
+
+        if (select.value === 'Sudah') {
+          select.classList.add('sudah');
+        } else if (select.value === 'Belum') {
+          select.classList.add('belum');
+        }
+      }
+
+      // jalan saat load (biar old() ikut ke-style)
+      updateColor();
+
+      // jalan saat user ganti
+      select.addEventListener('change', updateColor);
+    });
+    </script>
+
+    <script>
+      document.addEventListener("input", function (e) {
+        if (e.target.matches(".nip-input")) {
+          const value = e.target.value.trim();
+          const warning = e.target.parentElement.querySelector(".nip-warning");
+          const valid = /^\d{14}$|^\d{18}$/.test(value);
+
+          if (warning) {
+            warning.style.display = value === "" || valid ? "none" : "block";
+            warning.style.color = "red";
+          }
+        }
+
+        if (e.target.matches(".nidn-input")) {
+          const value = e.target.value.trim();
+          const warning = e.target.parentElement.querySelector(".nidn-warning");
+          const valid = /^\d{8}$/.test(value);
+
+          if (warning) {
+            warning.style.display = value === "" || valid ? "none" : "block";
+            warning.style.color = "red";
+          }
+        }
+
+        if (e.target.matches(".hp-input")) {
+          const value = e.target.value.trim();
+          const warning = e.target.parentElement.querySelector(".hp-warning");
+          const valid = /^08[0-9]{8,13}$/.test(value);
+
+          if (warning) {
+            warning.style.display = value === "" || valid ? "none" : "block";
+            warning.style.color = "red";
+          }
+        }
+
+        if (e.target.matches(".email-input")) {
+          const value = e.target.value.trim();
+          const warning = e.target.parentElement.querySelector(".email-warning");
+          const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+          if (warning) {
+            warning.style.display = value === "" || valid ? "none" : "block";
+            warning.style.color = "red";
+          }
+        }
       });
 
+<<<<<<< HEAD
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
@@ -539,6 +632,16 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+=======
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(
+          ".nip-warning, .nidn-warning, .hp-warning, .email-warning"
+        ).forEach(el => {
+          el.style.display = "none";
+        });
+      });
+      </script>
+>>>>>>> 2d9ad1d1e27ce926124c45114209c714ebbf59d2
   </div>
 </section>
 @endsection

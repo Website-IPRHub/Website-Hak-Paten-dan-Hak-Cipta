@@ -17,7 +17,7 @@
   $inventorData = [];
   $oldInventor = old('inventor', data_get($data, 'inventor', []));
 
-  // langsung pakai as-is, sudah format {nama:[...], nik:[...]}
+  
   if (!empty($oldInventor)) {
     $inventorData = $oldInventor;
   }
@@ -78,6 +78,10 @@
           @enderror
           </div>
 
+<<<<<<< HEAD
+=======
+          {{-- Jenis Cipta (radio) --}}
+>>>>>>> 2d9ad1d1e27ce926124c45114209c714ebbf59d2
         @php
           $jenisOld = old('jenis_cipta', data_get($data,'jenis_cipta'));
           $jenisLainnyaOld = old('jenis_cipta_lainnya', data_get($data,'jenis_cipta_lainnya'));
@@ -370,11 +374,8 @@
             <button type="submit" class="btn-next">
                 Selanjutnya »
             </button>
-
-
         </div>
       </div>
-
     </form>
   </div>
 </section>
@@ -470,6 +471,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
-
-
 @endsection

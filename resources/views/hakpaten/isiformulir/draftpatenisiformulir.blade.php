@@ -26,8 +26,6 @@
         </p>
         <h1>Catatan: Mohon rapikan kembali dokumen sebelum dikirimkan ke proses verifikasi.</h1>
   </div>
-   <a href="{{ route('hakpaten.isiformulir')}}" class="btn-verif">
-  Mulai Proses 
-</a>
+   <a href="{{ route('hakpaten.isiformulir')}}" class="btn-verif">Mulai Proses </a>
 </section>
 @endsection

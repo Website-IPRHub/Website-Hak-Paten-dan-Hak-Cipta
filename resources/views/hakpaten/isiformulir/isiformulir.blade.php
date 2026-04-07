@@ -48,15 +48,15 @@
 
       <div class="col">
         <div class="field">
-  <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
+          <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
 
-  <select class="input" id="is_pct_display" disabled>
-    <option value="Tidak" selected>Tidak</option>
-  </select>
-  <input type="hidden" name="is_pct" value="Tidak">
+          <select class="input" id="is_pct_display" disabled>
+            <option value="Tidak" selected>Tidak</option>
+          </select>
+          <input type="hidden" name="is_pct" value="Tidak">
 
-  @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
-</div>
+          @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
+        </div>
 
         <div class="field" id="pct-followup" @if(old('is_pct', $prefill['is_pct'] ?? '')!=='Ya') style="display:none;" @endif>
           <label class="label">Nomor Permohonan Paten Internasional (PCT) <span class="req">*</span></label>
@@ -84,17 +84,17 @@
 
       <div class="col">
         <div class="field">
-  <label class="label">Apakah merupakan pecahan paten? <span class="req">*</span></label>
+          <label class="label">Apakah merupakan pecahan paten? <span class="req">*</span></label>
 
-  <select class="input" id="is_pecahan_display" disabled>
-    <option value="Tidak" selected>Tidak</option>
-  </select>
-  <input type="hidden" name="is_pecahan" value="Tidak">
+          <select class="input" id="is_pecahan_display" disabled>
+            <option value="Tidak" selected>Tidak</option>
+          </select>
+          <input type="hidden" name="is_pecahan" value="Tidak">
 
-  @error('is_pecahan')
-    <small style="color:red">{{ $message }}</small>
-  @enderror
-</div>
+          @error('is_pecahan')
+            <small style="color:red">{{ $message }}</small>
+          @enderror
+        </div>
 
         <div class="field" id="pecahan-followup"
           @if(old('is_pecahan', $prefill['is_pecahan'] ?? '')!=='Ya')
@@ -127,15 +127,15 @@
     <div class="row-2">
       <div class="col">
         <div class="field">
-  <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
+          <label class="label">Apakah Melalui Konsultan Paten? <span class="req">*</span></label>
 
-  <select class="input" id="konsultanpaten" disabled>
-    <option value="Tidak Melalui" selected>Tidak Melalui</option>
-  </select>
-  <input type="hidden" name="konsultanpaten" value="Tidak Melalui">
+          <select class="input" id="konsultanpaten" disabled>
+            <option value="Tidak Melalui" selected>Tidak Melalui</option>
+          </select>
+          <input type="hidden" name="konsultanpaten" value="Tidak Melalui">
 
-  @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
-</div>
+          @error('konsultanpaten') <small style="color:red">{{ $message }}</small> @enderror
+        </div>
       </div>
     </div>
 
@@ -201,15 +201,15 @@
     <div class="row-2">
       <div class="col">
         <div class="field">
-  <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
+          <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
 
-  <select class="input" id="hak_prioritas" disabled>
-    <option value="Tidak" selected>Tidak</option>
-  </select>
-  <input type="hidden" name="hak_prioritas" value="Tidak">
+          <select class="input" id="hak_prioritas" disabled>
+            <option value="Tidak" selected>Tidak</option>
+          </select>
+          <input type="hidden" name="hak_prioritas" value="Tidak">
 
-  @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
-</div>
+          @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
+        </div>
       </div>
     </div>
 
@@ -556,6 +556,7 @@
           Selanjutnya &raquo;
         </a>
         <script>
+<<<<<<< HEAD
           document.addEventListener('DOMContentLoaded', () => {
             const nextBtn = document.getElementById('nextLinkIsiform');
             if (!nextBtn) return;
@@ -621,7 +622,74 @@
             });
           });
         </script>
+=======
+        document.addEventListener('DOMContentLoaded', () => {
+          const nextBtn = document.getElementById('nextLinkIsiform');
+          if (!nextBtn) return;
 
+          nextBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            const form = nextBtn.closest('form');
+            if (!form) return;
+
+            if (!form.checkValidity()) {
+              form.reportValidity();
+              return;
+            }
+
+            // SWEET ALERT 
+            const result = await Swal.fire({
+              title: 'Konfirmasi Download',
+              html: `
+                <p>Apakah Anda sudah mendownload 3 file berikut?</p>
+                <ul style="text-align:left; margin-top:10px;">
+                  <li>• Form Paten</li>
+                  <li>• Surat Pengalihan Hak</li>
+                  <li>• Kepemilikan Invensi</li>
+                </ul>
+              `,
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonText: 'Sudah',
+              cancelButtonText: 'Belum',
+              confirmButtonColor: '#2F5C9E',
+              cancelButtonColor: '#6c757d',
+              reverseButtons: true
+            });
+
+            if (!result.isConfirmed) {
+              return; // kalau klik "Belum" bakal tetap di halaman
+            }
+
+            // Kalau klik SUDAH → lanjut save & redirect
+            const saveUrl = nextBtn.dataset.saveUrl;
+            const nextUrl = nextBtn.dataset.nextUrl;
+
+            const fd = new FormData(form);
+            fd.set('action', 'next');
+
+            try {
+              const res = await fetch(saveUrl, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+              });
+
+              if (!res.ok) {
+                console.error('Save gagal', res.status);
+                return;
+              }
+
+              window.location.href = nextUrl;
+>>>>>>> 2d9ad1d1e27ce926124c45114209c714ebbf59d2
+
+            } catch (err) {
+              console.error(err);
+            }
+          });
+        });
+        </script>
       </div>
       <div class="actions-download">
         <select id="doc_type" class="input" style="width:220px;">
@@ -640,9 +708,7 @@
           ⬇ Download
         </button>
       </div>
-
     </div>
-
   </form>
 
   <script type="application/json" id="old-inventor-data">
@@ -826,6 +892,10 @@
         updateHakUI();
       }
 
+<<<<<<< HEAD
+=======
+      // jumlah inventor dihitung dari inventor[nama][]
+>>>>>>> 2d9ad1d1e27ce926124c45114209c714ebbf59d2
       document.querySelector("form").addEventListener("submit", () => {
         const cards = document.querySelectorAll("#inventor-container-verif .inventor-card");
         document.getElementById("jumlah_inventor_verif").value = cards.length || 1;
