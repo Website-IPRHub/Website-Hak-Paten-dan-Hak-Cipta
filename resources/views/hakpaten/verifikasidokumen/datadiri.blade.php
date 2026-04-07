@@ -141,20 +141,18 @@ $verifSession = session('hakpaten.verif', []);
           <div class="field">
             <label class="label">Prototipe <span class="req">*</span></label>
             <select class="input prototipe-select" name="prototipe" required>
-              {{ old('prototipe', data_get($verifSession,'prototipe')) ? '' : 'selected' }}>
-              -- Prototipe --
-            </option>
+    <option value="" disabled {{ old('prototipe', data_get($verifSession, 'prototipe')) ? '' : 'selected' }}>
+        -- Prototipe --
+    </option>
 
-            <option value="Sudah"
-            {{ old('prototipe', data_get($verifSession,'prototipe')) == 'Sudah' ? 'selected' : '' }}>
-            Sudah
-            </option>
+    <option value="Sudah" {{ old('prototipe', data_get($verifSession, 'prototipe')) == 'Sudah' ? 'selected' : '' }}>
+        Sudah
+    </option>
 
-            <option value="Belum"
-            {{ old('prototipe', data_get($verifSession,'prototipe')) == 'Belum' ? 'selected' : '' }}>
-            Belum
-            </option>
-          </select>
+    <option value="Belum" {{ old('prototipe', data_get($verifSession, 'prototipe')) == 'Belum' ? 'selected' : '' }}>
+        Belum
+    </option>
+</select>
           </div>
           <small class="hint prototipe-note">
           Warna ungu menandakan <strong>prototipe sudah tersedia</strong>, 
