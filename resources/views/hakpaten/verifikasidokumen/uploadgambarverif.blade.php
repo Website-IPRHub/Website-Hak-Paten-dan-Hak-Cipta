@@ -45,7 +45,6 @@
             <a class="btn-next" href="{{ route('patenverif.deskripsi',['verif' => $verif->id]) }}">
                 Selanjutnya &raquo;
             </a>
-
         </div>
     </div>
 </section>

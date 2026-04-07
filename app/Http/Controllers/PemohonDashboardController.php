@@ -759,7 +759,7 @@ public function updateDeskripsiSingkat(Request $request)
     }
 
     DB::table($tableName)->where('id', $reqRow->ref_id)->update([
-        $targetColumn => $fullPathForDb, // ✅ Sekarang pake targetColumn yang pinter
+        $targetColumn => $fullPathForDb, 
         'updated_at'  => now(),
     ]);
             // 1) tutup request admin

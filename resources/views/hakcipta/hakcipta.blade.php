@@ -46,8 +46,6 @@
             @enderror
           </div>
 
-          {{-- Jenis Hak Cipta (radio) --}}
-          {{-- Jenis Cipta (radio) --}}
         @php
         $jenisOld        = old('jenis_cipta');
         $jenisLainnyaOld = old('jenis_cipta_lainnya');
@@ -282,8 +280,6 @@
             <button type="submit" class="btn-next">
                 Selanjutnya »
             </button>
-
-
         </div>
       </div>
 

@@ -27,7 +27,6 @@
   gap: 16px;
 }
 
-/* Biar di mobile turun jadi 1 kolom */
 @media (max-width: 768px){
   .form-grid-2col{
     grid-template-columns: 1fr;

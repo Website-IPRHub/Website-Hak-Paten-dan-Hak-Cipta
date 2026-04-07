@@ -13,19 +13,16 @@ body {
   color: #111827;
 }
 
-/* default (belum pilih) */
 .prototipe-select {
-  background-color: #ffe4ec; /* pink lembut */
+  background-color: #ffe4ec; 
   border: 1px solid #ffb6c1;
 }
 
-/* kalau SUDAH */
 .prototipe-select.sudah {
-  background-color: #e6ddff; /* lilac */
+  background-color: #e6ddff; 
   border: 1px solid #b8a2ff;
 }
 
-/* kalau BELUM */
 .prototipe-select.belum {
   background-color: #fff7fa;
   border: 1px solid #f3dbe4;
@@ -129,7 +126,6 @@ textarea.input {
   min-height: 92px;
 }
 
-/* Error text (kalau kamu pakai class err) */
 .err {
   display: inline-block;
   margin-top: 2px;
@@ -215,7 +211,7 @@ a#nextLink.btn-selanjutnya:hover{
   margin: 0 auto; /* optional */
   max-width: 720px;
   margin-left: auto;
-  margin-right: auto;        /* biar tetap full sampai max-width */
+  margin-right: auto;       
 }
 
 .inventor-head {

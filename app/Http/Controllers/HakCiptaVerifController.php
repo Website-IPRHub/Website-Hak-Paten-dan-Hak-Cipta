@@ -11,9 +11,6 @@ class HakCiptaVerifController extends Controller
 {
     private const TABLE = 'hak_cipta_verifs';
 
-    /**
-     * STEP 1: create row verif + redirect ke step berikutnya
-     */
     public function start(Request $request)
 {
     $enumFakultas   = $this->getEnumValues(self::TABLE, 'fakultas');
@@ -205,9 +202,6 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
     return redirect($nextRoute);
 }
 
-    /**
-     * API store (kalau dipakai)
-     */
     public function store(Request $request)
 {
     $enumFakultas   = $this->getEnumValues(self::TABLE, 'fakultas');
@@ -416,17 +410,10 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
     // =========================
     // UPLOADS (POST)
     // =========================
-
-    /**
-     * route name: ciptaverif.upload.form (blade kamu pakai ini)
-     * kolom DB: surat_permohonan
-     */
-
     public function uploadSemua(HakCiptaVerif $verif)
     {
         return view('hakcipta.verifikasi.semuaverif', compact('verif'));
     }
-
 
     public function all(HakCiptaVerif $verif)
 {

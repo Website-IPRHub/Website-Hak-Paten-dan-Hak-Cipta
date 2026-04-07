@@ -908,7 +908,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // helper kecil biar aman
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, "&amp;")

@@ -80,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const tplFirst = document.getElementById('inventor-template-first-verif') || document.getElementById('inventor-template');
   const tplOther = document.getElementById('inventor-template-verif') || document.getElementById('inventor-template');
 
-  // Ambil data prefill dari session yang ditaruh di JSON script
   let oldInventors = {};
   const oldJsonEl = document.getElementById('old-inventor-data');
   if (oldJsonEl) {
@@ -170,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       form.action = docType.value;
-      // Kembalikan ke original action setelah download dipicu
       setTimeout(() => { form.action = originalAction; }, 1000);
     });
   }

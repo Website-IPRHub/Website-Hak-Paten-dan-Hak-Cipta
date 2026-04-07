@@ -175,7 +175,6 @@ select.input{
   font-weight: 400;
 }
 
-/* (ini cukup sekali, jangan dobel) */
 select.input option{
   font-family: 'Times New Roman', Times, serif;
   font-size: 14px;

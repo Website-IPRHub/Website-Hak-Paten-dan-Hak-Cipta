@@ -59,7 +59,7 @@
     {{-- ACTION BAR --}}
     <div class="actions-bar">
 
-      {{-- ⬅️ SEBELUMNYA --}}
+      {{-- SEBELUMNYA --}}
       <button
         type="button"
         class="btn-prev"
@@ -71,7 +71,7 @@
         &laquo; Sebelumnya
       </button>
 
-      {{-- ➡️ SELANJUTNYA --}}
+      {{-- SELANJUTNYA --}}
       <button
         type="submit"
         class="btn-selanjutnya"

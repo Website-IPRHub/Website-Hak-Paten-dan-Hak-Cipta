@@ -61,8 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getSourceData() {
     const snap = snapshotValues();
-
-    // kalau snap kosong (baru pertama kali), pakai prefill session
     const hasAny =
       (snap.nama?.some(v => v && v.trim() !== "")) ||
       (snap.nip_nim?.some(v => v && v.trim() !== "")) ||
@@ -114,9 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fak)  fak.value  = old.fakultas[i] ?? '';
       if (hp)   hp.value   = old.no_hp[i] ?? '';
       if (em)   em.value   = old.email[i] ?? '';
-
-
-      // template normal: status + toggle NIDN
       if (i > 0 && card) {
         const st = frag.querySelector('select[name="inventor[status][]"]');
         if (st) st.value = old.status[i] ?? '';

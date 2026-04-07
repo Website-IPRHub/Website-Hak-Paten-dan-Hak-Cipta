@@ -47,8 +47,6 @@
                 @endif
             </span>
 
-
-            {{-- kalau JS kamu butuh tombol submit tersembunyi --}}
             <button id="submitUpload" type="submit" hidden>Kirim</button>
 
             {{-- tempat error kalau JS kamu pakai --}}

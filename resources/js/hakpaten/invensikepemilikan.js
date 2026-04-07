@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tpl = document.getElementById("inventor-template");
   const oldDataEl = document.getElementById("old-inventor-data");
 
-  // jalanin cuma kalau elemen ada (biar aman kalau dipakai di page lain)
   if (!jumlahInput || !container || !tpl) return;
 
   let oldData = {};

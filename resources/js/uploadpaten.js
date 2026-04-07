@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput.addEventListener('change', () => {
       if (fileInput.files.length > 0) {
         fileName.textContent = fileInput.files[0].name;
-        btnSubmit.removeAttribute('disabled'); // 🔥 AKTIF
+        btnSubmit.removeAttribute('disabled'); 
       } else {
         btnSubmit.setAttribute('disabled', true);
         fileName.textContent = 'Belum pilih file';

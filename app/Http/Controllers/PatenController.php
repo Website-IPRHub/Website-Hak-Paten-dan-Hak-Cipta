@@ -45,7 +45,7 @@ class PatenController extends Controller
             'no_pendaftaran'   => $this->generateNoPendaftaran(),
             'jenis_paten'      => $data['jenis_paten'],
             'judul_paten'      => $data['judul_paten'],
-            'inventors'        => $inventors, // karena casts array, simpan array aja
+            'inventors'        => $inventors, 
 
             'nama_pencipta'    => $first['nama'] ?? null,
             'nip_nim'          => $first['nip_nim'] ?? null,
@@ -57,8 +57,6 @@ class PatenController extends Controller
             'nilai_perolehan'  => $data['nilai_perolehan'],
             'sumber_dana'      => $data['sumber_dana'],
             'skema_penelitian' => $data['skema_penelitian'],
-
-            // status awal (sesuaikan flow kamu)
             'status'           => 'Terkirim',
         ]);
 
@@ -105,7 +103,6 @@ class PatenController extends Controller
 
         $paten->update(['draft_paten' => $path]);
 
-        // PENTING: jangan redirect ke next step
         return redirect()->back()->with('success', 'Draft berhasil diupload');
     }
 

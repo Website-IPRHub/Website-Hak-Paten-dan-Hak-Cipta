@@ -39,11 +39,7 @@
   @endif
 </span>
 
-
-            {{-- kalau JS kamu butuh tombol submit tersembunyi --}}
             <button id="submitUpload" type="submit" hidden>Kirim</button>
-
-            {{-- tempat error kalau JS kamu pakai --}}
             <div id="fileError" style="display:none; margin-top:8px; color:#dc2626; font-weight:600;">
               Tipe file tidak sesuai.
             </div>

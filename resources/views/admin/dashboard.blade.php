@@ -617,7 +617,7 @@
             $row->status ?? '',
             $row->jenis ?? '',
             $row->judul ?? '',
-            $row->email ?? '',             // kalau ada di $dataStatus
+            $row->email ?? '',             
           ])));
         @endphp
 
@@ -921,7 +921,7 @@
     </div>
 </div>
 
-{{-- ✅ MODAL UBAH PASSWORD --}}
+{{-- MODAL UBAH PASSWORD --}}
 <div class="modal-backdrop" id="passBackdrop" hidden></div>
 
 <div class="modal" id="passModal" hidden role="dialog" aria-modal="true" aria-labelledby="passTitle">

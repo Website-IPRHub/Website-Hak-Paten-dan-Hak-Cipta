@@ -75,14 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!wrap || !active) return;
 
-  // scroll ke step aktif (tengah-ish)
   active.scrollIntoView({
     behavior: 'smooth',
     inline: 'center',
     block: 'nearest'
   });
 
-  // Optional: kalau user scroll mouse wheel, geser horizontal (enak di desktop)
   wrap.addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();

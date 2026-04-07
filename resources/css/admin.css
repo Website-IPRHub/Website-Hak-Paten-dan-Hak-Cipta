@@ -375,18 +375,16 @@ body{
 ========================= */
 .chart-card{
   position: relative;
-  overflow: hidden;            /* biar chart gak "keluar" card */
+  overflow: hidden;      
 }
 
-/* Kalau chart kamu pakai canvas (Chart.js, dll) */
 .chart-card canvas{
   display: block;
   width: 100% !important;
-  height: 280px !important;    /* atur sesuai kebutuhan (260–320 ok) */
+  height: 280px !important; 
   max-height: 280px !important;
 }
 
-/* Kalau chart kamu pakai svg (ApexCharts / Recharts / dll) */
 .chart-card svg{
   width: 100% !important;
   height: 280px !important;
@@ -404,7 +402,6 @@ body{
   color:#0b2c5f;
 }
 
-/* toolbar atas tabel */
 .status-toolbar{
   display:flex;
   gap:12px;
@@ -412,20 +409,17 @@ body{
   margin-bottom:12px;
 }
 
-/* table card jangan hidden supaya dropdown bisa muncul */
 .table-card{
-  overflow: visible; /* INI PENTING */
+  overflow: visible; 
   position: relative;
 }
 
-/* kalau butuh scroll horizontal: bikin wrapper */
 .table-scroll{
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overflow-y: visible; 
 }
 
-/* custom dropdown wrapper */
 .dd{ position: relative; display:inline-block; }
 .dd-btn{
   display:flex;
@@ -460,10 +454,9 @@ body{
   border-radius: 14px;
   box-shadow: 0 16px 50px rgba(0,0,0,0.12);
   padding: 8px;
-  z-index: 9999; /* INI PENTING */
+  z-index: 9999; 
 }
 
-/* kalau dropdown status mepet bawah layar, kamu bisa pakai menu ke atas */
 .dd-menu-up{
   top:auto;
   bottom: calc(100% + 8px);
@@ -504,26 +497,23 @@ body{
 .data-table thead th,
 .data-table tbody td{
   border: 2px solid rgba(11,44,95,0.10);
-  padding: 12px 8px !important; /* ⬅️ KUNCI UTAMA */
+  padding: 12px 8px !important;
   vertical-align: top;
 }
 
-/* HEADER: balikin warna + proporsi */
 .data-table thead th{
-  background: #cbd9ef;           /* warna header */
+  background: #cbd9ef;          
   color: #0b2c5f;
   font-weight: 800;
-  padding: 14px 14px;            /* proporsi header */
+  padding: 14px 14px;         
   text-align: left;
   letter-spacing: .3px;
 }
 
-/* subheader row (opsional biar sedikit beda tone) */
 .data-table thead tr:nth-child(2) th{
   background: #d7e4f6;
 }
 
-/* BODY: padding & hover */
 .data-table tbody td{
   background: #fff;
   padding: 12px 14px;
@@ -541,26 +531,23 @@ body{
   font-weight: 900;
 }
 
-/* sticky header (kalau kamu masih mau sticky) */
 .data-table thead th{
   position: sticky;
   top: 0;
   z-index: 5;
 }
 
-/* FORCE warna garis tabel (paling bawah) */
 .data-table{
-  border-color: #b0b8c2 !important;              /* coba merah dulu buat ngetes */
+  border-color: #b0b8c2 !important;            
 }
 
 .data-table th,
 .data-table td{
-  border-color: #b0b8c2 !important;              /* coba merah dulu buat ngetes */
+  border-color: #b0b8c2 !important;            
   border-width: 2px !important;
   border-style: solid !important;
 }
 
-/* Header tabel: center semua */
 .data-table thead th{
   text-align: center !important;
   vertical-align: middle;
@@ -584,23 +571,23 @@ body{
 .status-pill.s-approve{ background: rgba(40,167,69,0.18); color:#1f7a1f; }
 
 .btn-mini{
-  display: inline-flex;          /* penting biar sejajar icon + teks */
+  display: inline-flex;          
   align-items: center;
-  gap: 6px;                      /* jarak icon dan teks */
+  gap: 6px;                  
 
   border: 1px solid rgba(11,44,95,0.18);
   background: #fff;
 
-  padding: 7px 11px;             /* kecilin biar gak kotak gede */
+  padding: 7px 11px;       
   border-radius: 10px;
 
   cursor:pointer;
-  font-weight: 650;              /* jangan terlalu tebel */
-  font-size: 13px;               /* kecilin dikit */
+  font-weight: 650;            
+  font-size: 13px;           
 
   color:#0b2c5f;
-  text-decoration: none;         /* hilangin underline */
-  white-space: nowrap;           /* biar gak turun */
+  text-decoration: none;      
+  white-space: nowrap;        
 }
 .btn-mini:hover{ background: rgba(11,44,95,0.06); }
 
@@ -696,7 +683,7 @@ body{
 }
 
 .table-card{
-  border-radius: 0 0 16px 16px; /* biar nyambung sama toolbar */
+  border-radius: 0 0 16px 16px; 
 }
 
 .dd{ position: relative; min-width: 180px; }
@@ -806,7 +793,7 @@ body{
 
   padding: 4px 10px;
   border-radius: 999px;
-  text-decoration: none; /* HILANGIN garis link */
+  text-decoration: none; 
   white-space: nowrap;
 
   transition: background 160ms ease, transform 160ms ease;
@@ -836,7 +823,6 @@ body{
 }
 
 /* logo hapus */
-/* kolom aksi jangan melebar */
 .cell-actions{
   width: 120px;
   text-align: center;
@@ -1164,7 +1150,7 @@ body{
   border:1px solid rgba(11,44,95,.14);
   border-radius:16px;
   padding:20px 24px;
-  max-width: none;   /* 👈 kunci utama */
+  max-width: none;  
   width: 100%;
 }
 
@@ -1178,8 +1164,8 @@ body{
 .inv-row{
   display: flex;
   align-items: flex-start;
-  gap: 2px;              /* 👈 jarak lebih rapet */
-  margin-bottom: 8px;   /* 👈 nggak terlalu renggang */
+  gap: 2px;          
+  margin-bottom: 8px;  
   font-size: 17px;
   line-height: 1.5;
 }
@@ -1187,7 +1173,7 @@ body{
 /* label */
 
 .inv-row b{
-  width: 100px;         /* 👈 ini kunci utamanya */
+  width: 100px;      
   flex: 0 0 100px;
   font-weight: 600;
   color: #0b2c5f;
@@ -1200,7 +1186,6 @@ body{
   color: rgba(0,0,0,0.55);
 }
 
-
 .dash-hero-overlay{
   pointer-events: none;
 }
@@ -1212,21 +1197,17 @@ body{
 
 .inline-msg { line-height: 1.3; }
 
-/* ===== FIX: Scroll hanya di area putih ===== */
 html, body{
   height: auto;
   overflow-y: auto;
 }
 
-
-/* header tetap di atas */
 .admin-header{
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 9999;
 }
 
-/* hero tetap di bawah header (kalau kamu mau hero juga tidak ikut scroll) */
 .dash-hero{
   position: fixed;
   top: 72px; left: 0; right: 0;
@@ -1234,26 +1215,24 @@ html, body{
   z-index: 10;
 }
 
-/* layout (sidebar + content) tetap, mulai setelah header+hero */
 .dash-layout{
   position: fixed;
-  top: calc(72px + 110px);  /* header + hero */
+  top: calc(72px + 110px); 
   left: 0; right: 0; bottom: 0;
   display: flex;
-  overflow: hidden;         /* biar yang scroll cuma content */
+  overflow: hidden;      
 }
 
 /* sidebar tetap */
 .dash-sidebar{
   height: 100%;
-  overflow: hidden;         /* sidebar jangan scroll */
+  overflow: hidden;        
 }
 
-/* yang boleh scroll cuma bagian putih */
 .dash-content{
   height: 100%;
-  overflow-y: auto;         /* ✅ scroll atas-bawah di sini */
-  overflow-x: hidden;       /* horizontal tetap via .table-scroll */
+  overflow-y: auto;       
+  overflow-x: hidden;     
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1322,7 +1301,7 @@ html, body{
   display: flex;
   flex-direction: column;
   gap: 10px;
-  align-items: center; /* biar tengah */
+  align-items: center; 
 }
 
 .action-row{
@@ -1332,7 +1311,6 @@ html, body{
   gap: 10px;
 }
 
-/* tombol delete biar ukurannya sama & center */
 .btn-delete{
   display: inline-flex;
   align-items: center;
@@ -1350,7 +1328,6 @@ html, body{
   height: 18px;
 }
 
-/* tombol kirim revisi di bawah */
 .action-revisi{
   width: 100%;
   display: flex;
@@ -1364,7 +1341,6 @@ html, body{
   max-width: 190px;
 }
 
-/* inline msg rapih */
 .action-revisi .inline-msg{
   font-size: 12px;
   margin-top: 0;
@@ -1380,7 +1356,7 @@ html, body{
   top: calc(100% + 6px);
   left: 0;
   z-index: 50;
-  width: 260px;              /* bisa kamu kecilin/besarin */
+  width: 260px;             
   background: #fff;
   border: 1px solid rgba(11,44,95,0.18);
   border-radius: 12px;
@@ -1425,18 +1401,17 @@ body.admin-page .dash-content{
   height: 100%;
   min-height: 0;
   overflow-y: auto;
-  overflow-x: auto;          /* ✅ biar nggak kepotong saat zoom */
+  overflow-x: auto;          
   -webkit-overflow-scrolling: touch;
 }
 
-/************* ADMIN SCOPE GUARD (PALING BAWAH) *************/
-/* Semua global reset admin cuma berlaku kalau body admin-page */
+/************* ADMIN SCOPE GUARD *************/
+
 body.admin-page,
 body.admin-page *{
   box-sizing: border-box;
 }
 
-/* Optional: kalau kamu pernah set html,body di admin.css, pastikan hanya admin yang ke-lock */
 body.admin-page{
   height: 100vh;
   overflow: hidden;
@@ -1548,7 +1523,7 @@ body.admin-page{
   gap:10px;
 
   margin-top: 8px;
-  margin-left: 44px;        /* indent masuk */
+  margin-left: 44px;      
   padding: 10px 12px;
 
   border-radius: 12px;
@@ -1613,7 +1588,6 @@ body.admin-page{
   line-height: 20px;
   font-weight: 700;
   text-align: center;
-  /* warna badge ikut punyamu sekarang, kalau sudah ada notif-badge sebelumnya, hapus duplikatnya */
 }
 
 /* KHUSUS Top Fakultas */
@@ -1622,7 +1596,6 @@ body.admin-page{
   max-height: none !important;
 }
 
-/* Card-nya juga dibesarin */
 #chartFakultas{
   min-height: 560px;
 }
@@ -1633,7 +1606,6 @@ body.admin-page .dash-content{
   width: 100% !important;
 }
 
-/* FIX BADGE LONCENG (taruh PALING BAWAH biar gak ketimpa) */
 .notif-badge{
   display:inline-flex !important;
   align-items:center !important;
@@ -1658,10 +1630,10 @@ body.admin-page .dash-content{
 }
 
 .data-table td .title-main {
-  white-space: normal;      /* boleh turun baris */
-  overflow: visible;        /* jangan dipotong */
-  text-overflow: unset;     /* hilangkan ... */
-  word-break: break-word;   /* kalau panjang banget tetap rapi */
+  white-space: normal;      
+  overflow: visible;        
+  text-overflow: unset;     
+  word-break: break-word;   
   line-height: 1.4;
 }
 
@@ -1695,7 +1667,7 @@ body.admin-page .dash-content{
   padding-right:34px;
   width: 240px;
   max-width: 22vw;
-  min-width: 160px;   /* ✅ masih aman tapi nggak maksa */
+  min-width: 160px;  
 }
 
 .date-clear{
@@ -1720,10 +1692,9 @@ body.admin-page .dash-content{
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 22px; /* biar sejajar input */
+  margin-top: 22px; 
 }
 
-/* tombol Apply lebih dominan */
 .btn-apply {
   padding: 10px 18px;
   border-radius: 10px;
@@ -1740,7 +1711,6 @@ body.admin-page .dash-content{
   background: #1e40af;
 }
 
-/* tombol Remove lebih soft */
 .btn-remove {
   padding: 9px 14px;
   border-radius: 10px;
@@ -1758,30 +1728,27 @@ body.admin-page .dash-content{
   border-color: #bbb;
 }
 
-/* PATEN + CIPTA: biar bar atas responsif */
 .page-actions--paten,
 .page-actions--cipta{
   display:flex;
   align-items:flex-end;
   gap:12px;
-  flex-wrap:nowrap;     /* tetap 1 baris seperti gambar 2 */
-  min-width:0;          /* penting supaya anaknya boleh shrink */
+  flex-wrap:nowrap;    
+  min-width:0;      
 }
 
-/* form filter harus boleh mengecil */
 .page-actions--paten .filters-bar,
 .page-actions--cipta .filters-bar{
-  flex: 1 1 auto;       /* ✅ dari 0 0 auto -> jadi bisa shrink */
+  flex: 1 1 auto;    
   min-width:0;
 }
 
-/* input search jangan maksa fix gede */
 .search-input--paten,
 .search-input--cipta{
-  flex: 0 1 320px;      /* ✅ boleh mengecil */
+  flex: 0 1 320px;    
   width: 320px;
   max-width: 40vw;
-  min-width: 180px;     /* biar masih kepake */
+  min-width: 180px; 
 }
 
 .page-head-row{
@@ -1793,7 +1760,6 @@ body.admin-page .dash-content{
 
 .page-title{ margin:0; white-space:nowrap; }
 
-/* biar actions ga bikin judul turun */
 .page-actions--paten{ flex:1; display:flex; justify-content:flex-end; gap:12px; }
 
 /* ===== REVISI HEADER LAYOUT ===== */
@@ -1802,7 +1768,7 @@ body.admin-page .dash-content{
   justify-content:space-between;
   align-items:flex-start;
   gap:14px;
-  flex-wrap:wrap;           /* biar responsif */
+  flex-wrap:wrap;      
 }
 
 .page-head--revisi .page-head__left{
@@ -1826,7 +1792,6 @@ body.admin-page .dash-content{
   width:min(980px, 100%);
 }
 
-/* filter bar revisi lebih kompak */
 .filters-bar--revisi{
   width:100%;
   display:flex;
@@ -1835,7 +1800,6 @@ body.admin-page .dash-content{
   gap:10px;
 }
 
-/* tiap item jangan memaksa lebar aneh */
 .filters-bar--revisi .filter-item{
   min-width:160px;
 }
@@ -1851,7 +1815,6 @@ body.admin-page .dash-content{
   gap:12px;
 }
 
-/* row 1: title kiri, search kanan */
 .revisi-head__row1{
   display:flex;
   align-items:flex-start;
@@ -1868,7 +1831,6 @@ body.admin-page .dash-content{
   width:min(340px, 100%);
 }
 
-/* row 2: filters full width */
 .revisi-head__row2{
   width:100%;
 }
@@ -1884,14 +1846,12 @@ body.admin-page .dash-content{
   min-width:160px;
 }
 
-/* actions selalu di ujung kanan */
 .filters-bar--revisi .filter-actions{
   display:flex;
   gap:10px;
   align-items:center;
 }
 
-/* ===== REMOVE BUTTON: biar keliatan ===== */
 .btn-remove--danger{
   border:1px solid #ef4444;
   color:#ef4444;
@@ -1925,17 +1885,15 @@ body.admin-page .dash-content{
 .search-input--revisi{
   width: 380px;
   flex: 0 0 380px;
-  margin-top: 6px; /* biar sejajar sama bar */
+  margin-top: 6px; 
 }
 
-/* Container row filter + search */
 .revisi-head__row2{
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-/* Filter bar jangan full 100% */
 .filters-bar--revisi{
   flex: 1;
   width: auto;

@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputs = document.querySelectorAll('input[type="file"][data-allowed]');
 
   inputs.forEach((input) => {
-    // cegah kebind dobel kalau script ke-load 2x
     if (input.dataset.alertBound === '1') return;
     input.dataset.alertBound = '1';
 

@@ -1,20 +1,14 @@
-/* jangan global */
 .login-body, .login-body * { box-sizing: border-box; }
 
 .login-body{
   margin: 0;
   color: #0b2c5f;
   background: #f4f7fb;
-
-  /* HAPUS INI (biar header/footer ga ikut flex) */
-  /* min-height: 100vh;
-  display: flex;
-  flex-direction: column; */
 }
 
 /* area utama */
 .login-page{
-  min-height: calc(100vh - 220px); /* boleh tetap */
+  min-height: calc(100vh - 220px); 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -25,8 +19,6 @@
 .pd-body{ background: transparent; }
 .pd-main{ background: #f4f7fb; }
 
-
-/* spacer atas & bawah biar jaraknya sama persis */
 .login-spacer{
   flex: 1;
 }
@@ -40,7 +32,7 @@
 .login-panel{
   position: relative;
   border-radius: 22px;
-  padding: 26px 30px; /* dari 34 -> 26 */
+  padding: 26px 30px; 
   background:
     radial-gradient(1200px 600px at 10% 20%, rgba(11,44,95,0.18), transparent 55%),
     radial-gradient(900px 500px at 90% 60%, rgba(82,160,216,0.20), transparent 55%),
@@ -57,7 +49,7 @@
 
 .login-grid{
   display: grid;
-  grid-template-columns: 1fr 460px; /* kanan sedikit lebih lega */
+  grid-template-columns: 1fr 460px; 
   gap: 22px;
   align-items: center;
   width: 100%;
@@ -69,7 +61,7 @@
   justify-content: center;
   align-items: center;
   padding-left: 0;
-  transform: translateY(6px); /* naik dikit biar balance sama card */
+  transform: translateY(6px); 
 }
 
 
@@ -87,7 +79,7 @@
 .login-logo{
   width: min(420px, 78%);
   height: auto;
-    transform: translateY(-22px); /* naik dikit biar pas secara visual */
+    transform: translateY(-22px);
 }
 
 .login-right{
@@ -170,8 +162,6 @@
   margin-top: 0px;
 }
 
-
-/* link jadi button biar konsisten */
 .login-link{
   border: 0;
   padding: 0;
@@ -180,7 +170,7 @@
   font-size: 13px;
   font-weight: 800;
   color: #3a6db5;
-  grid-column: 1;          /* tetap di kiri */
+  grid-column: 1;       
   justify-self: start;
 }
 .login-link:hover{ text-decoration: underline; }
@@ -204,11 +194,10 @@
 }
 .login-btn:active{ transform: translateY(0px); }
 
-/* baris khusus tombol login */
 .login-btn-row{
   display: flex;
-  justify-content: center;  /* tombol di tengah */
-  margin-top: -10px;         /* biar turun ke bawah */
+  justify-content: center; 
+  margin-top: -10px;       
 }
 
 .login-hint{
@@ -224,7 +213,7 @@
   .login-grid{ grid-template-columns: 1fr; }
   .login-panel{ padding: 22px; }
   .logo-badge{ padding: 18px; }
-  .login-title{ font-size: 18px; }
+  .login-title{ font-size: 18px; } 
 }
 
 
@@ -371,14 +360,11 @@
 }
 .cp-inline-msg.is-error{ color: #9b111e; }
 .cp-inline-msg.is-success{ color: #0a6b2a; }
-
-/* WAJIB: biar atribut hidden bekerja walaupun ada display:grid di class */
 .cp-modal[hidden],
 .cp-backdrop[hidden]{
   display: none !important;
 }
 
-/* Biar CSS halaman ini ga ganggu header/footer */
 .login-body header, .login-body footer,
 .pd-body header, .pd-body footer{
   all: revert;
@@ -389,19 +375,18 @@
 ========================= */
 .login-card form,
 .login-card .login-form{
-  gap: 0 !important;              /* matiin gap flex biar gak “ketahan” rule lain */
+  gap: 0 !important;             
 }
 
 .login-card .field{
-  margin: 0 0 10px 0 !important;  /* jarak antar field */
-  gap: 4px !important;            /* label ke input */
+  margin: 0 0 10px 0 !important;  
+  gap: 4px !important;        
 }
 
 .login-card .field:last-of-type{
   margin-bottom: 6px !important;
 }
 
-/* link ganti password jangan jauh */
 .login-card .login-actions{
   margin: 0 !important;
   padding: 0 !important;
@@ -409,30 +394,25 @@
 
 .login-card .login-link{
   display: inline-block;
-  margin-top: -4px;               /* naik dikit */
+  margin-top: -4px;       
 }
 
-/* tombol login jangan kejauhan */
 .login-card .login-btn-row{
   margin-top: 10px !important;
 }
 
-/* hint jangan kejauhan */
 .login-card .login-hint{
   margin-top: 8px !important;
 }
 
-/* ambil font dari layout/app.css (Poppins/Playfair), jangan pakai system-ui */
 .login-body{
   font-family: inherit !important;
 }
 
-/* judul pakai Playfair Display (serif yang bener) */
 .login-title{
   font-family: "Playfair Display", serif !important;
 }
 
-/* label & isi form pakai Poppins biar rapi */
 .login-label,
 .login-input,
 .login-link,
@@ -448,7 +428,6 @@
   display: block;
 }
 
-/* kasih ruang kanan untuk eye DI DALAM input */
 .pw-wrap .login-input{
   padding-right: 56px;
 }
@@ -475,7 +454,6 @@
 
   cursor: pointer;
 
-  /* INI KUNCINYA: warna ikon */
   color: #0b2b5a !important;
 }
 
@@ -483,20 +461,16 @@
   background: rgba(11,43,90,0.08) !important;
   border-radius: 10px;
 }
-.pw-eye{ top: calc(50% + 1px); }   /* coba +1px atau -1px */
+.pw-eye{ top: calc(50% + 1px); }   
 
 .pw-wrap .login-input{
   padding-right: 52px;
 }
 
-/* default: show eye, hide eye-off */
 #pwToggle .icon-eyeoff{ display:none; }
-
-/* kalau mode "shown": kebalik */
 #pwToggle.is-shown .icon-eye{ display:none; }
 #pwToggle.is-shown .icon-eyeoff{ display:block; }
 
-/* === FORCE CLEAN EYE BUTTON (NO BACKGROUND, NO SHADOW) === */
 .pw-eye,
 #pwToggle{
   background: transparent !important;
@@ -513,10 +487,9 @@
   display: grid;
   place-items: center;
 
-  border-radius: 0 !important; /* ini yang bunuh kotak */
+  border-radius: 0 !important; 
 }
 
-/* HAPUS efek hover/focus */
 .pw-eye:hover,
 .pw-eye:focus,
 .pw-eye:active,
@@ -528,13 +501,11 @@
   outline: none !important;
 }
 
-/* pastiin SVG-nya aja yang keliatan */
 .pw-eye svg{
   display: block;
   pointer-events: none;
 }
 
-/* HILANGIN tombol reveal bawaan browser (Edge/Chrome) */
 #pwInput::-ms-reveal,
 #pwInput::-ms-clear{
   display: none;
@@ -546,7 +517,6 @@
   pointer-events: none;
 }
 
-/* (opsional) kalau browser bikin decoration lain */
 #pwInput::-webkit-textfield-decoration-container{
   display: block;
 }

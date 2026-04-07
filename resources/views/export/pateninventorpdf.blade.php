@@ -32,7 +32,6 @@
       font-weight: bold;
     }
 
-    /* Lebar kolom (biar ga kepotong) */
     .w-no     { width: 7%; }
     .w-judul  { width: 20%; }
     .w-jenis  { width: 8%; }

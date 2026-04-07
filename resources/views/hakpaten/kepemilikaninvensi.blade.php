@@ -59,7 +59,7 @@
     {{-- ACTION BAR --}}
     <div class="actions-bar">
 
-      {{-- ⬅️ SEBELUMNYA --}}
+      {{--  SEBELUMNYA --}}
       <button
         type="button"
         class="btn-prev"

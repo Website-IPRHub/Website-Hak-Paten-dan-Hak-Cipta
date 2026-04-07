@@ -29,7 +29,6 @@ class PatenInventorExport implements FromCollection, WithHeadings, WithMapping, 
     private function cleanText($v): string
     {
         $s = trim((string)($v ?? ''));
-        // buang kutip biasa & kutip “”
         $s = str_replace(['"', '“', '”'], '', $s);
         return $s === '' ? '-' : $s;
     }
@@ -106,7 +105,7 @@ class PatenInventorExport implements FromCollection, WithHeadings, WithMapping, 
             $row->inventor_ke ?? 1,
             $row->nama ?? '-',
             $row->status ?? '-',
-            (string)($row->nip_nim ?? '-'), // ❗ tanpa apostrophe
+            (string)($row->nip_nim ?? '-'), 
             $row->fakultas ?? '-',
             $row->no_hp ?? '-',
             $row->email ?? '-',
@@ -151,8 +150,7 @@ class PatenInventorExport implements FromCollection, WithHeadings, WithMapping, 
                 $sheet->getStyle("G2:G{$highestRow}")
                     ->getNumberFormat()
                     ->setFormatCode(NumberFormat::FORMAT_TEXT);
-
-                // Paksa value kolom G sebagai STRING (anti scientific notation)
+                    
                 for ($r = 2; $r <= $highestRow; $r++) {
                     $cell = $sheet->getCell("G{$r}");
                     $val  = (string)$cell->getValue();

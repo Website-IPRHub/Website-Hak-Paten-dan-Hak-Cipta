@@ -25,7 +25,6 @@ class PemohonAuthController extends Controller
     private function parseEmails(?string $raw): array
     {
         if (!$raw) return [];
-        // split by comma, semicolon, whitespace, newline
         $parts = preg_split('/[,\s;]+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
         $emails = [];
         foreach ($parts as $e) {
@@ -61,8 +60,6 @@ class PemohonAuthController extends Controller
         }
         return array_values(array_unique(array_filter($emails)));
     }
-
-    // INI YANG DIPANGGIL DARI HALAMAN HASIL SUBMIT (TOMBOL LOGIN)
 
     public function claim($kode)
 
@@ -264,7 +261,7 @@ class PemohonAuthController extends Controller
 
     private function getOwnerEmailFromRow($row): ?string
     {
-        // ✅ pemohon utama = inventor pertama (kalau ada)
+        // pemohon utama = inventor pertama
         $invRaw = $row->inventors ?? null;
         if (!empty($invRaw)) {
             $invArr = is_string($invRaw) ? json_decode($invRaw, true) : $invRaw;
@@ -275,7 +272,6 @@ class PemohonAuthController extends Controller
                 }
             }
         }
-        // ✅ fallback: email utama dari kolom email (bisa banyak)
         $emails = $this->parseEmails($row->email ?? null);
         return $emails[0] ?? null;
 

@@ -105,7 +105,7 @@ class IsiformController extends Controller
             return $s === '' ? '-' : $s;
         };
 
-        // ===== 1) Jenis paten (coret yang gak dipilih) =====
+        // ===== 1) Jenis paten =====
         $isPaten = $data['jenis_paten'] === 'Paten';
         $tp->setValue('paten_normal', $isPaten ? 'Paten' : $coret('Paten'));
         $tp->setValue('paten_strike', $isPaten ? $coret('Paten Sederhana') : 'Paten Sederhana');
@@ -139,7 +139,6 @@ class IsiformController extends Controller
         $tp->setValue('pecahan_paten', $val($data['pecahan_paten']));
 
         // ===== 6) Inventor list =====
-         // build inventor_input: "1. Nama (WN)" per baris
             $inventorInput = '';
             for ($i=0; $i < (int)$data['jumlah_inventor']; $i++) {
             $nama = trim($data['inventor']['nama'][$i] ?? '');
@@ -190,7 +189,7 @@ class IsiformController extends Controller
         $tp->setValue('gambar_dari', (string) $data['gambar_dari']);
         $tp->setValue('gambar_sampai', (string) $data['gambar_sampai']);
 
-        // ===== 10) Checkbox lampiran (TANPA hack zip) =====
+        // ===== 10) Checkbox lampiran =====
         $boxChecked = ' X ';  
         $nbsp = "\u{00A0}"; 
 
@@ -215,27 +214,25 @@ class IsiformController extends Controller
         $tp->setValue('lamp_jasad_renik',     $isChecked('jasad_renik') ? $boxChecked : $boxEmpty);
         $tp->setValue('lamp_dok_lain',        $boxChecked);
 
-       // ===== dokumen lain (sebutkan) =====
+       // ===== dokumen lain =====
         $raw = trim((string)($data['lampiran_lainnya'] ?? ''));
 
         $lampLainList = '-';
         if ($raw !== '') {
             $lines = preg_split("/\r\n|\r|\n/", $raw);
 
-            // bersihin: trim + buang nomor manual user
             $clean = [];
             foreach ($lines as $line) {
                 $line = trim($line);
                 if ($line === '') continue;
 
-                // buang "1. xxx", "4.xxx", dll
                 $line = preg_replace('/^\d+\.\s*/', '', $line);
                 $clean[] = $line;
             }
 
             if (count($clean) > 0) {
-                $start  = 4;      // lanjutin setelah 1–3
-                $indent = "\t";   // Word lebih rapi pakai tab
+                $start  = 4;   
+                $indent = "\t";  
 
                 $out = [];
                 foreach ($clean as $i => $text) {
@@ -246,10 +243,7 @@ class IsiformController extends Controller
             }
         }
 
-        // PENTING: placeholder harus di paragraf BARU
         $tp->setValue('lampiran_lainnya_list', $lampLainList);
-
-
 
         // ===== OUTPUT =====
         $out = tempnam(sys_get_temp_dir(), 'paten_') . '.docx';
@@ -275,7 +269,7 @@ class IsiformController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command 
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 

@@ -16,7 +16,6 @@ $verifSession = session('hakpaten.verif', []);
 
 @php
   $raw = old('inventor', data_get($isiform,'inventor', []));
-  // kalau raw itu array of object -> ubah
   if (isset($raw[0]) && is_array($raw[0])) {
     $norm = [
       'nama'=>[], 'nip_nim'=>[], 'nidn'=>[], 'fakultas'=>[],
@@ -59,8 +58,6 @@ $verifSession = session('hakpaten.verif', []);
 @php
   $prefillCount = (int) old('jumlah_inventor', data_get($isiform, 'jumlah_inventor', 1));
 @endphp
-
-
 
 <section class="section-full section-isi">
   <div class="section-inner">
@@ -292,8 +289,6 @@ $verifSession = session('hakpaten.verif', []);
               </div>
             </template>
 
-
-
             <template id="inventor-template-verif">
               <div class="inventor-card">
                 <p class="inventor-head">Inventor <span class="inv-no"></span></p>
@@ -451,19 +446,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // kalau backend kirim redirect → tetap lanjut
       if (data?.redirect) {
         window.location.href = data.redirect;
         return;
       }
 
-      // fallback kalau ok true
       if (data?.ok) {
         window.location.href = data.redirect;
         return;
       }
 
-      // ✅ langsung ke all-in-one
       window.location.href = data.redirect;
 
     } catch (err) {
@@ -488,10 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // jalan saat load (biar old() ikut ke-style)
   updateColor();
-
-  // jalan saat user ganti
   select.addEventListener('change', updateColor);
 });
 </script>

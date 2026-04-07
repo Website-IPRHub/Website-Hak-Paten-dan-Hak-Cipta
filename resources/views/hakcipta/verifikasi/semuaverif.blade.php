@@ -351,12 +351,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (saved) textarea.value = saved;
   }
 
-  // simpan tiap user ngetik
   textarea.addEventListener('input', () => {
     sessionStorage.setItem(key, textarea.value);
   });
 
-  // kalau submit final berhasil, hapus cache browser
   if (finalForm) {
     finalForm.addEventListener('submit', () => {
       sessionStorage.removeItem(key);

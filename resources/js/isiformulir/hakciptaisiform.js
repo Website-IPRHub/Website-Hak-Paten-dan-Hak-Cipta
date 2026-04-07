@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
    const normalizeOldInventor = (raw) => {
     if (!raw || Array.isArray(raw)) return {};
     if (raw.nama && Array.isArray(raw.nama)) {
-        // ✅ SINKRONISASI KECIL: Pastikan saku 'nik' kecil selalu ada isinya
         if (raw.nik && (!raw.NIK || raw.NIK.length === 0)) {
             raw.NIK = raw.nik;
         }
@@ -26,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
 };
 
    const fillFromOld = (root, idx, snap) => {
-    // Daftar kunci (pake nik kecil sesuai Blade lo)
     const keys = ["nama", "nik", "nip_nim", "fakultas", "status", "no_hp", "email", "alamat", "kode_pos", "tlp_rumah"];
 
     keys.forEach((k) => {

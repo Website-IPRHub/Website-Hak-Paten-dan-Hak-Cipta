@@ -10,7 +10,6 @@ class PemohonRevisiController extends Controller
 {
     public function upload(string $type, int $ref_id, Request $request)
     {
-        // pastiin pemohon login
         $pemohon = Auth::guard('pemohon')->user();
         if (!$pemohon) return redirect()->route('pemohon.login.form');
 
@@ -21,15 +20,12 @@ class PemohonRevisiController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        // Validasi kepemilikan berdasar kode_unik (simple version)
         if ($type === 'paten') {
             $row = DB::table('paten_verifs')->where('id', $ref_id)->first();
             if (!$row || $row->no_pendaftaran !== $pemohon->kode_unik) abort(403);
 
-            // optional: status balik PROSES setelah pemohon upload
             DB::table('paten_verifs')->where('id',$ref_id)->update(['status' => 'PROSES']);
         } else {
-            // TODO: sesuaikan kolom kode cipta kamu
             $row = DB::table('hak_cipta')->where('id', $ref_id)->first();
             if (!$row) abort(403);
 

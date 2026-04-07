@@ -149,7 +149,7 @@
   gap: 8px;
 
   background: #4FA9DE;
-  color: #000; /* tulisan hitam */
+  color: #000; 
 
   padding: 12px 18px;
   border-radius: 14px;
@@ -159,7 +159,7 @@
   font-weight: 800;
   font-size: 14px;
 
-  text-decoration: none; /* penting biar ga ada underline */
+  text-decoration: none; 
   cursor: pointer;
   transition: 0.2s ease;
 
@@ -169,7 +169,7 @@
 .btn-prev:hover{
   filter: brightness(0.95);
   transform: translateY(-1px);
-  color: #000; /* biar ga berubah pas hover */
+  color: #000; 
 }
 
 

@@ -86,7 +86,6 @@
         </div>
     </div>
 
-    {{-- BAWAH: FULL WIDTH (di bawah 2 sisi) --}}
     <div class="field full-width" style="margin-top:16px;">
         <label class="label">Data Pencipta <span class="req">*</span></label>
         <div id="inventor-container"></div>
@@ -158,6 +157,5 @@
       </div>
     </div>
     </form>
-
 </div>
 @endsection

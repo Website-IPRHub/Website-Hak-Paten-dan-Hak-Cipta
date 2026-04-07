@@ -12,10 +12,7 @@
 @include('isiform.paten.duplicatemenuformulir')
 
 @php
-  // Ambil ID referensi dari URL (?ref=85) atau Session
   $ref = request('ref') ?? session('edit_ref_id');
-  
-  // Ambil data session yang spesifik untuk ID pengajuan ini
   $prefill = $ref 
       ? session("hakpaten.isiform.$ref", session('hakpaten.isiform', [])) 
       : session('hakpaten.isiform', []);
@@ -58,15 +55,15 @@
 
       <div class="col">
         <div class="field">
-  <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
+          <label class="label">Apakah menggunakan Nomor PCT? <span class="req">*</span></label>
 
-  <select class="input" id="is_pct_display" disabled>
-    <option value="Tidak" selected>Tidak</option>
-  </select>
-  <input type="hidden" name="is_pct" value="Tidak">
+          <select class="input" id="is_pct_display" disabled>
+            <option value="Tidak" selected>Tidak</option>
+          </select>
+          <input type="hidden" name="is_pct" value="Tidak">
 
-  @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
-</div>
+          @error('is_pct') <small style="color:red">{{ $message }}</small> @enderror
+        </div>
 
         <div class="field" id="pct-followup" @if(old('is_pct', $prefill['is_pct'] ?? '')!=='Ya') style="display:none;" @endif>
           <label class="label">Nomor Permohonan Paten Internasional (PCT) <span class="req">*</span></label>
@@ -211,15 +208,15 @@
     <div class="row-2">
       <div class="col">
         <div class="field">
-  <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
+          <label class="label">Permohonan paten ini diajukan dengan/tidak dengan Hak prioritas? <span class="req">*</span></label>
 
-  <select class="input" id="hak_prioritas" disabled>
-    <option value="Tidak" selected>Tidak</option>
-  </select>
-  <input type="hidden" name="hak_prioritas" value="Tidak">
+          <select class="input" id="hak_prioritas" disabled>
+            <option value="Tidak" selected>Tidak</option>
+          </select>
+          <input type="hidden" name="hak_prioritas" value="Tidak">
 
-  @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
-</div>
+          @error('hak_prioritas') <small style="color:red">{{ $message }}</small> @enderror
+        </div>
       </div>
     </div>
 
@@ -580,12 +577,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveUrl = nextBtn.dataset.saveUrl;
     const nextUrl = nextBtn.dataset.nextUrl;
     const fd = new FormData(form);
-    
-    // Kita kirim action 'save' agar Controller menjalankan session()->put()
     fd.set('action', 'save'); 
 
     try {
-      // Tampilkan loading sebentar
       Swal.fire({
         title: 'Memproses Data...',
         allowOutsideClick: false,
@@ -599,7 +593,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.ok) {
-        // 2. SETELAH DATA MASUK SESSION, BARU TANYA DOWNLOAD
         const result = await Swal.fire({
           title: 'Data Disimpan Sementara',
           html: `
@@ -622,8 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
        if (result.isConfirmed) {
-            // Jika klik "Sudah Download", arahkan ke Dashboard Pemohon
-            const nextUrl = nextBtn.dataset.nextUrl; // Ini akan mengambil route('pemohon.dashboard')
+            const nextUrl = nextBtn.dataset.nextUrl; 
             
             Swal.fire({
                 title: 'Berhasil!',
@@ -637,7 +629,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = nextUrl;
             }, 1500);
         } else {
-            // Jika klik "Belum", biarkan tetap di halaman ini agar bisa download dulu
             Swal.fire({
                 title: 'Silakan Download',
                 text: 'Gunakan tombol download di bawah sebelum kembali ke dashboard.',
@@ -655,8 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-
-
 
       </div>
 
@@ -732,9 +721,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const el = root.querySelector(`[name="inventor[${k}][]"]`);
           if (!el) return;
 
-          // PRIORITAS: 
-          // 1. Ambil dari snapshot (apa yang baru diketik sebelum render ulang)
-          // 2. Ambil dari Session (oldInventor)
           const snapVal = snap[`inventor[${k}][]`]?.[idx];
           const sessionVal = oldInventor?.[k]?.[idx];
           
@@ -760,7 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (nidnInput) {
             if (isDosen) nidnInput.setAttribute("required", "required");
             else nidnInput.removeAttribute("required");
-            // DIHAPUS: el.value = "" agar isian session tidak hilang
           }
         };
 
@@ -786,7 +771,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const no = node.querySelector(".inv-no");
           if (no) no.textContent = (i + 1);
 
-          // Masukkan data snapshot atau session
           fillFromOld(node, i, snap);
 
           if (card) applyStatusLogic(card, isFirst);
@@ -804,8 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const countEl = document.getElementById("prefill-count");
       let prefillCount = 1;
       try { prefillCount = parseInt(JSON.parse(countEl?.textContent || "1"), 10) || 1; } catch(e) {}
-      
-      // Jalankan render pertama kali dengan jumlah dari session
+ 
       setCount(prefillCount);
 
       if (btnMinus) btnMinus.addEventListener("click", () => setCount(getCount() - 1));
@@ -817,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const updateKonsultanUI = () => {
         const isMelalui = konsultan?.value === "Melalui";
         if (follow) follow.style.display = isMelalui ? "" : "none";
-        // Required fields diatur di sini tanpa menghapus value
+
       };
       if (konsultan) {
         konsultan.addEventListener("change", updateKonsultanUI);
@@ -836,7 +819,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHakUI();
       }
 
-      // Pastikan jumlah inventor ter-update saat submit
       document.querySelector("form").addEventListener("submit", () => {
         const cards = document.querySelectorAll("#inventor-container-verif .inventor-card");
         document.getElementById("jumlah_inventor_verif").value = cards.length || 1;

@@ -21,10 +21,7 @@ class HakCiptaController extends Controller
         $validated = $request->validate([
             'jenis_cipta' => 'required|in:Buku,Program Komputer,Karya Rekaman Video,Lainnya',
             'jenis_cipta_lainnya' => 'nullable|string|max:255',
-
-            // FIX: ini harus sesuai form
             'judul_cipta' => 'required|string|max:255',
-
             'inventor'               => ['required', 'array'],
             'inventor.nama'          => ['required', 'array', "size:$jumlah"],
             'inventor.nip_nim'       => ['required', 'array', "size:$jumlah"],
@@ -45,7 +42,6 @@ class HakCiptaController extends Controller
             'skema_penelitian' => 'required|string|max:255',
         ]);
 
-        // inventors aman (anti undefined index)
         $inventors = [];
         for ($i = 0; $i < $jumlah; $i++) {
             $inventors[] = [
@@ -59,12 +55,10 @@ class HakCiptaController extends Controller
             ];
         }
 
-        $jenisCipta = $validated['jenis_cipta']; // tetap enum
+        $jenisCipta = $validated['jenis_cipta']; 
         $jenisLainnya = $validated['jenis_cipta'] === 'Lainnya'
         ? trim((string) ($validated['jenis_cipta_lainnya'] ?? ''))
         : null;
-
-
 
         $payload = [
             'no_pendaftaran'   => $this->generateNoPendaftaranVerif(),
@@ -73,7 +67,6 @@ class HakCiptaController extends Controller
 
             'inventors'        => $inventors,
 
-            // mirror inventor pertama ke kolom single
             'nama_pencipta'    => $inventors[0]['nama'] ?? '',
             'nip_nim'          => $inventors[0]['nip_nim'] ?? '',
             'fakultas'         => $inventors[0]['fakultas'] ?? '',
@@ -83,13 +76,9 @@ class HakCiptaController extends Controller
             'nilai_perolehan'  => $validated['nilai_perolehan'],
             'sumber_dana'      => $validated['sumber_dana'],
             'skema_penelitian' => $validated['skema_penelitian'],
-
-            // PENTING: awalnya Draft (karena upload per-step)
             'status'           => 'Draft',
         ];
 
-        
-        // default kolom dokumen (boleh nusll)
         foreach ([
             'surat_permohonan',
             'surat_pernyataan',
@@ -104,7 +93,6 @@ class HakCiptaController extends Controller
 
         $verif = HakCipta::create($payload);
 
-        // FIX: samain sama middleware
         session(['cipta_id' => $verif->id]);
 
         return redirect()->route('hakcipta.permohonanpendaftaran');
@@ -248,11 +236,6 @@ class HakCiptaController extends Controller
     // =========================
     // UPLOADS (POST)
     // =========================
-
-    /**
-     * route name: ciptaverif.upload.form (blade kamu pakai ini)
-     * kolom DB: surat_permohonan
-     */
     public function uploadForm(Request $request, HakCipta $verif)
     {
         return $this->uploadSuratPermohonan($request, $verif);

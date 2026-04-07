@@ -27,7 +27,7 @@
                     <form method="POST" action="{{ route('admin.login') }}">
                     @csrf
 
-                    {{-- ❗ ERROR LOGIN DI SINI --}}
+                    {{-- ERROR LOGIN  --}}
                     @if($errors->has('login'))
                         <div class="alert-error">
                         {{ $errors->first('login') }}

@@ -35,7 +35,7 @@ class PengalihanHakCiptaController extends Controller
             'inventor.nama' => ['required', 'array'],
             'inventor.nama.*' => ['required', 'string', 'max:200'],
             'inventor.nik' => ['nullable', 'array'],
-'inventor.nik.*' => ['nullable', 'string', 'max:100'],
+            'inventor.nik.*' => ['nullable', 'string', 'max:100'],
             'inventor.alamat' => ['required', 'array'],
             'inventor.alamat.*' => ['required', 'string'],
             'inventor.kode_pos' => ['nullable', 'array'],
@@ -127,7 +127,7 @@ class PengalihanHakCiptaController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command 
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 

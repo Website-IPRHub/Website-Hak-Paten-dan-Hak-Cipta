@@ -22,8 +22,6 @@ class TrackingController extends Controller
         ]);
 
         $q = trim($request->q);
-
-        // Cari di tabel verif (sesuai admin)
         $cipta = null;
         $paten = null;
 
@@ -32,7 +30,6 @@ class TrackingController extends Controller
         } elseif (str_starts_with($q, 'VP')) {
             $paten = DB::table('paten_verifs')->where('no_pendaftaran', $q)->first();
         } else {
-            // fallback: coba dua-duanya
             $cipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $q)->first();
             $paten = DB::table('paten_verifs')->where('no_pendaftaran', $q)->first();
         }
@@ -45,8 +42,6 @@ class TrackingController extends Controller
             ]);
         }
 
-
-        // Samain ref_type dengan admin
         if ($cipta) {
             $type  = 'cipta';          
             $data  = $cipta;

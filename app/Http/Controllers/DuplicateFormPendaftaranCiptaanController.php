@@ -29,19 +29,13 @@ public function index(Request $request)
 
     $sessionSpecific = session("hakcipta.form.$ref", []);
     $formSession = session('hakcipta.form', []);
-
-    // 🔥 Gabungkan saku revisi dengan saku pendaftaran awal
-    // Biar field non-DB (berupa, tempat, ulasan) muncul dari pendaftaran awal
     $source = array_merge($formSession, $sessionSpecific);
-
     $invDb = json_decode($dbData->inventors, true) ?? [];
 
     $data = [
         'jumlah_inventor' => $source['jumlah_inventor'] ?? (count($invDb) ?: 1),
         'judul_ciptaan'   => $source['judul_ciptaan'] ?? ($dbData->judul_cipta ?? ''),
         'link_ciptaan'    => $source['link_ciptaan'] ?? ($dbData->link_ciptaan ?? ''),
-        
-        // 🔥 Sekarang field ini ambil dari $source (hasil merge pendaftaran awal + revisi)
         'berupa'            => $source['berupa'] ?? '',
         'tempat'            => $source['tempat'] ?? '',
         'uraian'            => $source['uraian'] ?? '',
@@ -75,100 +69,96 @@ public function index(Request $request)
         $refId = $request->input('ref') ?? session('edit_ref_id');
         $sessionKey = "hakcipta.form.$refId";
 
-        // 1. Validasi (Sama persis dengan file asli agar konsisten)
         $validated = $request->validate([
-    'jumlah_inventor'        => ['required', 'integer', 'min:1', 'max:20'],
-    'jenis_cipta'            => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
-    'jenis_cipta_lainnya'    => ['nullable', 'string', 'max:255'],
-    'judul_ciptaan'          => ['required', 'string', 'max:255'],
-    'link_ciptaan'           => ['required', 'url'],
-    'berupa'                 => ['required', 'string', 'max:255'],
-    'tanggal_pengisian'      => ['required', 'date'],
-    'tempat'                 => ['required', 'string', 'max:100'],
-    'uraian'                 => ['required', 'string', 'max:350'],
+        'jumlah_inventor'        => ['required', 'integer', 'min:1', 'max:20'],
+        'jenis_cipta'            => ['required', 'in:Buku,Program Komputer,Karya Rekaman Video,Lainnya'],
+        'jenis_cipta_lainnya'    => ['nullable', 'string', 'max:255'],
+        'judul_ciptaan'          => ['required', 'string', 'max:255'],
+        'link_ciptaan'           => ['required', 'url'],
+        'berupa'                 => ['required', 'string', 'max:255'],
+        'tanggal_pengisian'      => ['required', 'date'],
+        'tempat'                 => ['required', 'string', 'max:100'],
+        'uraian'                 => ['required', 'string', 'max:350'],
 
-    'inventor'               => ['required', 'array'],
+        'inventor'               => ['required', 'array'],
 
-    'inventor.nama'          => ['required', 'array'],
-    'inventor.nama.*'        => ['required', 'string'],
+        'inventor.nama'          => ['required', 'array'],
+        'inventor.nama.*'        => ['required', 'string'],
 
-    'inventor.nik'           => ['required', 'array'],
-    'inventor.nik.*'         => ['required', 'string'],
+        'inventor.nik'           => ['required', 'array'],
+        'inventor.nik.*'         => ['required', 'string'],
 
-    'inventor.nip_nim'       => ['required', 'array'],
-    'inventor.nip_nim.*'     => ['required', 'string'],
+        'inventor.nip_nim'       => ['required', 'array'],
+        'inventor.nip_nim.*'     => ['required', 'string'],
 
-    'inventor.fakultas'      => ['required', 'array'],
-    'inventor.fakultas.*'    => ['required', 'string'],
+        'inventor.fakultas'      => ['required', 'array'],
+        'inventor.fakultas.*'    => ['required', 'string'],
 
-    'inventor.status'        => ['required', 'array'],
-    'inventor.status.*'      => ['required', 'string'],
+        'inventor.status'        => ['required', 'array'],
+        'inventor.status.*'      => ['required', 'string'],
 
-    'inventor.no_hp'         => ['required', 'array'],
-    'inventor.no_hp.*'       => ['required', 'string'],
+        'inventor.no_hp'         => ['required', 'array'],
+        'inventor.no_hp.*'       => ['required', 'string'],
 
-    'inventor.email'         => ['required', 'array'],
-    'inventor.email.*'       => ['required', 'email'],
+        'inventor.email'         => ['required', 'array'],
+        'inventor.email.*'       => ['required', 'email'],
 
-    'inventor.alamat'        => ['required', 'array'],
-    'inventor.alamat.*'      => ['required', 'string'],
+        'inventor.alamat'        => ['required', 'array'],
+        'inventor.alamat.*'      => ['required', 'string'],
 
-    'inventor.kode_pos'      => ['required', 'array'],
-    'inventor.kode_pos.*'    => ['required', 'string'],
+        'inventor.kode_pos'      => ['required', 'array'],
+        'inventor.kode_pos.*'    => ['required', 'string'],
 
-    'download_format'        => ['nullable', 'in:pdf,docx'],
-]);
+        'download_format'        => ['nullable', 'in:pdf,docx'],
+    ]);
 
-    $jumlah = (int) $request->jumlah_inventor;
-$actual = count($request->inventor['nama'] ?? []);
+        $jumlah = (int) $request->jumlah_inventor;
+        $actual = count($request->inventor['nama'] ?? []);
 
-if ($actual !== $jumlah) {
-    return back()->withErrors([
-        'inventor' => 'Jumlah inventor tidak sesuai.'
-    ])->withInput();
-}
+        if ($actual !== $jumlah) {
+            return back()->withErrors([
+                'inventor' => 'Jumlah inventor tidak sesuai.'
+            ])->withInput();
+        }
 
-        // 2. Simpan ke Session (Logika array_merge seperti file asli)
-     $newPayload = [
-    'jumlah_inventor'     => (int) $request->jumlah_inventor,
-    'jenis_cipta'         => $request->jenis_cipta,
-    'jenis_cipta_lainnya' => $request->jenis_cipta_lainnya ?? '',
-    'judul_ciptaan'       => $request->judul_ciptaan ?? '',
-    'link_ciptaan'        => $request->link_ciptaan ?? '',
-    'berupa'              => $request->berupa ?? '',
-    'tempat'              => $request->tempat ?? '',
-    'uraian'              => $request->uraian ?? '',
-    'tanggal_pengisian'   => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
-    'inventor'            => $request->input('inventor', []),
-];
+        $newPayload = [
+        'jumlah_inventor'     => (int) $request->jumlah_inventor,
+        'jenis_cipta'         => $request->jenis_cipta,
+        'jenis_cipta_lainnya' => $request->jenis_cipta_lainnya ?? '',
+        'judul_ciptaan'       => $request->judul_ciptaan ?? '',
+        'link_ciptaan'        => $request->link_ciptaan ?? '',
+        'berupa'              => $request->berupa ?? '',
+        'tempat'              => $request->tempat ?? '',
+        'uraian'              => $request->uraian ?? '',
+        'tanggal_pengisian'   => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+        'inventor'            => $request->input('inventor', []),
+    ];
 
-$existingSpecific = session("hakcipta.form.$refId", []);
-$existingGlobal   = session('hakcipta.form', []);
+        $existingSpecific = session("hakcipta.form.$refId", []);
+        $existingGlobal   = session('hakcipta.form', []);
 
-session()->put("hakcipta.form.$refId", array_merge(
-    $existingSpecific,
-    [
-        'berupa' => $request->berupa ?? '',
-        'tempat' => $request->tempat ?? '',
-        'uraian' => $request->uraian ?? '',
-        'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
-    ]
-));
+        session()->put("hakcipta.form.$refId", array_merge(
+            $existingSpecific,
+            [
+                'berupa' => $request->berupa ?? '',
+                'tempat' => $request->tempat ?? '',
+                'uraian' => $request->uraian ?? '',
+                'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+            ]
+        ));
 
-session()->put('hakcipta.form', array_merge(
-    $existingGlobal,
-    [
-        'berupa' => $request->berupa ?? '',
-        'tempat' => $request->tempat ?? '',
-        'uraian' => $request->uraian ?? '',
-        'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
-    ]
-));
+        session()->put('hakcipta.form', array_merge(
+            $existingGlobal,
+            [
+                'berupa' => $request->berupa ?? '',
+                'tempat' => $request->tempat ?? '',
+                'uraian' => $request->uraian ?? '',
+                'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+            ]
+        ));
 
-session()->put('edit_ref_id', $refId);
+    session()->put('edit_ref_id', $refId);
 
-
-        // 3. Simpan ke Database (AJAX Mode dari SweetAlert)
         if ($action === 'save' && $refId) {
             $formattedInventors = [];
             for ($i = 0; $i < (int)$request->jumlah_inventor; $i++) {
@@ -190,7 +180,6 @@ session()->put('edit_ref_id', $refId);
                 'judul_cipta'   => $request->judul_ciptaan,
                 'jenis_cipta'   => ($request->jenis_cipta === 'Lainnya') ? $request->jenis_cipta_lainnya : $request->jenis_cipta,
                 'link_ciptaan'  => $request->link_ciptaan,
-                // 'hasil_ciptaan' => $request->uraian, // ⚠️ JANGAN diupdate ke DB kolom ini karena DB kamu isinya Path PDF
                 'inventors'     => json_encode($formattedInventors),
                 'updated_at'    => now(),
             ]);
@@ -198,7 +187,6 @@ session()->put('edit_ref_id', $refId);
             return response()->json(['ok' => true]);
         }
 
-        // 4. Download Logic (Sama dengan file asli)
         return $this->generateDocument($request);
     }
 

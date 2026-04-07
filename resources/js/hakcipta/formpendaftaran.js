@@ -6,7 +6,7 @@ console.log("jumlah:", document.getElementById("jumlah_inventor"));
 const btnMinus = document.getElementById("invMinus");
 const btnPlus  = document.getElementById("invPlus");
   /* =====================================================
-     1️⃣ TOGGLE KUASA
+     TOGGLE KUASA
   ===================================================== */
 
   function toggleKuasaFollowup() {
@@ -48,7 +48,7 @@ const btnPlus  = document.getElementById("invPlus");
 
 
   /* =====================================================
-     2️⃣ TOGGLE JENIS CIPTA LAINNYA
+     TOGGLE JENIS CIPTA LAINNYA
   ===================================================== */
 
   const lainnyaWrap = document.getElementById('jenis-lainnya-wrap');
@@ -68,7 +68,7 @@ const btnPlus  = document.getElementById("invPlus");
 
 
   /* =====================================================
-   3️⃣ DYNAMIC INVENTOR (FINAL CLEAN)
+   DYNAMIC INVENTOR (FINAL CLEAN)
 ===================================================== */
 const jumlahInput = document.getElementById("jumlah_inventor");
 const container   = document.getElementById("inventor-container");
@@ -275,8 +275,5 @@ if (jumlahInput) {
       jumlahInput.value = cards.length || 1;
     });
   }
-
-  
-
 
 });

@@ -3,19 +3,20 @@
 .pd-body{
   margin: 0;
   color: #0b2c5f;
-  background: transparent; /* ⬅️ penting */
+  background: transparent; 
 }
 
 .pd-main{
-  background: #f4f7fb;     /* ⬅️ pindahin ke sini */
+  background: #f4f7fb;    
   padding: 28px 16px 36px;
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   font-size: 17px;
 }
 
 .pd-container{
-  width: min(1150px, 100%);
-  margin: 0 auto;
+  width: min(1380px, 100%);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* topbar */
@@ -65,11 +66,11 @@
   display: grid;
   place-items: center;
   background: rgba(11,44,95,.12);
-  color: #0b2c5f;          /* ✅ penting biar huruf keliatan */
+  color: #0b2c5f;          
   font-weight: 900;
-  font-size: 13px;         /* ✅ biar kebaca */
-  line-height: 1;          /* ✅ biar gak “ngeblur” */
-  letter-spacing: .5px;    /* opsional */
+  font-size: 13px;        
+  line-height: 1;        
+  letter-spacing: .5px;    
 }
 
 .pd-user-text{ display: flex; flex-direction: column; align-items: flex-start; }
@@ -150,24 +151,23 @@
   box-shadow: 0 14px 26px rgba(11,44,95,.18);
 }
 
-/* tracker */
 /* =========================
-   TRACKER (SAMAIN KAYA TRACKING)
+   TRACKER 
 ========================= */
 
 /* container timeline */
 .pd-tracker{
   position: relative;
   margin-top: 18px;
-  padding-left: 50px;  /* sama seperti .timeline */
-  display: block;      /* jangan grid */
+  padding-left: 50px;  
+  display: block;     
 }
 
 /* garis panjang */
 .pd-tracker::before{
   content: "";
   position: absolute;
-  left: 25px;          /* sama seperti .timeline-line */
+  left: 25px;    
   top: 6px;
   bottom: 6px;
   width: 6px;
@@ -182,8 +182,8 @@
   gap: 18px;
   margin-bottom: 22px;
   position: relative;
-  padding: 0;               /* reset biar ga aneh */
-  background: transparent;  /* item ga perlu bg */
+  padding: 0;               
+  background: transparent;  
 }
 
 /* dot (kotak rounded) */
@@ -196,7 +196,7 @@
   border: 6px solid transparent;
   background: #fff;
   box-sizing: border-box;
-  margin-top: 23px;         /* sama seperti tracking */
+  margin-top: 23px;       
 }
 
 /* card isi */
@@ -207,7 +207,7 @@
   background: #fff;
 }
 
-/* title & time (font inter, bukan times) */
+/* title & time*/
 .pd-step-title{
   font-weight: 650;
   letter-spacing: .3px;
@@ -224,13 +224,12 @@
 }
 
 /* ===== warna dot mengikuti status dashboard =====
-   done = biru, run = kuning, todo = merah (ini masih sama konsep tracking)
+   done = biru, run = kuning, todo = merah
 */
 .pd-step.is-done .pd-dot{ border-color:#2563eb; }
 .pd-step.is-run  .pd-dot{ border-color:#f59e0b; }
 .pd-step.is-todo .pd-dot{ border-color:#ef4444; }
 
-/* opsional: highlight card saat run */
 .pd-step.is-run .pd-step-body{
   background: #fff7ed;
 }
@@ -258,7 +257,7 @@
 .pd-leg-dot.run{ border-color: rgba(255,160,0,.95); }
 .pd-leg-dot.todo{ border-color: rgba(230,60,60,.85); }
 
-/* ===== MODAL AKUN PEMOHON (tengah) ===== */
+/* ===== MODAL AKUN PEMOHON ===== */
 .pa-backdrop{
   position: fixed;
   inset: 0;
@@ -278,9 +277,9 @@
 }
 
 .pa-card{
-  width: min(920px, 100%);     /* ✅ lebih lebar */
+  width: min(920px, 100%);     
   border-radius: 22px;
-  padding: 24px 26px 20px;     /* ✅ lebih lega */
+  padding: 24px 26px 20px;     
   background: rgba(255,255,255,0.96);
   border: 1px solid rgba(11,44,95,0.12);
   box-shadow: 0 22px 55px rgba(0,0,0,0.22);
@@ -357,7 +356,6 @@
 }
 .pa-btn.ghost:hover{ background: rgba(11,44,95,0.12); }
 
-/* WAJIB: biar hidden beneran ngilang */
 .pa-modal[hidden],
 .pa-backdrop[hidden]{
   display: none !important;
@@ -417,7 +415,6 @@
 
 .pd-muted{ color: rgba(11,44,95,.55); font-size: 12px; }
 
-/* APPROVE actions (lebih kecil & rapi) */
 .pd-approve-actions{
   margin-top: 10px;
   display: grid;
@@ -462,7 +459,6 @@
   opacity: .8;
 }
 
-/* responsive: kalau layar kecil, jadi 1 kolom */
 @media (max-width: 560px){
   .pd-approve-actions{
     grid-template-columns: 1fr;
@@ -493,13 +489,13 @@
 /* ====== DISABLED (sebelum approve) ====== */
 .pd-approve-actions .pd-mini-btn:disabled,
 .pd-approve-actions button.pd-mini-btn[disabled]{
-  background: #f1f5f9;            /* abu muda modern */
+  background: #f1f5f9;            
   border-color: #e2e8f0;
-  color: #94a3b8;                 /* text abu */
+  color: #94a3b8;                 
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
-  opacity: 1;                     /* biar ga pudar berlebihan */
+  opacity: 1;                    
 }
 
 /* ====== ENABLED PRIMARY (download tanda terima) ====== */
@@ -528,7 +524,6 @@
   box-shadow: 0 10px 20px rgba(15, 23, 42, .08);
 }
 
-/* kalau link aktif tapi belum ada class primary/outline, minimal tetep bagus */
 .pd-approve-actions a.pd-mini-btn:not(.primary):not(.outline){
   background: rgba(11,44,95,0.08);
   color: #0b2c5f;
@@ -536,9 +531,8 @@
 
 
 /* =========================
-   MODAL AKUN PEMOHON (pa-*) - INTER MODERN
+   MODAL AKUN PEMOHON 
    ========================= */
-
 .pa-backdrop{
   position: fixed;
   inset: 0;
@@ -657,12 +651,11 @@
 .pa-value{
   margin-top: 8px;
   font-size: 17px;
-  font-weight: 500;   /* nyaman dibaca */
+  font-weight: 500;  
   line-height: 1.35;
   color: #0b2c5f;
 }
 
-/* judul panjang / isi penting */
 .pa-wide .pa-value{
   font-weight: 600;
 }
@@ -687,8 +680,6 @@
   .pa-title{ font-size: 23px; }
   .pa-value{ font-size: 16px; }
 }
-
-/* ===== FIX FINAL: warna tracker harus ikut class (is-done/run/todo) ===== */
 
 /* default abu */
 .pd-step .pd-dot{
@@ -749,7 +740,6 @@
   font-size: 13px;
 }
 
-/* rapihin biar wrapper nutup pinggir (ga double border) */
 .pd-table-shell .pd-dok-table thead tr:first-child th{ border-top: 0; }
 .pd-table-shell .pd-dok-table tbody tr:last-child td{ border-bottom: 0; }
 .pd-table-shell .pd-dok-table tr th:first-child,
@@ -757,7 +747,7 @@
 .pd-table-shell .pd-dok-table tr th:last-child,
 .pd-table-shell .pd-dok-table tr td:last-child{ border-right: 0; }
 
-/* zebra */
+
 .pd-table-shell .pd-dok-table tbody tr:nth-child(even){
   background: #fafcff;
 }
@@ -775,7 +765,6 @@
   color: #003ecb;
 }
 
-/* Box biar lebih clean */
 .boxDetailDok {
   background: #ffffff;
   border-radius: 12px;
@@ -783,9 +772,6 @@
   border: 1px solid #e6ecf5;
 }
 
-
-
-/* ===== WRAPPER BIAR TABLE GA BOLOS KE KANAN ===== */
 .pd-table-wrap{
   width: 100%;
   overflow-x: auto;
@@ -793,26 +779,27 @@
 }
 
 .pd-table-wrap .pd-revisi-table{
-  min-width: 900px;          /* bikin tabel stabil */
+  min-width: 900px;        
 }
 
-/* ===== UPLOAD FORM RAPII ===== */
+/* ===== UPLOAD FORM ===== */
 .pd-upload-form{
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  max-width: 100%;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  max-width:100%;
 }
 
 .pd-upload-form input[type="file"]{
-  width: 100%;
-  max-width: 240px;
+  flex:1 1 220px;
+  min-width:220px;
+  max-width:100%;
 }
 
-/* biar tulisan Upload ga pecah per huruf */
 .pd-upload-form .pd-mini-btn{
-  white-space: nowrap;
+  white-space:nowrap;
+  min-width:110px;
 }
 
 /* ====== WIDTH KOLOM (REVISI AKTIF) ====== */
@@ -844,7 +831,6 @@
 
 .pd-note-toggle:hover{ text-decoration:underline; }
 
-/* ===== Upload form rapi ===== */
 .pd-upload-form{
   display:flex;
   gap:10px;
@@ -858,11 +844,8 @@
 }
 .pd-upload-form .pd-mini-btn{ white-space:nowrap; }
 
-
-
-/* revisi aktif: belum upload */
 .pd-pill.todo{
-  background: #fff1f2;      /* soft merah */
+  background: #fff1f2;     
   border-color: #fecdd3;
   color: #9f1239;
 }
@@ -887,7 +870,7 @@
 .pd-action-link{
   font-weight: 800;
   font-size: 13px;
-  color: #1d4ed8;          /* biru jelas */
+  color: #1d4ed8;         
   text-decoration: underline;
   text-underline-offset: 3px;
   background: none;
@@ -897,7 +880,7 @@
 }
 
 .pd-action-link:hover{
-  color: #0b2c5f;          /* lebih gelap pas hover */
+  color: #0b2c5f;          
   text-decoration-thickness: 2px;
 }
 
@@ -911,7 +894,6 @@
   background: #fff;
 }
 
-/* table jadi polos, gridnya dari border cell */
 .pd-table-shell .pd-revisi-table{
   width: 100%;
   border-collapse: collapse;
@@ -938,30 +920,27 @@
   font-size: 13px;
 }
 
-/* biar pinggir ga double (rapi ketutup) */
 .pd-table-shell .pd-revisi-table thead tr:first-child th{ border-top: 0; }
 .pd-table-shell .pd-revisi-table tbody tr:last-child td{ border-bottom: 0; }
 .pd-table-shell .pd-revisi-table tr th:first-child,
 .pd-table-shell .pd-revisi-table tr td:first-child{ border-left: 0; }
 .pd-table-shell .pd-revisi-table tr th:last-child,
 .pd-table-shell .pd-revisi-table tr td:last-child{ border-right: 0; }
-
-/* zebra */
 .pd-table-shell .pd-revisi-table tbody tr:nth-child(even){
   background: #fafcff;
 }
 
 /* =========================
-   WIDTH KOLOM (KEEP INI AJA)
+   WIDTH KOLOM 
    ========================= */
 .pd-revisi-table.revisi th:nth-child(1),
 .pd-revisi-table.revisi td:nth-child(1){ width: 22%; }
 
 .pd-revisi-table.revisi th:nth-child(2),
-.pd-revisi-table.revisi td:nth-child(2){ width: 28%; }
+.pd-revisi-table.revisi td:nth-child(2){ width: 26%; }
 
 .pd-revisi-table.revisi th:nth-child(3),
-.pd-revisi-table.revisi td:nth-child(3){ width: 20%; }
+.pd-revisi-table.revisi td:nth-child(3){ width: 15%; }
 
 .pd-revisi-table.revisi th:nth-child(4),
 .pd-revisi-table.revisi td:nth-child(4){ width: 16%; }
@@ -969,7 +948,7 @@
 .pd-revisi-table.revisi th:nth-child(5),
 .pd-revisi-table.revisi td:nth-child(5){ width: 12%; }
 .pd-revisi-table.revisi th:nth-child(6),
-.pd-revisi-table.revisi td:nth-child(6){ width: 28%; }
+.pd-revisi-table.revisi td:nth-child(6){ width: 30%; }
 
 .pd-revisi-table.riwayat th:nth-child(1),
 .pd-revisi-table.riwayat td:nth-child(1){ width: 22%; }
@@ -1052,20 +1031,17 @@
   vertical-align: middle !important;
 }
 
-/* biar tanda '-' keliatan rapih */
 .pd-dash{
   display: inline-block;
   font-weight: 800;
   color: rgba(11,44,95,.55);
 }
 
-/* status badge biar bener2 center */
 .pd-td-center .pd-pill{
   margin: 0 auto;
 }
 
 /* catatan clamp + tombol */
-
 .pd-note-clamp{
   display:-webkit-box;
   -webkit-box-orient:vertical;
@@ -1079,19 +1055,16 @@
    CATATAN (FINAL - INLINE EXPAND)
    ========================= */
 
-/* pastiin td nempel atas */
 .pd-revisi-table tbody td{
   vertical-align: top;
 }
 
-/* wrapper jangan flex, jangan gap */
 .pd-note-cell{
   display: block !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-/* preview & full: no spacing aneh */
 .pd-note-clamp,
 .pd-note-full{
   display: block;
@@ -1112,18 +1085,15 @@
   overflow: hidden;
 }
 
-/* full: enter kebaca */
 .pd-note-full{
   white-space: pre-line;
 }
 
-/* hidden harus bener2 ngilang biar gak dobel */
 .pd-note-full[hidden],
 .pd-note-clamp[hidden]{
   display: none !important;
 }
 
-/* tombol nempel, no gap */
 .pd-note-toggle{
   display: inline-block;
   margin-top: 2px !important;
@@ -1138,86 +1108,39 @@
 }
 .pd-note-toggle:hover{ text-decoration: underline; }
 
-/* ===== STYLE INPUT FILE (BIAR ADA KOTAK ABU) ===== */
-.pd-upload-form input[type="file"]{
-  font-size: 13px;
-  color: #0b2c5f;
+.hidden-input{
+  display: none;
 }
 
-/* tombol "Choose File" */
-.pd-upload-form input[type="file"]::file-selector-button{
-  background: #f1f5f9;         /* abu soft */
+.pd-upload-form{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.btn-choose-file{
+  background: #f1f5f9;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 6px 12px;
-  margin-right: 10px;
   font-weight: 600;
+  color: #0b2c5f;
   cursor: pointer;
-  transition: all .15s ease;
+  min-width:110px;
 }
 
-/* hover */
-.pd-upload-form input[type="file"]::file-selector-button:hover{
+.btn-choose-file:hover{
   background: #e2e8f0;
-  border-color: #94a3b8;
 }
 
-/* ===== NOTE TOGGLE PEMOHON (ACTIVE + RIWAYAT) ===== */
-.pd-note-cell{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-width:0;
-}
-
-/* preview 2 baris + ... */
-.pd-note-clamp{
-  display:-webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;   /* 2 baris */
-  overflow:hidden;
-
-  white-space: normal !important;
-  overflow-wrap:anywhere;
+.pd-file-name{
+  font-size: 13px;
+  color: #0b2c5f;
   word-break: break-word;
+  line-height: 1.4;
+  max-width:100%;
 }
-
-/* full: enter kebaca */
-.pd-note-full{
-  white-space: pre-wrap;
-  overflow-wrap:anywhere;
-  word-break: break-word;
-  margin:0;
-}
-
-/* anti bentrok: hidden harus menang */
-.pd-note-clamp[hidden],
-.pd-note-full[hidden],
-.pd-note-toggle[hidden]{
-  display:none !important;
-}
-
-/* ✅ FIX FINAL: catatan panjang gak boleh bikin tabel geser */
-.pd-table-shell .pd-revisi-table td,
-.pd-table-shell .pd-revisi-table th{
-  white-space: normal !important;
-}
-
-.pd-note-clamp,
-.pd-note-full{
-  max-width: 100%;
-  overflow-wrap: anywhere !important;
-  word-break: break-all !important; /* <-- KUNCI buat teks tanpa spasi */
-}
-/* khusus tabel revisi aktif */
-.pd-revisi-table.revisi td { 
-  vertical-align: top !important; 
-}
-
-/* note full jangan bikin layout aneh */
-.pd-revisi-table.revisi .pd-note-full{
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;   /* jangan break-all */
-  max-width: 100%;
+.pd-upload-form .pd-mini-btn{
+  min-width:120px;
 }

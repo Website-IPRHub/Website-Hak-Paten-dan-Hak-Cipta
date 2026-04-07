@@ -1,8 +1,6 @@
 @php
   $totalSteps = 8;
   $activeStep = $activeStep ?? 1;
-
-  // $verif cuma ada di step 2-8
   $verifId = $verif->id ?? null;
 
   $percent = (int) round(($activeStep / $totalSteps) * 100);

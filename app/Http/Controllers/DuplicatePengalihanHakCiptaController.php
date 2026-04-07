@@ -59,11 +59,7 @@ class DuplicatePengalihanHakCiptaController extends Controller
         }
 
         $tp = new TemplateProcessor($templatePath);
-
-
-        // Set field utama
         $tp->setValue('judul_hak_cipta', $this->val($data['judul_ciptaan']));
-
         $jenis = $data['jenis_cipta'] === 'Lainnya'
             ? $this->val($data['jenis_cipta_lainnya'] ?? 'Lainnya')
             : $this->val($data['jenis_cipta']);
@@ -76,44 +72,37 @@ class DuplicatePengalihanHakCiptaController extends Controller
         // =========================
         // Clone table inventor_block
         // =========================
-
-    $tp->cloneBlock('inventor_block', $jumlah, true, true);
-
-
-        for ($i = 1; $i <= $jumlah; $i++) {
-            $idx = $i - 1;
-            $tp->setValue("no#{$i}", (string)$i);
-            $tp->setValue("NIK#{$i}", $this->val($data['inventor']['NIK'][$idx] ?? ''));
-            $tp->setValue("nama#{$i}", $this->val($data['inventor']['nama'][$idx] ?? ''));
-            $tp->setValue("alamat#{$i}", $this->val($data['inventor']['alamat'][$idx] ?? ''));
-            $tp->setValue("kode_pos#{$i}", $this->val($data['inventor']['kode_pos'][$idx] ?? ''));
-            $tp->setValue("email#{$i}", $this->val($data['inventor']['email'][$idx] ?? ''));
-            $tp->setValue("no_hp#{$i}", $this->val($data['inventor']['no_hp'][$idx] ?? ''));
-        }
+        $tp->cloneBlock('inventor_block', $jumlah, true, true);
+            for ($i = 1; $i <= $jumlah; $i++) {
+                $idx = $i - 1;
+                $tp->setValue("no#{$i}", (string)$i);
+                $tp->setValue("NIK#{$i}", $this->val($data['inventor']['NIK'][$idx] ?? ''));
+                $tp->setValue("nama#{$i}", $this->val($data['inventor']['nama'][$idx] ?? ''));
+                $tp->setValue("alamat#{$i}", $this->val($data['inventor']['alamat'][$idx] ?? ''));
+                $tp->setValue("kode_pos#{$i}", $this->val($data['inventor']['kode_pos'][$idx] ?? ''));
+                $tp->setValue("email#{$i}", $this->val($data['inventor']['email'][$idx] ?? ''));
+                $tp->setValue("no_hp#{$i}", $this->val($data['inventor']['no_hp'][$idx] ?? ''));
+            }
 
         // =========================
         // Clone list_inventor
         // =========================
-    $tp->cloneBlock('list_inventor', $jumlah, true, true);
+        $tp->cloneBlock('list_inventor', $jumlah, true, true);
+            for ($i = 1; $i <= $jumlah; $i++) {
+                $idx = $i - 1;
+                $tp->setValue("no_list#{$i}", (string)$i);
+                $tp->setValue("nama_list#{$i}", $this->val($data['inventor']['nama'][$idx] ?? ''));
+            }
 
+            $out = sys_get_temp_dir() . '/hakcipta_' . uniqid() . '.docx';
+            $tp->saveAs($out);
+            $format = $data['download_format'];
 
-        for ($i = 1; $i <= $jumlah; $i++) {
-            $idx = $i - 1;
-            $tp->setValue("no_list#{$i}", (string)$i);
-            $tp->setValue("nama_list#{$i}", $this->val($data['inventor']['nama'][$idx] ?? ''));
-        }
-
-        // Simpan file sementara & download
-        $out = sys_get_temp_dir() . '/hakcipta_' . uniqid() . '.docx';
-        $tp->saveAs($out);
-
-        $format = $data['download_format'];
-
-        if ($format === 'docx') {
-        return response()
-                    ->download($out, 'Surat Pengalihan Hak Cipta.docx')
-                    ->deleteFileAfterSend(true);
-        }
+            if ($format === 'docx') {
+            return response()
+                        ->download($out, 'Surat Pengalihan Hak Cipta.docx')
+                        ->deleteFileAfterSend(true);
+            }
 
         // === Convert DOCX 
         $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
@@ -127,7 +116,7 @@ class DuplicatePengalihanHakCiptaController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 

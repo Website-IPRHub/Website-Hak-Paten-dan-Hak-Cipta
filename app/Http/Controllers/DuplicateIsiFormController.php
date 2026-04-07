@@ -21,82 +21,79 @@ class DuplicateIsiFormController extends Controller
             'konsultanpaten' => $request->input('konsultanpaten', 'Tidak Melalui'),
             'hak_prioritas'  => $request->input('hak_prioritas', 'Tidak'),
         ]);
-        // 1. VALIDASI LENGKAP (Sinkron dengan input yang lo punya di Blade)
        $data = $request->validate([
-    'jenis_paten' => ['required','in:Paten,Paten Sederhana'],
+        'jenis_paten' => ['required','in:Paten,Paten Sederhana'],
 
-    'is_pct' => ['required','in:Ya,Tidak'],
-    'nomor_permohonan' => ['required_if:is_pct,Ya','nullable','string','max:100'],
+        'is_pct' => ['required','in:Ya,Tidak'],
+        'nomor_permohonan' => ['required_if:is_pct,Ya','nullable','string','max:100'],
 
-    'judul_invensi' => ['required','string','max:255'],
+        'judul_invensi' => ['required','string','max:255'],
 
-    'is_pecahan' => ['required','in:Ya,Tidak'],
-    'pecahan_paten' => ['required_if:is_pecahan,Ya','nullable','string','max:100'],
+        'is_pecahan' => ['required','in:Ya,Tidak'],
+        'pecahan_paten' => ['required_if:is_pecahan,Ya','nullable','string','max:100'],
 
-    'konsultanpaten' => ['required','in:Melalui,Tidak Melalui'],
-    'nama_badan_hukum'       => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
-    'alamat_badan_hukum'     => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
-    'nama_konsultan_paten'   => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
-    'alamat_konsultan_paten' => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
-    'nomor_konsultan_paten'  => ['required_if:konsultanpaten,Melalui','nullable','string','max:100'],
-    'telepon_fax'            => ['required_if:konsultanpaten,Melalui','nullable','string','max:100'],
+        'konsultanpaten' => ['required','in:Melalui,Tidak Melalui'],
+        'nama_badan_hukum'       => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+        'alamat_badan_hukum'     => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+        'nama_konsultan_paten'   => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+        'alamat_konsultan_paten' => ['required_if:konsultanpaten,Melalui','nullable','string','max:255'],
+        'nomor_konsultan_paten'  => ['required_if:konsultanpaten,Melalui','nullable','string','max:100'],
+        'telepon_fax'            => ['required_if:konsultanpaten,Melalui','nullable','string','max:100'],
 
-    'hak_prioritas'   => ['required','in:Ya,Tidak'],
-    'negara'          => ['required_if:hak_prioritas,Ya','nullable','string','max:100'],
-    'nomor_prioritas' => ['required_if:hak_prioritas,Ya','nullable','string','max:100'],
-    'tgl_penerimaan'  => ['required_if:hak_prioritas,Ya','nullable','string','max:20'],
+        'hak_prioritas'   => ['required','in:Ya,Tidak'],
+        'negara'          => ['required_if:hak_prioritas,Ya','nullable','string','max:100'],
+        'nomor_prioritas' => ['required_if:hak_prioritas,Ya','nullable','string','max:100'],
+        'tgl_penerimaan'  => ['required_if:hak_prioritas,Ya','nullable','string','max:20'],
 
-    'jumlah_inventor' => ['required','integer','min:1','max:20'],
-    'inventor' => ['required','array'],
+        'jumlah_inventor' => ['required','integer','min:1','max:20'],
+        'inventor' => ['required','array'],
 
-    'inventor.nama'            => ['required','array'],
-    'inventor.nama.*'          => ['required','string','max:255'],
-    'inventor.kewarganegaraan' => ['required','array'],
-    'inventor.kewarganegaraan.*' => ['required','string','max:100'],
-    'inventor.nip_nim'         => ['required','array'],
-    'inventor.nip_nim.*'       => ['required','string','max:30'],
-    'inventor.alamat'          => ['required','array'],
-    'inventor.alamat.*'        => ['required','string'],
-    'inventor.fakultas'        => ['required','array'],
-    'inventor.fakultas.*'      => ['required','string','max:255'],
-    'inventor.no_hp'           => ['required','array'],
-    'inventor.no_hp.*'         => ['required','string','max:30'],
-    'inventor.email'           => ['required','array'],
-    'inventor.email.*'         => ['required','email','max:255'],
-    'inventor.nidn'            => ['nullable','array'],
-    'inventor.nidn.*'          => ['nullable','string','max:30'],
-    'inventor.status'          => ['required','array'],
-    'inventor.status.*'        => ['required','in:Dosen,Mahasiswa'],
-    'inventor.kode_pos'        => ['required','array'],
-    'inventor.kode_pos.*'      => ['required','string','max:10'],
-    'inventor.pekerjaan'       => ['required','array'],
-    'inventor.pekerjaan.*'     => ['required','string','max:100'],
+        'inventor.nama'            => ['required','array'],
+        'inventor.nama.*'          => ['required','string','max:255'],
+        'inventor.kewarganegaraan' => ['required','array'],
+        'inventor.kewarganegaraan.*' => ['required','string','max:100'],
+        'inventor.nip_nim'         => ['required','array'],
+        'inventor.nip_nim.*'       => ['required','string','max:30'],
+        'inventor.alamat'          => ['required','array'],
+        'inventor.alamat.*'        => ['required','string'],
+        'inventor.fakultas'        => ['required','array'],
+        'inventor.fakultas.*'      => ['required','string','max:255'],
+        'inventor.no_hp'           => ['required','array'],
+        'inventor.no_hp.*'         => ['required','string','max:30'],
+        'inventor.email'           => ['required','array'],
+        'inventor.email.*'         => ['required','email','max:255'],
+        'inventor.nidn'            => ['nullable','array'],
+        'inventor.nidn.*'          => ['nullable','string','max:30'],
+        'inventor.status'          => ['required','array'],
+        'inventor.status.*'        => ['required','in:Dosen,Mahasiswa'],
+        'inventor.kode_pos'        => ['required','array'],
+        'inventor.kode_pos.*'      => ['required','string','max:10'],
+        'inventor.pekerjaan'       => ['required','array'],
+        'inventor.pekerjaan.*'     => ['required','string','max:100'],
 
-    'uraian_halaman'  => ['required','integer','min:1'],
-    'klaim_buah'      => ['required','integer','min:1'],
-    'abstrak_buah'    => ['required','integer','min:1'],
-    'gambar_buah'     => ['required','integer','min:1'],
-    'gambar_dari'     => ['required','integer','min:1'],
-    'gambar_sampai'   => ['required','integer','gte:gambar_dari'],
+        'uraian_halaman'  => ['required','integer','min:1'],
+        'klaim_buah'      => ['required','integer','min:1'],
+        'abstrak_buah'    => ['required','integer','min:1'],
+        'gambar_buah'     => ['required','integer','min:1'],
+        'gambar_dari'     => ['required','integer','min:1'],
+        'gambar_sampai'   => ['required','integer','gte:gambar_dari'],
 
-    'download_format' => ['required','in:pdf,docx'],
-    'lampiran' => ['nullable', 'array'],
-'lampiran.*' => ['in:surat_kuasa,pengalihan,bukti_pemilikan,do_eo,dok_prioritas,dok_pct,jasad_renik,dok_lain'],
-'lampiran_lainnya' => ['nullable', 'string', 'max:1000'],
-]);
+        'download_format' => ['required','in:pdf,docx'],
+        'lampiran' => ['nullable', 'array'],
+        'lampiran.*' => ['in:surat_kuasa,pengalihan,bukti_pemilikan,do_eo,dok_prioritas,dok_pct,jasad_renik,dok_lain'],
+        'lampiran_lainnya' => ['nullable', 'string', 'max:1000'],
+        ]);
 
-    if (count($data['inventor']['nama'] ?? []) !== (int)$data['jumlah_inventor']) {
-    return back()->withErrors([
-        'inventor' => 'Jumlah inventor tidak sesuai.'
-    ])->withInput();
-}
-        // 2. SIMPAN KE SESSION (Agar data tidak hilang pas refresh)
-        if ($refId) {
-            session()->put($sessionKey, $data);
-        }
-        session()->put('hakpaten.isiform', $data);
+        if (count($data['inventor']['nama'] ?? []) !== (int)$data['jumlah_inventor']) {
+        return back()->withErrors([
+            'inventor' => 'Jumlah inventor tidak sesuai.'
+        ])->withInput();
+    }
+            if ($refId) {
+                session()->put($sessionKey, $data);
+            }
+            session()->put('hakpaten.isiform', $data);
 
-        // 3. LOGIC SAVE KE DATABASE
         if ($action === 'save' && $refId) {
             $formattedInventors = [];
             for ($i = 0; $i < (int)$data['jumlah_inventor']; $i++) {
@@ -127,7 +124,6 @@ class DuplicateIsiFormController extends Controller
 
         if ($action === 'next') return response()->json(['ok' => true]);
 
-        // 4. GENERATE DOCUMENT (Sinkron dengan Asli)
         return $this->generateDocument($data);
     }
 
@@ -149,7 +145,7 @@ class DuplicateIsiFormController extends Controller
             return $s === '' ? '-' : $s;
         };
 
-        // ===== 1) Logic Inven & Konsultan =====
+        // ===== 1) Inven & Konsultan =====
         $isPaten = $data['jenis_paten'] === 'Paten';
         $tp->setValue('paten_normal', $isPaten ? 'Paten' : $coret('Paten'));
         $tp->setValue('paten_strike', $isPaten ? $coret('Paten Sederhana') : 'Paten Sederhana');
@@ -162,7 +158,7 @@ class DuplicateIsiFormController extends Controller
         $tp->setValue('hak_normal', $hak ? 'dengan' : $coret('dengan'));
         $tp->setValue('hak_strike', $hak ? $coret('tidak dengan') : 'tidak dengan');
 
-        // ===== 2) Konsultan Data (Gunakan Pengaman ?? '') =====
+        // ===== 2) Konsultan Data=====
         $tp->setValue('nama_badan_hukum',       $isMelalui ? $val($data['nama_badan_hukum'] ?? '') : '-');
         $tp->setValue('alamat_badan_hukum',     $isMelalui ? $val($data['alamat_badan_hukum'] ?? '') : '-');
         $tp->setValue('nama_konsultan_paten',   $isMelalui ? $val($data['nama_konsultan_paten'] ?? '') : '-');
@@ -216,7 +212,7 @@ class DuplicateIsiFormController extends Controller
         $outDir  = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
 
-        // command (quotes penting di Windows)
+        // command 
         $cmd = '"' . $soffice . '" --headless --nologo --nofirststartwizard '
             . '--convert-to pdf --outdir "' . $outDir . '" "' . $out . '" 2>&1';
 
@@ -232,6 +228,6 @@ class DuplicateIsiFormController extends Controller
             ->download($pdfPath, 'Form Daftar Paten (2025).pdf')
             ->deleteFileAfterSend(true);
 
-        return redirect()->route('patenverif.datadiri'); // halaman yang kamu kirim ini
+        return redirect()->route('patenverif.datadiri');
     }
 }

@@ -12,11 +12,8 @@ class Paten extends Model
         'no_pendaftaran',
         'jenis_paten',
         'judul_paten',
-
-        // kalau tabel kamu punya kolom JSON ini
         'inventors',
          'skema_tkt_template_path',
-
         'nama_pencipta',
         'nip_nim',
         'no_hp',
