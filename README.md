@@ -1,6 +1,6 @@
 # IPRHub - Sistem Verifikasi Paten dan Hak Cipta
 
-<p align="center">
+<p>
 Sistem berbasis web untuk pengelolaan, pengajuan, dan verifikasi dokumen paten serta hak cipta secara digital.
 </p>
 
