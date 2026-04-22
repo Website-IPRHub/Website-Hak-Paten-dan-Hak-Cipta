@@ -69,7 +69,7 @@
               min="1"
               max="20"
               value="{{ old('jumlah_inventor', $prefillCount) }}"
-              required
+              required readonly
             >
             <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
           </div>
@@ -80,60 +80,81 @@
 
           {{-- Jenis Cipta (radio) --}}
         @php
-          $jenisOld = old('jenis_cipta', data_get($data,'jenis_cipta'));
-          $jenisLainnyaOld = old('jenis_cipta_lainnya', data_get($data,'jenis_cipta_lainnya'));
-        @endphp
+  $jenisOld = old('jenis_cipta', data_get($data,'jenis_cipta'));
+  $jenisLainnyaOld = old('jenis_cipta_lainnya', data_get($data,'jenis_cipta_lainnya'));
+  $jenisLocked = !empty($jenisOld);
+@endphp
 
-        <div class="field">
-        <label class="label">Jenis Hak Cipta <span class="req">*</span></label>
+<div class="field">
+    <label class="label">Jenis Hak Cipta <span class="req">*</span></label>
 
-        <div class="jenis-radio">
-            <label class="radio-item">
-            <input type="radio" name="jenis_cipta" value="Buku"
-                {{ $jenisOld === 'Buku' ? 'checked' : '' }} required>
+    <div class="jenis-radio">
+
+        <label class="radio-item">
+            <input type="radio"
+                name="jenis_cipta"
+                value="Buku"
+                {{ $jenisOld === 'Buku' ? 'checked' : '' }}
+                {{ $jenisLocked ? 'disabled' : '' }}>
             Buku
-            </label>
-            <br>
+        </label>
+        <br>
 
-            <label class="radio-item">
-            <input type="radio" name="jenis_cipta" value="Program Komputer"
-                {{ $jenisOld === 'Program Komputer' ? 'checked' : '' }} required>
+        <label class="radio-item">
+            <input type="radio"
+                name="jenis_cipta"
+                value="Program Komputer"
+                {{ $jenisOld === 'Program Komputer' ? 'checked' : '' }}
+                {{ $jenisLocked ? 'disabled' : '' }}>
             Program Komputer
-            </label>
-            <br>
+        </label>
+        <br>
 
-            <label class="radio-item">
-            <input type="radio" name="jenis_cipta" value="Karya Rekaman Video"
-                {{ $jenisOld === 'Karya Rekaman Video' ? 'checked' : '' }} required>
+        <label class="radio-item">
+            <input type="radio"
+                name="jenis_cipta"
+                value="Karya Rekaman Video"
+                {{ $jenisOld === 'Karya Rekaman Video' ? 'checked' : '' }}
+                {{ $jenisLocked ? 'disabled' : '' }}>
             Karya Rekaman Video
-            </label>
-            <br>
+        </label>
+        <br>
 
-            <label class="radio-item">
-            <input type="radio" name="jenis_cipta" value="Lainnya"
-                {{ $jenisOld === 'Lainnya' ? 'checked' : '' }} required>
+        <label class="radio-item">
+            <input type="radio"
+                name="jenis_cipta"
+                value="Lainnya"
+                {{ $jenisOld === 'Lainnya' ? 'checked' : '' }}
+                {{ $jenisLocked ? 'disabled' : '' }}>
             Lainnya
-            </label>
-        </div>
+        </label>
 
-        
-        <div id="jenis-lainnya-wrap" style="display:none;">
-            <input
-                type="text"
-                name="jenis_cipta_lainnya"
-                value="{{ old('jenis_cipta_lainnya') }}"
-            >
+    </div>
+
+    {{-- kalau Lainnya --}}
+    <div id="jenis-lainnya-wrap" style="{{ $jenisOld === 'Lainnya' ? '' : 'display:none;' }}">
+        <input
+            type="text"
+            name="jenis_cipta_lainnya"
+            value="{{ $jenisLainnyaOld }}"
+            {{ $jenisLocked ? 'readonly' : '' }}
+        >
         <small style="color:#6b7280;">Isi jika anda memilih “Lainnya”.</small>
-        </div>
+    </div>
+    <input type="hidden" name="jenis_cipta" value="{{ $jenisOld }}">
 
+    @if($jenisOld === 'Lainnya')
+        <input type="hidden" name="jenis_cipta_lainnya" value="{{ $jenisLainnyaOld }}">
+    @endif
 
-        @error('jenis_cipta')
-            <small style="color:red">{{ $message }}</small>
-        @enderror
-        @error('jenis_cipta_lainnya')
-            <small style="color:red">{{ $message }}</small>
-        @enderror
-        </div>
+    @error('jenis_cipta')
+        <small style="color:red">{{ $message }}</small>
+    @enderror
+
+    @error('jenis_cipta_lainnya')
+        <small style="color:red">{{ $message }}</small>
+    @enderror
+</div>
 
         </div>
 
@@ -147,7 +168,7 @@
               name="judul_ciptaan"
               placeholder="Masukkan judul cipta"
               value="{{ old('judul_ciptaan', data_get($data,'judul_ciptaan')) }}"
-              required
+              required readonly
             >
           </div>
 
@@ -215,7 +236,7 @@
               <div class="inventor-col">
                 <div class="field">
                   <label class="label">Nama Pencipta <span class="req">*</span></label>
-                  <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
+                  <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required readonly>
                 </div>
 
                 <div class="field">
@@ -225,7 +246,7 @@
                         class="input nip-input"
                         name="inventor[nip_nim][]"
                         placeholder="Masukkan NIP/NIM Anda"
-                        required
+                        required readonly
                       >
                       <small class="nip-warning">
                         NIP/NIM harus terdiri dari 14 atau 18 digit angka
@@ -260,7 +281,7 @@
                     class="input hp-input"
                     name="inventor[no_hp][]"
                     placeholder="Contoh: 081234567890"
-                    required>
+                    required readonly>
 
                   <small class="hp-warning">
                     Nomor HP harus diawali 08 dan minimal 10 digit
@@ -273,7 +294,7 @@
                     class="input email-input"
                     name="inventor[email][]"
                     placeholder="nama@email.com"
-                    required>
+                    required readonly>
 
                   <small class="email-warning">
                     Format email tidak valid
@@ -286,7 +307,7 @@
                     type="text"
                     class="input nidn-input"
                     name="inventor[nidn][]"
-                    placeholder="8 digit NIDN"
+                    placeholder="8 digit NIDN" readonly
                   >
                   <small class="nidn-warning">
                     NIDN harus 8 digit angka
@@ -296,7 +317,7 @@
 
                 <div class="field">
                   <label class="label">Status <span class="req">*</span></label>
-                  <select class="input" name="inventor[status][]" required>
+                  <select class="input" name="inventor[status][]" required readonly>
                     <option value="" selected disabled>-- Pilih Status --</option>
                     <option value="Dosen">Dosen</option>
                     <option value="Mahasiswa">Mahasiswa</option>
