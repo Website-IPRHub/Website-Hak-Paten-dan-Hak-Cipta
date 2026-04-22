@@ -11,7 +11,15 @@
 @php $activeStep = 4; @endphp
 @include('hakpaten.isiformulir.menuformulir')
 
+@if(session('success'))
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    localStorage.removeItem("deskripsi_prototipe");
+});
+</script>
+@endif
 @if(session('submit_error'))
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
