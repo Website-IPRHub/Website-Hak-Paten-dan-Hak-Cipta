@@ -98,7 +98,21 @@ document.addEventListener('DOMContentLoaded', () => {
       set('nama', old.nama[i]);
       set('nip_nim', old.nip_nim[i]);
       set('nidn', old.nidn[i]);
-      set('fakultas', old.fakultas[i]);
+      const fakultasVal = old.fakultas[i];
+const fakultasEl = frag.querySelector('[name="inventor[fakultas][]"]');
+if (fakultasEl) {
+  fakultasEl.value = fakultasVal ?? '';
+
+  if (fakultasVal) {
+    fakultasEl.disabled = true;
+
+    const hiddenFakultas = document.createElement('input');
+    hiddenFakultas.type = 'hidden';
+    hiddenFakultas.name = 'inventor[fakultas][]';
+    hiddenFakultas.value = fakultasVal;
+    card.appendChild(hiddenFakultas);
+  }
+}
       set('no_hp', old.no_hp[i]);
       set('email', old.email[i]);
       set('status', old.status[i]);

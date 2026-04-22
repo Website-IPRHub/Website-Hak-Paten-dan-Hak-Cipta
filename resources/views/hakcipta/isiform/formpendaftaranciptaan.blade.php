@@ -299,8 +299,8 @@
         </select>
 
         <select name="download_format" class="input" style="width:160px;">
+          <option value="docx">DOCX</option>  
           <option value="pdf">PDF</option>
-          <option value="docx">DOCX</option>
         </select>
 
         <button type="submit" class="unduh" id="btnDownload">
