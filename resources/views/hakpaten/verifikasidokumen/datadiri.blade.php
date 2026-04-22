@@ -92,7 +92,7 @@ $verifSession = session('hakpaten.verif', []);
               min="1"
               max="20"
               value="{{ old('jumlah_inventor', $prefillCount) }}"
-              required
+              required readonly
             >
            <button type="button" id="invPlus" class="btn-plus" aria-label="Tambah inventor">+</button>
           </div>
@@ -100,8 +100,8 @@ $verifSession = session('hakpaten.verif', []);
 
           <div class="field">
             <label class="label">Jenis Pengajuan Paten <span class="req">*</span></label>
-            <select class="input" name="jenis_paten" required>
-              <option value="" disabled {{ old('jenis_paten', data_get($isiform,'jenis_paten')) ? '' : 'selected' }}>
+            <select class="input" disabled>
+              <option value="" disabled>
                 -- Jenis Pengajuan Paten --
               </option>
 
@@ -116,6 +116,12 @@ $verifSession = session('hakpaten.verif', []);
               </option>
             </select>
 
+            {{-- hidden input yang tetap dikirim --}}
+            <input
+              type="hidden"
+              name="jenis_paten"
+              value="{{ old('jenis_paten', data_get($isiform,'jenis_paten','')) }}"
+            >
           </div>
 
           <div class="field">
@@ -125,7 +131,7 @@ $verifSession = session('hakpaten.verif', []);
               class="input"
               name="judul_paten"
               value="{{ old('judul_paten', data_get($isiform,'judul_invensi','')) }}"
-              required
+              required readonly
             >
           </div>
         </div>
@@ -149,8 +155,8 @@ $verifSession = session('hakpaten.verif', []);
             </select>
           </div>
           <small class="hint prototipe-note">
-            Warna ungu menandakan <strong>prototipe sudah tersedia</strong>, 
-            sedangkan warna pink menandakan <strong>prototipe belum tersedia</strong>.
+            Warna biru menandakan <strong>prototipe sudah tersedia</strong>, 
+            sedangkan warna kuning menandakan <strong>prototipe belum tersedia</strong>.
           </small>
 
           <div class="field">
@@ -209,7 +215,7 @@ $verifSession = session('hakpaten.verif', []);
                   <div class="inventor-col">
                     <div class="field">
                       <label class="label">Nama Inventor <span class="req">*</span></label>
-                      <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
+                      <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required readonly>
                     </div>
 
                     <div class="field">
@@ -219,7 +225,7 @@ $verifSession = session('hakpaten.verif', []);
                         class="input nip-input"
                         name="inventor[nip_nim][]"
                         placeholder="Masukkan NIP/NIM Anda"
-                        required
+                        required readonly
                       >
                       <small class="nip-warning">
                         NIP/NIM harus terdiri dari 14 atau 18 digit angka
@@ -229,35 +235,96 @@ $verifSession = session('hakpaten.verif', []);
 
                     <div class="field">
                       <label class="label">Fakultas <span class="req">*</span></label>
-                      <select class="input" name="inventor[fakultas][]" required>
-                        <option value="" selected disabled>-- Pilih Fakultas --</option>
-                        <option value="Fakultas Teknik">Fakultas Teknik</option>
-                        <option value="Fakultas Sains dan Matematika">Fakultas Sains dan Matematika</option>
-                        <option value="Fakultas Kesehatan Masyarakat">Fakultas Kesehatan Masyarakat</option>
-                        <option value="Fakultas Kedokteran">Fakultas Kedokteran</option>
-                        <option value="Fakultas Perikanan dan Ilmu Kelautan">Fakultas Perikanan dan Ilmu Kelautan</option>
-                        <option value="Fakultas Peternakan dan Pertanian">Fakultas Peternakan dan Pertanian</option>
-                        <option value="Fakultas Psikologi">Fakultas Psikologi</option>
-                        <option value="Fakultas Hukum">Fakultas Hukum</option>
-                        <option value="Fakultas Ilmu Sosial dan Ilmu Politik">Fakultas Ilmu Sosial dan Ilmu Politik</option>
-                        <option value="Fakultas Ilmu Budaya">Fakultas Ilmu Budaya</option>
-                        <option value="Fakultas Ekonomi dan Bisnis">Fakultas Ekonomi dan Bisnis</option>
-                        <option value="Sekolah Vokasi">Sekolah Vokasi</option>
-                        <option value="Sekolah Pasca Sarjana">Sekolah Pasca Sarjana</option>
+
+                      {{-- Select hanya untuk tampilan --}}
+                      <select class="input" disabled>
+                        <option value="" disabled>-- Pilih Fakultas --</option>
+
+                        <option value="Fakultas Teknik"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Teknik' ? 'selected' : '' }}>
+                          Fakultas Teknik
+                        </option>
+
+                        <option value="Fakultas Sains dan Matematika"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Sains dan Matematika' ? 'selected' : '' }}>
+                          Fakultas Sains dan Matematika
+                        </option>
+
+                        <option value="Fakultas Kesehatan Masyarakat"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Kesehatan Masyarakat' ? 'selected' : '' }}>
+                          Fakultas Kesehatan Masyarakat
+                        </option>
+
+                        <option value="Fakultas Kedokteran"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Kedokteran' ? 'selected' : '' }}>
+                          Fakultas Kedokteran
+                        </option>
+
+                        <option value="Fakultas Perikanan dan Ilmu Kelautan"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Perikanan dan Ilmu Kelautan' ? 'selected' : '' }}>
+                          Fakultas Perikanan dan Ilmu Kelautan
+                        </option>
+
+                        <option value="Fakultas Peternakan dan Pertanian"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Peternakan dan Pertanian' ? 'selected' : '' }}>
+                          Fakultas Peternakan dan Pertanian
+                        </option>
+
+                        <option value="Fakultas Psikologi"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Psikologi' ? 'selected' : '' }}>
+                          Fakultas Psikologi
+                        </option>
+
+                        <option value="Fakultas Hukum"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Hukum' ? 'selected' : '' }}>
+                          Fakultas Hukum
+                        </option>
+
+                        <option value="Fakultas Ilmu Sosial dan Ilmu Politik"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Ilmu Sosial dan Ilmu Politik' ? 'selected' : '' }}>
+                          Fakultas Ilmu Sosial dan Ilmu Politik
+                        </option>
+
+                        <option value="Fakultas Ilmu Budaya"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Ilmu Budaya' ? 'selected' : '' }}>
+                          Fakultas Ilmu Budaya
+                        </option>
+
+                        <option value="Fakultas Ekonomi dan Bisnis"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Ekonomi dan Bisnis' ? 'selected' : '' }}>
+                          Fakultas Ekonomi dan Bisnis
+                        </option>
+
+                        <option value="Sekolah Vokasi"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Sekolah Vokasi' ? 'selected' : '' }}>
+                          Sekolah Vokasi
+                        </option>
+
+                        <option value="Sekolah Pasca Sarjana"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Sekolah Pasca Sarjana' ? 'selected' : '' }}>
+                          Sekolah Pasca Sarjana
+                        </option>
                       </select>
+
+                      {{-- Hidden input yang dikirim --}}
+                      <input
+                        type="hidden"
+                        name="inventor[fakultas][]"
+                        value="{{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) }}"
+                      >
                     </div>
                   </div>
 
                   <div class="inventor-col">
                     <div class="field">
                       <label class="label">No. HP<span class="req">*</span></label>
-                      <input type="text" class="input hp-input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required>
+                      <input type="text" class="input hp-input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required readonly>
                       <small class="hp-warning">Nomor HP tidak valid (contoh: 081234567890)</small>
                     </div>
 
                     <div class="field">
                       <label class="label">Email <span class="req">*</span></label>
-                      <input type="email" class="input email-input" name="inventor[email][]" placeholder="nama@email.com" required>
+                      <input type="email" class="input email-input" name="inventor[email][]" placeholder="nama@email.com" required readonly>
                       <small class="email-warning">Format email tidak valid</small>
                     </div>
 
@@ -268,7 +335,7 @@ $verifSession = session('hakpaten.verif', []);
                         type="text"
                         class="input nidn-input"
                         name="inventor[nidn][]"
-                        placeholder="NIDN"
+                        placeholder="NIDN" readonly
                       >
                       <small class="nidn-warning">NIDN harus 8 karakter</small>
                     </div>
@@ -293,7 +360,7 @@ $verifSession = session('hakpaten.verif', []);
                   <div class="inventor-col">
                     <div class="field">
                       <label class="label">Nama Inventor <span class="req">*</span></label>
-                      <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required>
+                      <input type="text" class="input" name="inventor[nama][]" placeholder="Nama lengkap" required readonly>
                     </div>
 
                     <div class="field">
@@ -303,7 +370,7 @@ $verifSession = session('hakpaten.verif', []);
                         class="input nip-input"
                         name="inventor[nip_nim][]"
                         placeholder="Masukkan NIP/NIM Anda"
-                        required
+                        required readonly
                       >
                       <small class="nip-warning">
                         NIP/NIM harus terdiri dari 14 atau 18 digit angka
@@ -313,7 +380,7 @@ $verifSession = session('hakpaten.verif', []);
 
                     <div class="field">
                       <label class="label">Fakultas <span class="req">*</span></label>
-                      <select class="input" name="inventor[fakultas][]" required>
+                      <select class="input" name="inventor[fakultas][]" required readonly>
                         <option value="" selected disabled>-- Pilih Fakultas --</option>
                         <option value="Fakultas Teknik">Fakultas Teknik</option>
                         <option value="Fakultas Sains dan Matematika">Fakultas Sains dan Matematika</option>
@@ -335,22 +402,22 @@ $verifSession = session('hakpaten.verif', []);
                   <div class="inventor-col">
                     <div class="field">
                       <label class="label">No. HP <span class="req">*</span></label>
-                      <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required>
+                      <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required readonly>
                     </div>
 
                     <div class="field">
                       <label class="label">Email <span class="req">*</span></label>
-                      <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required>
+                      <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required readonly>
                     </div>
 
                     <div class="field nidn-field" style="display:none;">
                       <label class="label">NIDN <span class="req">*</span></label>
-                      <input type="text" class="input" name="inventor[nidn][]" placeholder="Masukkan NIDN">
+                      <input type="text" class="input" name="inventor[nidn][]" placeholder="Masukkan NIDN" readonly>
                     </div>
 
                     <div class="field">
                       <label class="label">Status Inventor <span class="req">*</span></label>
-                      <select class="input" name="inventor[status][]" required>
+                      <select class="input" name="inventor[status][]" required readonly>
                         <option value="" selected disabled>-- Status Inventor --</option>
                         <option value="Dosen">Dosen</option>
                         <option value="Mahasiswa">Mahasiswa</option>
