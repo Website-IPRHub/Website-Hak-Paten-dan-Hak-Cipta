@@ -380,23 +380,85 @@ $verifSession = session('hakpaten.verif', []);
 
                     <div class="field">
                       <label class="label">Fakultas <span class="req">*</span></label>
-                      <select class="input" name="inventor[fakultas][]" required readonly>
-                        <option value="" selected disabled>-- Pilih Fakultas --</option>
-                        <option value="Fakultas Teknik">Fakultas Teknik</option>
-                        <option value="Fakultas Sains dan Matematika">Fakultas Sains dan Matematika</option>
-                        <option value="Fakultas Kesehatan Masyarakat">Fakultas Kesehatan Masyarakat</option>
-                        <option value="Fakultas Kedokteran">Fakultas Kedokteran</option>
-                        <option value="Fakultas Perikanan dan Ilmu Kelautan">Fakultas Perikanan dan Ilmu Kelautan</option>
-                        <option value="Fakultas Peternakan dan Pertanian">Fakultas Peternakan dan Pertanian</option>
-                        <option value="Fakultas Psikologi">Fakultas Psikologi</option>
-                        <option value="Fakultas Hukum">Fakultas Hukum</option>
-                        <option value="Fakultas Ilmu Sosial dan Ilmu Politik">Fakultas Ilmu Sosial dan Ilmu Politik</option>
-                        <option value="Fakultas Ilmu Budaya">Fakultas Ilmu Budaya</option>
-                        <option value="Fakultas Ekonomi dan Bisnis">Fakultas Ekonomi dan Bisnis</option>
-                        <option value="Sekolah Vokasi">Sekolah Vokasi</option>
-                        <option value="Sekolah Pasca Sarjana">Sekolah Pasca Sarjana</option>
+
+                      {{-- Select hanya untuk tampilan --}}
+                      <select class="input" disabled>
+                        <option value="" disabled>-- Pilih Fakultas --</option>
+
+                        <option value="Fakultas Teknik"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Teknik' ? 'selected' : '' }}>
+                          Fakultas Teknik
+                        </option>
+
+                        <option value="Fakultas Sains dan Matematika"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Sains dan Matematika' ? 'selected' : '' }}>
+                          Fakultas Sains dan Matematika
+                        </option>
+
+                        <option value="Fakultas Kesehatan Masyarakat"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Kesehatan Masyarakat' ? 'selected' : '' }}>
+                          Fakultas Kesehatan Masyarakat
+                        </option>
+
+                        <option value="Fakultas Kedokteran"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Kedokteran' ? 'selected' : '' }}>
+                          Fakultas Kedokteran
+                        </option>
+
+                        <option value="Fakultas Perikanan dan Ilmu Kelautan"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Perikanan dan Ilmu Kelautan' ? 'selected' : '' }}>
+                          Fakultas Perikanan dan Ilmu Kelautan
+                        </option>
+
+                        <option value="Fakultas Peternakan dan Pertanian"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Peternakan dan Pertanian' ? 'selected' : '' }}>
+                          Fakultas Peternakan dan Pertanian
+                        </option>
+
+                        <option value="Fakultas Psikologi"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Psikologi' ? 'selected' : '' }}>
+                          Fakultas Psikologi
+                        </option>
+
+                        <option value="Fakultas Hukum"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Hukum' ? 'selected' : '' }}>
+                          Fakultas Hukum
+                        </option>
+
+                        <option value="Fakultas Ilmu Sosial dan Ilmu Politik"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Ilmu Sosial dan Ilmu Politik' ? 'selected' : '' }}>
+                          Fakultas Ilmu Sosial dan Ilmu Politik
+                        </option>
+
+                        <option value="Fakultas Ilmu Budaya"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Ilmu Budaya' ? 'selected' : '' }}>
+                          Fakultas Ilmu Budaya
+                        </option>
+
+                        <option value="Fakultas Ekonomi dan Bisnis"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Fakultas Ekonomi dan Bisnis' ? 'selected' : '' }}>
+                          Fakultas Ekonomi dan Bisnis
+                        </option>
+
+                        <option value="Sekolah Vokasi"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Sekolah Vokasi' ? 'selected' : '' }}>
+                          Sekolah Vokasi
+                        </option>
+
+                        <option value="Sekolah Pasca Sarjana"
+                          {{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) == 'Sekolah Pasca Sarjana' ? 'selected' : '' }}>
+                          Sekolah Pasca Sarjana
+                        </option>
                       </select>
+
+                      {{-- Hidden input yang dikirim --}}
+                      <input
+                        type="hidden"
+                        name="inventor[fakultas][]"
+                        value="{{ old('inventor.fakultas.0', data_get($isiform,'inventor.fakultas.0')) }}"
+                      >
                     </div>
+                  
                   </div>
 
                   <div class="inventor-col">

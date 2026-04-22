@@ -304,3 +304,25 @@ a#nextLink.btn-selanjutnya.is-disabled,
 .skm-actions .actions-right { position: relative; z-index: 1; }
 .skm-actions .button-upload { position: relative; z-index: 9999; }
 #uploadButton { position: relative; z-index: 99999; pointer-events: auto; }
+
+.content-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.hero-buttons-start{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+
+.button-upload form{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
