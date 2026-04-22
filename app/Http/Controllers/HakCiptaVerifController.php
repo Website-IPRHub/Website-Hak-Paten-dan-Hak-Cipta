@@ -187,7 +187,7 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
     ]
 ));
 
-    session(['edit_ref_id' => $verif->id]);
+    session(['hakcipta.edit_ref_id' => $verif->id]);
 
     $nextRoute = route('ciptaverif.all', ['verif' => $verif->id]);
 
@@ -331,7 +331,7 @@ for ($i = 0; $i < $jumlah; $i++) {
     $verif = HakCiptaVerif::create($payload);
 
     session(['cipta_id' => $verif->id]);
-    session(['edit_ref_id' => $verif->id]);
+    session(['hakcipta.edit_ref_id' => $verif->id]);
 
     $existingSpecific = session("hakcipta.form.{$verif->id}", []);
 
@@ -351,7 +351,7 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
     ]
 ));
 
-    session(['edit_ref_id' => $verif->id]);
+    session(['hakcipta.edit_ref_id' => $verif->id]);
 
     return response()->json([
         'message'        => 'Pengajuan verifikasi hak cipta berhasil',
@@ -559,7 +559,15 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
         'submitted_at' => now(),
     ]);
 
-    session()->put('edit_ref_id', $verif->id);
+    session()->put('hakcipta.edit_ref_id', $verif->id);
+
+    $kode = $verif->no_pendaftaran;
+    $authController = app(\App\Http\Controllers\PemohonAuthController::class);
+    $result = $authController->sendCredentialAfterSubmit($kode);
+
+    if (!$result['ok']) {
+        return back()->with('error', $result['message']);
+    }
 
     $existingSpecific = session("hakcipta.form.{$verif->id}", []);
 $globalForm = session('hakcipta.form', []);

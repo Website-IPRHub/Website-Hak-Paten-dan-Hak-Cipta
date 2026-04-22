@@ -6,7 +6,9 @@
 
 @php 
     $activeStep = 2; 
-    $ref = request('ref') ?? session('edit_ref_id');
+    $ref = filled(request('ref')) 
+        ? request('ref') 
+        : session('hakcipta.edit_ref_id');
 
     $generalForm = session('hakcipta.form', []);
     $refForm = $ref ? session("hakcipta.form.$ref", []) : [];
@@ -274,8 +276,8 @@ $uraianData = old('uraian',
         </select>
 
         <select name="download_format" class="input" style="width:160px;" form="dupCiptaForm">
-          <option value="pdf">PDF</option>
           <option value="docx">DOCX</option>
+          <option value="pdf">PDF</option>
         </select>
 
         <button type="submit" class="unduh" id="btnDownload">

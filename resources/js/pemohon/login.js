@@ -6,13 +6,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBtn = document.getElementById("closeChangePw");
   const cancelBtn = document.getElementById("cancelChangePw");
 
+  const modalUsername = document.getElementById("cpUsername");
+  const ownerEmail = document.getElementById("cpOwnerEmail");
+
   const open = () => {
     if (!modal || !backdrop) return;
     modal.hidden = false;
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
-    const first = modal.querySelector("input");
-    if (first) first.focus();
+    if (modalUsername) modalUsername.focus();
   };
 
   const close = () => {
@@ -22,8 +24,39 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "";
   };
 
+  async function loadOwnerEmail() {
+    if (!modalUsername || !ownerEmail) return;
+
+    const kode = (modalUsername.value || "").trim();
+    ownerEmail.value = "";
+
+    if (!kode) return;
+
+    try {
+      const res = await fetch(`/pemohon/get-owner-email?kode=${encodeURIComponent(kode)}`, {
+        headers: { Accept: "application/json" }
+      });
+
+      const data = await res.json();
+      console.log("OWNER EMAIL RESPONSE:", data);
+
+      if (data.ok && data.email) {
+        ownerEmail.value = data.email;
+      } else {
+        ownerEmail.value = "";
+      }
+    } catch (err) {
+      console.error("Gagal ambil owner email:", err);
+      ownerEmail.value = "";
+    }
+  }
+
   if (openBtn && modal && backdrop) {
-    openBtn.addEventListener("click", (e) => { e.preventDefault(); open(); });
+    openBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      open();
+    });
+
     backdrop.addEventListener("click", close);
     closeBtn?.addEventListener("click", close);
     cancelBtn?.addEventListener("click", close);
@@ -33,6 +66,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  let ownerEmailTimer = null;
+
+if (modalUsername) {
+  modalUsername.addEventListener("input", () => {
+    clearTimeout(ownerEmailTimer);
+
+    ownerEmailTimer = setTimeout(() => {
+      loadOwnerEmail();
+    }, 300); // jeda 300ms setelah user berhenti ngetik
+  });
+}
+
+  // ===== SHOW / HIDE PASSWORD LOGIN =====
   const pwInput = document.getElementById("pwInput");
   const toggleBtn = document.getElementById("pwToggle");
 
@@ -42,10 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.addEventListener("click", () => {
       const shown = pwInput.type === "text";
       pwInput.type = shown ? "password" : "text";
-
-      // toggle icon state
       toggleBtn.classList.toggle("is-shown", !shown);
-
       pwInput.focus();
     });
   }

@@ -17,9 +17,21 @@ class PemohonAuthController extends Controller
 
 {
     public function showLogin(Request $request)
-
     {
-        return view('pemohon.login');
+        $emailInventor1 = null;
+
+        if ($request->has('kode')) {
+            $kode = $request->kode;
+
+            $row = DB::table('paten_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first()
+                ?? DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
+
+            if ($row) {
+                $emailInventor1 = $this->getOwnerEmailFromRow($row);
+            }
+        }
+
+        return view('pemohon.login', compact('emailInventor1'));
     }
     // ========= helper: parse email string jadi array email unik =========
     private function parseEmails(?string $raw): array
@@ -62,72 +74,106 @@ class PemohonAuthController extends Controller
     }
 
     public function claim($kode)
+{
+    $isPaten = DB::table('paten_verifs')->where('no_pendaftaran', $kode)->exists();
+    $isCipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->exists();
 
-    {
-        $isPaten = DB::table('paten_verifs')->where('no_pendaftaran', $kode)->exists();
-        $isCipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->exists();
-        if (!$isPaten && !$isCipta) {
-            return redirect()->route('pemohon.login.form')->with('error', 'Kode tidak valid.');
-        }
-        $row = $isPaten
-            ? DB::table('paten_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first()
-            : DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
-        if (!$row) {
-            return redirect()->route('pemohon.login.form')->with('error', 'Data pengajuan tidak ditemukan.');
-        }
-        $emails = $this->collectAllEmailsFromRow($row);
-
-        if (count($emails) === 0) {
-            return redirect()->route('pemohon.login.form')
-                ->with('error', 'Email pemohon/inventor kosong atau tidak valid. Tidak bisa mengirim kredensial.');
-        }
-
-        // cek akun
-        $pemohon = Pemohon::where('kode_unik', $kode)->first();
-
-        // jangan reset password kalau sudah ada akun
-        if ($pemohon) {
-            return redirect()->route('pemohon.login.form')
-                ->with('success', 'Akun sudah terdaftar. Silakan login.');
-
-        }
-
-        // akun baru
-        $plainPassword = Str::random(10);
-        $pemohon = Pemohon::create([
-            'kode_unik' => $kode,
-            'password'  => Hash::make($plainPassword),
-        ]);
-
-        try {
-            $to  = $emails[0];
-            $bcc = array_slice($emails, 1);
-            $mailable = new \App\Mail\PemohonCredentialMail(
-                username: $kode,
-                password: $plainPassword,
-                kodePengajuan: $kode
-            );
-            $mailer = Mail::to($to);
-            if (count($bcc) > 0) $mailer->bcc($bcc);
-            $mailer->send($mailable);
-            Log::info('Credential sent', ['kode' => $kode, 'to' => $to, 'bcc' => $bcc]);
-        } catch (\Throwable $e) {
-            Log::error('Gagal kirim credential pemohon', [
-                'kode' => $kode,
-                'emails' => $emails,
-                'err' => $e->getMessage(),
-            ]);
-
-            try { $pemohon->delete(); } catch (\Throwable $t) {}
-            return redirect()->route('pemohon.login.form')
-                ->with('error', 'Gagal mengirim email kredensial. Coba lagi atau hubungi admin.');
-
-        }
-
+    if (!$isPaten && !$isCipta) {
         return redirect()->route('pemohon.login.form')
-            ->with('success', 'Username & password sudah dikirim ke email.');
+            ->with('error', 'Kode tidak valid.');
     }
 
+    $row = $isPaten
+        ? DB::table('paten_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first()
+        : DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
+
+    if (!$row) {
+        return redirect()->route('pemohon.login.form')
+            ->with('error', 'Data pengajuan tidak ditemukan.');
+    }
+
+    $pemohon = Pemohon::where('kode_unik', $kode)->first();
+
+    if (!$pemohon) {
+        return redirect()->route('pemohon.login.form')
+            ->with('error', 'Akun belum dibuat. Silakan submit verifikasi terlebih dahulu.');
+    }
+
+    return redirect()->route('pemohon.login.form')
+        ->with('success', 'Silakan login menggunakan kredensial yang sudah dikirim ke email Anda.');
+}
+
+public function sendCredentialAfterSubmit(string $kode): array
+{
+    $isPaten = DB::table('paten_verifs')->where('no_pendaftaran', $kode)->exists();
+    $isCipta = DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->exists();
+
+    if (!$isPaten && !$isCipta) {
+        return ['ok' => false, 'message' => 'Kode tidak valid.'];
+    }
+
+    $row = $isPaten
+        ? DB::table('paten_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first()
+        : DB::table('hak_cipta_verifs')->where('no_pendaftaran', $kode)->orderByDesc('id')->first();
+
+    if (!$row) {
+        return ['ok' => false, 'message' => 'Data pengajuan tidak ditemukan.'];
+    }
+
+    $emails = $this->collectAllEmailsFromRow($row);
+
+    if (count($emails) === 0) {
+        return ['ok' => false, 'message' => 'Email pemohon/inventor kosong atau tidak valid.'];
+    }
+
+    $pemohon = Pemohon::where('kode_unik', $kode)->first();
+
+    if ($pemohon) {
+        return ['ok' => true, 'message' => 'Akun sudah ada, email tidak dikirim ulang.'];
+    }
+
+    $plainPassword = Str::random(10);
+
+    $pemohon = Pemohon::create([
+        'kode_unik' => $kode,
+        'password'  => Hash::make($plainPassword),
+    ]);
+
+    try {
+        $to  = $emails[0];
+        $bcc = array_slice($emails, 1);
+
+        $mailable = new \App\Mail\PemohonCredentialMail(
+            username: $kode,
+            password: $plainPassword,
+            kodePengajuan: $kode
+        );
+
+        $mailer = Mail::to($to);
+        if (count($bcc) > 0) {
+            $mailer->bcc($bcc);
+        }
+        $mailer->send($mailable);
+
+        Log::info('Credential sent after submit final', [
+            'kode' => $kode,
+            'to'   => $to,
+            'bcc'  => $bcc,
+        ]);
+
+        return ['ok' => true, 'message' => 'Username & password sudah dikirim ke email.'];
+    } catch (\Throwable $e) {
+        Log::error('Gagal kirim credential pemohon setelah submit final', [
+            'kode'   => $kode,
+            'emails' => $emails,
+            'err'    => $e->getMessage(),
+        ]);
+
+        try { $pemohon->delete(); } catch (\Throwable $t) {}
+
+        return ['ok' => false, 'message' => 'Gagal mengirim email kredensial.'];
+    }
+}
     public function login(Request $request)
     {
         $request->validate([
@@ -276,4 +322,38 @@ class PemohonAuthController extends Controller
         return $emails[0] ?? null;
 
     }
+    public function getOwnerEmail(Request $request)
+{
+    $kode = trim((string) $request->query('kode'));
+
+    if ($kode === '') {
+        return response()->json([
+            'ok' => false,
+            'email' => null,
+            'message' => 'Kode unik kosong.'
+        ], 422);
+    }
+
+    $row = DB::table('paten_verifs')
+        ->where('no_pendaftaran', $kode)
+        ->orderByDesc('id')
+        ->first()
+        ?? DB::table('hak_cipta_verifs')
+            ->where('no_pendaftaran', $kode)
+            ->orderByDesc('id')
+            ->first();
+
+    if (!$row) {
+        return response()->json([
+            'ok' => false,
+            'email' => null,
+            'message' => 'Data pengajuan tidak ditemukan.'
+        ], 404);
+    }
+
+    return response()->json([
+        'ok' => true,
+        'email' => $this->getOwnerEmailFromRow($row),
+    ]);
+}
 }
