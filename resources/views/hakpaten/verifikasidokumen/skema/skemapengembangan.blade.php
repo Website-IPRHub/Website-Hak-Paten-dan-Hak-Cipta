@@ -17,6 +17,7 @@
   $judulPaten = data_get($verifSession, 'judul_paten', data_get($isiform, 'judul_invensi', ''));
 @endphp
 
+<div class="section-inner">
 <div class="judul">
   <h2>Skema Penelitian Pengembangan (TKT 7 - 9)</h2>
   <p>Catatan: Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.<br>
@@ -43,7 +44,7 @@
       <div class="field">
         <label class="label">Nama Lengkap <span class="req">*</span></label>
         <input class="input" name="nama_lengkap" placeholder="Masukkan nama lengkap Dosen (Inventor 1)"
-               value="{{ old('nama_lengkap', $draft['nama_lengkap'] ?? $inventor1Nama) }}" required>
+               value="{{ old('nama_lengkap', $draft['nama_lengkap'] ?? $inventor1Nama) }}" required readonly>
         @error('nama_lengkap') <small class="error">{{ $message }}</small> @enderror
       </div>
 
@@ -57,7 +58,7 @@
       <div class="field">
         <label class="label">Judul Paten <span class="req">*</span></label>
         <input class="input" name="judul_paten" placeholder="Masukkan judul paten"
-               value="{{ old('judul_paten', $draft['judul_paten'] ?? ($verif->judul_paten ?? '')) }}" required>
+               value="{{ old('judul_paten', $draft['judul_paten'] ?? ($verif->judul_paten ?? '')) }}" required readonly>
         @error('judul_paten') <small class="error">{{ $message }}</small> @enderror
       </div>
     </div>
@@ -72,7 +73,7 @@
     name="nidn_nip"
     placeholder="Masukkan NIDN/NIP Anda"
     value="{{ old('nidn_nip', $draft['nidn_nip'] ?? ($inventor1Nidn ?: $inventor1NipNim)) }}"
-    required
+    required readonly
 >
                       <small class="nip-warning">
                         NIDN/NIP harus terdiri dari 8 atau 18 digit angka
@@ -82,26 +83,76 @@
 
       <div class="field">
         @php
-  $fakultasValue = old('fakultas', $draft['fakultas'] ?? $inventor1Fakultas);
-@endphp
+          $fakultasValue = old('fakultas', $draft['fakultas'] ?? $inventor1Fakultas);
+        @endphp
+
         <label class="label">Fakultas <span class="req">*</span></label>
-        <select class="input" name="fakultas" required>
-          <option value="" disabled @selected(!$fakultasValue)>-- Pilih Fakultas --</option>
-          <option value="Fakultas Teknik" @selected($fakultasValue=='Fakultas Teknik')>Fakultas Teknik</option>
-          <option value="Fakultas Sains dan Matematika" @selected($fakultasValue=='Fakultas Sains dan Matematika')>Fakultas Sains dan Matematika</option>
-          <option value="Fakultas Kesehatan Masyarakat" @selected($fakultasValue=='Fakultas Kesehatan Masyarakat')>Fakultas Kesehatan Masyarakat</option>
-          <option value="Fakultas Kedokteran" @selected($fakultasValue=='Fakultas Kedokteran')>Fakultas Kedokteran</option>
-          <option value="Fakultas Perikanan dan Ilmu Kelautan" @selected($fakultasValue=='Fakultas Perikanan dan Ilmu Kelautan')>Fakultas Perikanan dan Ilmu Kelautan</option>
-          <option value="Fakultas Peternakan dan Pertanian" @selected($fakultasValue=='Fakultas Peternakan dan Pertanian')>Fakultas Peternakan dan Pertanian</option>
-          <option value="Fakultas Psikologi" @selected($fakultasValue=='Fakultas Psikologi')>Fakultas Psikologi</option>
-          <option value="Fakultas Hukum" @selected($fakultasValue=='Fakultas Hukum')>Fakultas Hukum</option>
-          <option value="Fakultas Ilmu Sosial dan Ilmu Politik" @selected($fakultasValue=='Fakultas Ilmu Sosial dan Ilmu Politik')>Fakultas Ilmu Sosial dan Ilmu Politik</option>
-          <option value="Fakultas Ilmu Budaya" @selected($fakultasValue=='Fakultas Ilmu Budaya')>Fakultas Ilmu Budaya</option>
-          <option value="Fakultas Ekonomi dan Bisnis" @selected($fakultasValue=='Fakultas Ekonomi dan Bisnis')>Fakultas Ekonomi dan Bisnis</option>
-          <option value="Sekolah Vokasi" @selected($fakultasValue=='Sekolah Vokasi')>Sekolah Vokasi</option>
-          <option value="Sekolah Pasca Sarjana" @selected($fakultasValue=='Sekolah Pasca Sarjana')>Sekolah Pasca Sarjana</option>
+
+        {{-- select hanya tampilan --}}
+        <select class="input" disabled>
+          <option value="" disabled @selected(!$fakultasValue)>
+            -- Pilih Fakultas --
+          </option>
+
+          <option value="Fakultas Teknik" @selected($fakultasValue=='Fakultas Teknik')>
+            Fakultas Teknik
+          </option>
+
+          <option value="Fakultas Sains dan Matematika" @selected($fakultasValue=='Fakultas Sains dan Matematika')>
+            Fakultas Sains dan Matematika
+          </option>
+
+          <option value="Fakultas Kesehatan Masyarakat" @selected($fakultasValue=='Fakultas Kesehatan Masyarakat')>
+            Fakultas Kesehatan Masyarakat
+          </option>
+
+          <option value="Fakultas Kedokteran" @selected($fakultasValue=='Fakultas Kedokteran')>
+            Fakultas Kedokteran
+          </option>
+
+          <option value="Fakultas Perikanan dan Ilmu Kelautan" @selected($fakultasValue=='Fakultas Perikanan dan Ilmu Kelautan')>
+            Fakultas Perikanan dan Ilmu Kelautan
+          </option>
+
+          <option value="Fakultas Peternakan dan Pertanian" @selected($fakultasValue=='Fakultas Peternakan dan Pertanian')>
+            Fakultas Peternakan dan Pertanian
+          </option>
+
+          <option value="Fakultas Psikologi" @selected($fakultasValue=='Fakultas Psikologi')>
+            Fakultas Psikologi
+          </option>
+
+          <option value="Fakultas Hukum" @selected($fakultasValue=='Fakultas Hukum')>
+            Fakultas Hukum
+          </option>
+
+          <option value="Fakultas Ilmu Sosial dan Ilmu Politik" @selected($fakultasValue=='Fakultas Ilmu Sosial dan Ilmu Politik')>
+            Fakultas Ilmu Sosial dan Ilmu Politik
+          </option>
+
+          <option value="Fakultas Ilmu Budaya" @selected($fakultasValue=='Fakultas Ilmu Budaya')>
+            Fakultas Ilmu Budaya
+          </option>
+
+          <option value="Fakultas Ekonomi dan Bisnis" @selected($fakultasValue=='Fakultas Ekonomi dan Bisnis')>
+            Fakultas Ekonomi dan Bisnis
+          </option>
+
+          <option value="Sekolah Vokasi" @selected($fakultasValue=='Sekolah Vokasi')>
+            Sekolah Vokasi
+          </option>
+
+          <option value="Sekolah Pasca Sarjana" @selected($fakultasValue=='Sekolah Pasca Sarjana')>
+            Sekolah Pasca Sarjana
+          </option>
         </select>
-        @error('fakultas') <small class="error">{{ $message }}</small> @enderror
+
+        {{-- value asli tetap terkirim --}}
+        <input type="hidden" name="fakultas" value="{{ $fakultasValue }}">
+
+        @error('fakultas')
+          <small class="error">{{ $message }}</small>
+        @enderror
       </div>
 
       <div class="field">
@@ -135,11 +186,11 @@
     <div class="actions-right2" style="display:flex; gap:10px; align-items:center;">
         <select form="downloadForm" name="download_format" class="input" style="width:160px;">
           @php
-  $downloadFormat = old('download_format', $draft['download_format'] ?? 'pdf');
-@endphp
+            $downloadFormat = old('download_format', $draft['download_format'] ?? 'docx');
+          @endphp
 
-<option value="pdf"  {{ $downloadFormat == 'pdf' ? 'selected' : '' }}>PDF</option>
-<option value="docx" {{ $downloadFormat == 'docx' ? 'selected' : '' }}>DOCX</option>
+          <option value="pdf"  {{ $downloadFormat == 'pdf' ? 'selected' : '' }}>PDF</option>
+          <option value="docx" {{ $downloadFormat == 'docx' ? 'selected' : '' }}>DOCX</option>
         </select>
 
         <button form="downloadForm" class="unduh" type="submit" name="action" value="download">
@@ -161,7 +212,7 @@
           required
           hidden
           accept=".doc,.docx,.pdf">
-
+          
     <label for="draftFile" class="btn-upload" id="uploadButtonLabel">Upload</label>
 
     <span id="fileName">
@@ -175,8 +226,22 @@
     @endif
   </form>
 </div>
+
   </div>
 </div>
+</div>
+    <small style="
+  display:block;
+  text-align:right;
+  padding-right:277px;
+  color:#344c7b;
+  font-family:'Inter', sans-serif;
+  font-weight:560;
+  font-size:12px;
+">
+      File yang didukung: DOC/DOCX/PDF • max 10MB
+    </small>
+    <br>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const draftFile = document.getElementById('draftFile');

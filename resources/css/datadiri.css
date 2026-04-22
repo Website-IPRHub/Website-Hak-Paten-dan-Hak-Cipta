@@ -19,13 +19,13 @@ body {
 }
 
 .prototipe-select.sudah {
-  background-color: #e6ddff; 
-  border: 1px solid #b8a2ff;
+  background-color: #c4d4f7; 
+  border: 1px solid #99b7f6;
 }
 
 .prototipe-select.belum {
-  background-color: #fff7fa;
-  border: 1px solid #f3dbe4;
+  background-color: #fbf3d6;
+  border: 1px solid #e5e79a;
   color: #8c6a76;
 }
 
