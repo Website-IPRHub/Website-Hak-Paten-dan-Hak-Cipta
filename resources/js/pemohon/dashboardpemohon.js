@@ -252,3 +252,41 @@ document.addEventListener("change", function (e) {
     }
   }
 });
+
+document.addEventListener("change", function (e) {
+  if (e.target.matches(".js-file-input")) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const maxSize = 10 * 1024 * 1024;
+
+    // CEK SIZE
+    if (file.size > maxSize) {
+      Swal.fire({
+        icon: "error",
+        title: "Ukuran Terlalu Besar",
+        text: "Maksimal file 10MB",
+        confirmButtonColor: "#2563eb"
+      });
+
+      e.target.value = "";
+      return;
+    }
+
+    // CEK FORMAT
+    const allowed = ["pdf", "doc", "docx"];
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    if (!allowed.includes(ext)) {
+      Swal.fire({
+        icon: "error",
+        title: "Format Tidak Didukung",
+        text: "Gunakan file PDF, DOC, atau DOCX.",
+        confirmButtonColor: "#2563eb"
+      });
+
+      e.target.value = "";
+      return;
+    }
+  }
+});

@@ -615,3 +615,5 @@ Route::post('/dup/skema-tkt/{verif}/download', [DuplicateSkemaController::class,
 Route::post('/dup/skema-tkt/{verif}/upload', [DuplicateSkemaController::class, 'uploadDuplicate'])
     ->name('dup.skema.upload');
 
+// email inventor 1
+Route::get('/pemohon/get-owner-email', [PemohonAuthController::class, 'getOwnerEmail']);

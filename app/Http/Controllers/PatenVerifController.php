@@ -590,6 +590,13 @@ public function deskripsiprodukverif(PatenVerif $verif){
 
     session()->forget('verif_id');
 
+    $kode = $verif->no_pendaftaran;
+    $authController = app(\App\Http\Controllers\PemohonAuthController::class);
+    $result = $authController->sendCredentialAfterSubmit($kode);
+    if (!$result['ok']) {
+        return back()->with('error', $result['message']);
+    }
+
     return redirect()
         ->route('patenverif.hasil', ['verif' => $verif->id])
         ->with('success','Verifikasi berhasil dikirim');
