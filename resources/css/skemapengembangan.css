@@ -1,10 +1,19 @@
+.section-inner {
+  padding: 20px 40px;
+}
+
+
 .judul {
-  margin: 20px 40px 10px;
-  h2 { margin: 0 0 6px; }
-  p { margin: 0; opacity: 0.8; }
+  margin: 0px 40px 3px;
+}
+
+.judul h2 {
+  margin: 0 0 6px;
 }
 
 .judul p {
+  margin: 0;
+  opacity: 0.8;
   font-family: 'inter', sans-serif;
   font-size: 15px;
   font-weight: 400;
@@ -17,7 +26,7 @@
 }
 
 .form {
-  margin: 20px 40px;
+  margin: 17px 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -325,4 +334,13 @@ a#nextLink.btn-selanjutnya.is-disabled,
   gap:12px;
   flex-wrap:wrap;
   justify-content:center;
+}
+
+.form-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  border: 1px solid #e5e7eb;
+  margin-top: 30px;
 }
