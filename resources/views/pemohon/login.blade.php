@@ -153,6 +153,7 @@
         <input
           type="text"
           name="username"
+          id="cpUsername"
           class="cp-input"
           value=""
           placeholder="Masukkan kode unik"
@@ -166,13 +167,14 @@
         <input
           type="email"
           name="owner_email"
+          id="cpOwnerEmail"
           class="cp-input"
           value=""
-          placeholder="Masukkan email pemohon utama"
-          autocomplete="off"
+          placeholder="Email pemohon utama"
+          readonly
           required
         >
-        <small class="cp-help">Harus sama dengan email pemohon utama saat pengajuan.</small>
+        <small class="cp-help">Email ini otomatis diambil dari Inventor 1 / pemohon utama.</small>
       </div>
 
       <div class="cp-field">

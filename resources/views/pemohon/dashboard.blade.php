@@ -100,16 +100,39 @@
 
             <div class="pd-step-body">
               <div class="pd-step-title">{{ $s['label'] }}</div>
+              @php
+                $timeMap = [
+                  'terkirim' => $sv->terkirim_at ?? null,
+                  'proses'   => $sv->proses_at ?? null,
+                  'revisi'   => $sv->revisi_at ?? null,
+                  'approve'  => $sv->approve_at ?? null,
+                ];
+
+                $time = $timeMap[$s['key']] ?? null;
+              @endphp
+
               <div class="pd-step-sub">
                 Terakhir diperbarui:
-                {{
-                  (!empty($s['updated_at']) && $s['updated_at'] !== '-')
-                    ? \Carbon\Carbon::parse($s['updated_at'])
-                        ->timezone('Asia/Jakarta')
-                        ->format('d M Y')
-                    : '-'
+                {{ $time 
+                    ? \Carbon\Carbon::parse($time)->timezone('Asia/Jakarta')->format('d M Y') 
+                      . ' • ' . 
+                      \Carbon\Carbon::parse($time)->timezone('Asia/Jakarta')->format('H:i') 
+                    : '-' 
                 }}
               </div>
+              @if($s['key'] === 'approve' && $status === 'approve')
+                <div style="
+                  margin-top:12px;
+                  padding:12px 14px;
+                  background:#eef4ff;
+                  border-left:4px solid #2563eb;
+                  color:#1e3a8a;
+                  font-size:14px;
+                  border-radius:6px;
+                ">
+                  ℹ️ Silakan unduh <b>Tanda Terima</b>, kemudian cetak(print), dan bawa ke <b>Gedung UPT Perpustakaan Lantai 5 </b> sebagai bukti untuk melanjutkan proses selanjutnya.
+                </div>
+              @endif
 
               @if($s['key'] === 'terkirim')
                 @php
@@ -439,17 +462,19 @@
                   @if($revId)
                     @if(!$pemohonUploaded)
                       <form method="POST"
-                          action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
-                          enctype="multipart/form-data"
-                          class="pd-upload-form">
-                      @csrf
+                        action="{{ route('pemohon.uploadRevisi', ['id' => $revId]) }}"
+                        enctype="multipart/form-data"
+                        class="pd-upload-form">
+                    @csrf
 
+                    <div class="upload-revisi-box">
                       <input
                         type="file"
                         name="file"
                         required
                         class="js-file-input hidden-input"
                         id="file-{{ $revId }}"
+                        accept=".pdf,.doc,.docx"
                       >
 
                       <button type="button" class="btn-choose-file">
@@ -457,8 +482,19 @@
                       </button>
 
                       <div class="pd-file-name">Belum pilih file</div>
+                      <div class="upload-hint">
+                      <span class="required">*</span> Format: PDF, DOC, DOCX • Maks. 10 MB
+                    </div>
 
-                      <button type="submit" class="pd-mini-btn">Upload</button>
+                      <button type="submit" class="pd-mini-btn upload-btn">
+                        Upload
+                      </button>
+                      @error('file')
+                        <div class="error-text">{{ $message }}</div>
+                      @enderror
+                    </div>
+
+                    </div>
                     </form>
                     @else
                       <span class="pd-muted">Sudah diupload untuk revisi ini.</span>

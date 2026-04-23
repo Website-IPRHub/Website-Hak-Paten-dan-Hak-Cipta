@@ -17,9 +17,12 @@ class DuplicateFormPendaftaranCiptaanController extends Controller
 
 public function index(Request $request)
 {
-    $ref = $request->query('ref') ?? session('edit_ref_id');
+    
+    $ref = $request->filled('ref')
+    ? $request->query('ref')
+    : session('hakcipta.edit_ref_id');
     if ($ref) {
-        session(['edit_ref_id' => $ref]);
+        session(['hakcipta.edit_ref_id' => $ref]);
     }
 
     $dbData = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
@@ -66,7 +69,7 @@ public function index(Request $request)
     public function store(Request $request)
     {
         $action = $request->input('action', 'download');
-        $refId = $request->input('ref') ?? session('edit_ref_id');
+        $refId = $request->input('ref') ?: session('hakcipta.edit_ref_id');
         $sessionKey = "hakcipta.form.$refId";
 
         $validated = $request->validate([
@@ -140,24 +143,26 @@ public function index(Request $request)
         session()->put("hakcipta.form.$refId", array_merge(
             $existingSpecific,
             [
-                'berupa' => $request->berupa ?? '',
-                'tempat' => $request->tempat ?? '',
-                'uraian' => $request->uraian ?? '',
-                'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+                'link_ciptaan'       => $request->link_ciptaan ?? ($existingSpecific['link_ciptaan'] ?? ''),
+                'berupa'             => $request->berupa ?? ($existingSpecific['berupa'] ?? ''),
+                'tempat'             => $request->tempat ?? ($existingSpecific['tempat'] ?? ''),
+                'uraian'             => $request->uraian ?? ($existingSpecific['uraian'] ?? ''),
+                'tanggal_pengisian'  => $request->tanggal_pengisian ?? ($existingSpecific['tanggal_pengisian'] ?? now()->format('Y-m-d')),
             ]
         ));
 
         session()->put('hakcipta.form', array_merge(
             $existingGlobal,
             [
-                'berupa' => $request->berupa ?? '',
-                'tempat' => $request->tempat ?? '',
-                'uraian' => $request->uraian ?? '',
-                'tanggal_pengisian' => $request->tanggal_pengisian ?? now()->format('Y-m-d'),
+                'link_ciptaan'       => $request->link_ciptaan ?? ($existingGlobal['link_ciptaan'] ?? ''),
+                'berupa'             => $request->berupa ?? ($existingGlobal['berupa'] ?? ''),
+                'tempat'             => $request->tempat ?? ($existingGlobal['tempat'] ?? ''),
+                'uraian'             => $request->uraian ?? ($existingGlobal['uraian'] ?? ''),
+                'tanggal_pengisian'  => $request->tanggal_pengisian ?? ($existingGlobal['tanggal_pengisian'] ?? now()->format('Y-m-d')),
             ]
         ));
 
-    session()->put('edit_ref_id', $refId);
+    session()->put('hakcipta.edit_ref_id', $refId);
 
         if ($action === 'save' && $refId) {
             $formattedInventors = [];

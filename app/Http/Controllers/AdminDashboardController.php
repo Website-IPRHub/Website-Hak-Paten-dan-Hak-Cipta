@@ -786,19 +786,46 @@ class AdminDashboardController extends Controller
         $old = DB::table('status_verifikasi')
             ->where('ref_type', $type)
             ->where('ref_id', $id)
-            ->select('status','created_at','tanda_terima_pdf')
+            ->select(
+                'id',
+                'status',
+                'created_at',
+                'tanda_terima_pdf',
+                'terkirim_at',
+                'proses_at',
+                'revisi_at',
+                'approve_at'
+            )
             ->first();
 
             $oldStatus = $old->status ?? null;
             $createdAt = $old->created_at ?? now();
 
+            $payload = [
+                'status'     => $newStatus,
+                'updated_at' => now(),
+                'created_at' => $createdAt,
+            ];
+
+            if ($newStatus === 'terkirim' && empty($old->terkirim_at)) {
+                $payload['terkirim_at'] = now();
+            }
+
+            if ($newStatus === 'proses' && empty($old->proses_at)) {
+                $payload['proses_at'] = now();
+            }
+
+            if ($newStatus === 'revisi') {
+                $payload['revisi_at'] = now();
+            }
+
+            if ($newStatus === 'approve' && empty($old->approve_at)) {
+                $payload['approve_at'] = now();
+            }
+
             DB::table('status_verifikasi')->updateOrInsert(
                 ['ref_type' => $type, 'ref_id' => $id],
-                [
-                    'status'     => $newStatus,
-                    'updated_at' => now(),
-                    'created_at' => $createdAt,
-                ]
+                $payload
             );
 
             if ($newStatus === 'approve') {
@@ -1172,6 +1199,35 @@ class AdminDashboardController extends Controller
         ['ref_type' => $type, 'ref_id' => $id, 'doc_key' => $docKey],
         $data
     );
+    if ($action === 'revisi') {
+        $oldSv = DB::table('status_verifikasi')
+            ->where('ref_type', $type)
+            ->where('ref_id', $id)
+            ->orderByDesc('id')
+            ->first();
+
+        if ($oldSv) {
+            DB::table('status_verifikasi')
+                ->where('id', $oldSv->id)
+                ->update([
+                    'status'     => 'revisi',
+                    'revisi_at'  => now(),
+                    'updated_at' => now(),
+                ]);
+        } else {
+            DB::table('status_verifikasi')->insert([
+                'ref_type'    => $type,
+                'ref_id'      => $id,
+                'status'      => 'revisi',
+                'terkirim_at' => null,
+                'proses_at'   => null,
+                'revisi_at'   => now(),
+                'approve_at'  => null,
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+        }
+    }
 
         if ($request->expectsJson()) {
             $doc = VerifikasiDokumen::where([
@@ -1317,11 +1373,15 @@ class AdminDashboardController extends Controller
             ];
             }
 
-            $oldSv = DB::table('status_verifikasi')->where(['ref_type'=>$type,'ref_id'=>$id])->first();
+            $oldSv = DB::table('status_verifikasi')
+                ->where(['ref_type' => $type, 'ref_id' => $id])
+                ->first();
+
             DB::table('status_verifikasi')->updateOrInsert(
-                ['ref_type'=>$type,'ref_id'=>$id],
+                ['ref_type' => $type, 'ref_id' => $id],
                 [
-                    'status' => 'revisi',
+                    'status'     => 'revisi',
+                    'revisi_at'  => now(),
                     'updated_at' => now(),
                     'created_at' => $oldSv?->created_at ?? now(),
                 ]
@@ -1746,7 +1806,7 @@ class AdminDashboardController extends Controller
         $doc->saveAs($tmpDocx);
 
         // LibreOffice path
-        $soffice = 'D:\\Program Files\\LibreOffice\\program\\soffice.exe';;
+        $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';;
         if (!file_exists($soffice)) {
             @unlink($tmpDocx);
             throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");
@@ -2257,6 +2317,7 @@ class AdminDashboardController extends Controller
                     ->where('id', $sv->id)
                     ->update([
                         'status'     => 'approve',
+                        'approve_at' => $sv->approve_at ?: now(),
                         'updated_at' => now(),
                     ]);
 
@@ -2336,7 +2397,9 @@ class AdminDashboardController extends Controller
 
         private function markAsProsesWhenViewed(string $type, int $id): void
         {
-            if (!in_array($type, ['paten', 'cipta'], true)) return;
+            if (!in_array($type, ['paten', 'cipta'], true)) {
+                return;
+            }
 
             $sv = DB::table('status_verifikasi')
                 ->where('ref_type', $type)
@@ -2344,18 +2407,29 @@ class AdminDashboardController extends Controller
                 ->orderByDesc('id')
                 ->first();
 
-            $current = strtolower($sv->status ?? 'terkirim');
+            if (!$sv) {
+                DB::table('status_verifikasi')->insert([
+                    'ref_type'    => $type,
+                    'ref_id'      => $id,
+                    'status'      => 'proses',
+                    'proses_at'   => now(),
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ]);
+                return;
+            }
 
-            if ($current !== 'terkirim') return;
+            $current = strtolower((string)($sv->status ?? 'terkirim'));
 
-            DB::table('status_verifikasi')->updateOrInsert(
-                ['ref_type' => $type, 'ref_id' => $id],
-                [
-                    'status'     => 'proses',
-                    'updated_at' => now(),
-                    'created_at' => $sv->created_at ?? now(), // jaga created_at kalau sudah ada
-                ]
-            );
+            if ($current === 'terkirim') {
+                DB::table('status_verifikasi')
+                    ->where('id', $sv->id)
+                    ->update([
+                        'status'     => 'proses',
+                        'proses_at'  => $sv->proses_at ?: now(),
+                        'updated_at' => now(),
+                    ]);
+            }
         }
 
         private function getPemohonPhones($row): array
@@ -2554,4 +2628,4 @@ class AdminDashboardController extends Controller
             );
         }
     }
-
+    

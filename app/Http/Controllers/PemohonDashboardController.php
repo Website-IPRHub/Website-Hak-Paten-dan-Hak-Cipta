@@ -68,16 +68,38 @@ class PemohonDashboardController extends Controller
         ->orderByDesc('id')
         ->first();
 
+    if (!$sv) {
+        DB::table('status_verifikasi')->insert([
+            'ref_type'     => $type,
+            'ref_id'       => $refId,
+            'status'       => 'terkirim',
+            'terkirim_at'  => now(),
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
+
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', $type)
+            ->where('ref_id', $refId)
+            ->orderByDesc('id')
+            ->first();
+    } elseif (empty($sv->terkirim_at)) {
+        DB::table('status_verifikasi')
+            ->where('id', $sv->id)
+            ->update([
+                'terkirim_at' => now(),
+                'updated_at'  => now(),
+            ]);
+
+        $sv = DB::table('status_verifikasi')
+            ->where('id', $sv->id)
+            ->first();
+    }
+
     $status = strtolower($sv->status ?? 'terkirim');
     $activeStatus = $status;
 
     // ambil waktu update
-    $updatedAt = $sv?->updated_at
-        ? Carbon::parse($sv->updated_at)
-        : (isset($source->created_at) ? Carbon::parse($source->created_at) : Carbon::now());
-
-    $updatedStr = $updatedAt->timezone('Asia/Jakarta')->format('d M Y H:i');
-
     $rank = ['terkirim'=>1, 'proses'=>2, 'revisi'=>3, 'approve'=>4];
     $currentRank = $rank[$status] ?? 1;
 
@@ -88,7 +110,36 @@ class PemohonDashboardController extends Controller
         ['key' => 'approve',  'label' => 'APPROVE'],
     ];
 
-    $steps = array_map(function ($s) use ($rank, $currentRank, $updatedStr) {
+    $stepTimes = [
+        'terkirim' => !empty($sv?->terkirim_at)
+            ? Carbon::parse($sv->terkirim_at)->timezone('Asia/Jakarta')->format('d M Y H:i')
+            : '-',
+
+        'proses' => !empty($sv?->proses_at)
+            ? Carbon::parse($sv->proses_at)->timezone('Asia/Jakarta')->format('d M Y H:i')
+            : '-',
+
+        $lastRevisiAt = DB::table('revisions')
+            ->where('type', $type)
+            ->where('ref_id', $refId)
+            ->where('from_role', 'admin')
+            ->where('state', 'requested')
+            ->max('created_at'),
+
+        'revisi' => !empty($sv?->revisi_at)
+            ? Carbon::parse($sv->revisi_at)->timezone('Asia/Jakarta')->format('d M Y H:i')
+            : (
+                !empty($lastRevisiAt)
+                    ? Carbon::parse($lastRevisiAt)->timezone('Asia/Jakarta')->format('d M Y H:i')
+                    : '-'
+            ),
+
+        'approve' => !empty($sv?->approve_at)
+            ? Carbon::parse($sv->approve_at)->timezone('Asia/Jakarta')->format('d M Y H:i')
+            : '-',
+    ];
+
+    $steps = array_map(function ($s) use ($rank, $currentRank, $stepTimes) {
         $stepRank = $rank[$s['key']] ?? 1;
 
         if ($stepRank < $currentRank) $cls = 'is-done';
@@ -98,7 +149,7 @@ class PemohonDashboardController extends Controller
         return [
             'key' => $s['key'],
             'label' => $s['label'],
-            'updated_at' => ($stepRank <= $currentRank) ? $updatedStr : '-',
+            'updated_at' => ($stepRank <= $currentRank) ? ($stepTimes[$s['key']] ?? '-') : '-',
             'cls' => $cls,
         ];
     }, $baseSteps);
@@ -609,11 +660,41 @@ public function updateDeskripsiSingkat(Request $request)
             abort(404, 'Data pengajuan tidak ditemukan.');
         }
 
+        $refId = $source->id;
+
         $sv = DB::table('status_verifikasi')
             ->where('ref_type', $type)
-            ->where('ref_id', $ref)
+            ->where('ref_id', $refId)
             ->orderByDesc('id')
             ->first();
+
+        if (!$sv) {
+            DB::table('status_verifikasi')->insert([
+                'ref_type'     => $type,
+                'ref_id'       => $refId,
+                'status'       => 'terkirim',
+                'terkirim_at'  => now(),
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ]);
+
+            $sv = DB::table('status_verifikasi')
+                ->where('ref_type', $type)
+                ->where('ref_id', $refId)
+                ->orderByDesc('id')
+                ->first();
+        } elseif (empty($sv->terkirim_at)) {
+            DB::table('status_verifikasi')
+                ->where('id', $sv->id)
+                ->update([
+                    'terkirim_at' => now(),
+                    'updated_at'  => now(),
+                ]);
+
+            $sv = DB::table('status_verifikasi')
+                ->where('id', $sv->id)
+                ->first();
+        }
 
         $status = strtolower((string)($sv->status ?? 'terkirim'));
         if ($status !== 'approve') {
@@ -703,7 +784,11 @@ public function updateDeskripsiSingkat(Request $request)
         if (!$pemohon) return redirect()->route('pemohon.login.form');
 
         $request->validate([
-            'file' => 'required|file|max:5120',
+            'file' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ], [
+            'file.required' => 'File wajib diupload.',
+            'file.mimes' => 'Format harus PDF, DOC, atau DOCX.',
+            'file.max' => 'Ukuran file maksimal 10MB.',
         ]);
 
         $reqRow = DB::table('revisions')->where('id', $revisionId)->first();

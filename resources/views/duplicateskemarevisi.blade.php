@@ -3,11 +3,14 @@
 @section('title','Revisi Skema Pengembangan')
 
 @section('content')
+<div class="section-inner">
+  <div class="form-card">
 <div class="judul">
   <h2>Skema Penelitian Pengembangan (TKT 7 - 9)</h2>
   <p>Catatan: Isi form ini untuk menghasilkan surat pernyataan TKT 7-9.<br>
       Form ini diisi oleh Inventor 1 (Dosen)</p>
-<p>Upload surat pernyataan skema pengembangan HARUS sudah dilengkapi dengan tanda tangan dan bermaterai</p>
+  <p>Upload surat pernyataan skema pengembangan HARUS sudah dilengkapi dengan tanda tangan dan bermaterai</p>
+  <p><strong> File yang didukung: DOC/DOCX/PDF • max 10MB</strong></p>
 </div>
 
 @if(session('success'))
@@ -238,4 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+ </div>
+</div>
 @endsection

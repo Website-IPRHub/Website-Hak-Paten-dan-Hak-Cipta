@@ -12,7 +12,7 @@
 @include('isiform.paten.duplicatemenuformulir')
 
 @php
-  $ref = request('ref') ?? session('edit_ref_id');
+  $ref = filled(request('ref')) ? request('ref') : session('edit_ref_id');
   $prefill = $ref 
       ? session("hakpaten.isiform.$ref", session('hakpaten.isiform', [])) 
       : session('hakpaten.isiform', []);
@@ -647,7 +647,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-      </div>
 
       <div class="actions-download">
         {{-- Dropdown tetap berfungsi untuk ganti action form saat klik Download --}}
@@ -659,8 +658,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </select>
 
         <select name="download_format" class="input" style="width:160px;">
-            <option value="pdf">PDF</option>
             <option value="docx">DOCX</option>
+            <option value="pdf">PDF</option>
         </select>
 
         <button type="submit" class="unduh" id="btnDownload">
