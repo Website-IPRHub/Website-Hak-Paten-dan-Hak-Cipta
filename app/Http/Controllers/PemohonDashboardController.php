@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\PatenVerif;
 use App\Models\VerifikasiDokumen;
 use Illuminate\Support\Facades\Storage;
+use App\Services\GoogleSheetService;
 
 class PemohonDashboardController extends Controller
 {
@@ -408,6 +409,42 @@ class PemohonDashboardController extends Controller
             'submittedDocs'
         ));
     }
+
+public function kirimKePendaftaran(Request $request, string $type, int $ref, GoogleSheetService $googleSheetService)
+{
+    $pemohon = Auth::guard('pemohon')->user();
+    if (!$pemohon) {
+        return redirect()->route('pemohon.login.form');
+    }
+
+    if (!in_array($type, ['cipta', 'paten'], true)) {
+        abort(404);
+    }
+
+    if ($type === 'cipta') {
+        $verif = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+        if (!$verif) {
+            abort(404, 'Data pengajuan tidak ditemukan.');
+        }
+
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', 'cipta')
+            ->where('ref_id', $ref)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$sv || strtolower($sv->status ?? '') !== 'approve') {
+            return back()->with('error', 'Pendaftaran hanya bisa dilakukan setelah status APPROVE.');
+        }
+
+        $googleSheetService->kirim($verif);
+
+        return redirect()->away('https://docs.google.com/forms/d/e/1FAIpQLSd2tIsKiNc_QdeMyXUHM4Aqb5daA8vZSCf2emeGdG7sYtDacg/viewform');
+    }
+
+    // nanti kalau paten ada service-nya, bisa dipisah di sini
+    return back()->with('error', 'Flow pendaftaran untuk paten belum dibuat.');
+}
 
     public function editRevisi(Request $request)
     {

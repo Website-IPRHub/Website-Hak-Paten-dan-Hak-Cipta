@@ -645,15 +645,11 @@
                   {{-- PENDAFTARAN --}}
                   @if($isApprove)
                     <a
-                      href="{{ $pengajuan->type === 'cipta'
-                              ? 'https://docs.google.com/forms/d/e/1FAIpQLSd2tIsKiNc_QdeMyXUHM4Aqb5daA8vZSCf2emeGdG7sYtDacg/viewform'
-                              : 'https://docs.google.com/forms/d/e/1FAIpQLScPxGrDYcArCH81GFcAx_guFztjEdd__UypVnDKBMNtB16A4w/viewform' }}"
-                      class="pd-mini-btn outline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Pendaftaran
-                    </a>
+  href="{{ route('pemohon.pendaftaran.kirim', ['type' => $pengajuan->type, 'ref' => $pengajuan->id]) }}"
+  class="pd-mini-btn outline"
+>
+  Pendaftaran
+</a>
                   @else
                     <button class="pd-mini-btn outline" disabled>
                       Pendaftaran

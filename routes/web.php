@@ -183,6 +183,9 @@ Route::get('/pemohon/paten/edit-deskripsi-singkat', [PemohonDashboardController:
 Route::post('/pemohon/paten/edit-deskripsi-singkat', [PemohonDashboardController::class, 'updateDeskripsiSingkat'])
     ->name('pemohon.paten.update_deskripsi');
 
+
+    Route::get('/pemohon/pendaftaran/{type}/{ref}', [PemohonDashboardController::class, 'kirimKePendaftaran'])
+    ->name('pemohon.pendaftaran.kirim');
 /*s
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
