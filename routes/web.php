@@ -620,3 +620,12 @@ Route::post('/dup/skema-tkt/{verif}/upload', [DuplicateSkemaController::class, '
 
 // email inventor 1
 Route::get('/pemohon/get-owner-email', [PemohonAuthController::class, 'getOwnerEmail']);
+
+//pendaftaran sukses
+Route::get('/pemohon/pendaftaran/{type}/{ref}/sukses', [PemohonDashboardController::class, 'pendaftaranSukses'])
+    ->name('pemohon.pendaftaran.sukses');
+
+use App\Http\Controllers\GoogleAuthController;
+
+Route::get('/google/auth', [GoogleAuthController::class, 'redirect'])->name('google.auth');
+Route::get('/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');

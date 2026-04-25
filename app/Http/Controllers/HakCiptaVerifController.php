@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\GoogleSheetService;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class HakCiptaVerifController extends Controller
 {
@@ -428,87 +429,89 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
 
     public function uploadSuratPermohonan(Request $request, HakCiptaVerif $verif)
     {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
-        ]);
+       $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
+    ]);
 
-        $path = $this->storeUploadedOriginalName($request, 'verif/surat_permohonan');
-        $verif->update(['surat_permohonan' => $path]);
+    $path = $this->storeUploadedOriginalName($request, 'verif/surat_permohonan');
+    $verif->update(['surat_permohonan' => $path]);
 
-        return redirect()
-    ->route('ciptaverif.all', ['verif' => $verif->id])
-    ->with('success', 'Surat Permohonan berhasil diupload');
-    }
+    return redirect()
+        ->route('ciptaverif.all', ['verif' => $verif->id])
+        ->with('success', 'Surat Permohonan berhasil diupload');
+}
+
 
     public function uploadSuratPernyataan(Request $request, HakCiptaVerif $verif)
     {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
-        ]);
+         $request->validate([
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
+    ]);
 
-        $path = $this->storeUploadedOriginalName($request, 'verif/surat_pernyataan');
-        $verif->update(['surat_pernyataan' => $path]);
+    $path = $this->storeUploadedOriginalName($request, 'verif/surat_pernyataan');
+    $verif->update(['surat_pernyataan' => $path]);
 
-        return redirect()
-    ->route('ciptaverif.all', ['verif' => $verif->id])
-    ->with('success', 'Surat Pernyataan berhasil diupload');
-    }
+    return redirect()
+        ->route('ciptaverif.all', ['verif' => $verif->id])
+        ->with('success', 'Surat Pernyataan berhasil diupload');
+}
 
     public function uploadSuratPengalihan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
-        ]);
+        'file' => ['required', 'file', 'mimes:doc,docx,pdf', 'max:10240'],
+    ]);
 
-        $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
-        $verif->update(['surat_pengalihan' => $path]);
+    $path = $this->storeUploadedOriginalName($request, 'verif/surat_pengalihan');
+    $verif->update(['surat_pengalihan' => $path]);
 
-        return redirect()
-    ->route('ciptaverif.all', ['verif' => $verif->id])
-    ->with('success', 'Surat Pengalihan berhasil diupload');
-    }
+    return redirect()
+        ->route('ciptaverif.all', ['verif' => $verif->id])
+        ->with('success', 'Surat Pengalihan berhasil diupload');
+}
 
     public function uploadTandaTerima(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
-        ]);
+        'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+    ]);
 
-        $path = $this->storeUploadedOriginalName($request, 'verif/tanda_terima');
-        $verif->update(['tanda_terima' => $path]);
+    $path = $this->storeUploadedOriginalName($request, 'verif/tanda_terima');
+    $verif->update(['tanda_terima' => $path]);
 
-        return redirect()
-    ->route('ciptaverif.all', ['verif' => $verif->id])
-    ->with('success', 'Tanda terima berhasil diupload');
-    }
+    return redirect()
+        ->route('ciptaverif.all', ['verif' => $verif->id])
+        ->with('success', 'Tanda terima berhasil diupload');
+}
+
 
     public function uploadKTP(Request $request, HakCiptaVerif $verif)
     {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
-        ]);
+       $request->validate([
+        'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+    ]);
 
-        $path = $this->storeUploadedOriginalName($request, 'verif/scan_ktp');
-        $verif->update(['scan_ktp' => $path]);
+    $path = $this->storeUploadedOriginalName($request, 'verif/scan_ktp');
+    $verif->update(['scan_ktp' => $path]);
 
-        return redirect()
-    ->route('ciptaverif.all', ['verif' => $verif->id])
-    ->with('success', 'Scan KTP berhasil diupload');
-    }
+    return redirect()
+        ->route('ciptaverif.all', ['verif' => $verif->id])
+        ->with('success', 'Scan KTP berhasil diupload');
+}
 
     public function uploadHasilCiptaan(Request $request, HakCiptaVerif $verif)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:png,jpg,jpeg,svg,pdf', 'max:10240'],
-        ]);
+        'file' => ['required', 'file', 'mimes:png,jpg,jpeg,svg,pdf', 'max:10240'],
+    ]);
 
-        $path = $this->storeUploadedOriginalName($request, 'verif/hasil_ciptaan');
-        $verif->update(['hasil_ciptaan' => $path]);
+    $path = $this->storeUploadedOriginalName($request, 'verif/hasil_ciptaan');
+    $verif->update(['hasil_ciptaan' => $path]);
 
-        return redirect()
-    ->route('ciptaverif.all', ['verif' => $verif->id])
-    ->with('success', 'Hasil ciptaan berhasil diupload');
-    }
+    return redirect()
+        ->route('ciptaverif.all', ['verif' => $verif->id])
+        ->with('success', 'Hasil ciptaan berhasil diupload');
+}
 
     public function saveLinkCiptaan(Request $request, HakCiptaVerif $verif)
     {
@@ -612,8 +615,34 @@ session()->put("hakcipta.form.{$verif->id}", array_merge(
 
         $original = $file->getClientOriginalName();
         $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
-
+        
         return $file->storeAs($dir, $safeName, 'public');
+    }
+
+    private function uploadToDriveAndUpdate(
+        HakCiptaVerif $verif,
+        Request $request,
+        string $dir,
+        string $fileColumn,
+        string $driveUrlColumn,
+        string $successMessage
+    ) {
+        $path = $this->storeUploadedOriginalName($request, $dir);
+
+        $absolutePath = Storage::disk('public')->path($path);
+        $fileName = basename($path);
+
+        $driveService = app(\App\Services\GoogleDriveOAuthService::class);
+        $driveUrl = $driveService->uploadFile($absolutePath, $fileName);
+
+        $verif->update([
+            $fileColumn => $path,
+            $driveUrlColumn => $driveUrl,
+        ]);
+
+        return redirect()
+            ->route('ciptaverif.all', ['verif' => $verif->id])
+            ->with('success', $successMessage);
     }
 
     private function generateNoPendaftaranVerif(): string

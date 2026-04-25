@@ -473,7 +473,10 @@
 
                           <div style="margin-top:6px;">
                             <label style="font-size:12px;">Upload file revisi admin (opsional)</label>
-                            <input type="file" name="admin_attachment">
+                            <input type="file" name="admin_attachment" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            <div style="margin-top:4px; font-size:11px; color:#6b7280;">
+                              Format file: PDF, DOC, DOCX, JPG, JPEG, PNG • Maksimal 10 MB
+                            </div>
                           </div>
 
                           <button type="submit" class="btn-mini" style="margin-top:6px;">Simpan Revisi</button>
