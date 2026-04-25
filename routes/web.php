@@ -629,3 +629,7 @@ use App\Http\Controllers\GoogleAuthController;
 
 Route::get('/google/auth', [GoogleAuthController::class, 'redirect'])->name('google.auth');
 Route::get('/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+
+Route::get('/login', function () {
+    return redirect('/pemohon/login');
+})->name('login');

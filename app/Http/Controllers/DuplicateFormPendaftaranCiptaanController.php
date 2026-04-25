@@ -225,8 +225,8 @@ public function index(Request $request)
         }
 
         // Convert PDF
-        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
-        if (!file_exists($soffice)) $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) $soffice = 'D:\Program Files (x86)\LibreOffice\program\soffice.exe';
         
         $outDir = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
