@@ -1091,7 +1091,7 @@ class AdminDashboardController extends Controller
             'doc_key' => 'required|string|max:100',
             'action'  => 'required|in:ok,revisi,pending',
             'note'    => 'nullable|string',
-            'admin_attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            'admin_attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
         ]);
 
         $docKey = $request->input('doc_key');
@@ -1199,35 +1199,6 @@ class AdminDashboardController extends Controller
         ['ref_type' => $type, 'ref_id' => $id, 'doc_key' => $docKey],
         $data
     );
-    if ($action === 'revisi') {
-        $oldSv = DB::table('status_verifikasi')
-            ->where('ref_type', $type)
-            ->where('ref_id', $id)
-            ->orderByDesc('id')
-            ->first();
-
-        if ($oldSv) {
-            DB::table('status_verifikasi')
-                ->where('id', $oldSv->id)
-                ->update([
-                    'status'     => 'revisi',
-                    'revisi_at'  => now(),
-                    'updated_at' => now(),
-                ]);
-        } else {
-            DB::table('status_verifikasi')->insert([
-                'ref_type'    => $type,
-                'ref_id'      => $id,
-                'status'      => 'revisi',
-                'terkirim_at' => null,
-                'proses_at'   => null,
-                'revisi_at'   => now(),
-                'approve_at'  => null,
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ]);
-        }
-    }
 
         if ($request->expectsJson()) {
             $doc = VerifikasiDokumen::where([
@@ -1806,7 +1777,7 @@ class AdminDashboardController extends Controller
         $doc->saveAs($tmpDocx);
 
         // LibreOffice path
-        $soffice = 'D:\\Program Files\\LibreOffice\\program\\soffice.exe';;
+        $soffice = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';;
         if (!file_exists($soffice)) {
             @unlink($tmpDocx);
             throw new \Exception("LibreOffice (soffice.exe) tidak ditemukan: {$soffice}");

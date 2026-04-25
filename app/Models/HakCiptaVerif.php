@@ -8,7 +8,7 @@ class HakCiptaVerif extends Model
 {
     protected $table = 'hak_cipta_verifs';
 
-    protected $fillable = [
+     protected $fillable = [
         'no_pendaftaran',
         'jenis_cipta',
         'judul_cipta',
@@ -29,6 +29,13 @@ class HakCiptaVerif extends Model
         'link_ciptaan',
         'status',
         'inventors',
+
+        'surat_permohonan_drive_url',
+        'surat_pernyataan_drive_url',
+        'surat_pengalihan_drive_url',
+        'tanda_terima_drive_url',
+        'scan_ktp_drive_url',
+        'hasil_ciptaan_drive_url',
     ];
 
     protected $casts = [

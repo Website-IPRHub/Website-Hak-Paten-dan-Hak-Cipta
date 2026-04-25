@@ -437,14 +437,80 @@ public function kirimKePendaftaran(Request $request, string $type, int $ref, Goo
             return back()->with('error', 'Pendaftaran hanya bisa dilakukan setelah status APPROVE.');
         }
 
+        $driveService = app(\App\Services\GoogleDriveOAuthService::class);
+
+        $driveMap = [
+            'surat_permohonan' => 'surat_permohonan_drive_url',
+            'surat_pernyataan' => 'surat_pernyataan_drive_url',
+            'surat_pengalihan' => 'surat_pengalihan_drive_url',
+            'tanda_terima'     => 'tanda_terima_drive_url',
+            'scan_ktp'         => 'scan_ktp_drive_url',
+            'hasil_ciptaan'    => 'hasil_ciptaan_drive_url',
+        ];
+
+        $updateData = [];
+
+        foreach ($driveMap as $fileColumn => $driveColumn) {
+            $filePath = $verif->$fileColumn ?? null;
+            $existingDriveUrl = $verif->$driveColumn ?? null;
+
+            if (!$existingDriveUrl && $filePath) {
+                $relativePath = ltrim((string) $filePath, '/');
+                $relativePath = preg_replace('#^storage/#', '', $relativePath);
+
+                if (Storage::disk('public')->exists($relativePath)) {
+            $absolutePath = Storage::disk('public')->path($relativePath);
+                    $fileName = basename($absolutePath);
+
+                    $driveUrl = $driveService->uploadFile($absolutePath, $fileName);
+                    $updateData[$driveColumn] = $driveUrl;
+                }
+            }
+        }
+
+        if (!empty($updateData)) {
+            $updateData['updated_at'] = now();
+
+            DB::table('hak_cipta_verifs')
+                ->where('id', $ref)
+                ->update($updateData);
+
+            $verif = DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+        }
+
         $googleSheetService->kirim($verif);
 
-        return redirect()->away('https://docs.google.com/forms/d/e/1FAIpQLSd2tIsKiNc_QdeMyXUHM4Aqb5daA8vZSCf2emeGdG7sYtDacg/viewform');
+        return redirect()->route('pemohon.pendaftaran.sukses', [
+            'type' => $type,
+            'ref'  => $ref,
+        ]);
     }
 
-    // nanti kalau paten ada service-nya, bisa dipisah di sini
-    return back()->with('error', 'Flow pendaftaran untuk paten belum dibuat.');
+    if ($type === 'paten') {
+        $verif = DB::table('paten_verifs')->where('id', $ref)->first();
+        if (!$verif) {
+            abort(404, 'Data pengajuan tidak ditemukan.');
+        }
+
+        $sv = DB::table('status_verifikasi')
+            ->where('ref_type', 'paten')
+            ->where('ref_id', $ref)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$sv || strtolower($sv->status ?? '') !== 'approve') {
+            return back()->with('error', 'Pendaftaran hanya bisa dilakukan setelah status APPROVE.');
+        }
+
+        return redirect()->route('pemohon.pendaftaran.sukses', [
+            'type' => $type,
+            'ref'  => $ref,
+        ]);
+    }
+
+    return back()->with('error', 'Tipe pengajuan tidak valid.');
 }
+
 
     public function editRevisi(Request $request)
     {
@@ -872,7 +938,6 @@ public function updateDeskripsiSingkat(Request $request)
 
     $path = $file->storeAs($dir, $finalName, 'public');
             $fullPathForDb = 'storage/' . $path; 
-    $tableName = ($reqRow->type === 'paten') ? 'paten_verifs' : 'hak_cipta_verifs';
 
     $targetColumn = $reqRow->doc_key;
 
@@ -880,10 +945,13 @@ public function updateDeskripsiSingkat(Request $request)
         $targetColumn = 'skema_tkt_template_path';
     }
 
-    DB::table($tableName)->where('id', $reqRow->ref_id)->update([
-        $targetColumn => $fullPathForDb, 
+
+    $updateData = [
+        $targetColumn => $fullPathForDb,
         'updated_at'  => now(),
-    ]);
+    ];
+
+    DB::table($tableName)->where('id', $reqRow->ref_id)->update($updateData);
             // 1) tutup request admin
             DB::table('revisions')->where('id', $revisionId)->update([
                 'state'          => 'closed',
@@ -916,5 +984,33 @@ public function updateDeskripsiSingkat(Request $request)
             DB::rollBack();
             throw $e;
         }
+    }
+    public function pendaftaranSukses(Request $request, string $type, int $ref)
+    {
+        $pemohon = Auth::guard('pemohon')->user();
+        if (!$pemohon) {
+            return redirect()->route('pemohon.login.form');
+        }
+
+        if (!in_array($type, ['cipta', 'paten'], true)) {
+            abort(404);
+        }
+
+        $source = $type === 'paten'
+            ? PatenVerif::where('id', $ref)->first()
+            : DB::table('hak_cipta_verifs')->where('id', $ref)->first();
+
+        if (!$source) {
+            abort(404, 'Data pengajuan tidak ditemukan.');
+        }
+
+        return view('pemohon.pendaftaransukses', [
+            'type' => $type,
+            'ref' => $ref,
+            'judul' => $type === 'paten'
+                ? ($source->judul_paten ?? '-')
+                : ($source->judul_cipta ?? '-'),
+            'no_pendaftaran' => $source->no_pendaftaran ?? '-',
+        ]);
     }
 }

@@ -47,28 +47,15 @@ class GoogleSheetService
             return ($revisiLatest[$key] ?? collect())->first();
         };
 
-        $suratPermohonan = $getRev('surat_permohonan');
-        $suratPernyataan = $getRev('surat_pernyataan');
-        $suratPengalihan = $getRev('surat_pengalihan');
-        $tandaTerima     = $getRev('tanda_terima');
-        $scanKtp         = $getRev('scan_ktp');
-        $hasilCiptaan    = $getRev('hasil_ciptaan');
-        $linkCiptaan     = $getRev('link_ciptaan');
+        $linkCiptaan = $getRev('link_ciptaan');
+        $linkCiptaanValue = $linkCiptaan?->pemohon_text ?: $verif->link_ciptaan;
 
-        $suratPermohonanPath = $suratPermohonan?->pemohon_file_path ?: $verif->surat_permohonan;
-        $suratPernyataanPath = $suratPernyataan?->pemohon_file_path ?: $verif->surat_pernyataan;
-        $suratPengalihanPath = $suratPengalihan?->pemohon_file_path ?: $verif->surat_pengalihan;
-        $tandaTerimaPath     = $tandaTerima?->pemohon_file_path ?: $verif->tanda_terima;
-        $scanKtpPath         = $scanKtp?->pemohon_file_path ?: $verif->scan_ktp;
-        $hasilCiptaanPath    = $hasilCiptaan?->pemohon_file_path ?: $verif->hasil_ciptaan;
-        $linkCiptaanValue    = $linkCiptaan?->pemohon_text ?: $verif->link_ciptaan;
-
-        $toPublicUrl = function ($path) {
-            if (!$path) return '';
-            $path = ltrim((string) $path, '/');
-            $path = preg_replace('#^storage/#', '', $path);
-            return asset('storage/' . $path);
-        };
+        $suratPermohonanUrl = (string) ($verif->surat_permohonan_drive_url ?? '');
+        $suratPernyataanUrl = (string) ($verif->surat_pernyataan_drive_url ?? '');
+        $suratPengalihanUrl = (string) ($verif->surat_pengalihan_drive_url ?? '');
+        $tandaTerimaUrl     = (string) ($verif->tanda_terima_drive_url ?? '');
+        $scanKtpUrl         = (string) ($verif->scan_ktp_drive_url ?? '');
+        $hasilCiptaanUrl    = (string) ($verif->hasil_ciptaan_drive_url ?? '');
 
         $inventors = is_string($verif->inventors)
             ? json_decode($verif->inventors, true) ?? []
@@ -92,12 +79,12 @@ class GoogleSheetService
             (string) $verif->nilai_perolehan,
             (string) $verif->sumber_dana,
             (string) $verif->skema_penelitian,
-            $toPublicUrl($suratPermohonanPath),
-            $toPublicUrl($suratPernyataanPath),
-            $toPublicUrl($suratPengalihanPath),
-            $toPublicUrl($tandaTerimaPath),
-            $toPublicUrl($scanKtpPath),
-            $toPublicUrl($hasilCiptaanPath),
+            $suratPermohonanUrl,
+            $suratPernyataanUrl,
+            $suratPengalihanUrl,
+            $tandaTerimaUrl,
+            $scanKtpUrl,
+            $hasilCiptaanUrl,
             (string) $linkCiptaanValue,
         ]];
 
