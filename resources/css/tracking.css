@@ -1,35 +1,68 @@
-.tracking-box h2{
-  font-family: 'inter', sans-serif;
+.tracking-page .section-inner{
+  display: block !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+.tracking-page .tracking-box{
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 30px 40px !important;
+  text-align: left !important;
+}
+
+.tracking-page .tracking-box h2{
+  font-family: 'Inter', sans-serif;
   font-weight: 650;
   color: #000;
   font-size: 20px;
-  margin: 0;  
-  margin-left: 25px;    
-  margin-top: 30px;    
+  margin: 0 0 24px 0 !important;
+  text-align: left !important;
 }
 
-.tracking-form{
-  margin: 12px 0;
-  margin-left: 25px;    
-  margin-top: 30px;    
-
+.tracking-page .tracking-form{
+  margin: 0 0 28px 0 !important;
 }
 
-.tracking-btn{
-  margin-top: 10px;
-  margin-left: 10px;
-  
+.tracking-page .tracking-form.horizontal{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 650px;
 }
 
-.timeline{
+.tracking-page .tracking-input{
+  flex: 1;
+}
+
+.tracking-page .tracking-box{
+  text-align: left !important;
+}
+
+.tracking-page .tracking-content{
+  width: 720px;
+  max-width: 100%;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  text-align: left !important;
+}
+
+.tracking-page .tracking-btn{
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+.tracking-page .timeline{
   position: relative;
   margin-top: 18px;
-  padding-left: 50px; 
+  padding-left: 50px;
+  max-width: 700px;
 }
 
-.timeline-line{
+.tracking-page .timeline-line{
   position: absolute;
-  left: 25px;  
+  left: 25px;
   top: 6px;
   bottom: 6px;
   width: 6px;
@@ -37,16 +70,16 @@
   border-radius: 999px;
 }
 
-.timeline-item{
+.tracking-page .timeline-item{
   display: flex;
-  align-items: flex-start; 
+  align-items: flex-start;
   gap: 18px;
   margin-bottom: 22px;
   position: relative;
 }
 
-.timeline-dot{
-  position: relative;    
+.tracking-page .timeline-dot{
+  position: relative;
   flex: 0 0 26px;
   width: 26px;
   height: 26px;
@@ -54,29 +87,30 @@
   border: 6px solid transparent;
   background: #fff;
   box-sizing: border-box;
-
-  margin-top: 23px;        
+  margin-top: 23px;
 }
 
-
-.timeline-dot.done{
-  border-color: #2563eb; 
-}
-.timeline-dot.doing{
-  border-color: #f59e0b; 
-}
-.timeline-dot.todo{
-  border-color: #ef4444; 
+.tracking-page .timeline-dot.done{
+  border-color: #2563eb;
 }
 
-.timeline-card{
+.tracking-page .timeline-dot.doing{
+  border-color: #f59e0b;
+}
+
+.tracking-page .timeline-dot.todo{
+  border-color: #ef4444;
+}
+
+.tracking-page .timeline-card{
   width: 100%;
   padding: 14px 16px;
   border-radius: 14px;
   background: #fff;
+  text-align: left !important;
 }
 
-.timeline-title{
+.tracking-page .timeline-title{
   font-weight: 600;
   letter-spacing: .3px;
   font-size: 20px;
@@ -84,23 +118,24 @@
   font-family: 'Times New Roman', Times, serif;
 }
 
-.timeline-time{
+.tracking-page .timeline-time{
   font-size: 14px;
   font-weight: 600;
   color: #8e8c8c;
   margin-bottom: 10px;
 }
 
-.legend{
+.tracking-page .legend{
   margin-top: 18px;
+  margin-left: 50px !important;
   display: flex;
   gap: 18px;
   align-items: center;
   flex-wrap: wrap;
-  margin-left: 90px;
+  max-width: 700px;
 }
 
-.legend span{
+.tracking-page .legend span{
   display: inline-flex;
   gap: 10px;
   align-items: center;
@@ -108,7 +143,7 @@
   color: #111827;
 }
 
-.legend .lg{
+.tracking-page .legend .lg{
   width: 18px;
   height: 18px;
   border-radius: 6px;
@@ -118,31 +153,19 @@
   box-sizing: border-box;
 }
 
-.legend .done{ border-color:#2563eb; }
-.legend .doing{ border-color:#f59e0b; }
-.legend .todo{ border-color:#ef4444; }
-
-
-.tracking-form.horizontal {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.tracking-page .legend .done{
+  border-color:#2563eb;
 }
 
-.tracking-input {
-  flex: 1;
+.tracking-page .legend .doing{
+  border-color:#f59e0b;
 }
 
-.tracking-btn {
-  white-space: nowrap;
-}
-.swal-popup{
-  border-radius: 18px !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,.18) !important;
-  font-family: "Poppins", sans-serif !important;
+.tracking-page .legend .todo{
+  border-color:#ef4444;
 }
 
-.btn-back{
+.tracking-page .btn-back{
   width: 40px;
   height: 40px;
   display: inline-flex;
@@ -154,17 +177,24 @@
   cursor: pointer;
   text-decoration: none;
   transition: transform .08s ease, background .15s ease;
+  margin-bottom: 20px;
 }
 
-.btn-back i{
+.tracking-page .btn-back i{
   font-size: 16px;
-  color: #2563eb; /* biru tema */
+  color: #2563eb;
 }
 
-.btn-back:hover{
+.tracking-page .btn-back:hover{
   background: rgba(37,99,235,.08);
 }
 
-.btn-back:active{
+.tracking-page .btn-back:active{
   transform: translateY(1px);
+}
+
+.tracking-page .swal-popup{
+  border-radius: 18px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18) !important;
+  font-family: "Poppins", sans-serif !important;
 }
