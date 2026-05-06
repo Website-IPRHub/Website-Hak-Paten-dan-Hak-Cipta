@@ -323,10 +323,10 @@
                     <option value="Mahasiswa">Mahasiswa</option>
                   </select>
                 </div>
-                <input type="hidden" name="inventor[nik][]">
-<input type="hidden" name="inventor[alamat][]">
-<input type="hidden" name="inventor[kode_pos][]">
-<input type="hidden" name="inventor[tlp_rumah][]">
+                <input type="hidden" name="inventor[nik][]" value="0000000000000000">
+<input type="hidden" name="inventor[alamat][]" value="-">
+<input type="hidden" name="inventor[kode_pos][]" value="-">
+<input type="hidden" name="inventor[tlp_rumah][]" value="-">
               </div>
             </div>
           </div>

@@ -502,6 +502,8 @@ public function kirimKePendaftaran(Request $request, string $type, int $ref, Goo
             return back()->with('error', 'Pendaftaran hanya bisa dilakukan setelah status APPROVE.');
         }
 
+        $googleSheetService->kirimPaten($verif);
+
         return redirect()->route('pemohon.pendaftaran.sukses', [
             'type' => $type,
             'ref'  => $ref,

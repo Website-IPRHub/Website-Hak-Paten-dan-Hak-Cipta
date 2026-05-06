@@ -187,7 +187,7 @@
     {{-- tombol unduh submit ke form download --}}
     
     <div class="actions-right2" style="display:flex; gap:10px; align-items:center;">
-        <select form="downloadForm" name="download_format" class="input" style="width:160px;">
+        <select form="downloadForm" name="download_format" class="input" style="width:100px;">
           @php
             $downloadFormat = old('download_format', $draft['download_format'] ?? 'docx');
           @endphp
