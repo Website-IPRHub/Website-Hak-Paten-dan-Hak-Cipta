@@ -465,16 +465,19 @@ $verifSession = session('hakpaten.verif', []);
                     <div class="field">
                       <label class="label">No. HP <span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[no_hp][]" placeholder="08xxxxxxxxxx" required readonly>
+                      <small class="hp-warning">Nomor HP tidak valid (contoh: 081234567890)</small>
                     </div>
 
                     <div class="field">
                       <label class="label">Email <span class="req">*</span></label>
                       <input type="email" class="input" name="inventor[email][]" placeholder="nama@email.com" required readonly>
+                      <small class="email-warning">Format email tidak valid</small>
                     </div>
 
                     <div class="field nidn-field" style="display:none;">
                       <label class="label">NIDN <span class="req">*</span></label>
                       <input type="text" class="input" name="inventor[nidn][]" placeholder="Masukkan NIDN" readonly>
+                      <small class="nidn-warning">NIDN harus 8 karakter</small>
                     </div>
 
                     <div class="field">

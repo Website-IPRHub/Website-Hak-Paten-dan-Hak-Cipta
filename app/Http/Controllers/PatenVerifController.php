@@ -18,6 +18,13 @@ class PatenVerifController extends Controller
 
         $jumlah = (int) $request->input('jumlah_inventor', 1);
         $jumlah = max(1, min(20, $jumlah));
+
+        $action = $request->input('action', 'next');
+
+        if ($action === 'prev') {
+            return redirect()->route('hakpaten.isiformulir');
+        }
+
         $messages = [
             'inventor.nip_nim.*.regex' => 'NIP/NIM harus terdiri dari 14 atau 18 karakter',
             'inventor.no_hp.*.regex'   => 'Nomor HP harus diawali 08 dan hanya angka',
@@ -67,10 +74,6 @@ class PatenVerifController extends Controller
         ]);
 
         $action = $request->input('action', 'next');
-
-if ($action === 'prev') {
-    return redirect()->route('hakpaten.isiformulir');
-}
 
         if (($validated['inventor']['status'][0] ?? null) !== 'Dosen') {
             return back()->withErrors([
