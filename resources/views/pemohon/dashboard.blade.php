@@ -197,7 +197,7 @@
           <tr>
             <th style="width:60px;">No</th>
             <th style="width:40%;">Nama Dokumen</th>
-            <th>File / Teks</th>
+            <th>File</th>
           </tr>
         </thead>
 
@@ -645,11 +645,11 @@
                   {{-- PENDAFTARAN --}}
                   @if($isApprove)
                     <a
-  href="{{ route('pemohon.pendaftaran.kirim', ['type' => $pengajuan->type, 'ref' => $pengajuan->id]) }}"
-  class="pd-mini-btn outline"
->
-  Pendaftaran
-</a>
+                      href="{{ route('pemohon.pendaftaran.kirim', ['type' => $pengajuan->type, 'ref' => $pengajuan->id]) }}"
+                      class="pd-mini-btn outline btnPendaftaran"
+                    >
+                      Pendaftaran
+                    </a>
                   @else
                     <button class="pd-mini-btn outline" disabled>
                       Pendaftaran

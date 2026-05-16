@@ -78,7 +78,6 @@ public function index(Request $request)
         'jenis_cipta_lainnya'    => ['nullable', 'string', 'max:255'],
         'judul_ciptaan'          => ['required', 'string', 'max:255'],
         'link_ciptaan'           => ['required', 'url'],
-        'berupa'                 => ['required', 'string', 'max:255'],
         'tanggal_pengisian'      => ['required', 'date'],
         'tempat'                 => ['required', 'string', 'max:100'],
         'uraian'                 => ['required', 'string', 'max:350'],
@@ -203,10 +202,12 @@ public function index(Request $request)
         $tp->setValue('judul_ciptaan', $this->val($request->judul_ciptaan));
         $tp->setValue('link_ciptaan', $this->val($request->link_ciptaan));
         $tp->setValue('uraian', $this->val($request->uraian));
-        $tp->setValue('tempat', $this->val($request->tempat));
-        
-        $tgl = Carbon::parse($request->tanggal_pengisian)->locale('id')->translatedFormat('d F Y');
-        $tp->setValue('tanggal_terbit', $tgl);
+        $tgl = Carbon::parse($request->tanggal_pertama)
+    ->locale('id')
+    ->translatedFormat('d F Y');
+
+$tp->setValue('tempatpertama', $this->val($request->tempatpertama));
+$tp->setValue('tanggal_pertama', $tgl);
 
         $names = array_map(fn($n) => $this->val($n), $request->inventor['nama'] ?? []);
         $namaGabung = implode(', ', array_filter($names));
@@ -225,8 +226,8 @@ public function index(Request $request)
         }
 
         // Convert PDF
-        $soffice = 'D:\Program Files\LibreOffice\program\soffice.exe';
-        if (!file_exists($soffice)) $soffice = 'D:\Program Files (x86)\LibreOffice\program\soffice.exe';
+        $soffice = 'C:\Program Files\LibreOffice\program\soffice.exe';
+        if (!file_exists($soffice)) $soffice = 'C:\Program Files (x86)\LibreOffice\program\soffice.exe';
         
         $outDir = dirname($out);
         $pdfPath = preg_replace('/\.docx$/i', '.pdf', $out);
