@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DuplicateFormPendaftaranCiptaanController extends Controller
 {
@@ -196,7 +197,19 @@ public function index(Request $request)
 
     private function generateDocument($request)
     {
-        $templatePath = public_path('templates/Permohonan Pendaftaran Ciptaan 2021.docx');
+        $templateObjectPath = 'Permohonan Pendaftaran Ciptaan 2021.docx';
+
+        if (!Storage::disk('s3')->exists($templateObjectPath)) {
+            abort(500, 'Template DOCX tidak ditemukan di bucket: ' . $templateObjectPath);
+        }
+
+        $templatePath = tempnam(sys_get_temp_dir(), 'template_cipta_') . '.docx';
+
+        file_put_contents(
+            $templatePath,
+            Storage::disk('s3')->get($templateObjectPath)
+        );
+
         $tp = new TemplateProcessor($templatePath);
 
         $tp->setValue('judul_ciptaan', $this->val($request->judul_ciptaan));

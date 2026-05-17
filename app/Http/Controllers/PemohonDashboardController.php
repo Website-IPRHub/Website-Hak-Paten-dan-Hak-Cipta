@@ -437,7 +437,7 @@ public function kirimKePendaftaran(Request $request, string $type, int $ref, Goo
             return back()->with('error', 'Pendaftaran hanya bisa dilakukan setelah status APPROVE.');
         }
 
-        $driveService = new \App\Services\GoogleDriveOAuthService('cipta');
+        $driveService = app(\App\Services\GoogleDriveOAuthService::class);
 
         $driveMap = [
             'surat_permohonan' => 'surat_permohonan_drive_url',
@@ -488,7 +488,9 @@ public function kirimKePendaftaran(Request $request, string $type, int $ref, Goo
 
     if ($type === 'paten') {
         $verif = DB::table('paten_verifs')->where('id', $ref)->first();
-        if (!$verif) abort(404);
+        if (!$verif) {
+            abort(404, 'Data pengajuan tidak ditemukan.');
+        }
 
         $sv = DB::table('status_verifikasi')
             ->where('ref_type', 'paten')
@@ -500,45 +502,7 @@ public function kirimKePendaftaran(Request $request, string $type, int $ref, Goo
             return back()->with('error', 'Pendaftaran hanya bisa dilakukan setelah status APPROVE.');
         }
 
-        $driveService = new \App\Services\GoogleDriveOAuthService('paten');
-
-$driveMap = [
-    'draft_paten' => 'draft_paten_drive_url',
-    'form_permohonan' => 'form_permohonan_drive_url',
-    'surat_kepemilikan' => 'surat_kepemilikan_drive_url',
-    'surat_pengalihan' => 'surat_pengalihan_drive_url',
-    'scan_ktp' => 'scan_ktp_drive_url',
-    'gambar_prototipe' => 'gambar_prototipe_drive_url',
-];
-
-$updateData = [];
-
-foreach ($driveMap as $fileColumn => $driveColumn) {
-    $filePath = $verif->$fileColumn ?? null;
-    $existingDriveUrl = $verif->$driveColumn ?? null;
-
-    if (!$existingDriveUrl && $filePath) {
-        $relativePath = ltrim((string)$filePath, '/');
-        $relativePath = preg_replace('#^storage/#', '', $relativePath);
-
-        if (Storage::disk('public')->exists($relativePath)) {
-            $absolutePath = Storage::disk('public')->path($relativePath);
-            $fileName = basename($absolutePath);
-
-            $driveUrl = $driveService->uploadFile($absolutePath, $fileName);
-            $updateData[$driveColumn] = $driveUrl;
-        }
-    }
-}
-
-if (!empty($updateData)) {
-    $updateData['updated_at'] = now();
-    DB::table('paten_verifs')->where('id', $ref)->update($updateData);
-    $verif = DB::table('paten_verifs')->where('id', $ref)->first();
-}
-
-// Kirim ke spreadsheet
-$googleSheetService->kirimPaten($verif);
+        $googleSheetService->kirimPaten($verif);
 
         return redirect()->route('pemohon.pendaftaran.sukses', [
             'type' => $type,

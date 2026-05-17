@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DuplicateIsiFormController extends Controller
 {
@@ -129,8 +130,18 @@ class DuplicateIsiFormController extends Controller
 
     private function generateDocument($data)
     {
-        $templatePath = public_path('templates/Form Daftar Paten (2025).docx');
-        if (!file_exists($templatePath)) abort(500, 'Template tidak ditemukan.');
+        $templateObjectPath = 'Form Daftar Paten (2025).docx';
+
+        if (!Storage::disk('s3')->exists($templateObjectPath)) {
+            abort(500, 'Template tidak ditemukan di bucket: ' . $templateObjectPath);
+        }
+
+        $templatePath = tempnam(sys_get_temp_dir(), 'template_paten_') . '.docx';
+
+        file_put_contents(
+            $templatePath,
+            Storage::disk('s3')->get($templateObjectPath)
+        );
 
         $tp = new TemplateProcessor($templatePath);
 
